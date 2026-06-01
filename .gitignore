@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+dist/
+
+# Build output
+.output/
+.vinxi/
+.nitro/
+.wrangler/
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+.stravarc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TanStack Router (auto-generated)
+app/routeTree.gen.ts
+
+# Supabase
+.supabase/
+
+# Claude Code runtime (teams/tasks are ephemeral)
+# Note: .agent/skills/ is committed as project configuration

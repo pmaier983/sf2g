@@ -1,0 +1,6 @@
+/* Wind indicator styling */
+.wind-indicator {
+  font-size: var(--text-xs, 0.75rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

@@ -1,0 +1,288 @@
+/* ============================================================
+   Routes Info Page Styles
+   ============================================================ */
+
+.routes-page {
+  padding: var(--space-6) 0;
+}
+
+.routes-page__header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.routes-page__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.routes-page__subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* How It Works Section */
+.how-it-works {
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.how-it-works__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  text-transform: uppercase;
+}
+
+.how-it-works__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.how-it-works__step {
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.how-it-works__step-icon {
+  font-size: 32px;
+  margin-bottom: var(--space-3);
+}
+
+.how-it-works__step-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.how-it-works__step-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .how-it-works__steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Route Detail Card */
+.route-detail {
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  border-left: 4px solid;
+}
+
+.route-detail--bayway {
+  border-left-color: var(--color-bayway);
+}
+
+.route-detail--skyline {
+  border-left-color: var(--color-skyline);
+}
+
+.route-detail--hmbw {
+  border-left-color: var(--color-hmbw);
+}
+
+.route-detail--royale {
+  border-left-color: var(--color-royale);
+}
+
+.route-detail__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.route-detail__name {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  text-transform: uppercase;
+}
+
+.route-detail__desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+}
+
+.route-detail__gateways {
+  margin-top: var(--space-3);
+}
+
+.route-detail__gateway-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+.route-detail__gateway-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.route-detail__gateway {
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.route-detail__gateway-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.route-detail__gateway-coords {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-1);
+}
+
+.route-detail__gateway-link {
+  font-size: var(--text-xs);
+  color: var(--color-sf2g-orange);
+  text-decoration: none;
+}
+
+.route-detail__gateway-link:hover {
+  text-decoration: underline;
+  color: var(--color-sf2g-orange-hover);
+}
+
+@media (max-width: 640px) {
+  .route-detail__gateway-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Gateway Map */
+.gateway-map {
+  padding: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.gateway-map__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.gateway-map__container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 5;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.gateway-map__point {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-surface);
+  box-shadow: var(--shadow-md);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  z-index: 2;
+}
+
+.gateway-map__point:hover {
+  transform: translate(-50%, -50%) scale(1.5);
+  z-index: 3;
+}
+
+.gateway-map__label {
+  position: absolute;
+  font-size: 9px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.gateway-map__legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.gateway-map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.gateway-map__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+/* SF label on map */
+.gateway-map__sf-label {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gateway-map__peninsula-label {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

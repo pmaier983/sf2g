@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sf2g",
+  "compatibility_date": "2025-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "vars": {
+    "NODE_ENV": "production"
+  }
+  // Cron jobs (reclassification + wind enrichment) run via:
+  // 1. DevTools panel "Run All Cron Jobs" button
+  // 2. triggerCronJobs server function (app/server/cron.ts)
+  // TODO: Add external cron trigger once TanStack Start supports API routes
+  // or Cloudflare Workers scheduled events.
+}

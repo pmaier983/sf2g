@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Outer shield shape -->
+  <path d="
+    M 100 6
+    C 116 6, 130 11, 140 18
+    Q 150 8, 162 8
+    Q 178 8, 187 22
+    Q 194 34, 194 54
+    L 194 122
+    Q 194 154, 173 173
+    Q 152 192, 100 194
+    Q 48 192, 27 173
+    Q 6 154, 6 122
+    L 6 54
+    Q 6 34, 13 22
+    Q 22 8, 38 8
+    Q 50 8, 60 18
+    C 70 11, 84 6, 100 6
+    Z
+  " fill="white" stroke="black" stroke-width="6"/>
+  <!-- Inner border -->
+  <path d="
+    M 100 19
+    C 114 19, 126 23, 134 28
+    Q 143 20, 154 20
+    Q 167 20, 175 30
+    Q 183 40, 183 55
+    L 183 122
+    Q 183 148, 165 164
+    Q 148 180, 100 182
+    Q 52 180, 35 164
+    Q 17 148, 17 122
+    L 17 55
+    Q 17 40, 25 30
+    Q 33 20, 46 20
+    Q 57 20, 66 28
+    C 74 23, 86 19, 100 19
+    Z
+  " fill="none" stroke="black" stroke-width="2"/>
+  <!-- "US" text -->
+  <text x="100" y="66" text-anchor="middle" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="28" letter-spacing="2" fill="black">US</text>
+  <!-- "SF2G" text -->
+  <text x="100" y="148" text-anchor="middle" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="72" letter-spacing="-2" fill="black">SF2G</text>
+</svg>

@@ -1,0 +1,137 @@
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+} from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { NavBar } from '../components/NavBar'
+import { Footer } from '../components/Footer'
+import { DevToolsPanel } from '../components/DevToolsPanel'
+import { ToastProvider } from '../components/Toast'
+import { initAnalytics, setupGlobalErrorHandlers, trackError } from '../lib/analytics'
+import { ErrorBoundary } from '../components/ErrorBoundary'
+// Import CSS as side effects — rsbuild injects them automatically
+import '../styles/global.css'
+import '../styles/components.css'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      onError: (error) => {
+        trackError('network', error, { source: 'mutation' })
+      },
+    },
+  },
+})
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'SF2G — San Francisco Commuter Cycling Club' },
+      {
+        name: 'description',
+        content:
+          'Track and compare SF2G commute rides. Leaderboard, route classification, and ride history powered by Strava.',
+      },
+    ],
+    links: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        href: '/favicon.ico',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap',
+      },
+    ],
+  }),
+  component: RootComponent,
+})
+
+/**
+ * Inline script that runs synchronously before first paint to prevent
+ * a flash of the wrong theme (FOUC). It reads the saved preference from
+ * localStorage and sets `data-theme` on <html> immediately.
+ */
+const themeScript = `
+  (function() {
+    try {
+      var saved = localStorage.getItem('sf2g-theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch(e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+`
+
+function RootComponent() {
+  // Defer dev-tools rendering to after hydration to avoid server/client mismatch.
+  // The server has no `window`, so the check must happen in useEffect.
+  const [showDevTools, setShowDevTools] = useState(false)
+
+  useEffect(() => {
+    if (window.location.hostname === 'localhost') {
+      setShowDevTools(true)
+    }
+    initAnalytics()
+    setupGlobalErrorHandlers()
+  }, [])
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <HeadContent />
+      </head>
+      <body suppressHydrationWarning>
+        <QueryClientProvider client={queryClient}>
+            <ToastProvider />
+            <div className="page-layout">
+              <NavBar />
+              <main className="page-content">
+                <ErrorBoundary>
+                  <Outlet />
+                </ErrorBoundary>
+              </main>
+              <Footer />
+              {showDevTools && <DevToolsPanel />}
+            </div>
+        </QueryClientProvider>
+        <Scripts />
+      </body>
+    </html>
+  )
+}

@@ -1,0 +1,43 @@
+{
+  "name": "sf2g",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "pnpm build && wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:types": "npx supabase gen types typescript --linked > app/lib/database.types.ts"
+  },
+  "dependencies": {
+    "@mapbox/polyline": "^1.2.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-router": "1.170.8",
+    "@tanstack/react-start": "^1.168.13",
+    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.25",
+    "@vitejs/plugin-react": "^6.0.2",
+    "leaflet": "^1.9.4",
+    "posthog-js": "^1.376.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
+    "sonner": "^2.0.7",
+    "vite": "^8.0.14"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.29.0",
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "supabase": "^1.200.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.7",
+    "wrangler": "^4.74.0"
+  }
+}
