@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------
 export type RouteCategory = 'bayway' | 'skyline' | 'hmbw' | 'royale' | 'fleaway' | 'mebw' | 'febw' | 'other'
 export type ClassificationMethod = 'gateway' | 'elevation' | 'manual'
-export type DestinationCompany = 'netflix' | 'google' | 'apple' | 'meta' | 'nvidia' | 'stanford'
+export type DestinationCompany = 'netflix' | 'google' | 'apple' | 'meta' | 'nvidia' | 'stanford' | 'tesla'
 
 // JSON-serializable value type (compatible with TanStack Start serialization)
 export type JsonValue =
@@ -243,6 +243,7 @@ export interface Database {
           apple_count: number
           meta_count: number
           nvidia_count: number
+          tesla_count: number
           total_distance_meters: number
           total_elevation_meters: number
           avg_speed_mps: number

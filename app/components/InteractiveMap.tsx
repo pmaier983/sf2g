@@ -107,6 +107,7 @@ const COMPANY_ICON_SVGS: Record<DestinationCompany, string> = {
   meta: `<text x="12" y="17" font-family="Arial,sans-serif" font-weight="900" font-size="14" fill="white" text-anchor="middle">M</text>`,
   nvidia: `<text x="12" y="17" font-family="Arial,sans-serif" font-weight="900" font-size="12" fill="white" text-anchor="middle">NV</text>`,
   stanford: `<text x="12" y="17" font-family="Arial,sans-serif" font-weight="900" font-size="16" fill="white" text-anchor="middle">S</text>`,
+  tesla: `<text x="12" y="17" font-family="Arial,sans-serif" font-weight="900" font-size="16" fill="white" text-anchor="middle">T</text>`,
 }
 
 function createCompanyIcon(
@@ -356,6 +357,7 @@ function CompanyOfficesMap() {
       'meta',
       'nvidia',
       'stanford',
+      'tesla',
     ]
 
     for (const company of companies) {
@@ -363,9 +365,10 @@ function CompanyOfficesMap() {
       const color = COMPANY_COLORS[company]
 
       for (const office of offices) {
-        // Destination radius circle (200m)
+        const radius = office.radiusMeters ?? DESTINATION_RADIUS_METERS
+        // Destination radius circle
         L.circle([office.lat, office.lng], {
-          radius: DESTINATION_RADIUS_METERS,
+          radius,
           color,
           weight: 1,
           fillColor: color,
@@ -384,7 +387,7 @@ function CompanyOfficesMap() {
               <span style="font-size:13px;font-weight:600;">${office.name}</span><br/>
               <span style="font-size:12px;color:#666;">${office.address}, ${office.city}</span><br/>
               <span style="font-size:11px;color:#888;">Status: ${office.status === 'active' ? '✅ Active' : '❌ Closed'}</span><br/>
-              <span style="font-size:11px;color:#888;">Match radius: ${DESTINATION_RADIUS_METERS}m</span>
+              <span style="font-size:11px;color:#888;">Match radius: ${radius}m</span>
             </div>`,
           )
       }
@@ -580,6 +583,7 @@ function CompanyLegend() {
     'nvidia',
     'netflix',
     'stanford',
+    'tesla',
   ]
   return (
     <div className="map-legend">
@@ -600,7 +604,7 @@ function CompanyLegend() {
       <div className="map-legend__item map-legend__item--note">
         <span className="map-legend__circle-outline" />
         <span>
-          {DESTINATION_RADIUS_METERS}m match radius — ride must end within this circle
+          {DESTINATION_RADIUS_METERS}m default match radius (Stanford: 2000m) — ride must end within this circle
         </span>
       </div>
     </div>
@@ -704,7 +708,7 @@ export function InteractiveMaps() {
       <MapSection
         id="map-company-offices"
         title="🏢 Commute Endpoints"
-        description="Rides ending within 800m of any endpoint are counted toward the leaderboard. Both active and closed locations are tracked — past commutes still count."
+        description="Rides ending within the match radius of any endpoint are counted toward the leaderboard. Default radius is 1000m (Stanford: 2000m). Both active and closed locations are tracked — past commutes still count."
       >
         <CompanyOfficesMap />
         <CompanyLegend />

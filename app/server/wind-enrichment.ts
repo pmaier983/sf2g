@@ -10,7 +10,8 @@
  *
  * Optimizations:
  * - Groups rides by date → one API call per unique date (not per ride)
- * - Processes up to 200 rides per run to stay within API/timeout limits
+ * - Fetches in batches of 200 for memory efficiency, loops until all done
+ * - Safety valve at 5000 rides total to prevent infinite loops
  * - Refreshes leaderboard materialized views after updates
  */
 import { createServerFn } from '@tanstack/react-start'
@@ -43,8 +44,11 @@ interface EnrichableRide {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Max rides to process per run (stay within API/timeout limits) */
-const BATCH_LIMIT = 200
+/** Rides to fetch per DB query (memory-efficient batching) */
+const BATCH_SIZE = 200
+
+/** Safety valve: max total rides to process in one invocation */
+const MAX_TOTAL = 5000
 
 /** Validate that a value is a valid [lat, lng] tuple with finite numbers */
 function isValidLatLng(v: unknown): v is [number, number] {
@@ -76,7 +80,7 @@ export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
   const startTime = Date.now()
   const supabase = createServiceClient()
   const errors: string[] = []
-  let processed = 0
+  let totalProcessed = 0
 
   // 1. Count total missing rides (for progress display)
   const { count: totalMissing, error: countError } = await supabase
@@ -95,129 +99,126 @@ export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
     }
   }
 
-  // 2. Fetch the batch of rides to process
-  const { data: rides, error: fetchError } = await supabase
-    .from('rides')
-    .select('id, ride_date, start_date, start_latlng, end_latlng')
-    .is('tailwind_component_ms', null)
-    .not('start_latlng', 'is', null)
-    .not('end_latlng', 'is', null)
-    .order('ride_date', { ascending: false })
-    .limit(BATCH_LIMIT)
+  // 2. Loop through batches until all rides are enriched (or safety valve hit)
+  while (totalProcessed < MAX_TOTAL) {
+    // Fetch next batch of rides missing wind data
+    const { data: rides, error: fetchError } = await supabase
+      .from('rides')
+      .select('id, ride_date, start_date, start_latlng, end_latlng')
+      .is('tailwind_component_ms', null)
+      .not('start_latlng', 'is', null)
+      .not('end_latlng', 'is', null)
+      .order('ride_date', { ascending: false })
+      .limit(BATCH_SIZE)
 
-  if (fetchError) {
-    return {
-      processed: 0,
-      totalMissing: totalMissing ?? 0,
-      errors: [`Failed to fetch rides: ${fetchError.message}`],
-      durationMs: Date.now() - startTime,
-    }
-  }
-
-  if (!rides || rides.length === 0) {
-    return {
-      processed: 0,
-      totalMissing: 0,
-      errors: [],
-      durationMs: Date.now() - startTime,
-    }
-  }
-
-  // 3. Group rides by ride_date for efficient API batching
-  const ridesByDate = new Map<string, EnrichableRide[]>()
-
-  for (const ride of rides as unknown as EnrichableRide[]) {
-    const existing = ridesByDate.get(ride.ride_date)
-    if (existing) {
-      existing.push(ride)
-    } else {
-      ridesByDate.set(ride.ride_date, [ride])
-    }
-  }
-
-  // 4. Process each date group
-  for (const [date, dateRides] of ridesByDate) {
-    // Use the first ride's start coordinates for the weather API call
-    const firstRide = dateRides[0]
-    if (!firstRide.start_latlng) continue
-
-    const [lat, lng] = firstRide.start_latlng
-
-    // Fetch wind data for this date (one API call per date)
-    const dailyWind = await fetchDailyWind(lat, lng, date)
-
-    if (!dailyWind) {
-      errors.push(`Failed to fetch wind data for ${date}`)
-      continue
+    if (fetchError) {
+      errors.push(`Failed to fetch rides: ${fetchError.message}`)
+      break
     }
 
-    // Process each ride in this date group
-    for (const ride of dateRides) {
-      try {
-        if (!isValidLatLng(ride.start_latlng) || !isValidLatLng(ride.end_latlng)) continue
+    if (!rides || rides.length === 0) break // All done!
 
-        // Extract the hour in Pacific time (Open-Meteo data uses America/Los_Angeles)
-        const rideHour = parseInt(
-          new Date(ride.start_date).toLocaleString('en-US', {
-            timeZone: 'America/Los_Angeles',
-            hour: 'numeric',
-            hour12: false,
-          }),
-          10,
-        )
+    // 3. Group rides by ride_date for efficient API batching
+    const ridesByDate = new Map<string, EnrichableRide[]>()
 
-        // Get wind at the ride's start hour
-        const hourlyWind = getWindAtHour(dailyWind, rideHour)
-        if (!hourlyWind) {
-          errors.push(`No wind data for ride ${ride.id} at hour ${rideHour}`)
-          continue
-        }
-
-        // Calculate ride bearing from start to end coordinates
-        const bearing = calculateBearing(ride.start_latlng, ride.end_latlng)
-
-        // Calculate wind components
-        const components = calculateWindComponents(
-          hourlyWind.wind_speed_ms,
-          hourlyWind.wind_direction_deg,
-          bearing,
-        )
-
-        // Guard against non-finite wind values
-        if (!Number.isFinite(components.tailwind) || !Number.isFinite(components.crosswind)) {
-          errors.push(`Non-finite wind values for ride ${ride.id}`)
-          continue
-        }
-
-        // 5. Update the ride in Supabase
-        const { error: updateError } = await supabase
-          .from('rides')
-          .update({
-            wind_speed_ms: hourlyWind.wind_speed_ms,
-            wind_direction_deg: hourlyWind.wind_direction_deg,
-            wind_gust_ms: hourlyWind.wind_gust_ms,
-            ride_bearing_deg: bearing,
-            tailwind_component_ms: components.tailwind,
-            crosswind_component_ms: components.crosswind,
-            wind_data_source: 'open-meteo',
-          })
-          .eq('id', ride.id)
-
-        if (updateError) {
-          errors.push(`Failed to update ride ${ride.id}: ${updateError.message}`)
-        } else {
-          processed++
-        }
-      } catch (err) {
-        errors.push(
-          `Error processing ride ${ride.id}: ${err instanceof Error ? err.message : String(err)}`,
-        )
+    for (const ride of rides as unknown as EnrichableRide[]) {
+      const existing = ridesByDate.get(ride.ride_date)
+      if (existing) {
+        existing.push(ride)
+      } else {
+        ridesByDate.set(ride.ride_date, [ride])
       }
     }
+
+    // 4. Process each date group
+    let batchProcessed = 0
+
+    for (const [date, dateRides] of ridesByDate) {
+      // Use the first ride's start coordinates for the weather API call
+      const firstRide = dateRides[0]
+      if (!firstRide.start_latlng) continue
+
+      const [lat, lng] = firstRide.start_latlng
+
+      // Fetch wind data for this date (one API call per date)
+      const dailyWind = await fetchDailyWind(lat, lng, date)
+
+      if (!dailyWind) {
+        errors.push(`Failed to fetch wind data for ${date}`)
+        continue
+      }
+
+      // Process each ride in this date group
+      for (const ride of dateRides) {
+        try {
+          if (!isValidLatLng(ride.start_latlng) || !isValidLatLng(ride.end_latlng)) continue
+
+          // Extract the hour in Pacific time (Open-Meteo data uses America/Los_Angeles)
+          const rideHour = parseInt(
+            new Date(ride.start_date).toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              hour: 'numeric',
+              hour12: false,
+            }),
+            10,
+          )
+
+          // Get wind at the ride's start hour
+          const hourlyWind = getWindAtHour(dailyWind, rideHour)
+          if (!hourlyWind) {
+            errors.push(`No wind data for ride ${ride.id} at hour ${rideHour}`)
+            continue
+          }
+
+          // Calculate ride bearing from start to end coordinates
+          const bearing = calculateBearing(ride.start_latlng, ride.end_latlng)
+
+          // Calculate wind components
+          const components = calculateWindComponents(
+            hourlyWind.wind_speed_ms,
+            hourlyWind.wind_direction_deg,
+            bearing,
+          )
+
+          // Guard against non-finite wind values
+          if (!Number.isFinite(components.tailwind) || !Number.isFinite(components.crosswind)) {
+            errors.push(`Non-finite wind values for ride ${ride.id}`)
+            continue
+          }
+
+          // 5. Update the ride in Supabase
+          const { error: updateError } = await supabase
+            .from('rides')
+            .update({
+              wind_speed_ms: hourlyWind.wind_speed_ms,
+              wind_direction_deg: hourlyWind.wind_direction_deg,
+              wind_gust_ms: hourlyWind.wind_gust_ms,
+              ride_bearing_deg: bearing,
+              tailwind_component_ms: components.tailwind,
+              crosswind_component_ms: components.crosswind,
+              wind_data_source: 'open-meteo',
+            })
+            .eq('id', ride.id)
+
+          if (updateError) {
+            errors.push(`Failed to update ride ${ride.id}: ${updateError.message}`)
+          } else {
+            batchProcessed++
+          }
+        } catch (err) {
+          errors.push(
+            `Error processing ride ${ride.id}: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
+      }
+    }
+
+    totalProcessed += batchProcessed
+    console.log(`[wind-enrichment] Batch done: ${batchProcessed} processed, ${totalProcessed} total so far`)
   }
 
   // 6. Refresh leaderboard if any rides were processed
-  if (processed > 0) {
+  if (totalProcessed > 0) {
     const [leaderboardResult, companyResult] = await Promise.allSettled([
       supabase.rpc('refresh_leaderboard'),
       supabase.rpc('refresh_company_leaderboard'),
@@ -232,7 +233,7 @@ export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
   }
 
   return {
-    processed,
+    processed: totalProcessed,
     totalMissing: totalMissing ?? 0,
     errors,
     durationMs: Date.now() - startTime,

@@ -23,6 +23,7 @@ const COMPANIES: { value: DestinationCompany; label: string }[] = [
   { value: 'netflix', label: 'Netflix' },
   { value: 'nvidia', label: 'Nvidia' },
   { value: 'stanford', label: 'Stanford' },
+  { value: 'tesla', label: 'Tesla' },
 ]
 
 // ---------------------------------------------------------------------------

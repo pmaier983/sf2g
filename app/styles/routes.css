@@ -286,3 +286,137 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ============================================================
+   Wind Factor Explainer
+   ============================================================ */
+
+.wind-explainer {
+  margin-top: var(--space-8);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.wind-explainer__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.wind-explainer__intro {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-5);
+}
+
+.wind-explainer__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.wind-explainer__step {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.wind-explainer__step-number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-sf2g-orange);
+  color: white;
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
+}
+
+.wind-explainer__step-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.wind-explainer__step-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.wind-explainer__step-desc a {
+  color: var(--color-sf2g-orange);
+  text-decoration: none;
+}
+
+.wind-explainer__step-desc a:hover {
+  text-decoration: underline;
+  color: var(--color-sf2g-orange-hover);
+}
+
+.wind-explainer__formula-list {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  font-family: var(--font-mono);
+}
+
+.wind-explainer__thresholds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.wind-explainer__threshold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.wind-explainer__threshold-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+}
+
+.wind-explainer__note {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .wind-explainer {
+    padding: var(--space-4);
+  }
+
+  .wind-explainer__step {
+    gap: var(--space-3);
+  }
+
+  .wind-explainer__formula-list {
+    padding-left: var(--space-3);
+    font-size: var(--text-xs);
+  }
+}
+

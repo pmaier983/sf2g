@@ -110,6 +110,18 @@ function ProfilePage() {
     ? rides.reduce((sum, r) => sum + (r.distance_meters ?? 0), 0)
     : 0
 
+  const currentYear = new Date().getFullYear()
+  const ytdRides = rides
+    ? rides.filter(
+        (r) => new Date(r.ride_date).getFullYear() === currentYear,
+      )
+    : []
+  const ytdRideCount = ytdRides.length
+  const ytdDistanceMeters = ytdRides.reduce(
+    (sum, r) => sum + (r.distance_meters ?? 0),
+    0,
+  )
+
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric',
@@ -158,6 +170,12 @@ function ProfilePage() {
               <div className="profile-header__stat">
                 <span className="profile-header__stat-value">{memberSince}</span>
                 Member Since
+              </div>
+              <div className="profile-header__stat">
+                <span className="profile-header__stat-value">
+                  {formatDistance(ytdDistanceMeters, unit)} / {ytdRideCount} rides
+                </span>
+                YTD
               </div>
             </div>
           </div>

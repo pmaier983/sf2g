@@ -128,6 +128,7 @@ function reclassifyRide(
 
   // Re-run destination classification
   const destResult = classifyDestination({
+    start_latlng: ride.start_latlng,
     end_latlng: ride.end_latlng,
     summary_polyline: ride.summary_polyline,
   })

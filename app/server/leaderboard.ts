@@ -220,6 +220,9 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       tailwindSum: number
       tailwindCount: number
       years: Set<number>
+      /** Per-year totals so we can filter to active SF2G years */
+      yearDistance: Map<number, number>
+      yearElevation: Map<number, number>
       lastRideDate: string | null
       firstRideDate: string | null
     }
@@ -238,6 +241,8 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
           speedSum: 0, speedCount: 0,
           tailwindSum: 0, tailwindCount: 0,
           years: new Set<number>(),
+          yearDistance: new Map<number, number>(),
+          yearElevation: new Map<number, number>(),
           lastRideDate: null, firstRideDate: null,
         }
         userMap.set(ride.user_id, agg)
@@ -247,6 +252,15 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       agg.total_rides++
       agg.total_distance += ride.distance_meters ?? 0
       agg.total_elevation += ride.elevation_gain_meters ?? 0
+
+      // Track per-year distance/elevation for active-year filtering
+      if (ride.ride_date) {
+        const year = new Date(ride.ride_date).getFullYear()
+        if (!isNaN(year)) {
+          agg.yearDistance.set(year, (agg.yearDistance.get(year) ?? 0) + (ride.distance_meters ?? 0))
+          agg.yearElevation.set(year, (agg.yearElevation.get(year) ?? 0) + (ride.elevation_gain_meters ?? 0))
+        }
+      }
 
       if (cat && cat !== 'other') {
         agg.sf2g_total++
@@ -322,6 +336,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
         avg_speed_mps: agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0,
         sf2g_distance_meters: agg.sf2g_distance,
         sf2g_elevation_meters: agg.sf2g_elevation,
+        // Date/route/company filters already scope the rides — use full totals
         total_distance_meters: agg.total_distance,
         total_elevation_meters: agg.total_elevation,
         active_years: agg.years.size,
@@ -406,11 +421,15 @@ export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
       const pprTime = estimatePprArrival(ride as PprDawnRide)
       if (!pprTime) continue
 
-      // Estimate local time using the ride's timezone offset
-      const startDate = new Date(ride.start_date)
-      const offsetMs = startDate.getTimezoneOffset() * 60 * 1000
-      const localPprTime = new Date(pprTime.getTime() - offsetMs)
-      const localMinutes = localPprTime.getUTCHours() * 60 + localPprTime.getUTCMinutes()
+      // Convert PPR arrival to local time using the ride's timezone
+      // The ride.timezone is an IANA zone like "(GMT-08:00) America/Los_Angeles"
+      // Extract the IANA name or default to America/Los_Angeles
+      const tz = extractTimezone(ride.timezone)
+      const localTimeStr = pprTime.toLocaleString('en-US', { timeZone: tz, hour12: false })
+      const timeParts = localTimeStr.split(', ')[1]?.split(':') ?? []
+      const localHour = parseInt(timeParts[0] ?? '0', 10)
+      const localMin = parseInt(timeParts[1] ?? '0', 10)
+      const localMinutes = localHour * 60 + localMin
 
       // 6:00 AM = 360 min. Within 10 min = [350, 370]
       if (localMinutes >= 350 && localMinutes <= 370) {
@@ -421,6 +440,14 @@ export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
     return Array.from(qualifyingUserIds)
   }
 )
+
+/** Extract IANA timezone from Strava's format "(GMT-08:00) America/Los_Angeles" */
+function extractTimezone(tz: string | null | undefined): string {
+  if (!tz) return 'America/Los_Angeles'
+  // Strava format: "(GMT-08:00) America/Los_Angeles"
+  const match = tz.match(/\)\s*(.+)$/)
+  return match?.[1]?.trim() || 'America/Los_Angeles'
+}
 
 // ---------------------------------------------------------------------------
 // fetchRiderGrowthData — monthly ride counts per rider for growth chart

@@ -11,11 +11,13 @@ export function initAnalytics() {
   if (initialized || typeof window === 'undefined') return
 
   const key = import.meta.env.VITE_POSTHOG_KEY
-  const host = import.meta.env.VITE_POSTHOG_HOST
   if (!key) return // Graceful no-op if not configured
 
   posthog.init(key, {
-    api_host: host || 'https://us.i.posthog.com',
+    // Route through the app's own domain to bypass ad blockers.
+    // The /ingest path is proxied to PostHog by the SSR handler (see ssr.tsx).
+    api_host: '/ingest',
+    ui_host: 'https://us.i.posthog.com',
     capture_pageview: true,
     capture_pageleave: true,
     autocapture: false,

@@ -215,14 +215,12 @@ export const leaderboardColumns = [
     cell: (info) => {
       const ms = safeNumber(info.getValue())
       const mph = msToMph(ms)
-      const absValue = Math.abs(mph)
-      if (absValue < 0.2) {
-        return <span style={{ color: 'var(--color-text-muted)' }}>—</span>
-      }
       const sign = mph > 0 ? '+' : ''
       const color = mph > 0.2
         ? 'var(--color-success)'
-        : 'var(--color-error)'
+        : mph < -0.2
+          ? 'var(--color-error)'
+          : 'var(--color-text-muted)'
       return (
         <span style={{ color, fontVariantNumeric: 'tabular-nums' }}>
           {sign}{mph.toFixed(1)}
@@ -343,7 +341,7 @@ export const leaderboardColumns = [
     },
     {
       id: 'sf2g_dist_pct',
-      header: () => <HeaderWithTooltip label="% Dist" tooltip="Percentage of total ride distance that is SF2G commuting (sortable)" />,
+      header: () => <HeaderWithTooltip label="% Dist" tooltip="SF2G distance as % of total distance (only counting years with ≥1 SF2G ride)" />,
       cell: (info) => (
         <TinyPie
           sf2gValue={info.row.original.sf2g_distance_meters}
@@ -362,7 +360,7 @@ export const leaderboardColumns = [
     },
     {
       id: 'sf2g_elev_pct',
-      header: () => <HeaderWithTooltip label="% Elev" tooltip="Percentage of total elevation gain that is SF2G commuting (sortable)" />,
+      header: () => <HeaderWithTooltip label="% Elev" tooltip="SF2G elevation as % of total elevation (only counting years with ≥1 SF2G ride)" />,
       cell: (info) => (
         <TinyPie
           sf2gValue={info.row.original.sf2g_elevation_meters}

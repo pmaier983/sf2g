@@ -12,7 +12,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type DestinationCompany = 'netflix' | 'google' | 'apple' | 'meta' | 'nvidia' | 'stanford'
+export type DestinationCompany = 'netflix' | 'google' | 'apple' | 'meta' | 'nvidia' | 'stanford' | 'tesla'
 
 export interface OfficeLocation {
   company: DestinationCompany
@@ -22,6 +22,8 @@ export interface OfficeLocation {
   city: string
   address: string
   status: 'active' | 'closed'
+  /** Override the default radius for this office (meters). If omitted, DESTINATION_RADIUS_METERS is used. */
+  radiusMeters?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -269,6 +271,38 @@ export const OFFICE_LOCATIONS: OfficeLocation[] = [
     city: 'Stanford',
     address: 'Stanford University',
     status: 'active',
+    radiusMeters: 2000,
+  },
+
+  // =========================================================================
+  // TESLA — Palo Alto
+  // =========================================================================
+  {
+    company: 'tesla',
+    name: 'Tesla Page Mill',
+    lat: 37.4133,
+    lng: -122.1515,
+    city: 'Palo Alto',
+    address: '1501 Page Mill Rd',
+    status: 'active',
+  },
+  {
+    company: 'tesla',
+    name: 'Tesla Hanover',
+    lat: 37.4053,
+    lng: -122.1456,
+    city: 'Palo Alto',
+    address: '3000 Hanover St',
+    status: 'active',
+  },
+  {
+    company: 'tesla',
+    name: 'Tesla Deer Creek',
+    lat: 37.4020,
+    lng: -122.1413,
+    city: 'Palo Alto',
+    address: '3500 Deer Creek Rd',
+    status: 'active',
   },
 ]
 
@@ -283,6 +317,7 @@ export const COMPANY_LABELS: Record<DestinationCompany, string> = {
   meta: 'Meta',
   nvidia: 'Nvidia',
   stanford: 'Stanford',
+  tesla: 'Tesla',
 }
 
 export const COMPANY_COLORS: Record<DestinationCompany, string> = {
@@ -292,12 +327,14 @@ export const COMPANY_COLORS: Record<DestinationCompany, string> = {
   meta: '#0668E1',     // Meta blue
   nvidia: '#76B900',   // Nvidia green
   stanford: '#8C1515',  // Stanford cardinal red
+  tesla: '#CC0000',     // Tesla red
 }
 
 /**
- * Radius in meters for destination matching.
+ * Default radius in meters for destination matching.
  * A ride endpoint must be within this distance of an office to count.
+ * Individual offices can override via the `radiusMeters` field.
  *
- * 800m (~2600ft / ~0.5mi) provides a generous capture area around campus endpoints.
+ * 1000m (~3300ft / ~0.6mi) provides a generous capture area around campus endpoints.
  */
-export const DESTINATION_RADIUS_METERS = 800
+export const DESTINATION_RADIUS_METERS = 1000

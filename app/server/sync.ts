@@ -12,6 +12,7 @@ import { classifyRoute } from '../lib/route-classifier'
 import { classifyDestination } from '../lib/destination-classifier'
 import { getSessionData, clearSessionData } from '../lib/session'
 import type { RideInsert, UserUpdate, JsonValue } from '../lib/database.types'
+import { enrichMissingWindData } from './wind-enrichment'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,6 +50,7 @@ function activityToRideInsert(
   })
 
   const destination = classifyDestination({
+    start_latlng: activity.start_latlng,
     end_latlng: activity.end_latlng,
     summary_polyline: activity.map?.summary_polyline,
   })
@@ -268,6 +270,18 @@ async function performSync(userId: string): Promise<SyncResult> {
     errors.push(
       `Failed to refresh leaderboard: ${err instanceof Error ? err.message : String(err)}`,
     )
+  }
+
+  // 7. Enrich wind data for newly synced rides
+  try {
+    const windResult = await enrichMissingWindData()
+    console.log(`[sync] Wind enrichment: ${windResult.processed} rides enriched`)
+    if (windResult.errors.length > 0) {
+      console.warn(`[sync] Wind enrichment errors: ${windResult.errors.join(' | ')}`)
+    }
+  } catch (err) {
+    // Wind enrichment is non-critical — don't fail the sync
+    console.warn(`[sync] Wind enrichment failed (non-critical): ${err instanceof Error ? err.message : String(err)}`)
   }
 
   const result: SyncResult = {

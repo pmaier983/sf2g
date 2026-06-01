@@ -56,6 +56,14 @@ describe('classifyDestination', () => {
       expect(result).not.toBeNull()
       expect(result!.company).toBe('nvidia')
     })
+
+    it('should match Tesla Page Mill (Palo Alto)', () => {
+      const result = classifyDestination({
+        end_latlng: [37.4133, -122.1515],
+      })
+      expect(result).not.toBeNull()
+      expect(result!.company).toBe('tesla')
+    })
   })
 
   // -----------------------------------------------------------------------
@@ -181,6 +189,56 @@ describe('classifyDestination', () => {
       expect(result!.officeName).toContain('HQ')
     })
   })
+
+  // -----------------------------------------------------------------------
+  // Reverse commute (Peninsula → SF: ride starts near office, ends in SF)
+  // -----------------------------------------------------------------------
+  describe('reverse commute detection', () => {
+    it('should detect Google when ride starts at Googleplex but ends in SF', () => {
+      const result = classifyDestination({
+        start_latlng: [37.4220, -122.0841], // Googleplex
+        end_latlng: [37.7749, -122.4194],   // Downtown SF (no office)
+      })
+      expect(result).not.toBeNull()
+      expect(result!.company).toBe('google')
+    })
+
+    it('should detect Apple when ride starts at Apple Park but ends in SF', () => {
+      const result = classifyDestination({
+        start_latlng: [37.3349, -122.0090], // Apple Park
+        end_latlng: [37.7749, -122.4194],   // Downtown SF
+      })
+      expect(result).not.toBeNull()
+      expect(result!.company).toBe('apple')
+    })
+
+    it('should detect Netflix when ride starts at Netflix HQ but ends in SF', () => {
+      const result = classifyDestination({
+        start_latlng: [37.2560, -121.9553], // Netflix HQ
+        end_latlng: [37.7749, -122.4194],   // Downtown SF
+      })
+      expect(result).not.toBeNull()
+      expect(result!.company).toBe('netflix')
+    })
+
+    it('should prefer end_latlng match over start_latlng match', () => {
+      // End near Google, start near Apple — should match Google (end takes priority)
+      const result = classifyDestination({
+        start_latlng: [37.3349, -122.0090], // Apple Park
+        end_latlng: [37.4220, -122.0841],   // Googleplex
+      })
+      expect(result).not.toBeNull()
+      expect(result!.company).toBe('google')
+    })
+
+    it('should return null when both start and end are in SF (no office match)', () => {
+      const result = classifyDestination({
+        start_latlng: [37.7749, -122.4194], // Downtown SF
+        end_latlng: [37.7849, -122.4094],   // Also SF
+      })
+      expect(result).toBeNull()
+    })
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -204,19 +262,34 @@ describe('classifyDestinationForCompanies', () => {
     expect(result).not.toBeNull()
     expect(result!.company).toBe('google')
   })
+
+  it('should match via start_latlng for reverse commutes', () => {
+    // Ride starts at Googleplex, ends in SF — should match Google via start_latlng
+    const result = classifyDestinationForCompanies(
+      {
+        start_latlng: [37.4220, -122.0841], // Googleplex
+        end_latlng: [37.7749, -122.4194],   // Downtown SF
+      },
+      ['google', 'apple'],
+    )
+    expect(result).not.toBeNull()
+    expect(result!.company).toBe('google')
+  })
 })
 
 // ---------------------------------------------------------------------------
 // Office data integrity checks
 // ---------------------------------------------------------------------------
 describe('office data integrity', () => {
-  it('should have offices for all 5 companies', () => {
+  it('should have offices for all 7 companies', () => {
     const companies = new Set(OFFICE_LOCATIONS.map((o) => o.company))
     expect(companies.has('netflix')).toBe(true)
     expect(companies.has('google')).toBe(true)
     expect(companies.has('apple')).toBe(true)
     expect(companies.has('meta')).toBe(true)
     expect(companies.has('nvidia')).toBe(true)
+    expect(companies.has('stanford')).toBe(true)
+    expect(companies.has('tesla')).toBe(true)
   })
 
   it('should have valid coordinates for all offices (Bay Area bounds)', () => {
@@ -229,8 +302,8 @@ describe('office data integrity', () => {
     }
   })
 
-  it('should use a destination radius of 200m', () => {
-    expect(DESTINATION_RADIUS_METERS).toBe(200)
+  it('should use a destination radius of 1000m', () => {
+    expect(DESTINATION_RADIUS_METERS).toBe(1000)
   })
 
   it('should have at least 25 office locations', () => {

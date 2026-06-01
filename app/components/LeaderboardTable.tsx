@@ -133,10 +133,9 @@ export function LeaderboardTable({
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
                       className={
-                        sorted ? 'leaderboard__table th--sorted' : ''
+                        sorted ? 'th--sorted' : ''
                       }
                       style={{
-                        width: header.getSize(),
                         cursor: canSort ? 'pointer' : 'default',
                       }}
                       aria-sort={

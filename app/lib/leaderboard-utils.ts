@@ -113,9 +113,8 @@ export function formatSpeed(mps: unknown, unit: UnitSystem): string {
 
 /** Format tailwind m/s as mph with sign and 1 decimal */
 export function formatTailwind(ms: number | null | undefined): string {
-  if (ms == null) return '—'
+  if (ms == null) return '0.0'
   const mph = msToMph(ms)
-  if (Math.abs(mph) < 0.2) return '—'
   const sign = mph > 0 ? '+' : ''
   return `${sign}${mph.toFixed(1)}`
 }

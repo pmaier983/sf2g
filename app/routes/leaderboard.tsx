@@ -61,7 +61,7 @@ export const Route = createFileRoute('/leaderboard')({
     dateFrom: (search.dateFrom as string) || undefined,
     dateTo: (search.dateTo as string) || undefined,
     datePreset: (search.datePreset as string) || undefined,
-    density: (search.density as 'condensed' | 'expanded') || 'expanded',
+    density: (search.density as 'condensed' | 'expanded') || 'condensed',
   }),
   // Strip defaults to keep URLs clean
   search: {
@@ -90,7 +90,7 @@ export const Route = createFileRoute('/leaderboard')({
         if (!cleaned.dateFrom) delete cleaned.dateFrom
         if (!cleaned.dateTo) delete cleaned.dateTo
         if (!cleaned.datePreset) delete cleaned.datePreset
-        if (cleaned.density === 'expanded') delete cleaned.density
+        if (cleaned.density === 'condensed') delete cleaned.density
         return next(cleaned as unknown as typeof search)
       },
     ],

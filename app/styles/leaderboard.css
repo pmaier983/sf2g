@@ -124,7 +124,7 @@
   color: var(--color-sf2g-orange);
 }
 
-.leaderboard__table th--sorted {
+.leaderboard__table .th--sorted {
   color: var(--color-sf2g-orange);
 }
 
@@ -132,6 +132,8 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border-subtle);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--color-text);
 }
 
@@ -160,6 +162,9 @@
 .leaderboard__rider-avatar {
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex-shrink: 0;
   border-radius: var(--radius-full);
   object-fit: cover;
   border: 2px solid var(--color-border);
@@ -1070,6 +1075,9 @@
   .leaderboard__rider-avatar {
     width: 24px;
     height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    flex-shrink: 0;
   }
 
   .leaderboard__rider-name {
@@ -1081,23 +1089,46 @@
   }
 }
 
-/* Ensure both tables scroll horizontally on mobile without overlap */
+/* ---- Mobile table layout — fit viewport, no horizontal scroll ---- */
 @media (max-width: 768px) {
+  /* Riders table: allow horizontal scroll if needed */
+  .leaderboard__table-wrapper {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+
+  .leaderboard__table th,
+  .leaderboard__table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Rides table: fit within viewport */
   .rides-table__wrapper {
     -webkit-overflow-scrolling: touch;
     overflow-x: auto;
   }
 
   .rides-table__wrapper table {
-    min-width: 700px;
+    width: 100%;
+    min-width: 500px;
   }
 
-  .leaderboard__table-wrapper {
-    -webkit-overflow-scrolling: touch;
+  .rides-table__wrapper th,
+  .rides-table__wrapper td {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .leaderboard__table {
-    min-width: 600px;
+  /* Prevent avatar/profile photo from being crushed */
+  .leaderboard__rider-avatar {
+    flex-shrink: 0;
+  }
+
+  .rides-table__avatar,
+  .rides-table__avatar-fallback {
+    flex-shrink: 0;
   }
 }
 

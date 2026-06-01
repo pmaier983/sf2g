@@ -46,7 +46,7 @@ export function TinyPie({
   return (
     <span
       className="tiny-pie"
-      title={`${pct.toFixed(0)}% SF2G ${label}: ${formattedSf2g} of ${formattedTotal}`}
+      title={`${pct.toFixed(0)}% SF2G ${label}: ${formattedSf2g} of ${formattedTotal} (active SF2G years only)`}
     >
       <svg
         width={size}
