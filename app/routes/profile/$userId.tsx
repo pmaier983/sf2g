@@ -6,6 +6,7 @@ import { disconnectStrava } from '../../server/auth'
 import { currentUserQueryOptions } from '../../queries/user'
 import { RideFrequencyChart } from '../../components/RideFrequencyChart'
 import { ProfileRideStats } from '../../components/ProfileRideStats'
+import { ProfileFunStats } from '../../components/ProfileFunStats'
 import { ProfileRidesTable } from '../../components/ProfileRidesTable'
 import type { User } from '../../lib/database.types'
 import { useState, useEffect } from 'react'
@@ -236,6 +237,25 @@ function ProfilePage() {
             </div>
           ) : (
             <ProfileRideStats rides={rides ?? []} />
+          )}
+        </div>
+
+        {/* Fun Stats & Insights */}
+        <div className="glass-card" style={{ padding: 'var(--space-5)', marginTop: 'var(--space-5)' }}>
+          <h2 style={{
+            fontSize: 'var(--text-lg)',
+            fontWeight: 'var(--font-bold)',
+            marginBottom: 'var(--space-4)',
+            color: 'var(--color-text)',
+          }}>
+            Fun Stats & Insights
+          </h2>
+          {ridesLoading ? (
+            <div className="loading-state">
+              <div className="loading-state__spinner" />
+            </div>
+          ) : (
+            <ProfileFunStats rides={rides ?? []} />
           )}
         </div>
 

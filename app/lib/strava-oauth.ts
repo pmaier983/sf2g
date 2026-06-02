@@ -66,7 +66,7 @@ export function getAuthorizationUrl(): string {
     redirect_uri: `${appUrl}/auth/callback`,
     response_type: 'code',
     scope: STRAVA_SCOPES,
-    approval_prompt: 'auto',
+    approval_prompt: 'force', // Always show consent screen so users can check all boxes
     state: crypto.randomUUID(), // CSRF protection
   })
 
@@ -177,7 +177,14 @@ export async function ensureValidToken(userId: string): Promise<string> {
     .single()
 
   if (error || !user) {
-    throw new Error(`User not found: ${userId}`)
+    // Log the actual Supabase error for debugging — the generic "User not found"
+    // message was masking real issues (e.g., subrequest limits, connection errors)
+    console.error(`[strava-oauth] ensureValidToken failed for ${userId}:`, {
+      error: error?.message ?? 'no error object',
+      errorCode: error?.code,
+      hasUser: !!user,
+    })
+    throw new Error(`User not found: ${userId}${error ? ` (${error.message})` : ''}`)
   }
 
   // Check if the token is still valid (with 5-minute buffer)

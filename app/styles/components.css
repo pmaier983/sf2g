@@ -604,6 +604,24 @@
   animation: spin 0.8s linear infinite;
 }
 
+.sync-status__hint {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.sync-status__hint-link {
+  color: var(--color-sf2g-orange);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sync-status__hint-link:hover {
+  color: var(--color-sf2g-orange-hover);
+}
+
 /* ----- Ride Card ----- */
 .ride-card {
   display: flex;
@@ -1278,6 +1296,243 @@
 
   .ride-card__stats {
     gap: var(--space-2);
+  }
+}
+
+/* ============================================================
+   Profile Fun Stats — trend chart, comparisons, PRs, streaks
+   ============================================================ */
+
+.fun-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fun-stats__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fun-stats__section-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+.fun-stats__chart {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+/* ── Fun comparison cards ── */
+.fun-stats__comparisons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.fun-stats__comparison-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-base);
+}
+
+.fun-stats__comparison-card:hover {
+  border-color: var(--color-sf2g-orange);
+}
+
+.fun-stats__comparison-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-1);
+}
+
+.fun-stats__comparison-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-sf2g-orange);
+  line-height: 1.2;
+}
+
+.fun-stats__comparison-label {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+  margin-top: 2px;
+}
+
+.fun-stats__comparison-detail {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ── Personal Records ── */
+.fun-stats__prs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.fun-stats__pr-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.fun-stats__pr-card:hover {
+  border-color: var(--color-sf2g-orange);
+  box-shadow: var(--shadow-sm);
+}
+
+.fun-stats__pr-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__pr-value {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-sf2g-orange);
+  margin: 2px 0;
+}
+
+.fun-stats__pr-ride {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Streaks & Patterns ── */
+.fun-stats__patterns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.fun-stats__pattern-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.fun-stats__pattern-stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.fun-stats__pattern-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-sf2g-orange);
+  line-height: 1.2;
+}
+
+.fun-stats__pattern-unit {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__pattern-label {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+  margin-top: var(--space-1);
+}
+
+.fun-stats__pattern-detail {
+  font-size: var(--text-xs);
+  color: var(--color-success);
+  margin-top: 2px;
+  font-weight: var(--font-medium);
+}
+
+/* ── Day-of-week heatmap ── */
+.fun-stats__day-heatmap {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  height: 120px;
+}
+
+.fun-stats__day-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.fun-stats__day-bar {
+  width: 100%;
+  max-width: 32px;
+  background: var(--color-sf2g-orange);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height 0.3s ease;
+}
+
+.fun-stats__day-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__day-count {
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  font-weight: var(--font-bold);
+}
+
+/* ── Fun Stats responsive ── */
+@media (max-width: 640px) {
+  .fun-stats__comparisons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fun-stats__prs {
+    grid-template-columns: 1fr;
+  }
+
+  .fun-stats__patterns {
+    grid-template-columns: 1fr;
+  }
+
+  .fun-stats__comparison-value,
+  .fun-stats__pattern-value {
+    font-size: var(--text-xl);
+  }
+
+  .fun-stats__day-heatmap {
+    height: 100px;
   }
 }
 

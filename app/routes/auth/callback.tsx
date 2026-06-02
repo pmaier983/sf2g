@@ -105,15 +105,31 @@ function CallbackPage() {
   }, [])
 
   if (error) {
+    const isInsufficientScopes = error.startsWith('INSUFFICIENT_SCOPES:')
+    const cleanError = error.replace('INSUFFICIENT_SCOPES:', '')
+
     return (
       <div className="container" style={{ paddingTop: 'var(--space-8)' }}>
         <div className="error-state">
-          <div className="error-state__icon">⚠️</div>
-          <h2 className="error-state__title">Authentication Failed</h2>
-          <p className="error-state__message">{error}</p>
+          <div className="error-state__icon">{isInsufficientScopes ? '🔒' : '⚠️'}</div>
+          <h2 className="error-state__title">
+            {isInsufficientScopes ? 'Missing Permissions' : 'Authentication Failed'}
+          </h2>
+          <p className="error-state__message">
+            {isInsufficientScopes ? (
+              <>
+                SF2G needs <strong>all permission checkboxes checked</strong> on
+                the Strava authorization page to sync your rides. Please try
+                again and make sure every checkbox is checked — including
+                &quot;View data about your private activities&quot;.
+              </>
+            ) : (
+              error
+            )}
+          </p>
           <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
             <a href="/auth/login" className="btn btn--primary">
-              Try Again
+              {isInsufficientScopes ? 'Try Again with All Permissions' : 'Try Again'}
             </a>
             <a href="/" className="btn btn--secondary">
               Go Home

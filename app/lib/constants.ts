@@ -318,6 +318,24 @@ export const STRAVA_RATE_LIMIT = {
 export const STRAVA_SCOPES = 'read,activity:read_all'
 
 /**
+ * Individual scopes that MUST be granted for the app to function.
+ * If a user unchecks any checkbox on Strava's OAuth consent screen,
+ * the API silently returns incomplete data (e.g. no private rides).
+ */
+export const STRAVA_REQUIRED_SCOPES = ['read', 'activity:read_all'] as const
+
+/**
+ * Check whether the granted scopes string contains all required scopes.
+ * Strava returns scopes as a comma-separated string like "read,activity:read_all".
+ *
+ * @returns Array of missing scope names, or empty array if all granted.
+ */
+export function getMissingScopes(grantedScopes: string): string[] {
+  const granted = new Set(grantedScopes.split(',').map((s) => s.trim()))
+  return STRAVA_REQUIRED_SCOPES.filter((scope) => !granted.has(scope))
+}
+
+/**
  * Open-Meteo Free Tier Rate Limits.
  * See: https://open-meteo.com/en/terms
  *

@@ -148,6 +148,23 @@ export function SyncStatus() {
               : 'Never'}
           </span>
         </span>
+        {isSyncing ? (
+          <span className="sync-status__hint">
+            ⏳ Syncing your rides from Strava… If no rides appear, make sure you
+            checked all permission boxes when connecting Strava.
+          </span>
+        ) : (
+          <span className="sync-status__hint">
+            💡 Not seeing your rides? You must check <strong>all permission
+            checkboxes</strong> when connecting Strava — including private activities.{' '}
+            <a
+              href="/auth/login"
+              className="sync-status__hint-link"
+            >
+              Reconnect Strava
+            </a>
+          </span>
+        )}
       </div>
       <button
         className="btn btn--primary btn--sm"

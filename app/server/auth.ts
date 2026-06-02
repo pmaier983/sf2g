@@ -19,6 +19,7 @@ import {
   setSessionData,
   clearSessionData,
 } from '../lib/session'
+import { getMissingScopes } from '../lib/constants'
 import type { User } from '../lib/database.types'
 
 // ---------------------------------------------------------------------------
@@ -41,7 +42,23 @@ export const handleStravaCallback = createServerFn({ method: 'GET' })
     // 1. Exchange authorization code for tokens
     const tokenData = await exchangeCode(data.code)
 
-    // 2. Upsert user in database (service role client bypasses RLS)
+    // 2. Validate that the user granted ALL required scopes
+    //    Strava lets users uncheck permissions on the consent screen.
+    //    If they uncheck "View data about your private activities", the API
+    //    silently returns only public rides, causing empty syncs.
+    const missingScopes = getMissingScopes(data.scope)
+    if (missingScopes.length > 0) {
+      console.error(
+        `[auth] User denied required scopes: ${missingScopes.join(', ')}. Granted: ${data.scope}`,
+      )
+      throw new Error(
+        `INSUFFICIENT_SCOPES:SF2G needs all permissions checked on the Strava authorization page to work correctly. ` +
+        `Please try again and make sure all checkboxes are checked. ` +
+        `(Missing: ${missingScopes.join(', ')})`,
+      )
+    }
+
+    // 3. Upsert user in database (service role client bypasses RLS)
     const supabase = createServiceClient()
     const { data: user, error } = await supabase
       .from('users')
