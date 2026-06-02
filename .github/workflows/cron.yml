@@ -2,10 +2,11 @@ name: Cron — Sync All Users
 
 on:
   schedule:
-    # Run every 6 hours: midnight, 6am, noon, 6pm UTC
-    # This gives 4 runs/day × 85 Strava API calls/run = 340 total
-    # Well within Strava's 2,000/day limit with ~80% headroom for manual syncs
-    - cron: '0 */6 * * *'
+    # Run every hour to cycle through all users within a day.
+    # Each run syncs up to 6 users (Cloudflare free plan subrequest limit).
+    # 24 runs/day × 6 users = 144 users/day capacity.
+    # Strava budget: 24 runs × ~12 API calls = ~288/day (well within 2,000 limit).
+    - cron: '0 * * * *'
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
