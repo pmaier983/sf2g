@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { handleStravaCallback } from '../../server/auth'
+import { triggerSync } from '../../server/trigger-sync'
 import { toast } from '../../components/Toast'
 
 export const Route = createFileRoute('/auth/callback')({
@@ -47,7 +48,6 @@ function CallbackPage() {
         if (!cancelled) {
           setPhase('syncing')
           try {
-            const { triggerSync } = await import('../../server/sync')
             const syncResult = await triggerSync()
 
             // Surface sync results via toasts

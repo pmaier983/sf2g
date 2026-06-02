@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { triggerSync } from '../server/sync'
+import { triggerSync } from '../server/trigger-sync'
 import { currentUserQueryOptions } from '../queries/user'
 import { toast } from './Toast'
 import { trackError } from '../lib/analytics'

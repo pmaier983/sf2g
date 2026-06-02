@@ -5,10 +5,16 @@
  * (compatible with TanStack Start's server runtime).
  * Session data is encoded as base64url JSON in an HTTP-only cookie.
  *
+ * The cookie functions are dynamically imported to avoid triggering
+ * TanStack Start's import-protection plugin when this module is
+ * transitively reachable from client code (e.g., DevToolsPanel →
+ * cron.ts → sync.ts → session.ts). The functions are only ever
+ * called inside createServerFn handlers, so the dynamic import
+ * always resolves at runtime.
+ *
  * NO `Buffer` usage — uses `btoa`/`atob` with base64url conversion
  * for Cloudflare Workers compatibility.
  */
-import { getCookie, setCookie, deleteCookie } from '@tanstack/react-start/server'
 
 const SESSION_COOKIE = 'sf2g_session'
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days
@@ -53,6 +59,25 @@ function fromBase64Url(base64url: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Lazy cookie helpers — dynamic import avoids import-protection errors
+// ---------------------------------------------------------------------------
+
+async function _getCookie(name: string): Promise<string | undefined> {
+  const mod = await import('@tanstack/react-start/server')
+  return mod.getCookie(name)
+}
+
+async function _setCookie(name: string, value: string, options: Record<string, unknown>): Promise<void> {
+  const mod = await import('@tanstack/react-start/server')
+  mod.setCookie(name, value, options)
+}
+
+async function _deleteCookie(name: string, options: Record<string, unknown>): Promise<void> {
+  const mod = await import('@tanstack/react-start/server')
+  mod.deleteCookie(name, options)
+}
+
+// ---------------------------------------------------------------------------
 // Session API
 // ---------------------------------------------------------------------------
 
@@ -60,8 +85,8 @@ function fromBase64Url(base64url: string): string {
  * Read the current session from the cookie.
  * Returns `null` if no session cookie exists or if it's invalid.
  */
-export function getSessionData(): SessionData | null {
-  const raw = getCookie(SESSION_COOKIE)
+export async function getSessionData(): Promise<SessionData | null> {
+  const raw = await _getCookie(SESSION_COOKIE)
   if (!raw) return null
 
   try {
@@ -83,11 +108,11 @@ export function getSessionData(): SessionData | null {
  * Set the session cookie with the given data.
  * Cookie is HTTP-only, secure in production, and lasts 30 days.
  */
-export function setSessionData(data: SessionData): void {
+export async function setSessionData(data: SessionData): Promise<void> {
   const json = JSON.stringify(data)
   const encoded = toBase64Url(json)
 
-  setCookie(SESSION_COOKIE, encoded, {
+  await _setCookie(SESSION_COOKIE, encoded, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -99,8 +124,8 @@ export function setSessionData(data: SessionData): void {
 /**
  * Clear the session cookie (logout).
  */
-export function clearSessionData(): void {
-  deleteCookie(SESSION_COOKIE, {
+export async function clearSessionData(): Promise<void> {
+  await _deleteCookie(SESSION_COOKIE, {
     path: '/',
   })
 }

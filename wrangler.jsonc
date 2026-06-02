@@ -7,9 +7,8 @@
   "vars": {
     "NODE_ENV": "production"
   }
-  // Cron jobs (reclassification + wind enrichment) run via:
-  // 1. DevTools panel "Run All Cron Jobs" button
-  // 2. triggerCronJobs server function (app/server/cron.ts)
-  // TODO: Add external cron trigger once TanStack Start supports API routes
-  // or Cloudflare Workers scheduled events.
+  // Cron jobs (sync all users + reclassification + wind enrichment) run via:
+  // 1. GitHub Actions → POST /api/cron (every 6 hours, auth'd with CRON_SECRET)
+  // 2. DevTools panel "Run All Cron Jobs" button
+  // Note: CRON_SECRET must be set as a Cloudflare Pages secret.
 }

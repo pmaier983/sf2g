@@ -271,7 +271,7 @@ export async function enrichMissingWindData(
  */
 export const triggerWindEnrichment = createServerFn({ method: 'POST' }).handler(
   async (): Promise<WindEnrichmentResult> => {
-    const session = getSessionData()
+    const session = await getSessionData()
     if (!session) {
       throw new Error('Not authenticated')
     }

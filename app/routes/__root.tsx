@@ -5,10 +5,12 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { NavBar } from '../components/NavBar'
 import { Footer } from '../components/Footer'
-import { DevToolsPanel } from '../components/DevToolsPanel'
+const LazyDevToolsPanel = lazy(() =>
+  import('../components/DevToolsPanel').then((m) => ({ default: m.DevToolsPanel })),
+)
 import { ToastProvider } from '../components/Toast'
 import { initAnalytics, setupGlobalErrorHandlers, trackError } from '../lib/analytics'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -127,7 +129,11 @@ function RootComponent() {
                 </ErrorBoundary>
               </main>
               <Footer />
-              {showDevTools && <DevToolsPanel />}
+              {showDevTools && (
+                <Suspense fallback={null}>
+                  <LazyDevToolsPanel />
+                </Suspense>
+              )}
             </div>
         </QueryClientProvider>
         <Scripts />

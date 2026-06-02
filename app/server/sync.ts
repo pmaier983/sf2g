@@ -4,13 +4,12 @@
  * - `triggerSync` — server function that triggers a sync for the current user
  * - `performSync(userId)` — core sync logic: fetch, classify, upsert, refresh leaderboard
  */
-import { createServerFn } from '@tanstack/react-start'
 import { createServiceClient } from '../lib/supabase'
 import { ensureValidToken } from '../lib/strava-oauth'
 import { fetchAthleteActivities, type StravaActivitySummary } from '../lib/strava'
 import { classifyRoute } from '../lib/route-classifier'
 import { classifyDestination } from '../lib/destination-classifier'
-import { getSessionData, clearSessionData } from '../lib/session'
+import { clearSessionData } from '../lib/session'
 import type { RideInsert, UserUpdate, JsonValue } from '../lib/database.types'
 import { enrichMissingWindData } from './wind-enrichment'
 
@@ -114,7 +113,7 @@ export async function performSync(userId: string): Promise<SyncResult> {
       message.includes('Authorization Error')
     ) {
       // Clear the session so the user has to re-login
-      clearSessionData()
+      await clearSessionData()
       throw new Error(
         'REAUTH_REQUIRED:Your Strava connection has expired. Please log in again.',
       )
@@ -299,19 +298,8 @@ export async function performSync(userId: string): Promise<SyncResult> {
 }
 
 // ---------------------------------------------------------------------------
-// Server Function
+// NOTE: The client-callable `triggerSync` server function lives in
+// trigger-sync.ts to keep this module free of createServerFn exports.
+// That separation lets route components import triggerSync without
+// pulling in this file's server-only transitive dependencies.
 // ---------------------------------------------------------------------------
-
-/**
- * Trigger a ride sync for the currently authenticated user.
- */
-export const triggerSync = createServerFn({ method: 'POST' }).handler(
-  async (): Promise<SyncResult> => {
-    const session = getSessionData()
-    if (!session) {
-      throw new Error('Not authenticated')
-    }
-
-    return performSync(session.userId)
-  },
-)

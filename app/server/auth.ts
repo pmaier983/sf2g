@@ -71,7 +71,7 @@ export const handleStravaCallback = createServerFn({ method: 'GET' })
     }
 
     // 3. Set session cookie
-    setSessionData({ userId: user.id, stravaId: user.strava_id })
+    await setSessionData({ userId: user.id, stravaId: user.strava_id })
 
     // 4. Return redirect URL
     return { redirectTo: '/leaderboard' as const }
@@ -82,7 +82,7 @@ export const handleStravaCallback = createServerFn({ method: 'GET' })
 // ---------------------------------------------------------------------------
 export const getCurrentUser = createServerFn({ method: 'GET' }).handler(
   async (): Promise<User | null> => {
-    const session = getSessionData()
+    const session = await getSessionData()
     if (!session) return null
 
     const supabase = createAnonClient()
@@ -102,7 +102,7 @@ export const getCurrentUser = createServerFn({ method: 'GET' }).handler(
 // logout — clears session cookie and returns redirect
 // ---------------------------------------------------------------------------
 export const logout = createServerFn({ method: 'POST' }).handler(async () => {
-  clearSessionData()
+  await clearSessionData()
   return { redirectTo: '/' as const }
 })
 
@@ -112,7 +112,7 @@ export const logout = createServerFn({ method: 'POST' }).handler(async () => {
 export const disconnectStrava = createServerFn({ method: 'POST' }).handler(
   async () => {
     // 1. Verify the user is authenticated
-    const session = getSessionData()
+    const session = await getSessionData()
     if (!session) {
       throw new Error('Not authenticated')
     }
@@ -150,7 +150,7 @@ export const disconnectStrava = createServerFn({ method: 'POST' }).handler(
     }
 
     // 5. Clear session cookie
-    clearSessionData()
+    await clearSessionData()
 
     return { redirectTo: '/' as const }
   },
