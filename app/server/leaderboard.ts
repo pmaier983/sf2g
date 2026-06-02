@@ -199,6 +199,34 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     if (!rides || rides.length === 0) return []
 
+    // Fetch ALL rides (including unclassified) in the date range to compute
+    // true total_distance and total_elevation for the % dist/elev calculation.
+    // The main query above filters to route_category IS NOT NULL, so without
+    // this second query, the "total" only includes classified rides, inflating
+    // the SF2G share percentage.
+    let allRidesQuery = supabase
+      .from('rides')
+      .select('user_id, distance_meters, elevation_gain_meters')
+    if (dateFrom) allRidesQuery = allRidesQuery.gte('ride_date', dateFrom)
+    if (dateTo) allRidesQuery = allRidesQuery.lte('ride_date', dateTo)
+
+    const { data: allRides, error: allRidesError } = await allRidesQuery
+    if (allRidesError) {
+      console.error('[leaderboard] Failed to fetch all rides for totals:', allRidesError)
+      // Non-fatal: fall back to classified-only totals below
+    }
+
+    // Build per-user total distance/elevation from ALL rides in the date range
+    const userTotals = new Map<string, { distance: number; elevation: number }>()
+    if (allRides) {
+      for (const ride of allRides) {
+        const existing = userTotals.get(ride.user_id) ?? { distance: 0, elevation: 0 }
+        existing.distance += ride.distance_meters ?? 0
+        existing.elevation += ride.elevation_gain_meters ?? 0
+        userTotals.set(ride.user_id, existing)
+      }
+    }
+
     // Aggregate per user
     type UserAgg = {
       sf2g_total: number
@@ -318,6 +346,9 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
     const entries: LeaderboardEntry[] = []
     for (const [userId, agg] of userMap) {
       const user = userInfo.get(userId)
+      // Use ALL-rides totals for % dist/elev (includes unclassified rides);
+      // fall back to classified-only totals if the second query failed
+      const allTotals = userTotals.get(userId)
       entries.push({
         user_id: userId,
         display_name: user?.display_name ?? null,
@@ -336,9 +367,9 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
         avg_speed_mps: agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0,
         sf2g_distance_meters: agg.sf2g_distance,
         sf2g_elevation_meters: agg.sf2g_elevation,
-        // Date/route/company filters already scope the rides — use full totals
-        total_distance_meters: agg.total_distance,
-        total_elevation_meters: agg.total_elevation,
+        // Use totals from ALL rides (including unclassified) for accurate % dist/elev
+        total_distance_meters: allTotals?.distance ?? agg.total_distance,
+        total_elevation_meters: allTotals?.elevation ?? agg.total_elevation,
         active_years: agg.years.size,
         last_ride_date: agg.lastRideDate,
         first_ride_date: agg.firstRideDate,
