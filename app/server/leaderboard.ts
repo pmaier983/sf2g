@@ -500,6 +500,34 @@ export const fetchRiderGrowthData = createServerFn({ method: 'GET' }).handler(
 )
 
 // ---------------------------------------------------------------------------
+// DailyRideStat — lightweight per-ride record for daily-granularity charts
+// ---------------------------------------------------------------------------
+export interface DailyRideStat {
+  user_id: string
+  ride_date: string
+  route_category: RouteCategory | null
+}
+
+// ---------------------------------------------------------------------------
+// fetchDailyGrowthData — per-ride date data for fine-grained chart rendering
+// ---------------------------------------------------------------------------
+export const fetchDailyGrowthData = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<DailyRideStat[]> => {
+    const supabase = createAnonClient()
+    const { data, error } = await supabase
+      .from('rides')
+      .select('user_id, ride_date, route_category')
+      .not('route_category', 'is', null)
+      .order('ride_date', { ascending: true })
+    if (error) {
+      console.error('[leaderboard] Failed to fetch daily growth data:', error)
+      throw new Error(`Failed to fetch daily growth data: ${error.message}`)
+    }
+    return (data ?? []) as DailyRideStat[]
+  }
+)
+
+// ---------------------------------------------------------------------------
 // fetchRouteSpeedLeaderboard — speed rankings per route category
 // ---------------------------------------------------------------------------
 export const fetchRouteSpeedLeaderboard = createServerFn({ method: 'GET' })

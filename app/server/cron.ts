@@ -197,6 +197,14 @@ async function syncAllUsers(): Promise<SyncAllUsersResult> {
       // Even failed syncs cost API calls (at least the token refresh attempt)
       estimatedApiCalls += 1
 
+      // Update last_sync_at even on failure so this user doesn't permanently
+      // block the front of the queue. They'll rotate back naturally.
+      try {
+        await supabase.from('users').update({ last_sync_at: new Date().toISOString() }).eq('id', user.id)
+      } catch {
+        // Best-effort — don't fail the whole cron if this update fails
+      }
+
       // Don't log full stack for expected errors (expired tokens, etc.)
       if (errorMsg.includes('REAUTH_REQUIRED') || errorMsg.includes('token refresh failed')) {
         console.warn(`[cron-sync] ⚠️ ${user.display_name ?? user.id}: Needs re-auth (skipping)`)

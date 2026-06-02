@@ -7,6 +7,7 @@ import {
   fetchFilteredLeaderboard,
   fetchPprDawnRiderIds,
   fetchRiderGrowthData,
+  fetchDailyGrowthData,
   fetchRouteSpeedLeaderboard,
   fetchCommunityBreakdown,
   fetchCompanyRiderIds,
@@ -73,6 +74,15 @@ export function riderGrowthQueryOptions() {
   return queryOptions({
     queryKey: ['rider-growth'] as const,
     queryFn: () => fetchRiderGrowthData(),
+    staleTime: 300_000,
+    gcTime: 1_800_000,
+  })
+}
+
+export function dailyGrowthQueryOptions() {
+  return queryOptions({
+    queryKey: ['daily-growth'] as const,
+    queryFn: () => fetchDailyGrowthData(),
     staleTime: 300_000,
     gcTime: 1_800_000,
   })

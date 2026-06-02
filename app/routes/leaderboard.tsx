@@ -6,6 +6,7 @@ import {
   filteredLeaderboardQueryOptions,
   pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
+  dailyGrowthQueryOptions,
   companyRiderIdsQueryOptions,
 } from '../queries/leaderboard'
 import { ridesLeaderboardQueryOptions } from '../queries/rides'
@@ -161,6 +162,7 @@ function LeaderboardPage() {
   const { data: pprDawnRiderIds } = useQuery(pprDawnRiderIdsQueryOptions())
   const { data: companyRiderIds } = useQuery(companyRiderIdsQueryOptions(company))
   const { data: growthData } = useQuery(riderGrowthQueryOptions())
+  const { data: dailyData } = useQuery(dailyGrowthQueryOptions())
 
   const ridesQuery = useQuery(
     ridesLeaderboardQueryOptions({
@@ -377,6 +379,7 @@ function LeaderboardPage() {
             {growthData && growthData.length > 0 ? (
               <GrowthChart
                 growthData={growthData}
+                dailyData={dailyData}
                 visibleRiderIds={selectedRiderArray}
                 riderColorMap={riderColorMap}
                 riderNameMap={riderNameMap}
