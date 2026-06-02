@@ -23,21 +23,55 @@ jobs:
         run: |
           echo "🕐 Triggering cron jobs at ${APP_URL}..."
 
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${CRON_SECRET}" \
-            "${APP_URL}/api/cron")
+          # Retry up to 3 times with exponential backoff.
+          # Cloudflare may occasionally challenge requests from CI IPs.
+          MAX_RETRIES=3
+          RETRY_DELAY=5
 
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -n -1)
+          for ATTEMPT in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt ${ATTEMPT}/${MAX_RETRIES}..."
 
-          echo "HTTP Status: ${HTTP_CODE}"
-          echo "Response: ${BODY}"
+            RESPONSE=$(curl -s -w "\n%{http_code}" \
+              --max-time 120 \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              -H "User-Agent: SF2G-CronBot/1.0 (GitHub Actions)" \
+              -H "Accept: application/json" \
+              "${APP_URL}/api/cron")
 
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-            echo "✅ Cron jobs triggered successfully"
-          else
-            echo "❌ Cron jobs failed with HTTP ${HTTP_CODE}"
-            exit 1
-          fi
+            HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+            BODY=$(echo "$RESPONSE" | head -n -1)
+
+            echo "HTTP Status: ${HTTP_CODE}"
+
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              echo "Response: ${BODY}"
+              echo "✅ Cron jobs triggered successfully"
+              exit 0
+            fi
+
+            # If we got a Cloudflare challenge (403 with HTML), log it clearly
+            if [ "$HTTP_CODE" = "403" ] && echo "$BODY" | grep -q "challenge-platform"; then
+              echo "⚠️ Cloudflare managed challenge detected (attempt ${ATTEMPT})"
+              echo "This usually means Cloudflare is blocking CI traffic."
+              echo "Fix: Add a WAF Skip rule for /api/cron in Cloudflare Dashboard."
+            else
+              echo "Response: ${BODY}"
+              echo "⚠️ Request failed with HTTP ${HTTP_CODE} (attempt ${ATTEMPT})"
+            fi
+
+            if [ "$ATTEMPT" -lt "$MAX_RETRIES" ]; then
+              echo "Retrying in ${RETRY_DELAY}s..."
+              sleep $RETRY_DELAY
+              RETRY_DELAY=$((RETRY_DELAY * 2))
+            fi
+          done
+
+          echo "❌ Cron jobs failed after ${MAX_RETRIES} attempts"
+          echo ""
+          echo "If Cloudflare is blocking requests, add a WAF Custom Rule:"
+          echo "  1. Go to Cloudflare Dashboard → Security → WAF → Custom Rules"
+          echo "  2. Create rule: (http.request.uri.path eq \"/api/cron\")"
+          echo "  3. Action: Skip → All remaining custom rules"
+          exit 1
