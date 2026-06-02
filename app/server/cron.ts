@@ -101,6 +101,24 @@ async function syncAllUsers(): Promise<SyncAllUsersResult> {
   let estimatedApiCalls = 0
 
   for (const user of users) {
+    // Check user-per-run budget (Cloudflare subrequest limit protection)
+    // Users are ordered by last_sync_at, so least-recently-synced get priority.
+    // Remaining users will be picked up in the next cron run.
+    if (synced + failed >= CRON_SYNC_BUDGET.MAX_USERS_PER_RUN) {
+      console.warn(`[cron-sync] User budget exhausted (${synced + failed}/${CRON_SYNC_BUDGET.MAX_USERS_PER_RUN} users processed), stopping with ${users.length - results.length} users remaining`)
+      for (let i = results.length; i < users.length; i++) {
+        results.push({
+          userId: users[i].id,
+          displayName: users[i].display_name,
+          result: null,
+          error: null,
+          skipped: true,
+        })
+        skipped++
+      }
+      break
+    }
+
     // Check time budget
     const elapsed = Date.now() - startTime
     if (elapsed >= CRON_SYNC_BUDGET.MAX_TOTAL_DURATION_MS) {
@@ -143,7 +161,13 @@ async function syncAllUsers(): Promise<SyncAllUsersResult> {
     console.log(`[cron-sync] Syncing user ${user.display_name ?? user.id} (${results.length + 1}/${users.length})`)
 
     try {
-      const syncResult = await performSync(user.id)
+      const syncResult = await performSync(user.id, {
+        // Skip per-user wind enrichment and leaderboard refresh in cron mode.
+        // These run as separate cron steps (reclassify + wind), which is more
+        // efficient and avoids blowing through Cloudflare's subrequest limit.
+        skipWindEnrichment: true,
+        skipLeaderboardRefresh: true,
+      })
 
       results.push({
         userId: user.id,
@@ -230,15 +254,35 @@ export async function runCronJobs(): Promise<CronResult> {
   const syncAllResult = await syncAllUsers()
   console.log(`[cron] Sync complete: ${syncAllResult.synced} users synced, ${syncAllResult.failed} failed in ${Math.round(syncAllResult.durationMs / 1000)}s`)
 
-  // 2. Reclassify all rides
-  console.log('[cron] Running reclassification...')
-  const reclassifyResult = await performReclassification()
-  console.log(`[cron] Reclassification complete: ${reclassifyResult.updated} updated in ${reclassifyResult.durationMs}ms`)
+  // 2. Reclassify all rides (may fail on free plan if subrequests exhausted)
+  let reclassifyResult: ReclassifyResult
+  try {
+    console.log('[cron] Running reclassification...')
+    reclassifyResult = await performReclassification()
+    console.log(`[cron] Reclassification complete: ${reclassifyResult.updated} updated in ${reclassifyResult.durationMs}ms`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn(`[cron] Reclassification failed (may be subrequest limit): ${msg}`)
+    reclassifyResult = {
+      totalRides: 0, updated: 0, routeChanges: 0, destinationChanges: 0,
+      errors: [`Skipped: ${msg}`], breakdown: {}, durationMs: 0,
+    }
+  }
 
-  // 3. Enrich missing wind data (budget-limited for Open-Meteo rate limits)
-  console.log('[cron] Running wind enrichment...')
-  const windResult = await enrichMissingWindData()
-  console.log(`[cron] Wind enrichment complete: ${windResult.processed} processed in ${windResult.durationMs}ms`)
+  // 3. Enrich missing wind data (may fail on free plan if subrequests exhausted)
+  let windResult: WindEnrichmentResult
+  try {
+    console.log('[cron] Running wind enrichment...')
+    windResult = await enrichMissingWindData()
+    console.log(`[cron] Wind enrichment complete: ${windResult.processed} processed in ${windResult.durationMs}ms`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn(`[cron] Wind enrichment failed (may be subrequest limit): ${msg}`)
+    windResult = {
+      processed: 0, totalMissing: 0,
+      errors: [`Skipped: ${msg}`], durationMs: 0,
+    }
+  }
 
   const totalDurationMs = Date.now() - startTime
   console.log(`[cron] All cron jobs complete in ${Math.round(totalDurationMs / 1000)}s`)

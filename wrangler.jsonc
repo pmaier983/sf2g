@@ -6,6 +6,13 @@
   "main": "@tanstack/react-start/server-entry",
   "vars": {
     "NODE_ENV": "production"
+  },
+  "limits": {
+    // Raise subrequest cap for cron jobs (each Supabase/Strava call = 1 subrequest).
+    // Free plan default is 50; paid plan default is 10,000.
+    // The cron pipeline is optimized to stay within 50, but this gives headroom
+    // on paid plans.
+    "subrequests": 200
   }
   // Cron jobs (sync all users + reclassification + wind enrichment) run via:
   // 1. GitHub Actions → POST /api/cron (every 6 hours, auth'd with CRON_SECRET)

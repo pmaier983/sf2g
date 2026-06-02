@@ -349,10 +349,25 @@ export const OPEN_METEO_RATE_LIMIT = {
  *
  * Each user's incremental sync typically uses 1-2 API calls (1 page).
  * With 85 requests budgeted, we can sync ~40-80 users per cron run.
+ *
+ * Cloudflare Workers subrequest limit:
+ * - Free plan: 50 subrequests per invocation
+ * - Paid plan: 10,000 (wrangler.jsonc sets 200 as configured limit)
+ * - Each Supabase query or Strava fetch = 1 subrequest
+ * - Per-user sync: ~5-7 subrequests (token check, user fetch, Strava page,
+ *   ride upsert, user metadata update)
+ * - MAX_USERS_PER_RUN limits users to stay within subrequest budget
  */
 export const CRON_SYNC_BUDGET = {
   /** Max Strava API calls the cron job should use per run */
   MAX_STRAVA_REQUESTS: 85,
+  /**
+   * Max users to sync per cron invocation.
+   * Each user costs ~5-7 Cloudflare subrequests. With the free plan's 50-subrequest
+   * limit, we need to leave ~10 subrequests for the reclassify + wind steps.
+   * Set to 6 for free plan safety; increase if on paid plan.
+   */
+  MAX_USERS_PER_RUN: 6,
   /** Delay between syncing each user (ms) — spreads load across the 15min window */
   DELAY_BETWEEN_USERS_MS: 2_000,
   /** Max time allowed for the entire sync-all-users operation (ms) */

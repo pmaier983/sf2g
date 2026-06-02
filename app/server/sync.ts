@@ -23,6 +23,14 @@ export interface SyncResult {
   errors: string[]
 }
 
+/** Options to control sync behavior (used by cron to reduce subrequests) */
+export interface SyncOptions {
+  /** Skip per-user wind enrichment (cron runs it as a separate step) */
+  skipWindEnrichment?: boolean
+  /** Skip per-user leaderboard refresh (cron's reclassify step handles it) */
+  skipLeaderboardRefresh?: boolean
+}
+
 // ---------------------------------------------------------------------------
 // Core Sync Logic
 // ---------------------------------------------------------------------------
@@ -92,7 +100,7 @@ function activityToRideInsert(
  * 6. Update user sync metadata
  * 7. Refresh leaderboard materialized view
  */
-export async function performSync(userId: string): Promise<SyncResult> {
+export async function performSync(userId: string, options?: SyncOptions): Promise<SyncResult> {
   const supabase = createServiceClient()
   const errors: string[] = []
 
@@ -262,25 +270,29 @@ export async function performSync(userId: string): Promise<SyncResult> {
 
   await supabase.from('users').update(updateFields).eq('id', userId)
 
-  // 6. Refresh leaderboard materialized view
-  try {
-    await supabase.rpc('refresh_leaderboard')
-  } catch (err) {
-    errors.push(
-      `Failed to refresh leaderboard: ${err instanceof Error ? err.message : String(err)}`,
-    )
+  // 6. Refresh leaderboard materialized view (skipped in cron — reclassify handles it)
+  if (!options?.skipLeaderboardRefresh) {
+    try {
+      await supabase.rpc('refresh_leaderboard')
+    } catch (err) {
+      errors.push(
+        `Failed to refresh leaderboard: ${err instanceof Error ? err.message : String(err)}`,
+      )
+    }
   }
 
-  // 7. Enrich wind data for newly synced rides
-  try {
-    const windResult = await enrichMissingWindData()
-    console.log(`[sync] Wind enrichment: ${windResult.processed} rides enriched`)
-    if (windResult.errors.length > 0) {
-      console.warn(`[sync] Wind enrichment errors: ${windResult.errors.join(' | ')}`)
+  // 7. Enrich wind data for newly synced rides (skipped in cron — runs as separate step)
+  if (!options?.skipWindEnrichment) {
+    try {
+      const windResult = await enrichMissingWindData()
+      console.log(`[sync] Wind enrichment: ${windResult.processed} rides enriched`)
+      if (windResult.errors.length > 0) {
+        console.warn(`[sync] Wind enrichment errors: ${windResult.errors.join(' | ')}`)
+      }
+    } catch (err) {
+      // Wind enrichment is non-critical — don't fail the sync
+      console.warn(`[sync] Wind enrichment failed (non-critical): ${err instanceof Error ? err.message : String(err)}`)
     }
-  } catch (err) {
-    // Wind enrichment is non-critical — don't fail the sync
-    console.warn(`[sync] Wind enrichment failed (non-critical): ${err instanceof Error ? err.message : String(err)}`)
   }
 
   const result: SyncResult = {
