@@ -11,6 +11,7 @@ on:
 jobs:
   trigger-cron:
     runs-on: ubuntu-latest
+    environment: prod
     timeout-minutes: 15
 
     steps:
