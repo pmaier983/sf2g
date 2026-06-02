@@ -284,8 +284,8 @@ export function DevToolsPanel() {
             <div className="dev-tools__section">
               <h4 className="dev-tools__section-title">🕐 Cron Jobs</h4>
               <p className="dev-tools__section-desc">
-                Run <strong>all</strong> maintenance tasks: reclassify rides + enrich wind data.
-                Same as what the external cron endpoint (/api/cron) runs.
+                Run <strong>all</strong> maintenance tasks: sync all users, reclassify rides,
+                and enrich wind data. Same as what the external cron endpoint runs.
               </p>
               <button
                 className="dev-tools__action-btn"
@@ -325,22 +325,51 @@ export function DevToolsPanel() {
 
                 <div className="dev-tools__stats-grid">
                   <div className="dev-tools__stat">
+                    <span className="dev-tools__stat-value">{cronResult.syncAll.synced}</span>
+                    <span className="dev-tools__stat-label">Users Synced</span>
+                  </div>
+                  <div className="dev-tools__stat">
+                    <span className="dev-tools__stat-value">{cronResult.syncAll.failed}</span>
+                    <span className="dev-tools__stat-label">Sync Failures</span>
+                  </div>
+                  <div className="dev-tools__stat">
                     <span className="dev-tools__stat-value">{cronResult.reclassify.updated}</span>
-                    <span className="dev-tools__stat-label">Rides Reclassified</span>
+                    <span className="dev-tools__stat-label">Reclassified</span>
                   </div>
                   <div className="dev-tools__stat">
                     <span className="dev-tools__stat-value">{cronResult.wind.processed}</span>
                     <span className="dev-tools__stat-label">Wind Enriched</span>
                   </div>
-                  <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.reclassify.routeChanges}</span>
-                    <span className="dev-tools__stat-label">Route Changes</span>
-                  </div>
-                  <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.wind.totalMissing - cronResult.wind.processed}</span>
-                    <span className="dev-tools__stat-label">Wind Remaining</span>
-                  </div>
                 </div>
+
+                {/* Sync details */}
+                {cronResult.syncAll.results.length > 0 && (
+                  <div className="dev-tools__breakdown">
+                    <h5 className="dev-tools__breakdown-title">
+                      User Sync Details ({cronResult.syncAll.synced}/{cronResult.syncAll.totalUsers})
+                    </h5>
+                    {cronResult.syncAll.results
+                      .filter(r => !r.skipped)
+                      .map((r) => (
+                        <div key={r.userId} className="dev-tools__breakdown-row">
+                          <code>{r.displayName ?? r.userId.slice(0, 8)}</code>
+                          <span className="dev-tools__breakdown-count">
+                            {r.error
+                              ? '❌'
+                              : `${r.result?.newRides ?? 0} new`}
+                          </span>
+                        </div>
+                      ))}
+                    {cronResult.syncAll.skipped > 0 && (
+                      <div className="dev-tools__breakdown-row">
+                        <code style={{ color: 'var(--color-text-muted)' }}>
+                          + {cronResult.syncAll.skipped} skipped (budget)
+                        </code>
+                        <span />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Category transition breakdown */}
                 {Object.keys(cronResult.reclassify.breakdown).length > 0 && (
@@ -356,11 +385,18 @@ export function DevToolsPanel() {
                 )}
 
                 {/* Combined errors */}
-                {(cronResult.reclassify.errors.length > 0 || cronResult.wind.errors.length > 0) && (
+                {(cronResult.reclassify.errors.length > 0 || cronResult.wind.errors.length > 0 || cronResult.syncAll.failed > 0) && (
                   <div className="dev-tools__warnings">
                     <h5 className="dev-tools__breakdown-title">
-                      ⚠️ Warnings ({cronResult.reclassify.errors.length + cronResult.wind.errors.length})
+                      ⚠️ Warnings ({cronResult.reclassify.errors.length + cronResult.wind.errors.length + cronResult.syncAll.results.filter(r => r.error).length})
                     </h5>
+                    {cronResult.syncAll.results
+                      .filter(r => r.error)
+                      .map((r, i) => (
+                        <div key={`sync-${i}`} className="dev-tools__warning-item">
+                          [sync] {r.displayName ?? r.userId.slice(0, 8)}: {r.error}
+                        </div>
+                      ))}
                     {[...cronResult.reclassify.errors, ...cronResult.wind.errors].map((err, i) => (
                       <div key={i} className="dev-tools__warning-item">
                         {err}

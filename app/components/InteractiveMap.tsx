@@ -283,16 +283,6 @@ function CommuteZoneMap() {
       }),
     }).addTo(map)
 
-    // Arrow showing direction
-    L.marker([37.65, -122.35], {
-      icon: L.divIcon({
-        className: 'sf2g-zone-label',
-        html: '<div style="font-family:Inter,sans-serif;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,0.5);">🚴‍♂️ ↓</div>',
-        iconSize: [40, 30],
-        iconAnchor: [20, 15],
-      }),
-    }).addTo(map)
-
     mapRef.current = map
 
     // Fit bounds to show both zones

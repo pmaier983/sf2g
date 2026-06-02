@@ -458,7 +458,6 @@ export const fetchRiderGrowthData = createServerFn({ method: 'GET' }).handler(
     const { data, error } = await supabase
       .from('monthly_ride_stats')
       .select('user_id, month, route_category, ride_count')
-      .neq('route_category', 'other')
       .not('route_category', 'is', null)
       .order('month', { ascending: true })
     if (error) {

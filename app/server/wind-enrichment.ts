@@ -19,6 +19,7 @@ import { createServiceClient } from '../lib/supabase'
 import { getSessionData } from '../lib/session'
 import { fetchDailyWind, getWindAtHour } from './weather'
 import { calculateBearing, calculateWindComponents } from '../lib/wind'
+import { OPEN_METEO_RATE_LIMIT } from '../lib/constants'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -76,11 +77,15 @@ function isValidLatLng(v: unknown): v is [number, number] {
  * 5. Update each ride in Supabase
  * 6. Refresh leaderboard if any rides were processed
  */
-export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
+export async function enrichMissingWindData(
+  /** Max weather API calls to make (for cron budget control). Defaults to Open-Meteo cron budget. */
+  maxApiCalls: number = OPEN_METEO_RATE_LIMIT.CRON_BUDGET,
+): Promise<WindEnrichmentResult> {
   const startTime = Date.now()
   const supabase = createServiceClient()
   const errors: string[] = []
   let totalProcessed = 0
+  let apiCallCount = 0
 
   // 1. Count total missing rides (for progress display)
   const { count: totalMissing, error: countError } = await supabase
@@ -132,15 +137,29 @@ export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
 
     // 4. Process each date group
     let batchProcessed = 0
+    let budgetExhausted = false
 
     for (const [date, dateRides] of ridesByDate) {
+      // Check Open-Meteo rate limit budget
+      if (apiCallCount >= maxApiCalls) {
+        console.log(`[wind-enrichment] Open-Meteo budget exhausted (${apiCallCount}/${maxApiCalls} calls used), stopping`)
+        budgetExhausted = true
+        break
+      }
+
       // Use the first ride's start coordinates for the weather API call
       const firstRide = dateRides[0]
       if (!firstRide.start_latlng) continue
 
       const [lat, lng] = firstRide.start_latlng
 
+      // Rate limit: add a small delay between API calls to stay under 600/min
+      if (apiCallCount > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 150))
+      }
+
       // Fetch wind data for this date (one API call per date)
+      apiCallCount++
       const dailyWind = await fetchDailyWind(lat, lng, date)
 
       if (!dailyWind) {
@@ -214,7 +233,9 @@ export async function enrichMissingWindData(): Promise<WindEnrichmentResult> {
     }
 
     totalProcessed += batchProcessed
-    console.log(`[wind-enrichment] Batch done: ${batchProcessed} processed, ${totalProcessed} total so far`)
+    console.log(`[wind-enrichment] Batch done: ${batchProcessed} processed, ${totalProcessed} total so far, ${apiCallCount} API calls used`)
+
+    if (budgetExhausted) break
   }
 
   // 6. Refresh leaderboard if any rides were processed

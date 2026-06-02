@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useCallback, useState } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 import {
   leaderboardQueryOptions,
   filteredLeaderboardQueryOptions,
@@ -14,6 +14,7 @@ import { RidesLeaderboardTable } from '../components/RidesLeaderboardTable'
 import { GrowthChart } from '../components/GrowthChart'
 import { FilterChips } from '../components/FilterChips'
 import { SyncStatus } from '../components/SyncStatus'
+import { Tooltip } from '../components/Tooltip'
 import { RIDER_COLORS } from '../lib/constants'
 import type { RouteCategory, DestinationCompany } from '../lib/database.types'
 import '../styles/leaderboard.css'
@@ -27,9 +28,11 @@ export interface LeaderboardSearch {
   routes: RouteCategory[]
   search: string
   ppr: boolean
+  other: boolean
   company: string | undefined
   user: string | undefined
   view: 'riders' | 'rides'
+  chart: boolean
   sort: string
   dir: 'asc' | 'desc'
   rSort: string
@@ -41,57 +44,68 @@ export interface LeaderboardSearch {
   density: 'condensed' | 'expanded'
 }
 
+/** Default search param values — used for validation and URL cleanup */
+const SEARCH_DEFAULTS: LeaderboardSearch = {
+  routes: [],
+  search: '',
+  ppr: false,
+  other: false,
+  company: undefined,
+  user: undefined,
+  view: 'riders',
+  chart: false,
+  sort: 'sf2g_total',
+  dir: 'desc',
+  rSort: 'ride_date',
+  rDir: 'desc',
+  page: 1,
+  dateFrom: undefined,
+  dateTo: undefined,
+  datePreset: undefined,
+  density: 'condensed',
+}
+
+const toBool = (v: unknown) => v === 'true' || v === true
+
 export const Route = createFileRoute('/leaderboard')({
-  validateSearch: (search: Record<string, unknown>): LeaderboardSearch => ({
-    routes: typeof search.routes === 'string' && search.routes
-      ? (search.routes.split(',').filter(Boolean) as RouteCategory[])
-      : Array.isArray(search.routes)
-        ? (search.routes as RouteCategory[])
-        : [],
-    search: (search.search as string) || '',
-    ppr: search.ppr === 'true' || search.ppr === true,
-    company: (search.company as string) || undefined,
-    user: (search.user as string) || undefined,
-    view: (search.view as 'riders' | 'rides') || 'riders',
-    sort: (search.sort as string) || 'sf2g_total',
-    dir: (search.dir as 'asc' | 'desc') || 'desc',
-    rSort: (search.rSort as string) || 'ride_date',
-    rDir: (search.rDir as 'asc' | 'desc') || 'desc',
-    page: Number(search.page) || 1,
-    dateFrom: (search.dateFrom as string) || undefined,
-    dateTo: (search.dateTo as string) || undefined,
-    datePreset: (search.datePreset as string) || undefined,
-    density: (search.density as 'condensed' | 'expanded') || 'condensed',
+  validateSearch: (raw: Record<string, unknown>): LeaderboardSearch => ({
+    routes: typeof raw.routes === 'string' && raw.routes
+      ? (raw.routes.split(',').filter(Boolean) as RouteCategory[])
+      : Array.isArray(raw.routes) ? (raw.routes as RouteCategory[]) : [],
+    search: (raw.search as string) || '',
+    ppr: toBool(raw.ppr),
+    other: toBool(raw.other),
+    company: (raw.company as string) || undefined,
+    user: (raw.user as string) || undefined,
+    view: (raw.view as 'riders' | 'rides') || 'riders',
+    chart: toBool(raw.chart),
+    sort: (raw.sort as string) || 'sf2g_total',
+    dir: (raw.dir as 'asc' | 'desc') || 'desc',
+    rSort: (raw.rSort as string) || 'ride_date',
+    rDir: (raw.rDir as 'asc' | 'desc') || 'desc',
+    page: Number(raw.page) || 1,
+    dateFrom: (raw.dateFrom as string) || undefined,
+    dateTo: (raw.dateTo as string) || undefined,
+    datePreset: (raw.datePreset as string) || undefined,
+    density: (raw.density as 'condensed' | 'expanded') || 'condensed',
   }),
   // Strip defaults to keep URLs clean
   search: {
     middlewares: [
       ({ search, next }) => {
-        const cleaned = { ...search } as Record<string, unknown>
-        // Convert routes array to comma string for URL
-        if (Array.isArray(cleaned.routes)) {
-          if ((cleaned.routes as string[]).length === 0) {
-            delete cleaned.routes
-          } else {
-            cleaned.routes = (cleaned.routes as string[]).join(',')
-          }
+        const out = { ...search } as Record<string, unknown>
+        // Serialize routes array → comma string
+        if (Array.isArray(out.routes)) {
+          const arr = out.routes as string[]
+          out.routes = arr.length > 0 ? arr.join(',') : undefined
         }
-        // Strip defaults
-        if (!cleaned.search) delete cleaned.search
-        if (!cleaned.ppr) delete cleaned.ppr
-        if (!cleaned.company) delete cleaned.company
-        if (!cleaned.user) delete cleaned.user
-        if (cleaned.view === 'riders') delete cleaned.view
-        if (cleaned.sort === 'sf2g_total') delete cleaned.sort
-        if (cleaned.dir === 'desc') delete cleaned.dir
-        if (cleaned.rSort === 'ride_date') delete cleaned.rSort
-        if (cleaned.rDir === 'desc') delete cleaned.rDir
-        if (cleaned.page === 1) delete cleaned.page
-        if (!cleaned.dateFrom) delete cleaned.dateFrom
-        if (!cleaned.dateTo) delete cleaned.dateTo
-        if (!cleaned.datePreset) delete cleaned.datePreset
-        if (cleaned.density === 'condensed') delete cleaned.density
-        return next(cleaned as unknown as typeof search)
+        // Remove values that match defaults
+        for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
+          if (key === 'routes') continue // handled above
+          const val = out[key]
+          if (val === def || (!val && !def)) delete out[key]
+        }
+        return next(out as unknown as typeof search)
       },
     ],
   },
@@ -113,34 +127,26 @@ export const Route = createFileRoute('/leaderboard')({
 // ---------------------------------------------------------------------------
 function LeaderboardPage() {
   const {
-    routes,
-    search,
-    ppr,
-    company,
-    user,
-    view,
-    sort,
-    dir,
-    rSort,
-    rDir,
-    page,
-    dateFrom,
-    dateTo,
-    datePreset,
-    density,
+    routes, search, ppr, other: includeOther, company, user,
+    view, chart: chartOpen, sort, dir, rSort, rDir, page,
+    dateFrom, dateTo, datePreset, density,
   } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
-  // ---- Chart local state ----
-  const [chartOpen, setChartOpen] = useState(false)
-  const [chartTimeRange, setChartTimeRange] = useState<'all' | '6m' | '1y' | '2y'>('all')
-  const [visibleRiderIds, setVisibleRiderIds] = useState<string[]>([])
+  // ---- Shared search param updater ----
+  const updateSearch = useCallback(
+    (patch: Partial<LeaderboardSearch>) =>
+      navigate({ search: (prev) => ({ ...prev, ...patch }) }),
+    [navigate],
+  )
+
+  // ---- Chart selection state (local — not URL-worthy) ----
+  const [selectedRiderIds, setSelectedRiderIds] = useState<Set<string>>(new Set())
+  const [hasInitializedSelection, setHasInitializedSelection] = useState(false)
 
   // ---- Data queries ----
-  // Determine if we need filtered (compound) leaderboard
   const hasCompoundFilters = routes.length > 0 || !!company || !!dateFrom || !!dateTo
 
-  // Use filtered leaderboard when compound filters are active
   const leaderboardOptions = hasCompoundFilters
     ? filteredLeaderboardQueryOptions({
         sortBy: sort,
@@ -150,10 +156,7 @@ function LeaderboardPage() {
         routeCategories: routes.length > 0 ? routes : undefined,
         company: company || undefined,
       })
-    : leaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-      })
+    : leaderboardQueryOptions({ sortBy: sort, sortDir: dir })
   const { data: leaderboardData, isLoading, error } = useQuery(leaderboardOptions)
   const { data: pprDawnRiderIds } = useQuery(pprDawnRiderIdsQueryOptions())
   const { data: companyRiderIds } = useQuery(companyRiderIdsQueryOptions(company))
@@ -178,33 +181,23 @@ function LeaderboardPage() {
     if (!leaderboardData) return []
     let data = leaderboardData
 
-    // When using filtered leaderboard, route and company are already applied server-side
-    // Only need client-side filtering for PPR and search
     if (!hasCompoundFilters) {
-      // Route filter (only when NOT using filtered leaderboard)
       if (routes.length > 0) {
-        data = data.filter((entry) => {
-          return routes.some((r) => {
-            const key = `${r}_count` as keyof typeof entry
-            return (entry[key] as number) > 0
-          })
-        })
+        data = data.filter((entry) =>
+          routes.some((r) => (entry[`${r}_count` as keyof typeof entry] as number) > 0),
+        )
       }
-
-      // Company filter (only when NOT using filtered leaderboard)
       if (company && companyRiderIds) {
         const companySet = new Set(companyRiderIds)
         data = data.filter((entry) => companySet.has(entry.user_id))
       }
     }
 
-    // PPR filter (always client-side)
     if (ppr && pprDawnRiderIds) {
       const pprSet = new Set(pprDawnRiderIds)
       data = data.filter((entry) => pprSet.has(entry.user_id))
     }
 
-    // Search filter (always client-side for riders table)
     if (search) {
       const q = search.toLowerCase()
       data = data.filter(
@@ -217,16 +210,28 @@ function LeaderboardPage() {
     return data
   }, [leaderboardData, routes, ppr, pprDawnRiderIds, company, companyRiderIds, search, hasCompoundFilters])
 
-  // ---- Top 10 visible riders → colors ----
-  const top10Visible = useMemo(() => visibleRiderIds.slice(0, 10), [visibleRiderIds])
+  // ---- Default selection: top 10 by sf2g_total ----
+  useEffect(() => {
+    if (hasInitializedSelection || !leaderboardData || leaderboardData.length === 0) return
+    const top10 = [...leaderboardData]
+      .sort((a, b) => (b.sf2g_total ?? 0) - (a.sf2g_total ?? 0))
+      .slice(0, 10)
+      .map((e) => e.user_id)
+    setSelectedRiderIds(new Set(top10))
+    setHasInitializedSelection(true)
+  }, [leaderboardData, hasInitializedSelection])
+
+  // ---- Selected riders → ordered array + colors + names ----
+  const selectedRiderArray = useMemo(() => {
+    if (!leaderboardData) return []
+    return leaderboardData.filter((e) => selectedRiderIds.has(e.user_id)).map((e) => e.user_id)
+  }, [leaderboardData, selectedRiderIds])
 
   const riderColorMap = useMemo(() => {
     const map = new Map<string, string>()
-    top10Visible.forEach((id, i) => {
-      map.set(id, RIDER_COLORS[i % RIDER_COLORS.length])
-    })
+    selectedRiderArray.forEach((id, i) => map.set(id, RIDER_COLORS[i % RIDER_COLORS.length]))
     return map
-  }, [top10Visible])
+  }, [selectedRiderArray])
 
   const riderNameMap = useMemo(() => {
     const map = new Map<string, string>()
@@ -238,121 +243,34 @@ function LeaderboardPage() {
     return map
   }, [leaderboardData])
 
-  // ---- Visible rider tracking ----
-  const handleVisibleRidersChange = useCallback((ids: string[]) => {
-    setVisibleRiderIds(ids)
+  // ---- Rider selection handlers ----
+  const handleToggleRider = useCallback((userId: string) => {
+    setSelectedRiderIds((prev) => {
+      const next = new Set(prev)
+      next.has(userId) ? next.delete(userId) : next.add(userId)
+      return next
+    })
   }, [])
 
-  // ---- View toggle handler ----
-  const handleViewChange = useCallback(
-    (newView: 'riders' | 'rides') => {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          view: newView,
-          page: 1,
-        }),
-      })
-    },
-    [navigate],
-  )
+  const handleSelectAllRiders = useCallback(() => {
+    if (!filteredData) return
+    setSelectedRiderIds(new Set(filteredData.slice(0, 10).map((e) => e.user_id)))
+  }, [filteredData])
+
+  const handleDeselectAllRiders = useCallback(() => setSelectedRiderIds(new Set()), [])
+
+  const handleVisibleRidersChange = useCallback(() => {}, [])
 
   // ---- Navigate handler for "View rides" from the users table ----
   const handleViewRides = useCallback(
-    (userId: string, routeCategory?: RouteCategory) => {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          view: 'rides' as const,
-          user: userId,
-          routes: routeCategory ? [routeCategory] : prev.routes,
-          page: 1,
-        }),
-      })
-    },
-    [navigate],
-  )
-
-  // ---- Search param update helpers ----
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      navigate({ search: (prev) => ({ ...prev, search: value, page: 1 }) })
-    },
-    [navigate],
-  )
-
-  const handleRoutesChange = useCallback(
-    (newRoutes: RouteCategory[]) => {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          routes: newRoutes,
-          page: 1,
-        }),
-      })
-    },
-    [navigate],
-  )
-
-  const handlePprChange = useCallback(
-    (active: boolean) => {
-      navigate({ search: (prev) => ({ ...prev, ppr: active }) })
-    },
-    [navigate],
-  )
-
-  const handleCompanyChange = useCallback(
-    (newCompany: DestinationCompany | undefined) => {
-      navigate({ search: (prev) => ({ ...prev, company: newCompany, page: 1 }) })
-    },
-    [navigate],
-  )
-
-  const handleDateChange = useCallback(
-    (newDateFrom: string | undefined, newDateTo: string | undefined, preset: string | undefined) => {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          dateFrom: newDateFrom,
-          dateTo: newDateTo,
-          datePreset: preset,
-          page: 1,
-        }),
-      })
-    },
-    [navigate],
-  )
-
-  const handleSortChange = useCallback(
-    (column: string, direction: 'asc' | 'desc') => {
-      navigate({ search: (prev) => ({ ...prev, sort: column, dir: direction }) })
-    },
-    [navigate],
-  )
-
-  const handleRidesSortChange = useCallback(
-    (column: string, direction: 'asc' | 'desc') => {
-      navigate({ search: (prev) => ({ ...prev, rSort: column, rDir: direction, page: 1 }) })
-    },
-    [navigate],
-  )
-
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      navigate({ search: (prev) => ({ ...prev, page: newPage }) })
-    },
-    [navigate],
-  )
-
-  const handleClearUser = useCallback(() => {
-    navigate({ search: (prev) => ({ ...prev, user: undefined, page: 1 }) })
-  }, [navigate])
-
-  const handleDensityChange = useCallback(
-    (newDensity: 'condensed' | 'expanded') => {
-      navigate({ search: (prev) => ({ ...prev, density: newDensity }) })
-    },
-    [navigate],
+    (userId: string, routeCategory?: RouteCategory) =>
+      updateSearch({
+        view: 'rides',
+        user: userId,
+        ...(routeCategory ? { routes: [routeCategory] } : {}),
+        page: 1,
+      }),
+    [updateSearch],
   )
 
   return (
@@ -362,14 +280,14 @@ function LeaderboardPage() {
         <div className="leaderboard__view-toggle">
           <button
             className={`leaderboard__view-btn ${view === 'riders' ? 'leaderboard__view-btn--active' : ''}`}
-            onClick={() => handleViewChange('riders')}
+            onClick={() => updateSearch({ view: 'riders', page: 1 })}
             aria-pressed={view === 'riders'}
           >
             Riders
           </button>
           <button
             className={`leaderboard__view-btn ${view === 'rides' ? 'leaderboard__view-btn--active' : ''}`}
-            onClick={() => handleViewChange('rides')}
+            onClick={() => updateSearch({ view: 'rides', page: 1 })}
             aria-pressed={view === 'rides'}
           >
             Rides
@@ -377,7 +295,7 @@ function LeaderboardPage() {
         </div>
         <button
           className={`leaderboard__chart-btn${chartOpen ? ' leaderboard__chart-btn--active' : ''}`}
-          onClick={() => setChartOpen(!chartOpen)}
+          onClick={() => updateSearch({ chart: !chartOpen })}
           aria-pressed={chartOpen}
           aria-label={chartOpen ? 'Hide growth chart' : 'Show growth chart'}
           title="Toggle growth chart"
@@ -393,14 +311,14 @@ function LeaderboardPage() {
           className="leaderboard__search"
           placeholder={view === 'riders' ? 'Search riders...' : 'Search rides...'}
           value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e) => updateSearch({ search: e.target.value, page: 1 })}
         />
         {/* Density toggle — only show in riders view */}
         {view === 'riders' && (
           <div className="leaderboard__density-toggle">
             <button
               className={`leaderboard__density-btn${density === 'condensed' ? ' leaderboard__density-btn--active' : ''}`}
-              onClick={() => handleDensityChange('condensed')}
+              onClick={() => updateSearch({ density: 'condensed' })}
               aria-pressed={density === 'condensed'}
               title="Condensed view"
             >
@@ -408,13 +326,29 @@ function LeaderboardPage() {
             </button>
             <button
               className={`leaderboard__density-btn${density === 'expanded' ? ' leaderboard__density-btn--active' : ''}`}
-              onClick={() => handleDensityChange('expanded')}
+              onClick={() => updateSearch({ density: 'expanded' })}
               aria-pressed={density === 'expanded'}
               title="Expanded view"
             >
               ⊞
             </button>
           </div>
+        )}
+        {view === 'riders' && (
+          <Tooltip
+            content="When on, rides that don't match any SF2G route corridor are included in the SF2G total, chart, and table. When off, only classified SF2G commutes are counted."
+            placement="bottom"
+          >
+            <button
+              type="button"
+              className={`leaderboard__other-btn${includeOther ? ' leaderboard__other-btn--active' : ''}`}
+              onClick={() => updateSearch({ other: !includeOther })}
+              aria-pressed={includeOther}
+            >
+              Other
+              <span className="leaderboard__other-info">ⓘ</span>
+            </button>
+          </Tooltip>
         )}
         <SyncStatus />
       </div>
@@ -423,15 +357,15 @@ function LeaderboardPage() {
       <div className="leaderboard__filters-bar">
         <FilterChips
           selectedRoutes={routes}
-          onRoutesChange={handleRoutesChange}
+          onRoutesChange={(r) => updateSearch({ routes: r, page: 1 })}
           pprActive={ppr}
-          onPprChange={handlePprChange}
+          onPprChange={(v) => updateSearch({ ppr: v })}
           selectedCompany={company as DestinationCompany | undefined}
-          onCompanyChange={handleCompanyChange}
+          onCompanyChange={(c) => updateSearch({ company: c, page: 1 })}
           dateFrom={dateFrom}
           dateTo={dateTo}
           datePreset={datePreset}
-          onDateChange={handleDateChange}
+          onDateChange={(from, to, preset) => updateSearch({ dateFrom: from, dateTo: to, datePreset: preset, page: 1 })}
         />
       </div>
 
@@ -443,11 +377,14 @@ function LeaderboardPage() {
             {growthData && growthData.length > 0 ? (
               <GrowthChart
                 growthData={growthData}
-                visibleRiderIds={top10Visible}
+                visibleRiderIds={selectedRiderArray}
                 riderColorMap={riderColorMap}
                 riderNameMap={riderNameMap}
-                timeRange={chartTimeRange}
-                onTimeRangeChange={setChartTimeRange}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                routeCategories={routes}
+                includeOther={includeOther}
+                onToggleRider={handleToggleRider}
               />
             ) : (
               <div className="empty-state" style={{ padding: 'var(--space-6)' }}>
@@ -485,8 +422,15 @@ function LeaderboardPage() {
                   onVisibleRidersChange={handleVisibleRidersChange}
                   sortBy={sort}
                   sortDir={dir}
-                  onSortChange={handleSortChange}
+                  onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
                   density={density}
+                  isAllTime={!dateFrom && !dateTo}
+                  includeOther={includeOther}
+                  chartOpen={chartOpen}
+                  selectedRiderIds={selectedRiderIds}
+                  onToggleRider={handleToggleRider}
+                  onSelectAllRiders={handleSelectAllRiders}
+                  onDeselectAllRiders={handleDeselectAllRiders}
                 />
               )}
             </>
@@ -496,10 +440,10 @@ function LeaderboardPage() {
               isLoading={ridesQuery.isLoading}
               sortBy={rSort}
               sortDir={rDir}
-              onSortChange={handleRidesSortChange}
-              onPageChange={handlePageChange}
+              onSortChange={(col, d) => updateSearch({ rSort: col, rDir: d, page: 1 })}
+              onPageChange={(p) => updateSearch({ page: p })}
               activeUser={user}
-              onClearUser={handleClearUser}
+              onClearUser={() => updateSearch({ user: undefined, page: 1 })}
             />
           )}
         </div>

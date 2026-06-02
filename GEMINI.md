@@ -16,6 +16,7 @@ SF2G is a competitive cycling commute tracking web app for the SF2G community. R
 - **Auth**: Strava OAuth 2.0 (custom flow, not Supabase Auth)
 - **Deployment**: Cloudflare Pages
 - **UI Libraries**: TanStack Table, TanStack Query, TanStack Virtual, Recharts
+- **Tooltips**: Floating UI (`@floating-ui/react`) — use `<Tooltip>` component from `app/components/Tooltip.tsx`
 - **Toasts**: Sonner (`sonner`) — dismissable toast notifications
 - **Styling**: Vanilla CSS with custom properties (dark/light mode)
 
@@ -79,6 +80,7 @@ Copy `.env.example` to `.env.local` and fill in:
 - **Auth**: Custom Strava OAuth flow (Supabase has no built-in Strava provider). Tokens stored server-side.
 - **Sync Strategy**: Polling-based incremental sync (webhooks deferred for MVP).
 - **Secrets**: Never commit `.env.local`, `.stravarc`, or service role keys.
+- **Tooltips**: Always use the Floating UI `<Tooltip>` component (`app/components/Tooltip.tsx`) instead of native HTML `title` attributes. Floating UI provides better positioning, styling, and accessibility.
 
 ## Reference Documentation
 

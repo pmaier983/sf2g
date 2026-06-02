@@ -135,6 +135,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }
 
 .leaderboard__table tr:hover td {
@@ -385,6 +386,176 @@
   background: var(--color-strava-bg);
   color: var(--color-strava);
   font-weight: var(--font-semibold);
+}
+
+/* ----- Chart Rider Selection Toggles ----- */
+.leaderboard__chart-select-header {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  text-align: center;
+  vertical-align: middle;
+  padding: var(--space-2) var(--space-1) !important;
+  cursor: pointer;
+}
+
+.leaderboard__chart-select-cell {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  text-align: center;
+  vertical-align: middle;
+  padding: var(--space-2) var(--space-1) !important;
+}
+
+/* Custom toggle circle — replaces native checkboxes */
+.leaderboard__chart-toggle {
+  all: unset;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  box-sizing: content-box;
+  vertical-align: middle;
+}
+
+.leaderboard__chart-toggle:hover {
+  border-color: var(--color-text-muted);
+  transform: scale(1.15);
+}
+
+.leaderboard__chart-toggle:focus-visible {
+  outline: 2px solid var(--color-strava);
+  outline-offset: 2px;
+}
+
+/* Active state — filled with rider's chart color (set via inline style) */
+.leaderboard__chart-toggle--active {
+  border-color: transparent;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.leaderboard__chart-toggle--active:hover {
+  opacity: 0.8;
+  border-color: transparent;
+}
+
+/* Header: all selected */
+.leaderboard__chart-toggle--all {
+  background: var(--color-strava);
+  border-color: var(--color-strava);
+}
+
+/* Header: some selected (indeterminate) */
+.leaderboard__chart-toggle--some {
+  border-color: var(--color-strava);
+  background: linear-gradient(135deg, var(--color-strava) 50%, transparent 50%);
+}
+
+/* ----- Growth Chart Custom Legend ----- */
+.growth-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.growth-chart__legend-item {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 6px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.growth-chart__legend-item:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.growth-chart__legend-item:focus-visible {
+  outline: 2px solid var(--color-strava);
+  outline-offset: 2px;
+}
+
+.growth-chart__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.growth-chart__legend-name {
+  font-weight: var(--font-medium);
+}
+
+.growth-chart__legend-remove {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  margin-left: 1px;
+}
+
+.growth-chart__legend-item:hover .growth-chart__legend-remove {
+  opacity: 1;
+  color: var(--color-error);
+}
+
+/* ----- Growth Chart Controls ----- */
+.growth-chart__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.growth-chart__toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  user-select: none;
+  padding: 2px 6px;
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast);
+}
+
+.growth-chart__toggle-label:hover {
+  color: var(--color-text);
+}
+
+.growth-chart__toggle-input {
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+  accent-color: var(--color-strava);
+  margin: 0;
+}
+
+.growth-chart__toggle-text {
+  font-weight: var(--font-medium);
+}
+
+.growth-chart__info-icon {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  cursor: help;
 }
 
 /* ----- Sub-Table (Expanded Ride List) ----- */
@@ -1422,6 +1593,50 @@
 
 .leaderboard__density-btn + .leaderboard__density-btn {
   border-left: 1px solid var(--color-border);
+}
+
+/* ---- Include Other toggle ---- */
+.leaderboard__other-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.leaderboard__other-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.leaderboard__other-btn--active {
+  background: var(--color-other);
+  color: white;
+  border-color: var(--color-other);
+}
+
+.leaderboard__other-btn--active:hover {
+  background: #5b6370;
+}
+
+.leaderboard__other-info {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 8px;
+  line-height: 1;
+  opacity: 0.6;
 }
 
 /* ---- Sync Status — inline toolbar style ---- */

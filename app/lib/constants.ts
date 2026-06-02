@@ -316,3 +316,45 @@ export const STRAVA_RATE_LIMIT = {
 } as const
 
 export const STRAVA_SCOPES = 'read,activity:read_all'
+
+/**
+ * Open-Meteo Free Tier Rate Limits.
+ * See: https://open-meteo.com/en/terms
+ *
+ * Free tier allows:
+ * - 600 calls / minute
+ * - 5,000 calls / hour
+ * - 10,000 calls / day
+ *
+ * We use a conservative budget for the cron job to leave headroom
+ * for manual syncs and DevTools wind enrichment triggers.
+ */
+export const OPEN_METEO_RATE_LIMIT = {
+  LIMIT_PER_MINUTE: 600,
+  LIMIT_PER_HOUR: 5_000,
+  LIMIT_PER_DAY: 10_000,
+  /** Max API calls the cron job should use per invocation (leaves ~50% for manual use) */
+  CRON_BUDGET: 200,
+} as const
+
+/**
+ * Cron sync budget for Strava API calls.
+ * Reserves capacity for users manually syncing throughout the day.
+ *
+ * Budget allocation per 15-min window:
+ * - Total: 200 requests (Strava limit)
+ * - Safety margin (85%): 170 effective
+ * - Cron budget: ~50% of effective = 85 requests
+ * - Remaining for manual syncs: ~85 requests
+ *
+ * Each user's incremental sync typically uses 1-2 API calls (1 page).
+ * With 85 requests budgeted, we can sync ~40-80 users per cron run.
+ */
+export const CRON_SYNC_BUDGET = {
+  /** Max Strava API calls the cron job should use per run */
+  MAX_STRAVA_REQUESTS: 85,
+  /** Delay between syncing each user (ms) — spreads load across the 15min window */
+  DELAY_BETWEEN_USERS_MS: 2_000,
+  /** Max time allowed for the entire sync-all-users operation (ms) */
+  MAX_TOTAL_DURATION_MS: 10 * 60 * 1000, // 10 minutes
+} as const

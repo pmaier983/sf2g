@@ -65,7 +65,10 @@ function routeCountCell(
 ) {
   if (count === 0) {
     return (
-      <span className="leaderboard__route-count" style={{ color: 'var(--color-text-muted)' }}>
+      <span
+        className="leaderboard__route-count"
+        style={{ color: 'var(--color-text-muted)', padding: '2px var(--space-1)', display: 'inline-block' }}
+      >
         0
       </span>
     )
@@ -422,10 +425,37 @@ export type TableDensity = 'condensed' | 'expanded'
 export function getLeaderboardColumns(
   unit: UnitSystem,
   density: TableDensity,
+  isAllTime = true,
+  includeOther = false,
 ) {
   // Apply unit-aware formatting to the base columns
   const columns = leaderboardColumns.map((col) => {
     const id = 'accessorKey' in col ? (col as { accessorKey: string }).accessorKey : col.id
+
+    // When includeOther is on, adjust SF2G total to include other_count
+    if (id === 'sf2g_total' && includeOther) {
+      return {
+        ...col,
+        cell: (info: { row: { original: LeaderboardEntry }; table: { options: { meta?: { onViewRides?: (userId: string, routeCategory?: RouteCategory) => void } } } }) => {
+          const row = info.row.original
+          const adjustedTotal = safeNumber(row.sf2g_total) + safeNumber(row.other_count)
+          return (
+            <button
+              className="leaderboard__count-btn leaderboard__total"
+              onClick={(e) => {
+                e.stopPropagation()
+                info.table.options.meta?.onViewRides?.(row.user_id)
+              }}
+              type="button"
+              aria-label={`View all ${adjustedTotal} rides for ${row.display_name ?? 'rider'}`}
+            >
+              {adjustedTotal}
+            </button>
+          )
+        },
+      }
+    }
+
     if (id === 'avg_speed_mps') {
       return {
         ...col,
@@ -453,13 +483,15 @@ export function getLeaderboardColumns(
     return col
   })
 
-  if (density === 'condensed') {
-    return columns.filter(
-      (col) => {
-        const colId = 'accessorKey' in col ? (col as { accessorKey: string }).accessorKey : col.id
-        return CONDENSED_COLUMN_IDS.has(colId ?? '')
-      },
-    )
-  }
-  return columns
+  // Build set of column IDs to hide
+  const hiddenIds = new Set<string>()
+  if (!includeOther) hiddenIds.add('other_count')
+  if (!isAllTime) hiddenIds.add('active_years')
+
+  return columns.filter((col) => {
+    const colId = 'accessorKey' in col ? (col as { accessorKey: string }).accessorKey : col.id
+    if (hiddenIds.has(colId ?? '')) return false
+    if (density === 'condensed' && !CONDENSED_COLUMN_IDS.has(colId ?? '')) return false
+    return true
+  })
 }

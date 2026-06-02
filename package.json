@@ -13,6 +13,7 @@
     "db:types": "npx supabase gen types typescript --linked > app/lib/database.types.ts"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "@mapbox/polyline": "^1.2.1",
     "@supabase/supabase-js": "^2.45.0",
     "@tanstack/react-query": "^5.100.14",

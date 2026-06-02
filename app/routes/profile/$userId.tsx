@@ -94,7 +94,7 @@ function ProfilePage() {
           </p>
           <Link
             to="/leaderboard"
-            search={{ routes: [], search: '', ppr: false, company: undefined, user: undefined, view: 'riders' as const, sort: 'sf2g_total', dir: 'desc' as const, rSort: 'ride_date', rDir: 'desc' as const, page: 1, dateFrom: undefined, dateTo: undefined, datePreset: undefined, density: 'expanded' as const }}
+            search={{ routes: [], search: '', ppr: false, other: false, company: undefined, user: undefined, view: 'riders' as const, chart: false, sort: 'sf2g_total', dir: 'desc' as const, rSort: 'ride_date', rDir: 'desc' as const, page: 1, dateFrom: undefined, dateTo: undefined, datePreset: undefined, density: 'expanded' as const }}
             className="btn btn--primary"
             style={{ marginTop: 'var(--space-4)' }}
           >

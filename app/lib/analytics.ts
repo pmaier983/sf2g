@@ -13,17 +13,32 @@ export function initAnalytics() {
   const key = import.meta.env.VITE_POSTHOG_KEY
   if (!key) return // Graceful no-op if not configured
 
-  posthog.init(key, {
-    // Route through the app's own domain to bypass ad blockers.
-    // The /ingest path is proxied to PostHog by the SSR handler (see ssr.tsx).
-    api_host: '/ingest',
-    ui_host: 'https://us.i.posthog.com',
-    capture_pageview: true,
-    capture_pageleave: true,
-    autocapture: false,
-    persistence: 'localStorage',
-  })
-  initialized = true
+  try {
+    posthog.init(key, {
+      // Route through the app's own domain to bypass ad blockers.
+      // The /ingest path is proxied to PostHog by the SSR handler (see ssr.tsx).
+      api_host: '/ingest',
+      ui_host: 'https://us.i.posthog.com',
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: false,
+      persistence: 'localStorage',
+
+      // Disable features that load external scripts (dead-clicks, web-vitals,
+      // toolbar, surveys, etc.). These inject <script> tags that ad blockers
+      // catch, generating noisy console errors. We only need basic pageviews
+      // and custom events.
+      disable_external_dependency_loading: true,
+      disable_session_recording: true,
+      disable_surveys: true,
+      enable_recording_console_log: false,
+      advanced_disable_feature_flags: true,
+      advanced_disable_decide: true,
+    })
+    initialized = true
+  } catch {
+    // PostHog init can fail if blocked — silently degrade
+  }
 }
 
 /** Identify the logged-in user (call after auth). */

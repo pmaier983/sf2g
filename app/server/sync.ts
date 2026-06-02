@@ -93,7 +93,7 @@ function activityToRideInsert(
  * 6. Update user sync metadata
  * 7. Refresh leaderboard materialized view
  */
-async function performSync(userId: string): Promise<SyncResult> {
+export async function performSync(userId: string): Promise<SyncResult> {
   const supabase = createServiceClient()
   const errors: string[] = []
 

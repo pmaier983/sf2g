@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useCallback } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,6 +21,13 @@ interface LeaderboardTableProps {
   sortDir: 'asc' | 'desc'
   onSortChange: (column: string, direction: 'asc' | 'desc') => void
   density: TableDensity
+  isAllTime?: boolean
+  includeOther?: boolean
+  chartOpen?: boolean
+  selectedRiderIds?: Set<string>
+  onToggleRider?: (userId: string) => void
+  onSelectAllRiders?: () => void
+  onDeselectAllRiders?: () => void
 }
 
 /**
@@ -38,11 +45,18 @@ export function LeaderboardTable({
   sortDir,
   onSortChange,
   density,
+  isAllTime,
+  includeOther,
+  chartOpen,
+  selectedRiderIds,
+  onToggleRider,
+  onSelectAllRiders,
+  onDeselectAllRiders,
 }: LeaderboardTableProps) {
   const unit = useUnit()
   const columns = useMemo(
-    () => getLeaderboardColumns(unit, density),
-    [unit, density],
+    () => getLeaderboardColumns(unit, density, isAllTime, includeOther),
+    [unit, density, isAllTime, includeOther],
   )
   // Derive sorting state from props (visual indicator only)
   const sorting: SortingState = [{ id: sortBy, desc: sortDir === 'desc' }]
@@ -101,6 +115,25 @@ export function LeaderboardTable({
     onVisibleRidersChange(visibleIds)
   }, [virtualItems, rows, onVisibleRidersChange])
 
+  // Handler for header checkbox
+  const allSelected = useMemo(() => {
+    if (!selectedRiderIds || rows.length === 0) return false
+    return rows.every((row) => selectedRiderIds.has(row.original.user_id))
+  }, [selectedRiderIds, rows])
+
+  const someSelected = useMemo(() => {
+    if (!selectedRiderIds || rows.length === 0) return false
+    return rows.some((row) => selectedRiderIds.has(row.original.user_id))
+  }, [selectedRiderIds, rows])
+
+  const handleHeaderCheckbox = useCallback(() => {
+    if (allSelected) {
+      onDeselectAllRiders?.()
+    } else {
+      onSelectAllRiders?.()
+    }
+  }, [allSelected, onDeselectAllRiders, onSelectAllRiders])
+
   if (rows.length === 0) {
     return (
       <div className="empty-state">
@@ -125,6 +158,20 @@ export function LeaderboardTable({
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
+                {chartOpen && (
+                  <th
+                    className="leaderboard__chart-select-header"
+                    onClick={handleHeaderCheckbox}
+                    title={allSelected ? 'Deselect all riders' : 'Select all riders'}
+                  >
+                    <button
+                      type="button"
+                      className={`leaderboard__chart-toggle ${allSelected ? 'leaderboard__chart-toggle--all' : someSelected ? 'leaderboard__chart-toggle--some' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); handleHeaderCheckbox() }}
+                      aria-label={allSelected ? 'Deselect all riders from chart' : 'Select all riders for chart'}
+                    />
+                  </th>
+                )}
                 {headerGroup.headers.map((header) => {
                   const sorted = header.column.getIsSorted()
                   const canSort = header.column.getCanSort()
@@ -179,6 +226,17 @@ export function LeaderboardTable({
                           : undefined,
                       }}
                     >
+                      {chartOpen && (
+                        <td className="leaderboard__chart-select-cell">
+                          <button
+                            type="button"
+                            className={`leaderboard__chart-toggle ${selectedRiderIds?.has(row.original.user_id) ? 'leaderboard__chart-toggle--active' : ''}`}
+                            style={selectedRiderIds?.has(row.original.user_id) && color ? { background: color, borderColor: color } : undefined}
+                            onClick={() => onToggleRider?.(row.original.user_id)}
+                            aria-label={`${selectedRiderIds?.has(row.original.user_id) ? 'Remove' : 'Add'} ${row.original.display_name ?? 'rider'} ${selectedRiderIds?.has(row.original.user_id) ? 'from' : 'to'} chart`}
+                          />
+                        </td>
+                      )}
                       {row.getVisibleCells().map((cell) => (
                         <td key={cell.id}>
                           {flexRender(
