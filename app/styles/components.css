@@ -569,6 +569,11 @@
   animation: fadeIn 0.2s ease forwards;
 }
 
+.sync-status__info {
+  flex: 1;
+  min-width: 0;
+}
+
 .sync-status__text {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
@@ -607,7 +612,7 @@
 .sync-status__btn-group {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 2px;
   flex-shrink: 0;
 }

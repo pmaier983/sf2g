@@ -1653,13 +1653,13 @@
   gap: var(--space-2);
 }
 
-/* Hide the "Last sync" text in toolbar mode — just show the button + hint */
-.leaderboard__toolbar .sync-status__text {
+/* Hide the "Last sync" info wrapper in toolbar mode — just show the button + hint */
+.leaderboard__toolbar .sync-status__info {
   display: none;
 }
 
 .leaderboard__toolbar .sync-status__hint {
-  text-align: right;
+  text-align: center;
 }
 
 /* ---- Mobile responsive ---- */

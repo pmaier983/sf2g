@@ -175,6 +175,7 @@ function LeaderboardPage() {
       page,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
+      includeOther,
     }),
   )
 
@@ -336,22 +337,20 @@ function LeaderboardPage() {
             </button>
           </div>
         )}
-        {view === 'riders' && (
-          <Tooltip
-            content="When on, rides that don't match any SF2G route corridor are included in the SF2G total, chart, and table. When off, only classified SF2G commutes are counted."
-            placement="bottom"
+        <Tooltip
+          content="When on, rides that don't match any SF2G route corridor are included in totals, charts, and tables. When off, only classified SF2G commutes are counted."
+          placement="bottom"
+        >
+          <button
+            type="button"
+            className={`leaderboard__other-btn${includeOther ? ' leaderboard__other-btn--active' : ''}`}
+            onClick={() => updateSearch({ other: !includeOther })}
+            aria-pressed={includeOther}
           >
-            <button
-              type="button"
-              className={`leaderboard__other-btn${includeOther ? ' leaderboard__other-btn--active' : ''}`}
-              onClick={() => updateSearch({ other: !includeOther })}
-              aria-pressed={includeOther}
-            >
-              Other
-              <span className="leaderboard__other-info">ⓘ</span>
-            </button>
-          </Tooltip>
-        )}
+            Other
+            <span className="leaderboard__other-info">ⓘ</span>
+          </button>
+        </Tooltip>
         <SyncStatus />
       </div>
 

@@ -134,7 +134,7 @@ export function SyncStatus() {
   // Banner state — before sync
   return (
     <div className="sync-status sync-status--banner">
-      <div style={{ flex: 1 }}>
+      <div className="sync-status__info">
         <span className="sync-status__text">
           Last sync:{' '}
           <span className="sync-status__time">

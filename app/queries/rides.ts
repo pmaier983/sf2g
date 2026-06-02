@@ -41,6 +41,7 @@ export interface RidesLeaderboardParams {
   page?: number
   dateFrom?: string
   dateTo?: string
+  includeOther?: boolean
 }
 
 /**

@@ -64,15 +64,9 @@ function formatDayLabel(dateStr: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-/** Format a YYYY-WXX string to a readable label like "Jun 2 – 8". */
-function formatWeekLabel(weekKey: string, weekStart: Date): string {
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 6)
-  const startLabel = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  const endLabel = weekStart.getMonth() === weekEnd.getMonth()
-    ? weekEnd.toLocaleDateString('en-US', { day: 'numeric' })
-    : weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  return `${startLabel}–${endLabel}`
+/** Format a week label using just the week start date, e.g. "Jun 2". */
+function formatWeekLabel(_weekKey: string, weekStart: Date): string {
+  return weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 /** Get the Monday-based ISO week key (YYYY-WXX) for a date. */
@@ -384,23 +378,10 @@ export function GrowthChart({
 
   const riderIds = visibleRiderIds
 
-  // Compute a good tick interval for the x-axis based on granularity and data length
-  const xAxisInterval = useMemo(() => {
-    const len = chartData.length
-    if (granularity === 'daily') {
-      // For daily, show roughly 8–12 ticks max
-      if (len <= 14) return 0 // show all days for ≤2 weeks
-      if (len <= 31) return isMobile ? 4 : 2 // every 3rd or 5th day for ~1 month
-      return isMobile ? 7 : 4
-    }
-    if (granularity === 'weekly') {
-      if (len <= 12) return 0
-      return isMobile ? 3 : 1
-    }
-    // monthly
-    if (len <= 18) return 0
-    return isMobile ? 'preserveStartEnd' : 'equidistantPreserveStart'
-  }, [chartData.length, granularity, isMobile])
+  // Let Recharts auto-skip overlapping labels via minTickGap
+  const minTickGap = granularity === 'daily' ? (isMobile ? 30 : 20)
+    : granularity === 'weekly' ? (isMobile ? 40 : 25)
+    : (isMobile ? 30 : 20)
 
   if (chartData.length === 0) {
     return (
@@ -433,13 +414,11 @@ export function GrowthChart({
           />
           <XAxis
             dataKey="month"
-            tick={{ fontSize: isMobile ? 10 : 12, fill: 'var(--color-text-muted)' }}
+            tick={{ fontSize: isMobile ? 10 : 11, fill: 'var(--color-text-muted)' }}
             axisLine={{ stroke: 'var(--color-border)' }}
             tickLine={false}
-            interval={xAxisInterval}
-            angle={granularity === 'daily' && chartData.length > 14 ? -45 : 0}
-            textAnchor={granularity === 'daily' && chartData.length > 14 ? 'end' : 'middle'}
-            height={granularity === 'daily' && chartData.length > 14 ? 50 : 30}
+            interval="preserveStartEnd"
+            minTickGap={minTickGap}
           />
           <YAxis
             tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}

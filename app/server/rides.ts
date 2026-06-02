@@ -94,6 +94,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       pageSize?: number
       dateFrom?: string // ISO date string e.g. '2024-01-01'
       dateTo?: string   // ISO date string
+      includeOther?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<RidesLeaderboardResponse> => {
@@ -145,8 +146,12 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
         query = query.not('route_category', 'is', null)
       }
     } else {
-      // Default: show only SF2G rides (exclude non-SF2G rides with null route_category)
+      // Always exclude non-SF2G rides (null route_category)
       query = query.not('route_category', 'is', null)
+      // When "Other" toggle is off, also exclude rides classified as 'other'
+      if (!data.includeOther) {
+        query = query.neq('route_category', 'other')
+      }
     }
 
     if (data.company) {
