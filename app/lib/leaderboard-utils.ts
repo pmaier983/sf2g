@@ -62,6 +62,7 @@ export function formatRideDate(dateStr: string | null | undefined): string | nul
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   })
 }
 

@@ -28,6 +28,7 @@ export function RideCard({ ride }: { ride: Ride }) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   })
 
   return (

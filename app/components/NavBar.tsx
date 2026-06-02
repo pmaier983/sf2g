@@ -56,6 +56,7 @@ export function NavBar() {
   const navLinks = [
     { to: '/' as const, label: 'Home' },
     { to: '/routes' as const, label: 'Routes' },
+    { to: '/network' as const, label: 'Network' },
   ]
 
   return (

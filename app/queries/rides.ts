@@ -2,7 +2,7 @@
  * TanStack Query options for user rides data.
  */
 import { queryOptions } from '@tanstack/react-query'
-import { fetchUserRides, fetchRidesLeaderboard } from '../server/rides'
+import { fetchUserRides, fetchRidesLeaderboard, fetchCommunityStartHours, fetchCommunityStreaks } from '../server/rides'
 import type { RouteCategory } from '../lib/database.types'
 
 /**
@@ -25,6 +25,46 @@ export function userRouteRidesQueryOptions(userId: string, routeCategory?: Route
     queryFn: () => fetchUserRides({ data: { userId, routeCategory, limit: 200 } }),
     staleTime: 120_000,
     gcTime: 600_000,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Community start hours (for percentile comparison)
+// ---------------------------------------------------------------------------
+
+/**
+ * Query options for community start hours.
+ *
+ * - queryKey: ['community-start-hours']
+ * - staleTime: 30 minutes (data changes slowly)
+ * - gcTime: 1 hour
+ */
+export function communityStartHoursQueryOptions() {
+  return queryOptions({
+    queryKey: ['community-start-hours'] as const,
+    queryFn: () => fetchCommunityStartHours(),
+    staleTime: 30 * 60 * 1000,  // 30 minutes
+    gcTime: 60 * 60 * 1000,     // 1 hour
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Community streaks (for streak percentile comparison)
+// ---------------------------------------------------------------------------
+
+/**
+ * Query options for community weekly streaks.
+ *
+ * - queryKey: ['community-streaks']
+ * - staleTime: 30 minutes (data changes slowly)
+ * - gcTime: 1 hour
+ */
+export function communityStreaksQueryOptions() {
+  return queryOptions({
+    queryKey: ['community-streaks'] as const,
+    queryFn: () => fetchCommunityStreaks(),
+    staleTime: 30 * 60 * 1000,  // 30 minutes
+    gcTime: 60 * 60 * 1000,     // 1 hour
   })
 }
 

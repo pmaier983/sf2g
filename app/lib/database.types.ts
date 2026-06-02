@@ -280,6 +280,19 @@ export interface Database {
         }
         Relationships: []
       }
+      ride_co_occurrences: {
+        Row: {
+          ride1_id: string
+          rider1_id: string
+          ride2_id: string
+          rider2_id: string
+          route_category: RouteCategory
+          ride_date: string
+          polyline1: string | null
+          polyline2: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       refresh_leaderboard: {
@@ -299,6 +312,10 @@ export interface Database {
         Returns: void
       }
       refresh_route_speed_leaderboard: {
+        Args: Record<string, never>
+        Returns: void
+      }
+      refresh_ride_co_occurrences: {
         Args: Record<string, never>
         Returns: void
       }

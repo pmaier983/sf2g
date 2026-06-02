@@ -48,6 +48,7 @@ function getRideColumns(unit: UnitSystem) {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
+        timeZone: 'UTC',
       })
     },
     size: 120,

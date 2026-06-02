@@ -9,6 +9,8 @@
  * - Fun comparisons (distance equivalents, time on bike)
  */
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { communityStartHoursQueryOptions, communityStreaksQueryOptions } from '../queries/rides'
 import {
   AreaChart,
   Area,
@@ -84,10 +86,11 @@ function computeWeekStreak(rides: Ride[]): { current: number; best: number } {
   const rideWeeks = new Set<string>()
   for (const ride of rides) {
     const date = new Date(ride.ride_date)
-    const jan1 = new Date(date.getFullYear(), 0, 1)
+    // Use UTC methods since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight
+    const jan1 = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
     const dayOfYear = Math.floor((date.getTime() - jan1.getTime()) / 86400000)
-    const weekNum = Math.ceil((dayOfYear + jan1.getDay() + 1) / 7)
-    rideWeeks.add(`${date.getFullYear()}-${String(weekNum).padStart(2, '0')}`)
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
+    rideWeeks.add(`${date.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`)
   }
 
   // Generate all weeks from first to last ride
@@ -100,14 +103,14 @@ function computeWeekStreak(rides: Ride[]): { current: number; best: number } {
   let best = 0
   let current = 0
   const cursor = new Date(firstDate)
-  // Align to Monday
-  cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7))
+  // Align to Monday (use UTC methods for date-only strings)
+  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7))
 
   while (cursor <= lastDate) {
-    const jan1 = new Date(cursor.getFullYear(), 0, 1)
+    const jan1 = new Date(Date.UTC(cursor.getUTCFullYear(), 0, 1))
     const dayOfYear = Math.floor((cursor.getTime() - jan1.getTime()) / 86400000)
-    const weekNum = Math.ceil((dayOfYear + jan1.getDay() + 1) / 7)
-    const key = `${cursor.getFullYear()}-${String(weekNum).padStart(2, '0')}`
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
+    const key = `${cursor.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`
 
     if (rideWeeks.has(key)) {
       current++
@@ -115,7 +118,7 @@ function computeWeekStreak(rides: Ride[]): { current: number; best: number } {
     } else {
       current = 0
     }
-    cursor.setDate(cursor.getDate() + 7)
+    cursor.setUTCDate(cursor.getUTCDate() + 7)
   }
 
   return { current, best }
@@ -128,8 +131,9 @@ function computeDayDistribution(rides: Ride[]): number[] {
   const counts = new Array(7).fill(0) as number[]
   for (const ride of rides) {
     const date = new Date(ride.ride_date)
-    // getDay: 0=Sun, shift to 0=Mon
-    const dayIdx = (date.getDay() + 6) % 7
+    // Use getUTCDay since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight;
+    // getDay() would return the local-time day, which is off-by-one for US timezones.
+    const dayIdx = (date.getUTCDay() + 6) % 7
     counts[dayIdx]++
   }
   return counts
@@ -173,6 +177,24 @@ function TrendTooltip({ active, payload, label }: TooltipProps<number, string>) 
 
 export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
   const unit = useUnit()
+  const { data: communityData } = useQuery(communityStartHoursQueryOptions())
+  const { data: communityStreakData } = useQuery(communityStreaksQueryOptions())
+
+  // Compute what percentage of community riders start later than this user
+  const earlierThanPct = useMemo(() => {
+    if (!communityData?.averageHours.length) return null
+    // stats.avgStartUtcHour is set during the useMemo below — compute inline here
+    if (rides.length === 0) return null
+    let totalUtc = 0
+    for (const ride of rides) {
+      const d = new Date(ride.start_date)
+      totalUtc += d.getUTCHours() + d.getUTCMinutes() / 60
+    }
+    const userAvgUtc = totalUtc / rides.length
+    // Count how many community riders have a LATER (higher) average start hour
+    const laterCount = communityData.averageHours.filter((h) => h > userAvgUtc).length
+    return Math.round((laterCount / communityData.averageHours.length) * 100)
+  }, [communityData, rides])
 
   const stats = useMemo(() => {
     if (rides.length === 0) return null
@@ -300,14 +322,19 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
     const favoriteDayIdx = dayDistribution.indexOf(maxDayCount)
     const favoriteDay = DAY_LABELS[favoriteDayIdx]
 
-    // ── Early bird vs night owl ──
-    let earlyCount = 0
-    let lateCount = 0
+    // ── Average start time ──
+    let totalMinutes = 0
+    let startTimeCount = 0
     for (const ride of rides) {
-      const hour = new Date(ride.start_date).getHours()
-      if (hour < 9) earlyCount++
-      else if (hour >= 16) lateCount++
+      const date = new Date(ride.start_date)
+      const hours = date.getHours()
+      const minutes = date.getMinutes()
+      totalMinutes += hours * 60 + minutes
+      startTimeCount++
     }
+    const avgStartMinutes = startTimeCount > 0 ? totalMinutes / startTimeCount : 0
+    const avgStartHour = Math.floor(avgStartMinutes / 60)
+    const avgStartMinute = Math.round(avgStartMinutes % 60)
 
     return {
       trendData,
@@ -324,8 +351,8 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
       dayDistribution,
       maxDayCount,
       favoriteDay,
-      earlyCount,
-      lateCount,
+      avgStartHour,
+      avgStartMinute,
       rideCount: rides.length,
     }
   }, [rides, unit])
@@ -467,6 +494,7 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                     month: 'short',
                     day: 'numeric',
                     year: '2-digit',
+                    timeZone: 'UTC',
                   })}
                 </div>
               </a>
@@ -493,6 +521,21 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                 🔥 {stats.streaks.current} week{stats.streaks.current !== 1 ? 's' : ''} active now
               </div>
             )}
+            {communityStreakData?.bestStreaks && communityStreakData.bestStreaks.length > 0 && (() => {
+              const longerThan = communityStreakData.bestStreaks.filter(
+                (s) => s < stats.streaks.best
+              ).length
+              const pct = Math.round((longerThan / communityStreakData.bestStreaks.length) * 100)
+              return (
+                <div className="fun-stats__pattern-detail">
+                  {pct >= 50
+                    ? `💪 Longer than ${pct}% of SF2G'ers`
+                    : pct > 0
+                      ? `📈 Longer than ${pct}% of SF2G'ers`
+                      : `🎯 Keep riding to build your streak!`}
+                </div>
+              )
+            })()}
           </div>
 
           {/* Favorite day */}
@@ -507,20 +550,31 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             </div>
           </div>
 
-          {/* Early bird vs night owl */}
+          {/* Average start time */}
           <div className="fun-stats__pattern-card">
             <div className="fun-stats__pattern-stat">
               <span className="fun-stats__pattern-value">
-                {stats.earlyCount > stats.lateCount ? '🌅' : '🌙'}
+                {stats.avgStartHour >= 13
+                  ? `${stats.avgStartHour - 12}:${String(stats.avgStartMinute).padStart(2, '0')} PM`
+                  : stats.avgStartHour === 12
+                    ? `12:${String(stats.avgStartMinute).padStart(2, '0')} PM`
+                    : stats.avgStartHour === 0
+                      ? `12:${String(stats.avgStartMinute).padStart(2, '0')} AM`
+                      : `${stats.avgStartHour}:${String(stats.avgStartMinute).padStart(2, '0')} AM`}
               </span>
             </div>
             <div className="fun-stats__pattern-label">
-              {stats.earlyCount > stats.lateCount
-                ? `Early Bird — ${stats.earlyCount} pre-9am rides`
-                : stats.lateCount > stats.earlyCount
-                  ? `Night Owl — ${stats.lateCount} post-4pm rides`
-                  : `Balanced — ${stats.earlyCount} morning, ${stats.lateCount} evening`}
+              Average departure time
             </div>
+            {earlierThanPct != null && (
+              <div className="fun-stats__pattern-detail">
+                {earlierThanPct > 50
+                  ? `🌅 Earlier than ${earlierThanPct}% of SF2G'ers`
+                  : earlierThanPct === 50
+                    ? `⏰ Right in the middle of the pack`
+                    : `🌙 Later than ${100 - earlierThanPct}% of SF2G'ers`}
+              </div>
+            )}
           </div>
         </div>
 

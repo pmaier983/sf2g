@@ -226,3 +226,182 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
     }
   })
 
+
+// ---------------------------------------------------------------------------
+// fetchCommunityStartHours — average start hour per rider for percentile comparison
+// ---------------------------------------------------------------------------
+
+export interface CommunityStartHoursResponse {
+  /** Array of average start hours (fractional, e.g. 6.5 = 6:30 AM), one per rider */
+  averageHours: number[]
+}
+
+export const fetchCommunityStartHours = createServerFn({ method: 'GET' })
+  .handler(async (): Promise<CommunityStartHoursResponse> => {
+    const supabase = createAnonClient()
+
+    // Fetch all SF2G rides in batches (Supabase default limit is 1000)
+    const PAGE_SIZE = 1000
+    let allRides: { user_id: string; start_date: string }[] = []
+    let offset = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: batch, error } = await supabase
+        .from('rides')
+        .select('user_id, start_date')
+        .not('route_category', 'is', null)
+        .range(offset, offset + PAGE_SIZE - 1)
+
+      if (error) {
+        console.error('[community-start-hours] Error:', error.message)
+        throw new Error(`Failed to fetch community start hours: ${error.message}`)
+      }
+
+      if (!batch || batch.length === 0) {
+        hasMore = false
+      } else {
+        allRides = allRides.concat(batch)
+        offset += PAGE_SIZE
+        if (batch.length < PAGE_SIZE) hasMore = false
+      }
+    }
+
+    if (allRides.length === 0) {
+      return { averageHours: [] }
+    }
+
+    // Group start hours by user, then compute average per user
+    const userHours = new Map<string, number[]>()
+    for (const ride of allRides) {
+      const date = new Date(ride.start_date)
+      const hour = date.getUTCHours() + date.getUTCMinutes() / 60
+      const existing = userHours.get(ride.user_id)
+      if (existing) {
+        existing.push(hour)
+      } else {
+        userHours.set(ride.user_id, [hour])
+      }
+    }
+
+    // Compute average start hour for each rider
+    const averageHours: number[] = []
+    for (const hours of userHours.values()) {
+      const avg = hours.reduce((sum, h) => sum + h, 0) / hours.length
+      averageHours.push(avg)
+    }
+
+    return { averageHours }
+  })
+
+// ---------------------------------------------------------------------------
+// fetchCommunityStreaks — best weekly streak per rider for percentile comparison
+// ---------------------------------------------------------------------------
+
+export interface CommunityStreaksResponse {
+  /** Array of best weekly streaks, one per rider */
+  bestStreaks: number[]
+}
+
+/**
+ * Compute the best streak of consecutive weeks with at least one ride.
+ * Server-side version of the client-side computeWeekStreak.
+ */
+function computeBestWeekStreak(rideDates: string[]): number {
+  if (rideDates.length === 0) return 0
+
+  // Map each ride to its ISO week key (YYYY-WW)
+  const rideWeeks = new Set<string>()
+  for (const dateStr of rideDates) {
+    const date = new Date(dateStr)
+    const jan1 = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+    const dayOfYear = Math.floor((date.getTime() - jan1.getTime()) / 86400000)
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
+    rideWeeks.add(`${date.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`)
+  }
+
+  // Generate all weeks from first to last ride
+  const sortedDates = rideDates
+    .map((d) => new Date(d))
+    .sort((a, b) => a.getTime() - b.getTime())
+  const firstDate = sortedDates[0]
+  const lastDate = sortedDates[sortedDates.length - 1]
+
+  let best = 0
+  let current = 0
+  const cursor = new Date(firstDate)
+  // Align to Monday
+  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7))
+
+  while (cursor <= lastDate) {
+    const jan1 = new Date(Date.UTC(cursor.getUTCFullYear(), 0, 1))
+    const dayOfYear = Math.floor((cursor.getTime() - jan1.getTime()) / 86400000)
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
+    const key = `${cursor.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`
+
+    if (rideWeeks.has(key)) {
+      current++
+      best = Math.max(best, current)
+    } else {
+      current = 0
+    }
+    cursor.setUTCDate(cursor.getUTCDate() + 7)
+  }
+
+  return best
+}
+
+export const fetchCommunityStreaks = createServerFn({ method: 'GET' })
+  .handler(async (): Promise<CommunityStreaksResponse> => {
+    const supabase = createAnonClient()
+
+    // Fetch all SF2G ride dates in batches
+    const PAGE_SIZE = 1000
+    let allRides: { user_id: string; ride_date: string }[] = []
+    let offset = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: batch, error } = await supabase
+        .from('rides')
+        .select('user_id, ride_date')
+        .not('route_category', 'is', null)
+        .range(offset, offset + PAGE_SIZE - 1)
+
+      if (error) {
+        console.error('[community-streaks] Error:', error.message)
+        throw new Error(`Failed to fetch community streaks: ${error.message}`)
+      }
+
+      if (!batch || batch.length === 0) {
+        hasMore = false
+      } else {
+        allRides = allRides.concat(batch)
+        offset += PAGE_SIZE
+        if (batch.length < PAGE_SIZE) hasMore = false
+      }
+    }
+
+    if (allRides.length === 0) {
+      return { bestStreaks: [] }
+    }
+
+    // Group ride dates by user
+    const userRideDates = new Map<string, string[]>()
+    for (const ride of allRides) {
+      const existing = userRideDates.get(ride.user_id)
+      if (existing) {
+        existing.push(ride.ride_date)
+      } else {
+        userRideDates.set(ride.user_id, [ride.ride_date])
+      }
+    }
+
+    // Compute best weekly streak for each rider
+    const bestStreaks: number[] = []
+    for (const dates of userRideDates.values()) {
+      bestStreaks.push(computeBestWeekStreak(dates))
+    }
+
+    return { bestStreaks }
+  })

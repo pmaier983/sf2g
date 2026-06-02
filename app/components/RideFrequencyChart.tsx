@@ -104,7 +104,8 @@ function aggregateByYear(rides: Ride[]): YearlyData[] {
 
   for (const ride of rides) {
     const date = new Date(ride.ride_date)
-    const key = String(date.getFullYear())
+    // Use getUTCFullYear since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight
+    const key = String(date.getUTCFullYear())
 
     let entry = map.get(key)
     if (!entry) {

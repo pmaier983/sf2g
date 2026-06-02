@@ -26,6 +26,7 @@
     "posthog-js": "^1.376.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-force-graph-2d": "^1.29.1",
     "recharts": "^2.15.0",
     "sonner": "^2.0.7",
     "vite": "^8.0.14"

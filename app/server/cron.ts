@@ -292,6 +292,20 @@ export async function runCronJobs(): Promise<CronResult> {
     }
   }
 
+  // 4. Refresh ride co-occurrences MV for the rider network
+  //    Runs after sync + reclassify so new rides are included.
+  //    Non-concurrent refresh (no unique index), but fast for small rider pools.
+  try {
+    console.log('[cron] Refreshing ride co-occurrences MV...')
+    const coOccStart = Date.now()
+    const supabase = createServiceClient()
+    await supabase.rpc('refresh_ride_co_occurrences' as never)
+    console.log(`[cron] Ride co-occurrences refresh complete in ${Date.now() - coOccStart}ms`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn(`[cron] Ride co-occurrences refresh failed (non-critical): ${msg}`)
+  }
+
   const totalDurationMs = Date.now() - startTime
   console.log(`[cron] All cron jobs complete in ${Math.round(totalDurationMs / 1000)}s`)
 
