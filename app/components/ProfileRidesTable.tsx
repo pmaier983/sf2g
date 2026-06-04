@@ -7,9 +7,14 @@
  * - Unit-aware formatting (mi/km)
  */
 import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { Ride } from '../lib/database.types'
 import { RouteTag } from './RouteTag'
 import { useUnit } from '../lib/useUnit'
+import { currentUserQueryOptions } from '../queries/user'
+import { EditRideDialog } from './EditRideDialog'
+import type { EditRideData } from './EditRideDialog'
+import { Tooltip } from './Tooltip'
 import {
   formatDistance,
   formatElevation,
@@ -20,6 +25,7 @@ import {
 
 interface ProfileRidesTableProps {
   rides: Ride[]
+  profileUserId: string
 }
 
 type SortKey =
@@ -32,7 +38,7 @@ type SortKey =
   | 'moving_time_seconds'
 
 
-const COLUMNS: {
+const BASE_COLUMNS: {
   key: SortKey
   label: string
   className?: string
@@ -46,8 +52,11 @@ const COLUMNS: {
   { key: 'moving_time_seconds', label: 'Time' },
 ]
 
-export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
+export function ProfileRidesTable({ rides, profileUserId }: ProfileRidesTableProps) {
   const unit = useUnit()
+  const { data: currentUser } = useQuery(currentUserQueryOptions())
+  const [editingRide, setEditingRide] = useState<EditRideData | null>(null)
+  const isOwnProfile = currentUser?.id === profileUserId
   const [sortKey, setSortKey] = useState<SortKey>('ride_date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
@@ -100,7 +109,7 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
         <table className="profile-rides__table">
           <thead>
             <tr>
-              {COLUMNS.map((col) => {
+              {BASE_COLUMNS.map((col) => {
                 const isSorted = sortKey === col.key
                 return (
                   <th
@@ -125,12 +134,13 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
                   </th>
                 )
               })}
+              {isOwnProfile && <th className="profile-rides__edit-col" />}
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 ? (
               <tr>
-                <td colSpan={COLUMNS.length} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
+                <td colSpan={BASE_COLUMNS.length + (isOwnProfile ? 1 : 0)} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
                   No rides found
                 </td>
               </tr>
@@ -163,12 +173,42 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
                   <td>{formatDistance(ride.distance_meters, unit)}</td>
                   <td>{formatElevation(ride.elevation_gain_meters, unit)}</td>
                   <td>{formatMovingTime(ride.moving_time_seconds)}</td>
+                  {isOwnProfile && (
+                    <td className="profile-rides__edit-col">
+                      <Tooltip content="Edit this ride">
+                        <button
+                          className="edit-ride-btn"
+                          onClick={() =>
+                            setEditingRide({
+                              id: ride.id,
+                              name: ride.name,
+                              rideDate: ride.ride_date,
+                              routeCategory: ride.route_category,
+                              stravaActivityId: ride.strava_activity_id,
+                            })
+                          }
+                          aria-label="Edit ride"
+                        >
+                          ✏️
+                        </button>
+                      </Tooltip>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Edit Ride Dialog */}
+      {editingRide && (
+        <EditRideDialog
+          ride={editingRide}
+          isOpen={!!editingRide}
+          onClose={() => setEditingRide(null)}
+        />
+      )}
     </div>
   )
 }

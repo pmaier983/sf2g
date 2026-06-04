@@ -82,6 +82,7 @@ export interface RidesLeaderboardParams {
   dateFrom?: string
   dateTo?: string
   includeOther?: boolean
+  excludeWeekends?: boolean
 }
 
 /**

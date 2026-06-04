@@ -391,7 +391,7 @@ function ProfilePage() {
               </p>
             </div>
           ) : (
-            <ProfileRidesTable rides={rides} />
+            <ProfileRidesTable rides={rides} profileUserId={userId} />
           )}
         </div>
       </div>

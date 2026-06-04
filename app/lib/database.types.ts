@@ -116,6 +116,7 @@ export interface Database {
           tailwind_component_ms: number | null
           crosswind_component_ms: number | null
           wind_data_source: string | null
+          is_hidden: boolean
           created_at: string
         }
         Insert: {
@@ -151,6 +152,7 @@ export interface Database {
           tailwind_component_ms?: number | null
           crosswind_component_ms?: number | null
           wind_data_source?: string | null
+          is_hidden?: boolean
           created_at?: string
         }
         Update: {
@@ -186,7 +188,44 @@ export interface Database {
           tailwind_component_ms?: number | null
           crosswind_component_ms?: number | null
           wind_data_source?: string | null
+          is_hidden?: boolean
           created_at?: string
+        }
+        Relationships: []
+      }
+      ride_overrides: {
+        Row: {
+          id: string
+          ride_id: string
+          user_id: string
+          override_name: string | null
+          override_route_category: string | null
+          is_hidden: boolean
+          is_not_sf2g: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          ride_id: string
+          user_id: string
+          override_name?: string | null
+          override_route_category?: string | null
+          is_hidden?: boolean
+          is_not_sf2g?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          ride_id?: string
+          user_id?: string
+          override_name?: string | null
+          override_route_category?: string | null
+          is_hidden?: boolean
+          is_not_sf2g?: boolean
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -367,6 +406,10 @@ export type UserUpdate = Tables['users']['Update']
 export type Ride = Tables['rides']['Row']
 export type RideInsert = Tables['rides']['Insert']
 export type RideUpdate = Tables['rides']['Update']
+
+export type RideOverride = Tables['ride_overrides']['Row']
+export type RideOverrideInsert = Tables['ride_overrides']['Insert']
+export type RideOverrideUpdate = Tables['ride_overrides']['Update']
 
 export type LeaderboardEntry = Views['leaderboard_view']['Row']
 export type CompanyLeaderboardEntry = Views['company_leaderboard_view']['Row']

@@ -1,8 +1,14 @@
 import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type {
   RideLeaderboardEntry,
   RidesLeaderboardResponse,
 } from '../lib/database.types'
+import { currentUserQueryOptions } from '../queries/user'
+import { EditRideDialog } from './EditRideDialog'
+import type { EditRideData } from './EditRideDialog'
+import { Tooltip } from './Tooltip'
 import {
   formatSpeed,
   formatDistance,
@@ -50,6 +56,7 @@ const COLUMNS: ColumnDef[] = [
   { key: 'elevation_gain_meters', label: 'Elevation', sortable: true, tooltip: 'Total elevation gain for the ride' },
   { key: 'moving_time_seconds', label: 'Time', sortable: true, tooltip: 'Total moving time (excludes stopped time)' },
   { key: 'tailwind_component_ms', label: 'Tailwind', sortable: true, tooltip: 'Wind assistance along the ride direction (mph). Green (+) = tailwind pushing you forward. Red (−) = headwind slowing you down. Sourced from Open-Meteo historical weather data.' },
+  { key: 'edit', label: '', sortable: false, className: 'rides-table__edit-col', tooltip: 'Edit ride' },
 ]
 
 const SKELETON_ROWS = 8
@@ -67,6 +74,8 @@ export function RidesLeaderboardTable({
   activeUser,
   onClearUser,
 }: RidesLeaderboardTableProps) {
+  const { data: currentUser } = useQuery(currentUserQueryOptions())
+  const [editingRide, setEditingRide] = useState<EditRideData | null>(null)
   const rides = data?.rides ?? []
   const totalCount = data?.totalCount ?? 0
   const page = data?.page ?? 1
@@ -158,6 +167,8 @@ export function RidesLeaderboardTable({
                   key={ride.id}
                   ride={ride}
                   rank={startIndex + idx + 1}
+                  currentUserId={currentUser?.id}
+                  onEdit={setEditingRide}
                 />
               ))
             )}
@@ -192,6 +203,15 @@ export function RidesLeaderboardTable({
           </div>
         </div>
       )}
+
+      {/* Edit Ride Dialog */}
+      {editingRide && (
+        <EditRideDialog
+          ride={editingRide}
+          isOpen={!!editingRide}
+          onClose={() => setEditingRide(null)}
+        />
+      )}
     </div>
   )
 }
@@ -202,9 +222,13 @@ export function RidesLeaderboardTable({
 function RideRow({
   ride,
   rank,
+  currentUserId,
+  onEdit,
 }: {
   ride: RideLeaderboardEntry
   rank: number
+  currentUserId?: string
+  onEdit: (ride: EditRideData) => void
 }) {
   const unit = useUnit()
   return (
@@ -296,6 +320,29 @@ function RideRow({
           </span>
         ) : (
           <span className="text-muted">—</span>
+        )}
+      </td>
+
+      {/* Edit */}
+      <td className="rides-table__edit-col">
+        {currentUserId && currentUserId === ride.user_id && (
+          <Tooltip content="Edit this ride">
+            <button
+              className="edit-ride-btn"
+              onClick={() =>
+                onEdit({
+                  id: ride.id,
+                  name: ride.name,
+                  rideDate: ride.ride_date,
+                  routeCategory: ride.route_category,
+                  stravaActivityId: ride.strava_activity_id,
+                })
+              }
+              aria-label="Edit ride"
+            >
+              ✏️
+            </button>
+          </Tooltip>
         )}
       </td>
     </tr>

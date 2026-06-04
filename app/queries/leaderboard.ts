@@ -50,6 +50,7 @@ export interface FilteredLeaderboardParams {
   dateTo?: string
   routeCategories?: string[]
   company?: string
+  excludeWeekends?: boolean
 }
 
 export function filteredLeaderboardQueryOptions(params: FilteredLeaderboardParams) {

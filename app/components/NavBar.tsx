@@ -57,6 +57,7 @@ export function NavBar() {
     { to: '/' as const, label: 'Home' },
     { to: '/routes' as const, label: 'Routes' },
     { to: '/network' as const, label: 'Network' },
+    { to: '/should-i-sf2g' as const, label: '🌤️ Should I?' },
   ]
 
   return (

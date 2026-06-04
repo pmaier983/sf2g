@@ -37,6 +37,9 @@ export const fetchUserRides = createServerFn({ method: 'GET' })
       query = query.not('route_category', 'is', null)
     }
 
+    // Exclude hidden rides
+    query = query.eq('is_hidden', false)
+
     // Pagination
     const limit = data.limit ?? 50
     const offset = data.offset ?? 0
@@ -95,6 +98,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       dateFrom?: string // ISO date string e.g. '2024-01-01'
       dateTo?: string   // ISO date string
       includeOther?: boolean
+      excludeWeekends?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<RidesLeaderboardResponse> => {
@@ -154,6 +158,9 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       }
     }
 
+    // Always exclude hidden rides from the leaderboard
+    query = query.eq('is_hidden', false)
+
     if (data.company) {
       query = query.eq('destination_company', data.company as DestinationCompany)
     }
@@ -196,8 +203,17 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       console.log(`[rides-leaderboard] Rides span ${userIds.size} unique users: ${[...userIds].join(', ')}`)
     }
 
+    // Filter out weekend rides if excludeWeekends is true (default)
+    const excludeWeekends = data.excludeWeekends ?? true
+    const filteredRows = excludeWeekends
+      ? (rows ?? []).filter((row: Record<string, unknown>) => {
+          const day = new Date(row.ride_date as string).getUTCDay()
+          return day !== 0 && day !== 6
+        })
+      : (rows ?? [])
+
     // Flatten the joined user data into each ride entry
-    const rides: RideLeaderboardEntry[] = (rows ?? []).map((row: Record<string, unknown>) => {
+    const rides: RideLeaderboardEntry[] = filteredRows.map((row: Record<string, unknown>) => {
       const user = row.users as { display_name: string | null; avatar_url: string | null; username: string | null } | null
       return {
         id: row.id as string,
@@ -220,7 +236,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
 
     return {
       rides,
-      totalCount: count ?? 0,
+      totalCount: excludeWeekends ? rides.length : (count ?? 0),
       page,
       pageSize,
     }

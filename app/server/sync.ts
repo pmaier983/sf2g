@@ -10,7 +10,7 @@ import { fetchAthleteActivities, type StravaActivitySummary } from '../lib/strav
 import { classifyRoute } from '../lib/route-classifier'
 import { classifyDestination } from '../lib/destination-classifier'
 import { clearSessionData } from '../lib/session'
-import type { RideInsert, UserUpdate, JsonValue } from '../lib/database.types'
+import type { RideInsert, RideUpdate, RouteCategory, UserUpdate, JsonValue } from '../lib/database.types'
 import { enrichMissingWindData } from './wind-enrichment'
 
 // ---------------------------------------------------------------------------
@@ -225,6 +225,58 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
 
   console.log(`[sync] Fetch complete: ${totalActivitiesFromStrava} total activities from Strava, ${totalFilteredOut} filtered out, ${allRides.length} rides to upsert`)
 
+  // ---------------------------------------------------------------------------
+  // Same-day ride update re-check
+  // ---------------------------------------------------------------------------
+  // When users edit a ride on Strava after syncing, the incremental sync won't
+  // catch it because it uses `after` = `last_activity_at`. This secondary pass
+  // re-fetches today's rides (1 extra API call) so any edited fields are picked
+  // up via the onConflict upsert. Cost: 1 API call per sync — negligible.
+  if (!stravaApiFailed && lastActivityAt !== undefined) {
+    try {
+      const todayEpoch = Math.floor(
+        new Date(new Date().toISOString().split('T')[0] + 'T00:00:00Z').getTime() / 1000,
+      )
+      console.log(`[sync] Re-checking today's rides (after epoch ${todayEpoch})`)
+
+      const { activities: todayActivities } = await fetchAthleteActivities(
+        accessToken,
+        { after: todayEpoch, perPage: PAGE_SIZE, page: 1 },
+      )
+
+      const todayRides = todayActivities.filter(
+        (a) => a.type === 'Ride' && !a.manual,
+      )
+
+      // Deduplicate: only process rides we didn't already fetch in the main pass
+      const existingIds = new Set(allRides.map((r) => r.strava_activity_id))
+      let sameDayUpdates = 0
+
+      for (const activity of todayRides) {
+        try {
+          const rideInsert = activityToRideInsert(userId, activity)
+          if (existingIds.has(rideInsert.strava_activity_id)) {
+            // Already in allRides from the incremental fetch — skip to avoid double-count
+            continue
+          }
+          allRides.push(rideInsert)
+          sameDayUpdates++
+        } catch (err) {
+          const errMsg = `Failed to process same-day activity ${activity.id}: ${err instanceof Error ? err.message : String(err)}`
+          console.error(`[sync] ${errMsg}`)
+          errors.push(errMsg)
+        }
+      }
+
+      if (sameDayUpdates > 0) {
+        console.log(`[sync] Same-day re-check found ${sameDayUpdates} additional/updated rides`)
+      }
+    } catch (err) {
+      // Same-day re-check is non-critical — don't fail the sync
+      console.warn(`[sync] Same-day re-check failed (non-critical): ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
   // If the Strava API failed on the first page and we got 0 activities,
   // this is a total failure — throw so the caller knows sync didn't work
   if (stravaApiFailed && totalActivitiesFromStrava === 0) {
@@ -253,6 +305,50 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
       newRides += upsertedData?.length ?? 0
       console.log(`[sync] Batch upserted ${upsertedData?.length ?? 0} rides`)
     }
+  }
+
+  // 4b. Re-apply ride overrides — user edits must survive syncs
+  try {
+    // Get all ride IDs that were just upserted
+    const upsertedRideIds = allRides
+      .map((r) => r.strava_activity_id)
+
+    if (upsertedRideIds.length > 0) {
+      // Find any overrides for this user's rides
+      const { data: overrides } = await supabase
+        .from('ride_overrides')
+        .select('ride_id, override_name, override_route_category, is_hidden, is_not_sf2g')
+        .eq('user_id', userId)
+
+      if (overrides && overrides.length > 0) {
+        console.log(`[sync] Re-applying ${overrides.length} ride override(s)`)
+        for (const override of overrides) {
+          const updateFields: RideUpdate = {}
+
+          if (override.override_name !== null) {
+            updateFields.name = override.override_name
+          }
+          if (override.is_not_sf2g) {
+            updateFields.route_category = null
+          } else if (override.override_route_category !== null) {
+            updateFields.route_category = override.override_route_category as RouteCategory
+          }
+          if (override.is_hidden) {
+            updateFields.is_hidden = true
+          }
+
+          if (Object.keys(updateFields).length > 0) {
+            await supabase
+              .from('rides')
+              .update(updateFields)
+              .eq('id', override.ride_id)
+          }
+        }
+      }
+    }
+  } catch (err) {
+    // Override re-application is non-critical — don't fail the sync
+    console.warn(`[sync] Override re-application failed (non-critical): ${err instanceof Error ? err.message : String(err)}`)
   }
 
   // 5. Update user sync metadata

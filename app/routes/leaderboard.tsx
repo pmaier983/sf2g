@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useCallback, useState, useEffect } from 'react'
+import { MobileBottomBar } from '../components/MobileBottomBar'
+import { MobileSettingsPanel } from '../components/MobileSettingsPanel'
 import {
   leaderboardQueryOptions,
   filteredLeaderboardQueryOptions,
@@ -10,15 +12,54 @@ import {
   companyRiderIdsQueryOptions,
 } from '../queries/leaderboard'
 import { ridesLeaderboardQueryOptions } from '../queries/rides'
+import { allTimeQueryOptions } from '../queries/alltime'
 import { LeaderboardTable } from '../components/LeaderboardTable'
 import { RidesLeaderboardTable } from '../components/RidesLeaderboardTable'
+import { AllTimeTable } from '../components/AllTimeTable'
 import { GrowthChart } from '../components/GrowthChart'
 import { FilterChips } from '../components/FilterChips'
 import { SyncStatus } from '../components/SyncStatus'
-import { Tooltip } from '../components/Tooltip'
 import { RIDER_COLORS } from '../lib/constants'
 import type { RouteCategory, DestinationCompany } from '../lib/database.types'
 import '../styles/leaderboard.css'
+
+// ---------------------------------------------------------------------------
+// Duration helpers
+// ---------------------------------------------------------------------------
+
+/** Parse a duration string like '1w', '1m', '1y', '14d' to days */
+function parseDuration(duration: string): number {
+  const match = duration.match(/^(\d+)([dwmy])$/i)
+  if (!match) return 7 // fallback to 1 week
+  const num = parseInt(match[1], 10)
+  switch (match[2].toLowerCase()) {
+    case 'd': return num
+    case 'w': return num * 7
+    case 'm': return num * 30
+    case 'y': return num * 365
+    default: return 7
+  }
+}
+
+/** Convert a duration string to a human-readable label */
+function getDurationLabel(duration: string): string {
+  const match = duration.match(/^(\d+)([dwmy])$/i)
+  if (!match) return '1 Week'
+  const num = parseInt(match[1], 10)
+  switch (match[2].toLowerCase()) {
+    case 'd': return `${num} Day${num !== 1 ? 's' : ''}`
+    case 'w': return `${num} Week${num !== 1 ? 's' : ''}`
+    case 'm': return `${num} Month${num !== 1 ? 's' : ''}`
+    case 'y': return `${num} Year${num !== 1 ? 's' : ''}`
+    default: return duration
+  }
+}
+
+const DURATION_PRESETS = [
+  { value: '1w', label: '1 Week' },
+  { value: '1m', label: '1 Month' },
+  { value: '1y', label: '1 Year' },
+] as const
 
 // ---------------------------------------------------------------------------
 // Route definition with query param validation
@@ -30,9 +71,11 @@ export interface LeaderboardSearch {
   search: string
   ppr: boolean
   other: boolean
+  weekends: boolean
   company: string | undefined
   user: string | undefined
-  view: 'riders' | 'rides'
+  view: 'riders' | 'rides' | 'alltime'
+  duration: string
   chart: boolean
   sort: string
   dir: 'asc' | 'desc'
@@ -51,9 +94,11 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   search: '',
   ppr: false,
   other: false,
+  weekends: false,
   company: undefined,
   user: undefined,
   view: 'riders',
+  duration: '1w',
   chart: false,
   sort: 'sf2g_total',
   dir: 'desc',
@@ -76,9 +121,11 @@ export const Route = createFileRoute('/leaderboard')({
     search: (raw.search as string) || '',
     ppr: toBool(raw.ppr),
     other: toBool(raw.other),
+    weekends: toBool(raw.weekends),
     company: (raw.company as string) || undefined,
     user: (raw.user as string) || undefined,
-    view: (raw.view as 'riders' | 'rides') || 'riders',
+    view: (raw.view as 'riders' | 'rides' | 'alltime') || 'riders',
+    duration: (raw.duration as string) || '1w',
     chart: toBool(raw.chart),
     sort: (raw.sort as string) || 'sf2g_total',
     dir: (raw.dir as 'asc' | 'desc') || 'desc',
@@ -100,11 +147,17 @@ export const Route = createFileRoute('/leaderboard')({
           const arr = out.routes as string[]
           out.routes = arr.length > 0 ? arr.join(',') : undefined
         }
-        // Remove values that match defaults
+        // Remove values that match defaults — strict comparison handles
+        // false, 0, '' correctly so they get stripped when they ARE the default.
         for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
           if (key === 'routes') continue // handled above
           const val = out[key]
-          if (val === def || (!val && !def)) delete out[key]
+          // Both undefined/null/'' → treat as equal
+          const valEmpty = val === undefined || val === null || val === ''
+          const defEmpty = def === undefined || def === null || def === ''
+          if (val === def || (valEmpty && defEmpty)) {
+            delete out[key]
+          }
         }
         return next(out as unknown as typeof search)
       },
@@ -128,9 +181,9 @@ export const Route = createFileRoute('/leaderboard')({
 // ---------------------------------------------------------------------------
 function LeaderboardPage() {
   const {
-    routes, search, ppr, other: includeOther, company, user,
+    routes, search, ppr, other: includeOther, weekends, company, user,
     view, chart: chartOpen, sort, dir, rSort, rDir, page,
-    dateFrom, dateTo, datePreset, density,
+    dateFrom, dateTo, datePreset, density, duration,
   } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
@@ -141,12 +194,49 @@ function LeaderboardPage() {
     [navigate],
   )
 
+  // ---- Check if any filters differ from defaults ----
+  const hasActiveFilters = useMemo(() => {
+    if (routes.length > 0) return true
+    if (search !== '') return true
+    if (ppr) return true
+    if (includeOther) return true
+    if (weekends) return true
+    if (company) return true
+    if (user) return true
+    if (dateFrom) return true
+    if (dateTo) return true
+    if (datePreset) return true
+    if (view !== 'riders') return true
+    if (chartOpen) return true
+    if (density !== 'condensed') return true
+    if (sort !== 'sf2g_total') return true
+    if (dir !== 'desc') return true
+    if (rSort !== 'ride_date') return true
+    if (rDir !== 'desc') return true
+    if (page !== 1) return true
+    if (duration !== '1w') return true
+    return false
+  }, [routes, search, ppr, includeOther, weekends, company, user, dateFrom, dateTo, datePreset, view, chartOpen, density, sort, dir, rSort, rDir, page, duration])
+
+  // ---- Clear all filters → reset to defaults ----
+  const handleClearAll = useCallback(
+    () => navigate({ search: SEARCH_DEFAULTS }),
+    [navigate],
+  )
+
   // ---- Chart selection state (local — not URL-worthy) ----
   const [selectedRiderIds, setSelectedRiderIds] = useState<Set<string>>(new Set())
   const [hasInitializedSelection, setHasInitializedSelection] = useState(false)
 
+  // ---- Mobile state ----
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false)
+  const [mobileGraphOpen, setMobileGraphOpen] = useState(false)
+
   // ---- Data queries ----
-  const hasCompoundFilters = routes.length > 0 || !!company || !!dateFrom || !!dateTo
+  // Weekend exclusion (default) forces the compound filter path so we use
+  // the parameterized RPC instead of the materialized view.
+  const excludeWeekends = !weekends
+  const hasCompoundFilters = routes.length > 0 || !!company || !!dateFrom || !!dateTo || excludeWeekends
 
   const leaderboardOptions = hasCompoundFilters
     ? filteredLeaderboardQueryOptions({
@@ -156,6 +246,7 @@ function LeaderboardPage() {
         dateTo: dateTo || undefined,
         routeCategories: routes.length > 0 ? routes : undefined,
         company: company || undefined,
+        excludeWeekends,
       })
     : leaderboardQueryOptions({ sortBy: sort, sortDir: dir })
   const { data: leaderboardData, isLoading, error } = useQuery(leaderboardOptions)
@@ -176,6 +267,19 @@ function LeaderboardPage() {
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
       includeOther,
+      excludeWeekends,
+    }),
+  )
+
+  // ---- All-Time query ----
+  const durationDays = parseDuration(duration)
+  const allTimeQuery = useQuery(
+    allTimeQueryOptions({
+      durationDays,
+      routes: routes.length > 0 ? routes : undefined,
+      excludeWeekends: false,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
     }),
   )
 
@@ -286,14 +390,21 @@ function LeaderboardPage() {
             onClick={() => updateSearch({ view: 'riders', page: 1 })}
             aria-pressed={view === 'riders'}
           >
-            Riders
+            👤 Riders
           </button>
           <button
             className={`leaderboard__view-btn ${view === 'rides' ? 'leaderboard__view-btn--active' : ''}`}
             onClick={() => updateSearch({ view: 'rides', page: 1 })}
             aria-pressed={view === 'rides'}
           >
-            Rides
+            🚴 Rides
+          </button>
+          <button
+            className={`leaderboard__view-btn ${view === 'alltime' ? 'leaderboard__view-btn--active' : ''}`}
+            onClick={() => updateSearch({ view: 'alltime', page: 1 })}
+            aria-pressed={view === 'alltime'}
+          >
+            🏆 All Time
           </button>
         </div>
         <button
@@ -312,10 +423,39 @@ function LeaderboardPage() {
           id="leaderboard-search"
           type="search"
           className="leaderboard__search"
-          placeholder={view === 'riders' ? 'Search riders...' : 'Search rides...'}
+          placeholder={view === 'alltime' ? 'Search riders...' : view === 'riders' ? 'Search riders...' : 'Search rides...'}
           value={search}
           onChange={(e) => updateSearch({ search: e.target.value, page: 1 })}
         />
+        {/* Duration selector — only in alltime view */}
+        {view === 'alltime' && (
+          <div className="leaderboard__duration-toggle">
+            {DURATION_PRESETS.map(preset => (
+              <button
+                key={preset.value}
+                className={`leaderboard__duration-btn${duration === preset.value ? ' leaderboard__duration-btn--active' : ''}`}
+                onClick={() => updateSearch({ duration: preset.value })}
+                aria-pressed={duration === preset.value}
+              >
+                {preset.label}
+              </button>
+            ))}
+            <input
+              type="number"
+              className="leaderboard__duration-input"
+              min={1}
+              max={3650}
+              placeholder="days"
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10)
+                if (val > 0 && val <= 3650) {
+                  updateSearch({ duration: `${val}d` })
+                }
+              }}
+              aria-label="Custom duration in days"
+            />
+          </div>
+        )}
         {/* Density toggle — only show in riders view */}
         {view === 'riders' && (
           <div className="leaderboard__density-toggle">
@@ -337,20 +477,6 @@ function LeaderboardPage() {
             </button>
           </div>
         )}
-        <Tooltip
-          content="When on, rides that don't match any SF2G route corridor are included in totals, charts, and tables. When off, only classified SF2G commutes are counted."
-          placement="bottom"
-        >
-          <button
-            type="button"
-            className={`leaderboard__other-btn${includeOther ? ' leaderboard__other-btn--active' : ''}`}
-            onClick={() => updateSearch({ other: !includeOther })}
-            aria-pressed={includeOther}
-          >
-            Other
-            <span className="leaderboard__other-info">ⓘ</span>
-          </button>
-        </Tooltip>
         <SyncStatus />
       </div>
 
@@ -361,12 +487,18 @@ function LeaderboardPage() {
           onRoutesChange={(r) => updateSearch({ routes: r, page: 1 })}
           pprActive={ppr}
           onPprChange={(v) => updateSearch({ ppr: v })}
+          weekendsActive={weekends}
+          onWeekendsChange={(v) => updateSearch({ weekends: v })}
+          includeOther={includeOther}
+          onOtherChange={(v) => updateSearch({ other: v })}
           selectedCompany={company as DestinationCompany | undefined}
           onCompanyChange={(c) => updateSearch({ company: c, page: 1 })}
           dateFrom={dateFrom}
           dateTo={dateTo}
           datePreset={datePreset}
           onDateChange={(from, to, preset) => updateSearch({ dateFrom: from, dateTo: to, datePreset: preset, page: 1 })}
+          hasActiveFilters={hasActiveFilters}
+          onClearAll={handleClearAll}
         />
       </div>
 
@@ -436,7 +568,7 @@ function LeaderboardPage() {
                 />
               )}
             </>
-          ) : (
+          ) : view === 'rides' ? (
             <RidesLeaderboardTable
               data={ridesQuery.data}
               isLoading={ridesQuery.isLoading}
@@ -447,9 +579,93 @@ function LeaderboardPage() {
               activeUser={user}
               onClearUser={() => updateSearch({ user: undefined, page: 1 })}
             />
+          ) : (
+            <AllTimeTable
+              data={allTimeQuery.data}
+              isLoading={allTimeQuery.isLoading}
+              searchFilter={search}
+              durationLabel={getDurationLabel(duration)}
+            />
           )}
         </div>
       </div>
+
+      {/* ---- Mobile: Bottom bar ---- */}
+      <MobileBottomBar
+        view={view}
+        onViewChange={(v) => updateSearch({ view: v, page: 1 })}
+        onToggleGraph={() => setMobileGraphOpen((prev) => !prev)}
+        onToggleSettings={() => setMobileSettingsOpen((prev) => !prev)}
+        isGraphOpen={mobileGraphOpen}
+        isSettingsOpen={mobileSettingsOpen}
+      />
+
+      {/* ---- Mobile: Settings panel (slide-up drawer) ---- */}
+      <MobileSettingsPanel
+        isOpen={mobileSettingsOpen}
+        onClose={() => setMobileSettingsOpen(false)}
+        search={search}
+        onSearchChange={(value) => updateSearch({ search: value, page: 1 })}
+        view={view}
+        density={density}
+        onDensityChange={(d) => updateSearch({ density: d })}
+        duration={duration}
+        onDurationChange={(d) => updateSearch({ duration: d })}
+        selectedRoutes={routes}
+        onRoutesChange={(r) => updateSearch({ routes: r, page: 1 })}
+        pprActive={ppr}
+        onPprChange={(v) => updateSearch({ ppr: v })}
+        weekendsActive={weekends}
+        onWeekendsChange={(v) => updateSearch({ weekends: v })}
+        includeOther={includeOther}
+        onOtherChange={(v) => updateSearch({ other: v })}
+        selectedCompany={company as DestinationCompany | undefined}
+        onCompanyChange={(c) => updateSearch({ company: c, page: 1 })}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        datePreset={datePreset}
+        onDateChange={(from, to, preset) => updateSearch({ dateFrom: from, dateTo: to, datePreset: preset, page: 1 })}
+        hasActiveFilters={hasActiveFilters}
+        onClearAll={handleClearAll}
+      />
+
+      {/* ---- Mobile: Full-screen graph overlay ---- */}
+      {mobileGraphOpen && (
+        <div className="mobile-graph-overlay">
+          <button
+            type="button"
+            className="mobile-graph-overlay__close"
+            onClick={() => setMobileGraphOpen(false)}
+            aria-label="Close graph"
+          >
+            ✕
+          </button>
+          <div className="mobile-graph-overlay__content">
+            {growthData && growthData.length > 0 ? (
+              <GrowthChart
+                growthData={growthData}
+                dailyData={dailyData}
+                visibleRiderIds={selectedRiderArray}
+                riderColorMap={riderColorMap}
+                riderNameMap={riderNameMap}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                routeCategories={routes}
+                includeOther={includeOther}
+                onToggleRider={handleToggleRider}
+              />
+            ) : (
+              <div className="empty-state" style={{ padding: 'var(--space-6)' }}>
+                <div className="empty-state__icon">📈</div>
+                <h3 className="empty-state__title">No growth data yet</h3>
+                <p className="empty-state__description">
+                  Ride data will appear here once riders have synced their Strava history.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   )
 }

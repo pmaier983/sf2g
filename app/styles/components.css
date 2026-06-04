@@ -1560,6 +1560,120 @@
   font-weight: var(--font-bold);
 }
 
+
+/* ── Speed Improvement ── */
+.fun-stats__speed-improvement {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.fun-stats__speed-rides {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fun-stats__speed-ride-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.fun-stats__speed-ride-card:hover {
+  border-color: var(--color-sf2g-orange);
+  box-shadow: var(--shadow-sm);
+}
+
+.fun-stats__speed-ride-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-1);
+}
+
+.fun-stats__speed-ride-date {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__speed-ride-speed {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-sf2g-orange);
+  margin: 2px 0;
+}
+
+.fun-stats__speed-ride-name {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fun-stats__speed-arrow {
+  font-size: var(--text-2xl);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  font-weight: var(--font-bold);
+}
+
+.fun-stats__speed-summary {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.fun-stats__speed-improvement-positive {
+  color: var(--color-success);
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+}
+
+.fun-stats__speed-improvement-negative {
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+  font-style: italic;
+}
+
+.fun-stats__speed-time-saved {
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__speed-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+
+.fun-stats__speed-message-icon {
+  font-size: 2rem;
+}
+
+.fun-stats__speed-message-text {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+}
+
 /* ── Fun Stats responsive ── */
 @media (max-width: 640px) {
   .fun-stats__comparisons {
@@ -1577,6 +1691,14 @@
   .fun-stats__comparison-value,
   .fun-stats__pattern-value {
     font-size: var(--text-xl);
+  }
+
+  .fun-stats__speed-rides {
+    flex-direction: column;
+  }
+
+  .fun-stats__speed-arrow {
+    transform: rotate(90deg);
   }
 
   .fun-stats__day-heatmap {

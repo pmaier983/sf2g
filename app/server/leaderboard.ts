@@ -12,7 +12,8 @@ import { createServerFn } from '@tanstack/react-start'
 import { createAnonClient } from '../lib/supabase'
 import type { LeaderboardEntry, MonthlyRideStat, RouteCategory, RouteSpeedEntry, PprDawnRide, DestinationCompany } from '../lib/database.types'
 import { decodePolyline } from '../lib/polyline'
-import { PPR_COORDS } from '../lib/constants'
+import { PPR_INTERCEPTS } from '../lib/constants'
+import type { PprIntercept } from '../lib/constants'
 
 // ---------------------------------------------------------------------------
 // Route-category allow-list (mirrors rides.ts)
@@ -50,6 +51,7 @@ export const fetchLeaderboard = createServerFn({ method: 'GET' })
       sortDir?: 'asc' | 'desc'
       dateFrom?: string // ISO date string e.g. '2024-01-01'
       dateTo?: string   // ISO date string
+      excludeWeekends?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<LeaderboardEntry[]> => {
@@ -71,6 +73,7 @@ export const fetchLeaderboard = createServerFn({ method: 'GET' })
         .rpc('get_leaderboard_by_date_range', {
           p_date_from: dateFrom,
           p_date_to: dateTo,
+          p_exclude_weekends: data.excludeWeekends ?? true,
         })
 
       if (error) {
@@ -161,6 +164,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       dateTo?: string
       routeCategories?: string[]
       company?: string
+      excludeWeekends?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<LeaderboardEntry[]> => {
@@ -199,6 +203,17 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     if (!rides || rides.length === 0) return []
 
+    // Filter out weekend rides if excludeWeekends is true (default)
+    const excludeWeekends = data.excludeWeekends ?? true
+    const filteredRides = excludeWeekends
+      ? rides.filter(r => {
+          const day = new Date(r.ride_date).getUTCDay()
+          return day !== 0 && day !== 6 // exclude Sun(0) and Sat(6)
+        })
+      : rides
+
+    if (filteredRides.length === 0) return []
+
     // Fetch ALL rides (including unclassified) in the date range to compute
     // true total_distance and total_elevation for the % dist/elev calculation.
     // The main query above filters to route_category IS NOT NULL, so without
@@ -206,7 +221,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
     // the SF2G share percentage.
     let allRidesQuery = supabase
       .from('rides')
-      .select('user_id, distance_meters, elevation_gain_meters')
+      .select('user_id, distance_meters, elevation_gain_meters, ride_date')
     if (dateFrom) allRidesQuery = allRidesQuery.gte('ride_date', dateFrom)
     if (dateTo) allRidesQuery = allRidesQuery.lte('ride_date', dateTo)
 
@@ -219,7 +234,13 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
     // Build per-user total distance/elevation from ALL rides in the date range
     const userTotals = new Map<string, { distance: number; elevation: number }>()
     if (allRides) {
-      for (const ride of allRides) {
+      const filteredAllRides = excludeWeekends
+        ? allRides.filter(r => {
+            const day = new Date(r.ride_date).getUTCDay()
+            return day !== 0 && day !== 6
+          })
+        : allRides
+      for (const ride of filteredAllRides) {
         const existing = userTotals.get(ride.user_id) ?? { distance: 0, elevation: 0 }
         existing.distance += ride.distance_meters ?? 0
         existing.elevation += ride.elevation_gain_meters ?? 0
@@ -257,7 +278,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     const userMap = new Map<string, UserAgg>()
 
-    for (const ride of rides) {
+    for (const ride of filteredRides) {
       let agg = userMap.get(ride.user_id)
       if (!agg) {
         agg = {
@@ -412,14 +433,18 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 const PPR_RADIUS_METERS = 500
 
-function estimatePprArrival(ride: PprDawnRide): Date | null {
+/**
+ * Estimate when a ride passes through a specific intercept point.
+ * Uses linear interpolation along the summary polyline.
+ */
+function estimateInterceptArrival(ride: PprDawnRide, intercept: PprIntercept): Date | null {
   if (!ride.summary_polyline) return null
   const points = decodePolyline(ride.summary_polyline)
   if (points.length === 0) return null
 
   for (let i = 0; i < points.length; i++) {
     const [lat, lng] = points[i]
-    const dist = haversineDistance(lat, lng, PPR_COORDS.lat, PPR_COORDS.lng)
+    const dist = haversineDistance(lat, lng, intercept.lat, intercept.lng)
     if (dist <= PPR_RADIUS_METERS) {
       const fraction = points.length > 1 ? i / (points.length - 1) : 0
       const movingTimeMs = (ride.moving_time_seconds ?? 0) * 1000
@@ -431,7 +456,7 @@ function estimatePprArrival(ride: PprDawnRide): Date | null {
 }
 
 // ---------------------------------------------------------------------------
-// fetchPprDawnRiderIds — riders who pass through PPR within 10 min of 6:00 AM
+// fetchPprDawnRiderIds — riders who pass through any PPR intercept at the expected time
 // ---------------------------------------------------------------------------
 export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
   async (): Promise<string[]> => {
@@ -449,22 +474,26 @@ export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
     const qualifyingUserIds = new Set<string>()
 
     for (const ride of rides) {
-      const pprTime = estimatePprArrival(ride as PprDawnRide)
-      if (!pprTime) continue
+      // Check ALL intercept points — a ride qualifies if it passes within
+      // 500m of ANY intercept at approximately the correct time (±10 min
+      // of that intercept's targetMinutes).
+      for (const intercept of PPR_INTERCEPTS) {
+        const arrivalTime = estimateInterceptArrival(ride as PprDawnRide, intercept)
+        if (!arrivalTime) continue
 
-      // Convert PPR arrival to local time using the ride's timezone
-      // The ride.timezone is an IANA zone like "(GMT-08:00) America/Los_Angeles"
-      // Extract the IANA name or default to America/Los_Angeles
-      const tz = extractTimezone(ride.timezone)
-      const localTimeStr = pprTime.toLocaleString('en-US', { timeZone: tz, hour12: false })
-      const timeParts = localTimeStr.split(', ')[1]?.split(':') ?? []
-      const localHour = parseInt(timeParts[0] ?? '0', 10)
-      const localMin = parseInt(timeParts[1] ?? '0', 10)
-      const localMinutes = localHour * 60 + localMin
+        // Convert arrival to local time using the ride's timezone
+        const tz = extractTimezone(ride.timezone)
+        const localTimeStr = arrivalTime.toLocaleString('en-US', { timeZone: tz, hour12: false })
+        const timeParts = localTimeStr.split(', ')[1]?.split(':') ?? []
+        const localHour = parseInt(timeParts[0] ?? '0', 10)
+        const localMin = parseInt(timeParts[1] ?? '0', 10)
+        const localMinutes = localHour * 60 + localMin
 
-      // 6:00 AM = 360 min. Within 10 min = [350, 370]
-      if (localMinutes >= 350 && localMinutes <= 370) {
-        qualifyingUserIds.add(ride.user_id)
+        // Check if arrival is within ±10 min of this intercept's target time
+        if (localMinutes >= intercept.targetMinutes - 10 && localMinutes <= intercept.targetMinutes + 10) {
+          qualifyingUserIds.add(ride.user_id)
+          break // No need to check more intercepts for this ride
+        }
       }
     }
 
