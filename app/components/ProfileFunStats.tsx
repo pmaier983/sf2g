@@ -66,6 +66,32 @@ interface PersonalRecord {
   stravaId: number
 }
 
+interface SpeedImprovement {
+  firstRide: {
+    name: string | null
+    date: string
+    speedMps: number
+    stravaId: number
+  }
+  fastestRide: {
+    name: string | null
+    date: string
+    speedMps: number
+    stravaId: number
+  }
+  improvementPct: number
+  timeSavedSeconds: number
+  isSameRide: boolean
+}
+
+interface AvgSpeedImprovement {
+  firstRideSpeed: number
+  currentAvgSpeed: number
+  improvementPct: number
+  timeSavedSeconds: number
+  avgDistance: number
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -313,6 +339,80 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
       })
     }
 
+    // ── Speed Improvement ──
+    // Filter to SF2G rides only (route_category is not null and not 'other')
+    const sf2gRides = rides.filter(
+      (r) => r.route_category != null && r.route_category !== 'other' && r.average_speed_mps != null,
+    )
+
+    let speedImprovement: SpeedImprovement | null = null
+    let avgSpeedImprovement: AvgSpeedImprovement | null = null
+    if (sf2gRides.length >= 10) {
+      // First SF2G ride (earliest by ride_date)
+      const sortedSf2g = [...sf2gRides].sort(
+        (a, b) => new Date(a.ride_date).getTime() - new Date(b.ride_date).getTime(),
+      )
+      const firstSf2g = sortedSf2g[0]
+
+      // Fastest SF2G ride (highest average_speed_mps)
+      const fastestSf2g = sf2gRides.reduce<Ride | null>((best, r) => {
+        if (!best || (r.average_speed_mps ?? 0) > (best.average_speed_mps ?? 0)) return r
+        return best
+      }, null)
+
+      if (firstSf2g && fastestSf2g && firstSf2g.average_speed_mps && firstSf2g.average_speed_mps > 0) {
+        const firstSpeed = firstSf2g.average_speed_mps
+        const fastestSpeed = fastestSf2g.average_speed_mps ?? 0
+        const improvementPct = ((fastestSpeed - firstSpeed) / firstSpeed) * 100
+
+        // Estimate time saved using average SF2G distance
+        const avgSf2gDistance = sf2gRides.reduce(
+          (sum, r) => sum + (r.distance_meters ?? 0), 0,
+        ) / sf2gRides.length
+        const timeAtFirstSpeed = avgSf2gDistance / firstSpeed
+        const timeAtFastestSpeed = fastestSpeed > 0 ? avgSf2gDistance / fastestSpeed : timeAtFirstSpeed
+        const timeSavedSeconds = timeAtFirstSpeed - timeAtFastestSpeed
+
+        speedImprovement = {
+          firstRide: {
+            name: firstSf2g.name,
+            date: firstSf2g.ride_date,
+            speedMps: firstSpeed,
+            stravaId: firstSf2g.strava_activity_id,
+          },
+          fastestRide: {
+            name: fastestSf2g.name,
+            date: fastestSf2g.ride_date,
+            speedMps: fastestSpeed,
+            stravaId: fastestSf2g.strava_activity_id,
+          },
+          improvementPct,
+          timeSavedSeconds,
+          isSameRide: firstSf2g.strava_activity_id === fastestSf2g.strava_activity_id,
+        }
+
+        // ── Average Speed Improvement ──
+        // Compare current average SF2G speed vs first ride speed
+        const speedSum = sf2gRides.reduce((sum, r) => sum + (r.average_speed_mps ?? 0), 0)
+        const speedCount = sf2gRides.filter((r) => r.average_speed_mps != null).length
+        const currentAvgSpeed = speedCount > 0 ? speedSum / speedCount : 0
+
+        if (currentAvgSpeed > firstSpeed) {
+          const avgImprovementPct = ((currentAvgSpeed - firstSpeed) / firstSpeed) * 100
+          const timeAtAvgSpeed = currentAvgSpeed > 0 ? avgSf2gDistance / currentAvgSpeed : timeAtFirstSpeed
+          const avgTimeSaved = timeAtFirstSpeed - timeAtAvgSpeed
+
+          avgSpeedImprovement = {
+            firstRideSpeed: firstSpeed,
+            currentAvgSpeed,
+            improvementPct: avgImprovementPct,
+            timeSavedSeconds: avgTimeSaved,
+            avgDistance: avgSf2gDistance,
+          }
+        }
+      }
+    }
+
     // ── Streaks ──
     const streaks = computeWeekStreak(sortedRides)
 
@@ -354,6 +454,8 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
       avgStartHour,
       avgStartMinute,
       rideCount: rides.length,
+      speedImprovement,
+      avgSpeedImprovement,
     }
   }, [rides, unit])
 
@@ -500,6 +602,131 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
               </a>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── Speed Improvement ── */}
+      {(stats.speedImprovement || stats.avgSpeedImprovement) && (
+        <div className="fun-stats__section">
+          <h3 className="fun-stats__section-title">🚀 Speed Improvement</h3>
+
+          {/* Fastest ride improvement */}
+          {stats.speedImprovement && (
+            <div className="fun-stats__speed-improvement">
+              <div className="fun-stats__speed-subsection-label">Fastest Ride vs. First Ride</div>
+              {stats.speedImprovement.isSameRide ? (
+                <div className="fun-stats__speed-message">
+                  <div className="fun-stats__speed-message-icon">🔥</div>
+                  <div className="fun-stats__speed-message-text">
+                    Your first SF2G was your fastest! Keep pushing!
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="fun-stats__speed-rides">
+                    <a
+                      href={`https://www.strava.com/activities/${stats.speedImprovement.firstRide.stravaId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="fun-stats__speed-ride-card"
+                    >
+                      <div className="fun-stats__speed-ride-label">First SF2G</div>
+                      <div className="fun-stats__speed-ride-date">
+                        {new Date(stats.speedImprovement.firstRide.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        })}
+                      </div>
+                      <div className="fun-stats__speed-ride-speed">
+                        {formatSpeed(stats.speedImprovement.firstRide.speedMps, unit)}
+                      </div>
+                      <div className="fun-stats__speed-ride-name">
+                        {stats.speedImprovement.firstRide.name ?? 'Untitled'}
+                      </div>
+                    </a>
+
+                    <div className="fun-stats__speed-arrow">→</div>
+
+                    <a
+                      href={`https://www.strava.com/activities/${stats.speedImprovement.fastestRide.stravaId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="fun-stats__speed-ride-card"
+                    >
+                      <div className="fun-stats__speed-ride-label">Fastest SF2G</div>
+                      <div className="fun-stats__speed-ride-date">
+                        {new Date(stats.speedImprovement.fastestRide.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        })}
+                      </div>
+                      <div className="fun-stats__speed-ride-speed">
+                        {formatSpeed(stats.speedImprovement.fastestRide.speedMps, unit)}
+                      </div>
+                      <div className="fun-stats__speed-ride-name">
+                        {stats.speedImprovement.fastestRide.name ?? 'Untitled'}
+                      </div>
+                    </a>
+                  </div>
+
+                  <div className="fun-stats__speed-summary">
+                    {stats.speedImprovement.improvementPct > 0 ? (
+                      <span className="fun-stats__speed-improvement-positive">
+                        ▲ {stats.speedImprovement.improvementPct.toFixed(0)}% faster
+                      </span>
+                    ) : (
+                      <span className="fun-stats__speed-improvement-negative">
+                        Your first SF2G was blazing fast!
+                      </span>
+                    )}
+                    {stats.speedImprovement.timeSavedSeconds > 0 && (
+                      <span className="fun-stats__speed-time-saved">
+                        {' · ~'}{Math.round(stats.speedImprovement.timeSavedSeconds / 60)} min faster per ride
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Average speed improvement */}
+          {stats.avgSpeedImprovement && (
+            <div className="fun-stats__speed-improvement fun-stats__avg-speed-improvement">
+              <div className="fun-stats__speed-subsection-label">Average Speed vs. First Ride</div>
+              <div className="fun-stats__avg-speed-content">
+                <div className="fun-stats__avg-speed-stat">
+                  <div className="fun-stats__avg-speed-value">
+                    {formatSpeed(stats.avgSpeedImprovement.firstRideSpeed, unit)}
+                  </div>
+                  <div className="fun-stats__avg-speed-label">First ride</div>
+                </div>
+
+                <div className="fun-stats__speed-arrow">→</div>
+
+                <div className="fun-stats__avg-speed-stat">
+                  <div className="fun-stats__avg-speed-value fun-stats__avg-speed-value--highlight">
+                    {formatSpeed(stats.avgSpeedImprovement.currentAvgSpeed, unit)}
+                  </div>
+                  <div className="fun-stats__avg-speed-label">Current avg</div>
+                </div>
+              </div>
+              <div className="fun-stats__speed-summary">
+                <span className="fun-stats__speed-improvement-positive">
+                  ▲ Your average ride speed is {stats.avgSpeedImprovement.improvementPct.toFixed(0)}% faster than your first ride!
+                </span>
+                {stats.avgSpeedImprovement.timeSavedSeconds > 0 && (
+                  <span className="fun-stats__speed-time-saved">
+                    {' · ~'}{Math.round(stats.avgSpeedImprovement.timeSavedSeconds / 60)} min faster on average
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -6,7 +6,7 @@
  * to check proximity to known Bay Area tech office locations.
  *
  * Returns the closest matching company if either endpoint is within
- * DESTINATION_RADIUS_METERS (1000m default, per-office overrides) of any office, or null if no match.
+ * DESTINATION_RADIUS_METERS (1250m default, per-office overrides) of any office, or null if no match.
  */
 
 import { decodePolyline } from './polyline'

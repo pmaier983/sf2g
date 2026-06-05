@@ -350,6 +350,17 @@ export interface Database {
           avg_tailwind_ms: number
         }>
       }
+      get_user_ride_totals: {
+        Args: {
+          p_date_from?: string | null
+          p_date_to?: string | null
+        }
+        Returns: Array<{
+          user_id: string
+          total_distance: number
+          total_elevation: number
+        }>
+      }
     }
   }
 }

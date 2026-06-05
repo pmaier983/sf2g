@@ -12,7 +12,8 @@ import { createServerFn } from '@tanstack/react-start'
 import { createAnonClient } from '../lib/supabase'
 import type { LeaderboardEntry, MonthlyRideStat, RouteCategory, RouteSpeedEntry, PprDawnRide, DestinationCompany } from '../lib/database.types'
 import { decodePolyline } from '../lib/polyline'
-import { PPR_COORDS } from '../lib/constants'
+import { PPR_INTERCEPTS } from '../lib/constants'
+import type { PprIntercept } from '../lib/constants'
 
 // ---------------------------------------------------------------------------
 // Route-category allow-list (mirrors rides.ts)
@@ -50,6 +51,7 @@ export const fetchLeaderboard = createServerFn({ method: 'GET' })
       sortDir?: 'asc' | 'desc'
       dateFrom?: string // ISO date string e.g. '2024-01-01'
       dateTo?: string   // ISO date string
+      excludeWeekends?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<LeaderboardEntry[]> => {
@@ -71,6 +73,7 @@ export const fetchLeaderboard = createServerFn({ method: 'GET' })
         .rpc('get_leaderboard_by_date_range', {
           p_date_from: dateFrom,
           p_date_to: dateTo,
+          p_exclude_weekends: data.excludeWeekends ?? true,
         })
 
       if (error) {
@@ -114,6 +117,7 @@ export const fetchLeaderboard = createServerFn({ method: 'GET' })
       const { data: sf2gAgg } = await supabase
         .from('rides')
         .select('user_id, distance_meters, elevation_gain_meters, average_speed_mps, route_category')
+        .limit(50000)
 
       if (sf2gAgg) {
         // Build per-user SF2G aggregates
@@ -161,6 +165,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       dateTo?: string
       routeCategories?: string[]
       company?: string
+      excludeWeekends?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<LeaderboardEntry[]> => {
@@ -191,7 +196,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
     if (dateFrom) query = query.gte('ride_date', dateFrom)
     if (dateTo) query = query.lte('ride_date', dateTo)
 
-    const { data: rides, error } = await query
+    const { data: rides, error } = await query.limit(50000)
     if (error) {
       console.error('[leaderboard] Failed to fetch filtered rides:', error)
       throw new Error(`Failed to fetch filtered rides: ${error.message}`)
@@ -199,31 +204,43 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     if (!rides || rides.length === 0) return []
 
-    // Fetch ALL rides (including unclassified) in the date range to compute
-    // true total_distance and total_elevation for the % dist/elev calculation.
-    // The main query above filters to route_category IS NOT NULL, so without
-    // this second query, the "total" only includes classified rides, inflating
-    // the SF2G share percentage.
-    let allRidesQuery = supabase
-      .from('rides')
-      .select('user_id, distance_meters, elevation_gain_meters')
-    if (dateFrom) allRidesQuery = allRidesQuery.gte('ride_date', dateFrom)
-    if (dateTo) allRidesQuery = allRidesQuery.lte('ride_date', dateTo)
+    // Filter out weekend rides if excludeWeekends is true (default)
+    const excludeWeekends = data.excludeWeekends ?? true
+    const filteredRides = excludeWeekends
+      ? rides.filter(r => {
+          const day = new Date(r.ride_date).getUTCDay()
+          return day !== 0 && day !== 6 // exclude Sun(0) and Sat(6)
+        })
+      : rides
 
-    const { data: allRides, error: allRidesError } = await allRidesQuery
-    if (allRidesError) {
-      console.error('[leaderboard] Failed to fetch all rides for totals:', allRidesError)
+    if (filteredRides.length === 0) return []
+
+    // Fetch per-user total distance/elevation from ALL rides via RPC.
+    // IMPORTANT: We use an RPC function instead of fetching raw rides because
+    // the Supabase REST API enforces a max_rows limit (default 1000) that
+    // silently truncates .limit() calls. The RPC aggregates on the DB side,
+    // bypassing this limit entirely.
+    const { data: userTotalsRows, error: totalsError } = await supabase
+      .rpc('get_user_ride_totals', {
+        p_date_from: dateFrom,
+        p_date_to: dateTo,
+      })
+
+    if (totalsError) {
+      console.error('[leaderboard] Failed to fetch user ride totals:', totalsError)
       // Non-fatal: fall back to classified-only totals below
     }
 
-    // Build per-user total distance/elevation from ALL rides in the date range
+    // Build per-user total distance/elevation map.
+    // These totals include ALL rides (weekday + weekend, SF2G + non-SF2G)
+    // so the percentage shows what share of total cycling is SF2G commuting.
     const userTotals = new Map<string, { distance: number; elevation: number }>()
-    if (allRides) {
-      for (const ride of allRides) {
-        const existing = userTotals.get(ride.user_id) ?? { distance: 0, elevation: 0 }
-        existing.distance += ride.distance_meters ?? 0
-        existing.elevation += ride.elevation_gain_meters ?? 0
-        userTotals.set(ride.user_id, existing)
+    if (userTotalsRows) {
+      for (const row of userTotalsRows) {
+        userTotals.set(row.user_id, {
+          distance: row.total_distance ?? 0,
+          elevation: row.total_elevation ?? 0,
+        })
       }
     }
 
@@ -257,7 +274,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     const userMap = new Map<string, UserAgg>()
 
-    for (const ride of rides) {
+    for (const ride of filteredRides) {
       let agg = userMap.get(ride.user_id)
       if (!agg) {
         agg = {
@@ -412,14 +429,18 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 const PPR_RADIUS_METERS = 500
 
-function estimatePprArrival(ride: PprDawnRide): Date | null {
+/**
+ * Estimate when a ride passes through a specific intercept point.
+ * Uses linear interpolation along the summary polyline.
+ */
+function estimateInterceptArrival(ride: PprDawnRide, intercept: PprIntercept): Date | null {
   if (!ride.summary_polyline) return null
   const points = decodePolyline(ride.summary_polyline)
   if (points.length === 0) return null
 
   for (let i = 0; i < points.length; i++) {
     const [lat, lng] = points[i]
-    const dist = haversineDistance(lat, lng, PPR_COORDS.lat, PPR_COORDS.lng)
+    const dist = haversineDistance(lat, lng, intercept.lat, intercept.lng)
     if (dist <= PPR_RADIUS_METERS) {
       const fraction = points.length > 1 ? i / (points.length - 1) : 0
       const movingTimeMs = (ride.moving_time_seconds ?? 0) * 1000
@@ -431,11 +452,36 @@ function estimatePprArrival(ride: PprDawnRide): Date | null {
 }
 
 // ---------------------------------------------------------------------------
-// fetchPprDawnRiderIds — riders who pass through PPR within 10 min of 6:00 AM
+// fetchPprDawnRiderIds — riders who pass through any PPR intercept at the expected time
 // ---------------------------------------------------------------------------
-export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<string[]> => {
+export interface PprDawnResult {
+  /** User IDs of riders who qualify */
+  riderIds: string[]
+  /** Map of userId → number of qualifying PPR rides */
+  rideCounts: Record<string, number>
+  /** Qualifying PPR ride IDs (from the rides table) */
+  rideIds: string[]
+}
+
+export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' })
+  .inputValidator(
+    (input: {
+      dateFrom?: string
+      dateTo?: string
+      routeCategories?: string[]
+    }) => input,
+  )
+  .handler(
+  async ({ data }): Promise<PprDawnResult> => {
     const supabase = createAnonClient()
+
+    // Validate date params if provided
+    const dateFrom = data.dateFrom && isValidDateString(data.dateFrom) ? data.dateFrom : null
+    const dateTo = data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null
+
+    // Validate route categories if provided
+    const routeCategories = data.routeCategories?.filter(c => VALID_ROUTE_CATEGORIES.has(c)) ?? []
+
     const { data: rides, error } = await supabase
       .from('ppr_dawn_rides')
       .select('*')
@@ -444,31 +490,89 @@ export const fetchPprDawnRiderIds = createServerFn({ method: 'GET' }).handler(
       console.error('[leaderboard] Failed to fetch PPR dawn rides:', error)
       throw new Error(`Failed to fetch PPR dawn rides: ${error.message}`)
     }
-    if (!rides || rides.length === 0) return []
+    if (!rides || rides.length === 0) return { riderIds: [], rideCounts: {}, rideIds: [] }
 
-    const qualifyingUserIds = new Set<string>()
+    // Filter by date range in JS using the ride's local date.
+    // start_date is a UTC timestamptz — we convert to the ride's local timezone
+    // to get the correct YYYY-MM-DD date for comparison.
+    let filteredByDate = rides
+    if (dateFrom || dateTo) {
+      filteredByDate = rides.filter(ride => {
+        const tz = extractTimezone(ride.timezone)
+        // en-CA locale gives YYYY-MM-DD format
+        const localDate = new Date(ride.start_date).toLocaleDateString('en-CA', { timeZone: tz })
+        if (dateFrom && localDate < dateFrom) return false
+        if (dateTo && localDate > dateTo) return false
+        return true
+      })
+    }
+    if (filteredByDate.length === 0) return { riderIds: [], rideCounts: {}, rideIds: [] }
 
-    for (const ride of rides) {
-      const pprTime = estimatePprArrival(ride as PprDawnRide)
-      if (!pprTime) continue
+    // First pass: find all qualifying PPR rides by intercept timing
+    const qualifyingRideIds: string[] = []
+    const qualifyingRideMap = new Map<string, string>() // ride_id → user_id
 
-      // Convert PPR arrival to local time using the ride's timezone
-      // The ride.timezone is an IANA zone like "(GMT-08:00) America/Los_Angeles"
-      // Extract the IANA name or default to America/Los_Angeles
-      const tz = extractTimezone(ride.timezone)
-      const localTimeStr = pprTime.toLocaleString('en-US', { timeZone: tz, hour12: false })
-      const timeParts = localTimeStr.split(', ')[1]?.split(':') ?? []
-      const localHour = parseInt(timeParts[0] ?? '0', 10)
-      const localMin = parseInt(timeParts[1] ?? '0', 10)
-      const localMinutes = localHour * 60 + localMin
+    for (const ride of filteredByDate) {
+      for (const intercept of PPR_INTERCEPTS) {
+        const arrivalTime = estimateInterceptArrival(ride as PprDawnRide, intercept)
+        if (!arrivalTime) continue
 
-      // 6:00 AM = 360 min. Within 10 min = [350, 370]
-      if (localMinutes >= 350 && localMinutes <= 370) {
-        qualifyingUserIds.add(ride.user_id)
+        const tz = extractTimezone(ride.timezone)
+        const localTimeStr = arrivalTime.toLocaleString('en-US', { timeZone: tz, hour12: false })
+        const timeParts = localTimeStr.split(', ')[1]?.split(':') ?? []
+        const localHour = parseInt(timeParts[0] ?? '0', 10)
+        const localMin = parseInt(timeParts[1] ?? '0', 10)
+        const localMinutes = localHour * 60 + localMin
+
+        if (localMinutes >= intercept.targetMinutes - 10 && localMinutes <= intercept.targetMinutes + 10) {
+          qualifyingRideIds.push(ride.ride_id)
+          qualifyingRideMap.set(ride.ride_id, ride.user_id)
+          break
+        }
       }
     }
 
-    return Array.from(qualifyingUserIds)
+    if (qualifyingRideIds.length === 0) return { riderIds: [], rideCounts: {}, rideIds: [] }
+
+    // Second pass: if route filters are active, look up route_category for
+    // qualifying rides from the rides table and exclude non-matching rides
+    let filteredRideIds = qualifyingRideIds
+    if (routeCategories.length > 0) {
+      const { data: rideRoutes, error: routeError } = await supabase
+        .from('rides')
+        .select('id, route_category')
+        .in('id', qualifyingRideIds)
+
+      if (routeError) {
+        console.error('[leaderboard] Failed to fetch route categories for PPR rides:', routeError)
+        // Fall back to unfiltered results rather than failing
+      } else if (rideRoutes) {
+        const routeSet = new Set(routeCategories)
+        const matchingIds = new Set(
+          rideRoutes
+            .filter(r => r.route_category && routeSet.has(r.route_category))
+            .map(r => r.id),
+        )
+        filteredRideIds = qualifyingRideIds.filter(id => matchingIds.has(id))
+      }
+    }
+
+    // Build final results from filtered ride IDs
+    const qualifyingUserIds = new Set<string>()
+    const rideCounts: Record<string, number> = {}
+
+    for (const rideId of filteredRideIds) {
+      const userId = qualifyingRideMap.get(rideId)
+      if (!userId) continue
+      qualifyingUserIds.add(userId)
+      rideCounts[userId] = (rideCounts[userId] ?? 0) + 1
+    }
+
+    return {
+      riderIds: Array.from(qualifyingUserIds),
+      rideCounts,
+      rideIds: filteredRideIds,
+    }
   }
 )
 
@@ -519,6 +623,7 @@ export const fetchDailyGrowthData = createServerFn({ method: 'GET' }).handler(
       .select('user_id, ride_date, route_category')
       .not('route_category', 'is', null)
       .order('ride_date', { ascending: true })
+      .limit(50000)
     if (error) {
       console.error('[leaderboard] Failed to fetch daily growth data:', error)
       throw new Error(`Failed to fetch daily growth data: ${error.message}`)
@@ -577,6 +682,7 @@ export const fetchCommunityBreakdown = createServerFn({ method: 'GET' }).handler
       .from('rides')
       .select('distance_meters, elevation_gain_meters')
       .in('route_category', ['bayway', 'skyline', 'hmbw', 'royale', 'fleaway', 'mebw', 'febw'])
+      .limit(50000)
 
     if (sf2gError) {
       console.error('[leaderboard] Failed to fetch SF2G rides:', sf2gError)
@@ -588,6 +694,7 @@ export const fetchCommunityBreakdown = createServerFn({ method: 'GET' }).handler
       .from('rides')
       .select('distance_meters, elevation_gain_meters')
       .eq('route_category', 'other')
+      .limit(50000)
 
     if (otherError) {
       console.error('[leaderboard] Failed to fetch other rides:', otherError)
@@ -619,7 +726,7 @@ export const fetchCommunityBreakdown = createServerFn({ method: 'GET' }).handler
 // ---------------------------------------------------------------------------
 // fetchCompanyRiderIds — rider IDs who have rides ending at a specific company
 // ---------------------------------------------------------------------------
-const VALID_COMPANIES = new Set(['netflix', 'google', 'apple', 'meta', 'nvidia', 'stanford'])
+const VALID_COMPANIES = new Set(['netflix', 'google', 'apple', 'meta', 'nvidia', 'stanford', 'tesla'])
 
 export const fetchCompanyRiderIds = createServerFn({ method: 'GET' })
   .inputValidator((input: { company: string }) => {
@@ -637,6 +744,7 @@ export const fetchCompanyRiderIds = createServerFn({ method: 'GET' })
       .select('user_id')
       .eq('destination_company', data.company as DestinationCompany)
       .not('route_category', 'is', null)
+      .limit(50000)
 
     if (error) {
       console.error('[leaderboard] Failed to fetch company rider IDs:', error)
@@ -647,4 +755,3 @@ export const fetchCompanyRiderIds = createServerFn({ method: 'GET' })
     const uniqueIds = new Set((rows ?? []).map((r: { user_id: string }) => r.user_id))
     return Array.from(uniqueIds)
   })
-

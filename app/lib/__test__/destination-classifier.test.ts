@@ -110,10 +110,10 @@ describe('classifyDestination', () => {
       expect(result).toBeNull()
     })
 
-    it('should return null for a point ~500m from any office', () => {
-      // Well south of Netflix in Los Gatos
+    it('should return null for a point well outside radius from any office', () => {
+      // Well south of Netflix in Los Gatos (~1.6km away)
       const result = classifyDestination({
-        end_latlng: [37.2480, -121.9553],
+        end_latlng: [37.2420, -121.9553],
       })
       expect(result).toBeNull()
     })
@@ -302,8 +302,8 @@ describe('office data integrity', () => {
     }
   })
 
-  it('should use a destination radius of 1000m', () => {
-    expect(DESTINATION_RADIUS_METERS).toBe(1000)
+  it('should use a destination radius of 1250m', () => {
+    expect(DESTINATION_RADIUS_METERS).toBe(1250)
   })
 
   it('should have at least 25 office locations', () => {

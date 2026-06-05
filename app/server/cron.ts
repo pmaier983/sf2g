@@ -306,6 +306,18 @@ export async function runCronJobs(): Promise<CronResult> {
     console.warn(`[cron] Ride co-occurrences refresh failed (non-critical): ${msg}`)
   }
 
+  // 5. Refresh PPR dawn rides MV so the PPR @ 6am filter includes new rides
+  try {
+    console.log('[cron] Refreshing PPR dawn rides MV...')
+    const pprStart = Date.now()
+    const supabase = createServiceClient()
+    await supabase.rpc('refresh_ppr_dawn_rides' as never)
+    console.log(`[cron] PPR dawn rides refresh complete in ${Date.now() - pprStart}ms`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn(`[cron] PPR dawn rides refresh failed (non-critical): ${msg}`)
+  }
+
   const totalDurationMs = Date.now() - startTime
   console.log(`[cron] All cron jobs complete in ${Math.round(totalDurationMs / 1000)}s`)
 

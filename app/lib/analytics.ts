@@ -10,6 +10,11 @@ let initialized = false
 export function initAnalytics() {
   if (initialized || typeof window === 'undefined') return
 
+  // Skip analytics entirely in development — PostHog requests get blocked
+  // by ad blockers / local proxy mismatches, flooding the console with errors
+  // and causing hydration mismatches.
+  if (import.meta.env.DEV) return
+
   const key = import.meta.env.VITE_POSTHOG_KEY
   if (!key) return // Graceful no-op if not configured
 

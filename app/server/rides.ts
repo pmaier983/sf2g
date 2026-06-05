@@ -17,11 +17,13 @@ export const fetchUserRides = createServerFn({ method: 'GET' })
       limit?: number
       offset?: number
       routeCategory?: RouteCategory
+      includeAllRides?: boolean
+      includeHidden?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<Ride[]> => {
     const supabase = createAnonClient()
-    console.log(`[rides] Fetching rides for user ${data.userId}, routeCategory: ${data.routeCategory ?? 'all'}`)
+    console.log(`[rides] Fetching rides for user ${data.userId}, routeCategory: ${data.routeCategory ?? 'all'}, includeAll: ${data.includeAllRides ?? false}`)
 
     let query = supabase
       .from('rides')
@@ -32,9 +34,14 @@ export const fetchUserRides = createServerFn({ method: 'GET' })
     // Optional route category filter
     if (data.routeCategory) {
       query = query.eq('route_category', data.routeCategory)
-    } else {
+    } else if (!data.includeAllRides) {
       // Default: only return SF2G rides (exclude rides with null route_category)
       query = query.not('route_category', 'is', null)
+    }
+
+    // Only filter out hidden rides when includeHidden is not set
+    if (!data.includeHidden) {
+      query = query.or('is_hidden.eq.false,is_hidden.is.null')
     }
 
     // Pagination
@@ -64,6 +71,8 @@ const VALID_SORT_COLUMNS = new Set([
   'moving_time_seconds',
   'name',
   'tailwind_component_ms',
+  'route_category',
+  'display_name',
 ])
 
 const VALID_ROUTE_CATEGORIES = new Set([
@@ -95,6 +104,8 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       dateFrom?: string // ISO date string e.g. '2024-01-01'
       dateTo?: string   // ISO date string
       includeOther?: boolean
+      excludeWeekends?: boolean
+      pprRideIds?: string[]
     }) => input,
   )
   .handler(async ({ data }): Promise<RidesLeaderboardResponse> => {
@@ -154,6 +165,16 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       }
     }
 
+    query = query.or('is_hidden.eq.false,is_hidden.is.null')
+
+    // PPR filter: only show rides that are PPR-qualifying
+    if (data.pprRideIds && data.pprRideIds.length > 0) {
+      query = query.in('id', data.pprRideIds)
+    } else if (data.pprRideIds && data.pprRideIds.length === 0) {
+      // PPR is active but no qualifying rides — return empty
+      return { rides: [], totalCount: 0, page, pageSize }
+    }
+
     if (data.company) {
       query = query.eq('destination_company', data.company as DestinationCompany)
     }
@@ -177,9 +198,17 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       ? data.sortBy
       : 'ride_date'
     const ascending = (data.sortDir ?? 'desc') === 'asc'
-    query = query
-      .order(sortColumn, { ascending })
-      .range(offset, offset + pageSize - 1)
+
+    // display_name lives on the joined users table, not rides
+    if (sortColumn === 'display_name') {
+      query = query
+        .order('display_name', { referencedTable: 'users', ascending })
+        .range(offset, offset + pageSize - 1)
+    } else {
+      query = query
+        .order(sortColumn, { ascending })
+        .range(offset, offset + pageSize - 1)
+    }
 
     const { data: rows, error, count } = await query
 
@@ -196,8 +225,17 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       console.log(`[rides-leaderboard] Rides span ${userIds.size} unique users: ${[...userIds].join(', ')}`)
     }
 
+    // Filter out weekend rides if excludeWeekends is true (default)
+    const excludeWeekends = data.excludeWeekends ?? true
+    const filteredRows = excludeWeekends
+      ? (rows ?? []).filter((row: Record<string, unknown>) => {
+          const day = new Date(row.ride_date as string).getUTCDay()
+          return day !== 0 && day !== 6
+        })
+      : (rows ?? [])
+
     // Flatten the joined user data into each ride entry
-    const rides: RideLeaderboardEntry[] = (rows ?? []).map((row: Record<string, unknown>) => {
+    const rides: RideLeaderboardEntry[] = filteredRows.map((row: Record<string, unknown>) => {
       const user = row.users as { display_name: string | null; avatar_url: string | null; username: string | null } | null
       return {
         id: row.id as string,
@@ -220,7 +258,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
 
     return {
       rides,
-      totalCount: count ?? 0,
+      totalCount: excludeWeekends ? rides.length : (count ?? 0),
       page,
       pageSize,
     }

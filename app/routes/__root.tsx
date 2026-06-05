@@ -43,6 +43,24 @@ export const Route = createRootRoute({
         content:
           'Track and compare SF2G commute rides. Leaderboard, route classification, and ride history powered by Strava.',
       },
+      {
+        httpEquiv: 'Content-Security-Policy',
+        content: [
+          "default-src 'self'",
+          // Scripts: 'self' + inline for theme init + eval for Vite HMR / source maps
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          // Styles: 'self' + inline for Vite HMR + Google Fonts
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+          // Fonts from Google Fonts CDN
+          "font-src 'self' https://fonts.gstatic.com",
+          // Images: self + Strava CDN (avatars) + data URIs
+          "img-src 'self' data: https://*.strava.com https://dgalywyr863hv.cloudfront.net https://*.basemaps.cartocdn.com",
+          // API connections: self + Supabase + Strava + Mapbox + PostHog
+          "connect-src 'self' https://*.supabase.co https://www.strava.com https://api.mapbox.com https://events.mapbox.com https://us.i.posthog.com",
+          // Workers for Mapbox GL
+          "worker-src 'self' blob:",
+        ].join('; '),
+      },
     ],
     links: [
       {

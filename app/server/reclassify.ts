@@ -184,7 +184,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
   const breakdown: Record<string, number> = {}
   const debugSamples: ReclassifyResult['debug'] = []
 
-  // Paginate through all rides
+  // Paginate through all non-hidden rides
   let offset = 0
   let hasMore = true
 
@@ -192,6 +192,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
     const { data: rides, error: readError } = await supabase
       .from('rides')
       .select(CLASSIFICATION_COLUMNS)
+      .or('is_hidden.eq.false,is_hidden.is.null')
       .order('created_at', { ascending: true })
       .range(offset, offset + READ_BATCH_SIZE - 1)
 

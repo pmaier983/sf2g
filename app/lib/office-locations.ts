@@ -5,7 +5,7 @@
  * a corporate campus. This powers the "SF2[Company]" leaderboard.
  *
  * Coordinates are approximate campus center-points. The destination
- * classifier uses an 800m radius to match ride endpoints.
+ * classifier uses a 1250m radius to match ride endpoints.
  */
 
 // ---------------------------------------------------------------------------
@@ -273,6 +273,16 @@ export const OFFICE_LOCATIONS: OfficeLocation[] = [
     status: 'active',
     radiusMeters: 2000,
   },
+  {
+    company: 'stanford',
+    name: 'Stanford Research Park',
+    lat: 37.4069125008984,
+    lng: -122.14533885863798,
+    city: 'Stanford',
+    address: 'Stanford Research Park',
+    status: 'active',
+    radiusMeters: 500,
+  },
 
   // =========================================================================
   // TESLA — Palo Alto
@@ -335,6 +345,6 @@ export const COMPANY_COLORS: Record<DestinationCompany, string> = {
  * A ride endpoint must be within this distance of an office to count.
  * Individual offices can override via the `radiusMeters` field.
  *
- * 1000m (~3300ft / ~0.6mi) provides a generous capture area around campus endpoints.
+ * 1250m (~4100ft / ~0.8mi) provides a generous capture area around campus endpoints.
  */
-export const DESTINATION_RADIUS_METERS = 1000
+export const DESTINATION_RADIUS_METERS = 1250

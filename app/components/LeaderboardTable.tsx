@@ -69,11 +69,22 @@ export function LeaderboardTable({
       globalFilter: searchFilter,
     },
     onSortingChange: (updater) => {
-      // Intercept sort changes and delegate to parent via onSortChange
+      // Intercept sort changes and delegate to parent via onSortChange.
+      // TanStack Table's default toggle cycles asc → desc → false (unsorted).
+      // We override: same column = flip direction, different column = start desc.
       const newSorting = typeof updater === 'function' ? updater(sorting) : updater
       if (newSorting.length > 0) {
         const col = newSorting[0]
-        onSortChange(col.id, col.desc ? 'desc' : 'asc')
+        // If the user clicked the same column that is already sorted,
+        // simply flip the direction (TanStack may have cycled to unsorted)
+        if (col.id === sortBy) {
+          onSortChange(col.id, sortDir === 'desc' ? 'asc' : 'desc')
+        } else {
+          onSortChange(col.id, col.desc ? 'desc' : 'asc')
+        }
+      } else {
+        // TanStack Table cleared sorting (3rd click) — treat as flip instead
+        onSortChange(sortBy, sortDir === 'desc' ? 'asc' : 'desc')
       }
     },
     getCoreRowModel: getCoreRowModel(),
@@ -199,8 +210,8 @@ export function LeaderboardTable({
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                      {sorted && (
-                        <span className="sort-indicator">
+                      {canSort && (
+                        <span className={`sort-indicator${sorted ? '' : ' sort-indicator--placeholder'}`}>
                           {sorted === 'asc' ? '▲' : '▼'}
                         </span>
                       )}

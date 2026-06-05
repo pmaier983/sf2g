@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { triggerReclassify, type ReclassifyResult } from '../server/reclassify'
 import { triggerWindEnrichment, type WindEnrichmentResult } from '../server/wind-enrichment'
-import { triggerCronJobs, type CronResult } from '../server/cron'
+import type { CronResult } from '../server/cron'
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -61,6 +61,7 @@ export function DevToolsPanel() {
     setCronError(null)
 
     try {
+      const { triggerCronJobs } = await import('../server/cron')
       const res = await triggerCronJobs()
       setCronResult(res)
     } catch (err) {
@@ -673,6 +674,25 @@ export function DevToolsPanel() {
             width: calc(100vw - 40px);
             right: 20px;
             left: 20px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .dev-tools__toggle {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+            opacity: 0.3;
+            bottom: calc(3.5rem + env(safe-area-inset-bottom) + 8px);
+            right: 8px;
+            box-shadow: none;
+            border-color: transparent;
+            background: var(--color-surface-elevated);
+          }
+          .dev-tools__toggle:hover {
+            opacity: 0.8;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
           }
         }
       `}</style>

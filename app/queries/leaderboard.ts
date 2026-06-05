@@ -50,6 +50,7 @@ export interface FilteredLeaderboardParams {
   dateTo?: string
   routeCategories?: string[]
   company?: string
+  excludeWeekends?: boolean
 }
 
 export function filteredLeaderboardQueryOptions(params: FilteredLeaderboardParams) {
@@ -61,10 +62,10 @@ export function filteredLeaderboardQueryOptions(params: FilteredLeaderboardParam
   })
 }
 
-export function pprDawnRiderIdsQueryOptions() {
+export function pprDawnRiderIdsQueryOptions(params?: { dateFrom?: string; dateTo?: string; routeCategories?: string[] }) {
   return queryOptions({
-    queryKey: ['ppr-dawn-riders'] as const,
-    queryFn: () => fetchPprDawnRiderIds(),
+    queryKey: ['ppr-dawn-riders', params ?? {}] as const,
+    queryFn: () => fetchPprDawnRiderIds({ data: params ?? {} }),
     staleTime: 300_000,
     gcTime: 1_800_000,
   })

@@ -211,11 +211,34 @@ export interface KnownLandmark {
   description: string
 }
 
-/** PPR = Peet's Coffee at Park Presidio — the classic SF2G departure point */
+/**
+ * PPR intercept checkpoints — locations where the Peet's Peloton Ride
+ * can be detected along its route, each with an expected local arrival time.
+ * A ride qualifies as a PPR ride if it passes within 500m of ANY intercept
+ * at approximately the right time (±10 min of that point's targetMinutes).
+ */
+export interface PprIntercept {
+  lat: number
+  lng: number
+  /** Expected arrival time in minutes from midnight (local time) */
+  targetMinutes: number
+  label: string
+}
+
+export const PPR_INTERCEPTS: readonly PprIntercept[] = [
+  { lat: 37.773433, lng: -122.438898, targetMinutes: 360, label: 'PPR @ Peets' },       // 6:00 AM
+  { lat: 37.770192, lng: -122.494076, targetMinutes: 370, label: 'PPR @ JFK/36' },      // 6:10 AM
+  { lat: 37.698411, lng: -122.495033, targetMinutes: 390, label: 'PPR @ JD/Skyline' },  // 6:30 AM
+] as const
+
+/**
+ * @deprecated Use PPR_INTERCEPTS instead. Kept for backward compatibility
+ * with components that only need the primary PPR location (e.g. map markers).
+ */
 export const PPR_COORDS: KnownLandmark = {
   name: "PPR (Peet's Coffee at Park Presidio)",
-  lat: 37.773433,
-  lng: -122.438898,
+  lat: PPR_INTERCEPTS[0].lat,
+  lng: PPR_INTERCEPTS[0].lng,
   description: 'Classic SF2G morning departure point',
 }
 
@@ -391,3 +414,60 @@ export const CRON_SYNC_BUDGET = {
   /** Max time allowed for the entire sync-all-users operation (ms) */
   MAX_TOTAL_DURATION_MS: 10 * 60 * 1000, // 10 minutes
 } as const
+
+// ---------------------------------------------------------------------------
+// Route Waypoints (for weather forecast sampling)
+// ---------------------------------------------------------------------------
+
+export interface RouteWaypoint {
+  lat: number
+  lng: number
+  mile: number
+  label: string
+}
+
+/** Simplified waypoints per route for weather sampling (8-10 points each) */
+export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
+  bayway: [
+    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
+    { lat: 37.755, lng: -122.418, mile: 2, label: 'Mission / UCSF' },
+    { lat: 37.728, lng: -122.400, mile: 4, label: 'Glen Park' },
+    { lat: 37.690, lng: -122.400, mile: 7, label: 'Daly City' },
+    { lat: 37.660, lng: -122.390, mile: 10, label: 'South SF / SFO' },
+    { lat: 37.630, lng: -122.370, mile: 13, label: 'Millbrae' },
+    { lat: 37.580, lng: -122.310, mile: 18, label: 'Foster City / San Mateo' },
+    { lat: 37.540, lng: -122.280, mile: 22, label: 'Belmont / San Carlos' },
+    { lat: 37.500, lng: -122.260, mile: 26, label: 'Redwood City' },
+    { lat: 37.450, lng: -122.180, mile: 30, label: 'Palo Alto / Mountain View' },
+  ],
+  skyline: [
+    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
+    { lat: 37.755, lng: -122.450, mile: 2, label: 'Golden Gate Park' },
+    { lat: 37.730, lng: -122.470, mile: 4, label: 'Sunset / Lake Merced' },
+    { lat: 37.690, lng: -122.485, mile: 7, label: 'Daly City / Skyline entry' },
+    { lat: 37.630, lng: -122.470, mile: 12, label: 'San Bruno Mountain' },
+    { lat: 37.570, lng: -122.440, mile: 18, label: 'Crystal Springs' },
+    { lat: 37.520, lng: -122.350, mile: 24, label: 'Woodside' },
+    { lat: 37.450, lng: -122.280, mile: 30, label: 'Stanford / Palo Alto' },
+  ],
+  hmbw: [
+    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
+    { lat: 37.755, lng: -122.500, mile: 3, label: 'Great Highway' },
+    { lat: 37.700, lng: -122.505, mile: 6, label: 'Pacifica / Sharp Park' },
+    { lat: 37.630, lng: -122.490, mile: 10, label: "Devil's Slide" },
+    { lat: 37.550, lng: -122.510, mile: 16, label: 'Half Moon Bay (north)' },
+    { lat: 37.470, lng: -122.430, mile: 22, label: 'Half Moon Bay (south)' },
+    { lat: 37.400, lng: -122.350, mile: 28, label: 'Hwy 92 / inland' },
+    { lat: 37.450, lng: -122.180, mile: 35, label: 'Peninsula (south)' },
+  ],
+  royale: [
+    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
+    { lat: 37.740, lng: -122.420, mile: 2, label: 'Mission / Cesar Chavez' },
+    { lat: 37.710, lng: -122.405, mile: 5, label: 'Bernal Heights' },
+    { lat: 37.660, lng: -122.405, mile: 8, label: 'Daly City / Colma' },
+    { lat: 37.610, lng: -122.400, mile: 12, label: 'South SF / El Camino' },
+    { lat: 37.570, lng: -122.340, mile: 16, label: 'San Mateo' },
+    { lat: 37.520, lng: -122.280, mile: 21, label: 'San Carlos / Belmont' },
+    { lat: 37.450, lng: -122.180, mile: 28, label: 'Palo Alto / Mountain View' },
+  ],
+}

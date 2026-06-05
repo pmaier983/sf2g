@@ -815,8 +815,6 @@
 
 .profile-header__disconnect {
   margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-subtle);
 }
 
 .profile-header__disconnect-confirm {
@@ -1008,6 +1006,28 @@
   color: var(--color-text-muted);
 }
 
+.profile-rides__search {
+  flex: 1;
+  max-width: 260px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.profile-rides__search::placeholder {
+  color: var(--color-text-muted);
+}
+
+.profile-rides__search:focus {
+  border-color: var(--color-sf2g-orange);
+  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.15);
+}
+
 .profile-rides__table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--color-border);
@@ -1095,6 +1115,89 @@
   .profile-rides__name-col {
     max-width: 140px;
   }
+
+  .profile-rides__pagination {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
+
+/* Pagination controls */
+.profile-rides__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.profile-rides__page-info {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skeleton loading rows */
+.profile-rides__skeleton {
+  height: 1rem;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-sm);
+  animation: pulse 1.5s ease-in-out infinite;
+  width: 60%;
+}
+
+/* Excluded ride rows — greyed out with left border indicator */
+.profile-rides__row--excluded td {
+  opacity: 0.45;
+  transition: opacity var(--transition-fast);
+}
+
+.profile-rides__row--excluded:hover td {
+  opacity: 0.7;
+}
+
+.profile-rides__row--excluded .profile-rides__strava-link {
+  color: var(--color-text-muted);
+}
+
+/* Route cell — inline layout for route tag + excluded badge */
+.profile-rides__route-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Excluded badge */
+.profile-rides__excluded-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  color: #fff;
+  opacity: 1;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Restore button style */
+.edit-ride-btn--restore {
+  opacity: 1 !important;
+}
+
+/* Success button variant for restore action */
+.btn--success {
+  background: var(--color-success);
+  color: #fff;
+  border-color: var(--color-success);
+}
+
+.btn--success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-success) 85%, black);
 }
 
 /* ============================================================
@@ -1560,6 +1663,170 @@
   font-weight: var(--font-bold);
 }
 
+
+/* ── Speed Improvement ── */
+.fun-stats__speed-improvement {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.fun-stats__speed-rides {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fun-stats__speed-ride-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.fun-stats__speed-ride-card:hover {
+  border-color: var(--color-sf2g-orange);
+  box-shadow: var(--shadow-sm);
+}
+
+.fun-stats__speed-ride-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-1);
+}
+
+.fun-stats__speed-ride-date {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__speed-ride-speed {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-sf2g-orange);
+  margin: 2px 0;
+}
+
+.fun-stats__speed-ride-name {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fun-stats__speed-arrow {
+  font-size: var(--text-2xl);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  font-weight: var(--font-bold);
+}
+
+.fun-stats__speed-summary {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.fun-stats__speed-improvement-positive {
+  color: var(--color-success);
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+}
+
+.fun-stats__speed-improvement-negative {
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+  font-style: italic;
+}
+
+.fun-stats__speed-time-saved {
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+.fun-stats__speed-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+
+.fun-stats__speed-message-icon {
+  font-size: 2rem;
+}
+
+.fun-stats__speed-message-text {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+}
+
+/* ── Speed Improvement Subsection ── */
+.fun-stats__speed-subsection-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+/* ── Average Speed Improvement ── */
+.fun-stats__avg-speed-improvement {
+  margin-top: var(--space-3);
+}
+
+.fun-stats__avg-speed-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.fun-stats__avg-speed-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 100px;
+}
+
+.fun-stats__avg-speed-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.fun-stats__avg-speed-value--highlight {
+  color: var(--color-success);
+}
+
+.fun-stats__avg-speed-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* ── Fun Stats responsive ── */
 @media (max-width: 640px) {
   .fun-stats__comparisons {
@@ -1577,6 +1844,19 @@
   .fun-stats__comparison-value,
   .fun-stats__pattern-value {
     font-size: var(--text-xl);
+  }
+
+  .fun-stats__speed-rides {
+    flex-direction: column;
+  }
+
+  .fun-stats__speed-arrow {
+    transform: rotate(90deg);
+  }
+
+  .fun-stats__avg-speed-content {
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .fun-stats__day-heatmap {

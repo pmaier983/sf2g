@@ -35,6 +35,10 @@ declare module '*.webp' {
 // PostHog analytics environment variables
 /// <reference types="vite/client" />
 interface ImportMetaEnv {
+  readonly DEV: boolean
+  readonly PROD: boolean
+  readonly MODE: string
+  readonly BASE_URL: string
   readonly VITE_POSTHOG_KEY?: string
 }
 

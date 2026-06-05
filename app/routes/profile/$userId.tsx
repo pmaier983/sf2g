@@ -74,7 +74,7 @@ function ProfilePage() {
     }
   }, [userId])
 
-  // Compute values needed by hooks (safe even when profile/rides are null)
+  // Rides are server-side filtered (is_hidden=false), so all stats exclude hidden rides
   const totalRides = rides?.length ?? 0
   const totalDistanceMeters = rides
     ? rides.reduce((sum, r) => sum + (r.distance_meters ?? 0), 0)
@@ -185,7 +185,7 @@ function ProfilePage() {
           </p>
           <Link
             to="/leaderboard"
-            search={{ routes: [], search: '', ppr: false, other: false, company: undefined, user: undefined, view: 'riders' as const, chart: false, sort: 'sf2g_total', dir: 'desc' as const, rSort: 'ride_date', rDir: 'desc' as const, page: 1, dateFrom: undefined, dateTo: undefined, datePreset: undefined, density: 'expanded' as const }}
+            search={{ routes: [], search: '', ppr: false, other: false, weekends: false, company: undefined, user: undefined, view: 'riders' as const, duration: '1w', chart: false, sort: 'sf2g_total', dir: 'desc' as const, rSort: 'ride_date', rDir: 'desc' as const, page: 1, dateFrom: undefined, dateTo: undefined, datePreset: undefined, density: 'expanded' as const }}
             className="btn btn--primary"
             style={{ marginTop: 'var(--space-4)' }}
           >
@@ -367,33 +367,20 @@ function ProfilePage() {
           )}
         </div>
 
-        {/* All Rides Table */}
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <h2 style={{
-            fontSize: 'var(--text-lg)',
-            fontWeight: 'var(--font-bold)',
-            marginBottom: 'var(--space-4)',
-            color: 'var(--color-text)',
-          }}>
-            Ride History
-          </h2>
-          {ridesLoading ? (
-            <div className="loading-state">
-              <div className="loading-state__spinner" />
-              <p className="loading-state__text">Loading rides...</p>
-            </div>
-          ) : !rides || rides.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state__icon">🚴</div>
-              <h3 className="empty-state__title">No rides yet</h3>
-              <p className="empty-state__description">
-                This rider hasn't synced any rides yet.
-              </p>
-            </div>
-          ) : (
-            <ProfileRidesTable rides={rides} />
-          )}
-        </div>
+        {/* All Rides Table — only visible on own profile */}
+        {isOwnProfile && (
+          <div style={{ marginTop: 'var(--space-5)' }}>
+            <h2 style={{
+              fontSize: 'var(--text-lg)',
+              fontWeight: 'var(--font-bold)',
+              marginBottom: 'var(--space-4)',
+              color: 'var(--color-text)',
+            }}>
+              Ride History
+            </h2>
+            <ProfileRidesTable profileUserId={userId} />
+          </div>
+        )}
       </div>
     </div>
   )

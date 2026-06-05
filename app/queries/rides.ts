@@ -19,6 +19,29 @@ export function userRidesQueryOptions(userId: string) {
   })
 }
 
+/**
+ * Query options for ALL of a user's rides (including non-SF2G).
+ * Paginated server-side for the profile Ride History table.
+ *
+ * - queryKey: ['allUserRides', userId, page]
+ * - staleTime: 2 minutes
+ */
+export function allUserRidesQueryOptions(userId: string, page: number, pageSize = 25) {
+  return queryOptions({
+    queryKey: ['allUserRides', userId, page, pageSize] as const,
+    queryFn: () => fetchUserRides({
+      data: {
+        userId,
+        includeAllRides: true,
+        includeHidden: true,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+      },
+    }),
+    staleTime: 120_000,
+  })
+}
+
 export function userRouteRidesQueryOptions(userId: string, routeCategory?: RouteCategory) {
   return queryOptions({
     queryKey: ['rides', userId, routeCategory ?? 'all'] as const,
@@ -82,6 +105,8 @@ export interface RidesLeaderboardParams {
   dateFrom?: string
   dateTo?: string
   includeOther?: boolean
+  excludeWeekends?: boolean
+  pprRideIds?: string[]
 }
 
 /**

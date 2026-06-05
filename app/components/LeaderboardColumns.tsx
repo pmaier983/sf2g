@@ -344,7 +344,7 @@ export const leaderboardColumns = [
     },
     {
       id: 'sf2g_dist_pct',
-      header: () => <HeaderWithTooltip label="% Dist" tooltip="SF2G distance as % of total distance (only counting years with ≥1 SF2G ride)" />,
+      header: () => <HeaderWithTooltip label="% Dist" tooltip="SF2G commute distance as a percentage of total cycling distance" />,
       cell: (info) => (
         <TinyPie
           sf2gValue={info.row.original.sf2g_distance_meters}
@@ -363,7 +363,7 @@ export const leaderboardColumns = [
     },
     {
       id: 'sf2g_elev_pct',
-      header: () => <HeaderWithTooltip label="% Elev" tooltip="SF2G elevation as % of total elevation (only counting years with ≥1 SF2G ride)" />,
+      header: () => <HeaderWithTooltip label="% Elev" tooltip="SF2G commute elevation as a percentage of total cycling elevation" />,
       cell: (info) => (
         <TinyPie
           sf2gValue={info.row.original.sf2g_elevation_meters}

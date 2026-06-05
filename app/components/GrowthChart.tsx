@@ -447,7 +447,7 @@ export function GrowthChart({
       </ResponsiveContainer>
 
       {/* Custom clickable legend */}
-      {!isMobile && riderIds.length > 0 && (
+      {riderIds.length > 0 && (
         <div className="growth-chart__legend">
           {riderIds.map((riderId) => {
             const color = riderColorMap.get(riderId) ?? 'var(--color-text-muted)'

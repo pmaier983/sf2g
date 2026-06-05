@@ -19,6 +19,14 @@ export function SyncStatus() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null)
   const [hasSyncedThisSession, setHasSyncedThisSession] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
+
+  // Defer rendering until after hydration to avoid SSR/client mismatch.
+  // This component depends on sessionStorage + client-resolved user data +
+  // locale-dependent date formatting — all of which differ server vs client.
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   // Check sessionStorage on mount
   useEffect(() => {
@@ -31,7 +39,7 @@ export function SyncStatus() {
     }
   }, [])
 
-  if (!user) return null
+  if (!hasMounted || !user) return null
 
   const handleSync = async () => {
     setIsSyncing(true)

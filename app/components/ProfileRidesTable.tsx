@@ -1,15 +1,23 @@
 /**
- * ProfileRidesTable — sortable table of a user's SF2G rides.
+ * ProfileRidesTable — sortable, paginated table of ALL user rides.
  *
  * Features:
+ * - Shows ALL rides (SF2G and non-SF2G), not just classified ones
+ * - Server-side pagination (25 per page)
  * - Sortable columns (date, route, speed, distance, elevation, time)
- * - Route category tag
+ * - Route category tag (or "—" for non-SF2G rides)
  * - Unit-aware formatting (mi/km)
+ * - Edit button for own profile
  */
 import { useState, useMemo } from 'react'
-import type { Ride } from '../lib/database.types'
+import { useQuery } from '@tanstack/react-query'
 import { RouteTag } from './RouteTag'
 import { useUnit } from '../lib/useUnit'
+import { currentUserQueryOptions } from '../queries/user'
+import { allUserRidesQueryOptions } from '../queries/rides'
+import { EditRideDialog } from './EditRideDialog'
+import type { EditRideData } from './EditRideDialog'
+import { Tooltip } from './Tooltip'
 import {
   formatDistance,
   formatElevation,
@@ -19,7 +27,7 @@ import {
 } from '../lib/leaderboard-utils'
 
 interface ProfileRidesTableProps {
-  rides: Ride[]
+  profileUserId: string
 }
 
 type SortKey =
@@ -32,7 +40,7 @@ type SortKey =
   | 'moving_time_seconds'
 
 
-const COLUMNS: {
+const BASE_COLUMNS: {
   key: SortKey
   label: string
   className?: string
@@ -46,10 +54,21 @@ const COLUMNS: {
   { key: 'moving_time_seconds', label: 'Time' },
 ]
 
-export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
+const PAGE_SIZE = 25
+
+export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
   const unit = useUnit()
+  const { data: currentUser } = useQuery(currentUserQueryOptions())
+  const [editingRide, setEditingRide] = useState<EditRideData | null>(null)
+  const isOwnProfile = currentUser?.id === profileUserId
   const [sortKey, setSortKey] = useState<SortKey>('ride_date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+
+  const { data: rides, isLoading } = useQuery(
+    allUserRidesQueryOptions(profileUserId, page, PAGE_SIZE),
+  )
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -62,7 +81,15 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
 
 
   const sorted = useMemo(() => {
-    return [...rides].sort((a, b) => {
+    if (!rides) return []
+    let filtered = rides
+    if (search.trim()) {
+      const term = search.trim().toLowerCase()
+      filtered = rides.filter((r) =>
+        r.name?.toLowerCase().includes(term),
+      )
+    }
+    return [...filtered].sort((a, b) => {
       const aVal = a[sortKey]
       const bVal = b[sortKey]
 
@@ -82,17 +109,26 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
       const numB = Number(bVal)
       return sortDir === 'asc' ? numA - numB : numB - numA
     })
-  }, [rides, sortKey, sortDir])
+  }, [rides, sortKey, sortDir, search])
 
-
+  const hasMore = rides?.length === PAGE_SIZE
+  const totalShown = (page - 1) * PAGE_SIZE + (rides?.length ?? 0)
 
   return (
     <div className="profile-rides">
-      {/* Ride count */}
+      {/* Ride count + pagination info */}
       <div className="profile-rides__filter-row">
         <span className="profile-rides__count">
-          {rides.length} SF2G ride{rides.length !== 1 ? 's' : ''}
+          All rides · Page {page}{isLoading ? '' : ` (${totalShown} shown)`}
         </span>
+        <input
+          id="profile-rides-search"
+          type="text"
+          className="profile-rides__search"
+          placeholder="Search rides…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {/* Table */}
@@ -100,7 +136,7 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
         <table className="profile-rides__table">
           <thead>
             <tr>
-              {COLUMNS.map((col) => {
+              {BASE_COLUMNS.map((col) => {
                 const isSorted = sortKey === col.key
                 return (
                   <th
@@ -125,18 +161,31 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
                   </th>
                 )
               })}
+              {isOwnProfile && <th className="profile-rides__edit-col" />}
             </tr>
           </thead>
           <tbody>
-            {sorted.length === 0 ? (
+            {isLoading ? (
+              // Skeleton rows
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={`skeleton-${String(i)}`}>
+                  {BASE_COLUMNS.map((col) => (
+                    <td key={col.key}>
+                      <div className="profile-rides__skeleton" />
+                    </td>
+                  ))}
+                  {isOwnProfile && <td />}
+                </tr>
+              ))
+            ) : sorted.length === 0 ? (
               <tr>
-                <td colSpan={COLUMNS.length} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
+                <td colSpan={BASE_COLUMNS.length + (isOwnProfile ? 1 : 0)} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-muted)' }}>
                   No rides found
                 </td>
               </tr>
             ) : (
               sorted.map((ride) => (
-                <tr key={ride.id}>
+                <tr key={ride.id} className={ride.is_hidden ? 'profile-rides__row--excluded' : ''}>
                   <td>{formatRideDate(ride.ride_date) ?? '—'}</td>
                   <td className="profile-rides__name-col" title={ride.name ?? undefined}>
                     {ride.strava_activity_id ? (
@@ -153,22 +202,79 @@ export function ProfileRidesTable({ rides }: ProfileRidesTableProps) {
                     )}
                   </td>
                   <td>
-                    {ride.route_category ? (
-                      <RouteTag category={ride.route_category} />
-                    ) : (
-                      <span className="text-muted">—</span>
-                    )}
+                    <div className="profile-rides__route-cell">
+                      {ride.route_category ? (
+                        <RouteTag category={ride.route_category} />
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                      {ride.is_hidden && (
+                        <span className="profile-rides__excluded-badge">Excluded</span>
+                      )}
+                    </div>
                   </td>
                   <td>{formatSpeed(ride.average_speed_mps, unit)}</td>
                   <td>{formatDistance(ride.distance_meters, unit)}</td>
                   <td>{formatElevation(ride.elevation_gain_meters, unit)}</td>
                   <td>{formatMovingTime(ride.moving_time_seconds)}</td>
+                  {isOwnProfile && (
+                    <td className="profile-rides__edit-col">
+                      <Tooltip content={ride.is_hidden ? 'Restore / edit this ride' : 'Edit this ride'}>
+                        <button
+                          className={`edit-ride-btn${ride.is_hidden ? ' edit-ride-btn--restore' : ''}`}
+                          onClick={() =>
+                            setEditingRide({
+                              id: ride.id,
+                              name: ride.name,
+                              rideDate: ride.ride_date,
+                              routeCategory: ride.route_category,
+                              stravaActivityId: ride.strava_activity_id,
+                              isHidden: ride.is_hidden,
+                            })
+                          }
+                          aria-label={ride.is_hidden ? 'Restore ride' : 'Edit ride'}
+                        >
+                          {ride.is_hidden ? '↩️' : '✏️'}
+                        </button>
+                      </Tooltip>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination controls */}
+      <div className="profile-rides__pagination">
+        <button
+          className="btn btn--ghost btn--sm"
+          disabled={page === 1 || isLoading}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          ← Previous
+        </button>
+        <span className="profile-rides__page-info">
+          Page {page}
+        </span>
+        <button
+          className="btn btn--ghost btn--sm"
+          disabled={!hasMore || isLoading}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next →
+        </button>
+      </div>
+
+      {/* Edit Ride Dialog */}
+      {editingRide && (
+        <EditRideDialog
+          ride={editingRide}
+          isOpen={!!editingRide}
+          onClose={() => setEditingRide(null)}
+        />
+      )}
     </div>
   )
 }
