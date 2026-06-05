@@ -88,11 +88,11 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   search: '',
   ppr: false,
   other: false,
-  weekends: false,
+  weekends: true,
   company: undefined,
   user: undefined,
   view: 'riders',
-  duration: '1w',
+  duration: '1y',
   chart: false,
   sort: 'sf2g_total',
   dir: 'desc',
@@ -115,11 +115,11 @@ export const Route = createFileRoute('/leaderboard')({
     search: (raw.search as string) || '',
     ppr: toBool(raw.ppr),
     other: toBool(raw.other),
-    weekends: toBool(raw.weekends),
+    weekends: raw.weekends === undefined ? true : toBool(raw.weekends),
     company: (raw.company as string) || undefined,
     user: (raw.user as string) || undefined,
     view: (raw.view as 'riders' | 'rides' | 'alltime') || 'riders',
-    duration: (raw.duration as string) || '1w',
+    duration: (raw.duration as string) || '1y',
     chart: toBool(raw.chart),
     sort: (raw.sort as string) || 'sf2g_total',
     dir: (raw.dir as 'asc' | 'desc') || 'desc',
@@ -194,7 +194,7 @@ function LeaderboardPage() {
     if (search !== '') return true
     if (ppr) return true
     if (includeOther) return true
-    if (weekends) return true
+    if (!weekends) return true
     if (company) return true
     if (user) return true
     if (dateFrom) return true
@@ -208,7 +208,7 @@ function LeaderboardPage() {
     if (rSort !== 'ride_date') return true
     if (rDir !== 'desc') return true
     if (page !== 1) return true
-    if (duration !== '1w') return true
+    if (duration !== '1y') return true
     return false
   }, [routes, search, ppr, includeOther, weekends, company, user, dateFrom, dateTo, datePreset, view, chartOpen, density, sort, dir, rSort, rDir, page, duration])
 
@@ -424,19 +424,19 @@ function LeaderboardPage() {
           </button>
           <button
             type="button"
-            className={`mobile-view-header__btn${view === 'rides' ? ' mobile-view-header__btn--active' : ''}`}
-            onClick={() => updateSearch({ view: 'rides', page: 1 })}
-            aria-pressed={view === 'rides'}
-          >
-            🚴 Rides
-          </button>
-          <button
-            type="button"
             className={`mobile-view-header__btn${view === 'alltime' ? ' mobile-view-header__btn--active' : ''}`}
             onClick={() => updateSearch({ view: 'alltime', page: 1 })}
             aria-pressed={view === 'alltime'}
           >
             🏆 All Time
+          </button>
+          <button
+            type="button"
+            className={`mobile-view-header__btn${view === 'rides' ? ' mobile-view-header__btn--active' : ''}`}
+            onClick={() => updateSearch({ view: 'rides', page: 1 })}
+            aria-pressed={view === 'rides'}
+          >
+            🚴 Rides
           </button>
         </div>
       </div>
@@ -452,18 +452,18 @@ function LeaderboardPage() {
             👤 Riders
           </button>
           <button
-            className={`leaderboard__view-btn ${view === 'rides' ? 'leaderboard__view-btn--active' : ''}`}
-            onClick={() => updateSearch({ view: 'rides', page: 1 })}
-            aria-pressed={view === 'rides'}
-          >
-            🚴 Rides
-          </button>
-          <button
             className={`leaderboard__view-btn ${view === 'alltime' ? 'leaderboard__view-btn--active' : ''}`}
             onClick={() => updateSearch({ view: 'alltime', page: 1 })}
             aria-pressed={view === 'alltime'}
           >
             🏆 All Time
+          </button>
+          <button
+            className={`leaderboard__view-btn ${view === 'rides' ? 'leaderboard__view-btn--active' : ''}`}
+            onClick={() => updateSearch({ view: 'rides', page: 1 })}
+            aria-pressed={view === 'rides'}
+          >
+            🚴 Rides
           </button>
         </div>
         <button
