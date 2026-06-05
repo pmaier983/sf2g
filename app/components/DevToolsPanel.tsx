@@ -103,7 +103,7 @@ export function DevToolsPanel() {
               <h4 className="dev-tools__section-title">Route Reclassification</h4>
               <p className="dev-tools__section-desc">
                 Re-run route &amp; destination classifiers on <strong>all</strong> rides
-                in the database using the latest classification logic.
+                using the latest logic. Rides with manual route overrides are preserved.
               </p>
               <button
                 className="dev-tools__action-btn"
@@ -158,6 +158,12 @@ export function DevToolsPanel() {
                     <span className="dev-tools__stat-value">{result.destinationChanges}</span>
                     <span className="dev-tools__stat-label">Dest Changes</span>
                   </div>
+                  {result.skippedOverrides > 0 && (
+                    <div className="dev-tools__stat" style={{ gridColumn: '1 / -1' }}>
+                      <span className="dev-tools__stat-value">{result.skippedOverrides}</span>
+                      <span className="dev-tools__stat-label">🔒 Skipped (manual overrides)</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Category transition breakdown */}

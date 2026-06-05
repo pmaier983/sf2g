@@ -39,6 +39,7 @@ export interface ForecastResult {
   sunset: string
   summary: {
     avgTemp: number
+    minTemp: number            // °F — lowest temperature along route
     maxPrecipProb: number
     avgCloudCover: number
     avgVisibility: number
@@ -417,6 +418,7 @@ export const fetchRouteForecast = createServerFn({ method: 'GET' })
       sunset,
       summary: {
         avgTemp: Math.round(avg(temps) * 10) / 10,
+        minTemp: temps.length > 0 ? Math.round(Math.min(...temps) * 10) / 10 : 0,
         maxPrecipProb: Math.max(...precipProbs, 0),
         avgCloudCover: Math.round(avg(cloudCovers)),
         avgVisibility: Math.round(avg(visibilities)),

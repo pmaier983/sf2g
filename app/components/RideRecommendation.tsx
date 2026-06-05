@@ -252,6 +252,26 @@ export function RideRecommendation({ summary }: RideRecommendationProps) {
             {summary.fogProbability}%
           </span>
         </div>
+
+        <div className="ride-recommendation__stat-divider" />
+
+        <div className="ride-recommendation__stat">
+          <span className="ride-recommendation__stat-icon">🌡️</span>
+          <span className="ride-recommendation__stat-label">Low</span>
+          <span
+            className="ride-recommendation__stat-value"
+            style={{
+              color:
+                summary.minTemp < 40
+                  ? 'var(--color-error)'
+                  : summary.minTemp < 50
+                    ? 'var(--color-warning)'
+                    : 'var(--color-success)',
+            }}
+          >
+            {Math.round(summary.minTemp)}°F
+          </span>
+        </div>
       </div>
     </div>
   )

@@ -15,7 +15,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createServiceClient } from '../lib/supabase'
 import { classifyRoute } from '../lib/route-classifier'
 import { classifyDestination } from '../lib/destination-classifier'
-import type { RouteCategory, ClassificationMethod, DestinationCompany } from '../lib/database.types'
+import type { RouteCategory, ClassificationMethod, DestinationCompany, RideUpdate } from '../lib/database.types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +26,7 @@ export interface ReclassifyResult {
   updated: number
   routeChanges: number
   destinationChanges: number
+  skippedOverrides: number
   errors: string[]
   breakdown: Record<string, number>
   durationMs: number
@@ -181,8 +182,45 @@ export async function performReclassification(): Promise<ReclassifyResult> {
   let updated = 0
   let routeChanges = 0
   let destinationChanges = 0
+  let skippedOverrides = 0
   const breakdown: Record<string, number> = {}
   const debugSamples: ReclassifyResult['debug'] = []
+
+  // ---------------------------------------------------------------------------
+  // Fetch ride IDs with manual route overrides — these must NOT be reclassified
+  // ---------------------------------------------------------------------------
+  const overrideRouteRideIds = new Set<string>()
+  /** Full overrides for re-application after reclassification */
+  const overridesByRideId = new Map<string, {
+    override_route_category: string | null
+    is_not_sf2g: boolean
+  }>()
+
+  try {
+    const { data: overrides, error: overrideError } = await supabase
+      .from('ride_overrides')
+      .select('ride_id, override_route_category, is_not_sf2g')
+      .or('override_route_category.not.is.null,is_not_sf2g.eq.true')
+
+    if (overrideError) {
+      errors.push(`Failed to fetch ride overrides: ${overrideError.message}`)
+    } else if (overrides) {
+      for (const ov of overrides) {
+        if (ov.override_route_category !== null || ov.is_not_sf2g) {
+          overrideRouteRideIds.add(ov.ride_id)
+          overridesByRideId.set(ov.ride_id, {
+            override_route_category: ov.override_route_category,
+            is_not_sf2g: ov.is_not_sf2g ?? false,
+          })
+        }
+      }
+      if (overrideRouteRideIds.size > 0) {
+        console.log(`[reclassify] Skipping route reclassification for ${overrideRouteRideIds.size} ride(s) with manual overrides`)
+      }
+    }
+  } catch (err) {
+    errors.push(`Failed to fetch ride overrides: ${err instanceof Error ? err.message : String(err)}`)
+  }
 
   // Paginate through all non-hidden rides
   let offset = 0
@@ -213,6 +251,44 @@ export async function performReclassification(): Promise<ReclassifyResult> {
 
     for (const ride of rides as unknown as ClassifiableRide[]) {
       try {
+        const hasRouteOverride = overrideRouteRideIds.has(ride.id)
+
+        if (hasRouteOverride) {
+          // This ride has a manual route override — skip route reclassification
+          // but still re-run destination classification
+          skippedOverrides++
+
+          const destResult = classifyDestination({
+            start_latlng: ride.start_latlng,
+            end_latlng: ride.end_latlng,
+            summary_polyline: ride.summary_polyline,
+          })
+
+          const newCompany = destResult?.company ?? null
+          const newOffice = destResult?.officeName ?? null
+          const newDistance = destResult?.distanceMeters ?? null
+
+          const destChanged =
+            newCompany !== ride.destination_company ||
+            newOffice !== ride.destination_office ||
+            newDistance !== ride.destination_distance_meters
+
+          if (destChanged) {
+            destinationChanges++
+            batchUpdates.push({
+              id: ride.id,
+              // Preserve current route classification
+              rc: ride.route_category ?? '',
+              cc: ride.classification_confidence ?? 0,
+              cm: ride.classification_method ?? 'none',
+              dc: newCompany ?? '',
+              do: newOffice ?? '',
+              dd: newDistance,
+            })
+          }
+          continue
+        }
+
         // Classify the ride
         const routeResult = classifyRoute({
           summary_polyline: ride.summary_polyline,
@@ -292,6 +368,33 @@ export async function performReclassification(): Promise<ReclassifyResult> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Re-apply route overrides as a safety net
+  // ---------------------------------------------------------------------------
+  if (overridesByRideId.size > 0) {
+    console.log(`[reclassify] Re-applying ${overridesByRideId.size} route override(s)`)
+    for (const [rideId, override] of overridesByRideId) {
+      try {
+        const updateFields: RideUpdate = {}
+        if (override.is_not_sf2g) {
+          updateFields.route_category = null
+        } else if (override.override_route_category !== null) {
+          updateFields.route_category = override.override_route_category as RouteCategory
+        }
+
+        if (Object.keys(updateFields).length > 0) {
+          await supabase
+            .from('rides')
+            .update(updateFields)
+            .eq('id', rideId)
+        }
+      } catch (err) {
+        // Non-critical — log but don't fail
+        console.warn(`[reclassify] Failed to re-apply override for ride ${rideId}: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
+  }
+
   // Refresh both materialized views in parallel
   const [leaderboardResult, companyResult] = await Promise.allSettled([
     supabase.rpc('refresh_leaderboard'),
@@ -310,6 +413,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
     updated,
     routeChanges,
     destinationChanges,
+    skippedOverrides,
     errors,
     breakdown,
     durationMs: Date.now() - startTime,
