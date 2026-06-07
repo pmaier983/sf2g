@@ -17,6 +17,7 @@ import { LeaderboardTable } from '../components/LeaderboardTable'
 import { RidesLeaderboardTable } from '../components/RidesLeaderboardTable'
 import { AllTimeTable } from '../components/AllTimeTable'
 import { GrowthChart } from '../components/GrowthChart'
+import { AllTimeChart } from '../components/AllTimeChart'
 import { FilterChips } from '../components/FilterChips'
 import { SyncStatus } from '../components/SyncStatus'
 import { RIDER_COLORS } from '../lib/constants'
@@ -350,6 +351,9 @@ function LeaderboardPage() {
       })
     }
 
+    // Exclude riders with zero SF2G rides
+    data = data.filter((entry) => (entry.sf2g_total ?? 0) > 0)
+
     return data
   }, [leaderboardData, routes, ppr, pprDawnRiderIds, pprRideCounts, company, companyRiderIds, search, hasCompoundFilters, sort, dir])
 
@@ -385,6 +389,29 @@ function LeaderboardPage() {
     }
     return map
   }, [leaderboardData])
+
+  // ---- All Time rider maps (for chart) ----
+  const allTimeRiderNameMap = useMemo(() => {
+    const map = new Map<string, string>()
+    if (allTimeQuery.data) {
+      for (const entry of allTimeQuery.data) {
+        map.set(entry.userId, entry.displayName ?? 'Rider')
+      }
+    }
+    return map
+  }, [allTimeQuery.data])
+
+  const allTimeSelectedIds = useMemo(() => {
+    if (!allTimeQuery.data) return new Set<string>()
+    return new Set(allTimeQuery.data.slice(0, 10).map((e) => e.userId))
+  }, [allTimeQuery.data])
+
+  const allTimeRiderColorMap = useMemo(() => {
+    const map = new Map<string, string>()
+    const ids = allTimeQuery.data?.slice(0, 10) ?? []
+    ids.forEach((e, i) => map.set(e.userId, RIDER_COLORS[i % RIDER_COLORS.length]))
+    return map
+  }, [allTimeQuery.data])
 
   // ---- Rider selection handlers ----
   const handleToggleRider = useCallback((userId: string) => {
@@ -559,7 +586,16 @@ function LeaderboardPage() {
         {/* Side panel for Growth Chart — LEFT of table */}
         {chartOpen && (
           <aside className="leaderboard__chart-panel">
-            {growthData && growthData.length > 0 ? (
+            {view === 'alltime' ? (
+              <AllTimeChart
+                data={allTimeQuery.data ?? []}
+                durationDays={durationDays}
+                durationLabel={getDurationLabel(duration)}
+                riderColorMap={allTimeRiderColorMap}
+                riderNameMap={allTimeRiderNameMap}
+                selectedRiderIds={allTimeSelectedIds}
+              />
+            ) : growthData && growthData.length > 0 ? (
               <GrowthChart
                 growthData={growthData}
                 dailyData={dailyData}

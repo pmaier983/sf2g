@@ -21,6 +21,7 @@ export interface AllTimeEntry {
   windowStart: string // ISO date
   windowEnd: string   // ISO date
   totalSf2gRides: number
+  rideDatesInWindow: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +124,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
       windowStart: string
       windowEnd: string
       totalRides: number
+      rideDatesInWindow: string[]
     }> = []
 
     for (const [userId, dates] of ridesByUser) {
@@ -130,6 +132,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
       let maxRides = 0
       let bestStart = ''
       let bestEnd = ''
+      let bestDates: string[] = []
 
       for (let i = 0; i < sortedDates.length; i++) {
         const windowStart = new Date(sortedDates[i])
@@ -148,6 +151,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
           maxRides = count
           bestStart = sortedDates[i]
           bestEnd = sortedDates[Math.min(i + count - 1, sortedDates.length - 1)]
+          bestDates = sortedDates.slice(i, i + count)
         }
       }
 
@@ -157,6 +161,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
         windowStart: bestStart,
         windowEnd: bestEnd,
         totalRides: sortedDates.length,
+        rideDatesInWindow: bestDates,
       })
     }
 
@@ -188,5 +193,6 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
       windowStart: r.windowStart,
       windowEnd: r.windowEnd,
       totalSf2gRides: r.totalRides,
+      rideDatesInWindow: r.rideDatesInWindow,
     }))
   })

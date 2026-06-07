@@ -70,20 +70,22 @@ const DATE_PRESETS: DatePresetDef[] = [
     },
   },
   {
+    key: 'last-30-days',
+    label: 'Last 30 Days',
+    getRange: () => {
+      const now = new Date()
+      const from = new Date(now)
+      from.setDate(from.getDate() - 30)
+      return { from: toISODate(from), to: toISODate(now) }
+    },
+  },
+  {
     key: 'this-month',
     label: 'This Month',
     getRange: () => {
       const now = new Date()
       const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
       return { from, to: toISODate(now) }
-    },
-  },
-  {
-    key: 'this-year',
-    label: 'This Year',
-    getRange: () => {
-      const now = new Date()
-      return { from: `${now.getFullYear()}-01-01`, to: toISODate(now) }
     },
   },
   {
@@ -97,21 +99,21 @@ const DATE_PRESETS: DatePresetDef[] = [
     },
   },
   {
-    key: 'last-30-days',
-    label: 'Last 30 Days',
+    key: 'last-365-days',
+    label: 'Last 365 Days',
     getRange: () => {
       const now = new Date()
       const from = new Date(now)
-      from.setDate(from.getDate() - 30)
+      from.setDate(from.getDate() - 365)
       return { from: toISODate(from), to: toISODate(now) }
     },
   },
   {
-    key: 'last-year',
-    label: 'Last Year',
+    key: 'this-year',
+    label: 'This Year',
     getRange: () => {
-      const lastYear = new Date().getFullYear() - 1
-      return { from: `${lastYear}-01-01`, to: `${lastYear}-12-31` }
+      const now = new Date()
+      return { from: `${now.getFullYear()}-01-01`, to: toISODate(now) }
     },
   },
   {
