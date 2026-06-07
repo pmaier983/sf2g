@@ -111,9 +111,9 @@ describe('classifyDestination', () => {
     })
 
     it('should return null for a point well outside radius from any office', () => {
-      // Well south of Netflix in Los Gatos (~1.6km away)
+      // Point in Saratoga — far from any office in the dataset
       const result = classifyDestination({
-        end_latlng: [37.2420, -121.9553],
+        end_latlng: [37.2640, -122.0230],
       })
       expect(result).toBeNull()
     })
@@ -133,21 +133,21 @@ describe('classifyDestination', () => {
   })
 
   // -----------------------------------------------------------------------
-  // Closed office matches (commutes to past offices still count)
+  // Multi-campus matching (companies with many nearby offices)
   // -----------------------------------------------------------------------
-  describe('closed office matching', () => {
-    it('should match Meta SF (Park Tower) even though closed', () => {
+  describe('multi-campus matching', () => {
+    it('should match Meta Burlingame Campus', () => {
       const result = classifyDestination({
-        end_latlng: [37.7901, -122.3968],
+        end_latlng: [37.5920, -122.3640],
       })
       expect(result).not.toBeNull()
       expect(result!.company).toBe('meta')
-      expect(result!.officeName).toContain('Park Tower')
+      expect(result!.officeName).toContain('Burlingame')
     })
 
-    it('should match Google SF (Embarcadero) even though closed', () => {
+    it('should match Google Bay View Campus', () => {
       const result = classifyDestination({
-        end_latlng: [37.7930, -122.3930],
+        end_latlng: [37.4135, -122.0695],
       })
       expect(result).not.toBeNull()
       expect(result!.company).toBe('google')
