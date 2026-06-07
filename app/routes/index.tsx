@@ -24,6 +24,7 @@ export const Route = createFileRoute('/')({
         dateTo: undefined,
         datePreset: undefined,
         density: 'expanded' as const,
+        reverse: false,
       },
     })
   },

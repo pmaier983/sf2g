@@ -15,27 +15,36 @@ const { LIMIT_15MIN, LIMIT_DAILY, SAFETY_MARGIN } = STRAVA_RATE_LIMIT
  * Check Strava response headers for rate limit status.
  * Returns `true` if we're approaching the limit and should stop making requests.
  *
- * Strava's `X-RateLimit-Usage` header format: `{15min_count},{daily_count}`
+ * Strava sends two usage headers:
+ * - `X-RateLimit-Usage`: general API usage — `{15min_count},{daily_count}`
+ * - `X-ReadRateLimit-Usage`: read-specific usage — same format
+ *
+ * Either header exceeding the safety margin triggers a stop.
  *
  * @param headers - The response headers from a Strava API call
  * @returns `true` if we're approaching the rate limit
  */
 export function isApproachingLimit(headers: Headers): boolean {
-  const usage = headers.get('X-RateLimit-Usage')
-  if (!usage) return false
+  // Check both the general rate limit and read-specific rate limit headers
+  const generalUsage = headers.get('X-RateLimit-Usage')
+  const readUsage = headers.get('X-ReadRateLimit-Usage')
 
-  const parts = usage.split(',')
-  if (parts.length < 2) return false
+  for (const usage of [generalUsage, readUsage]) {
+    if (!usage) continue
+    const parts = usage.split(',')
+    if (parts.length < 2) continue
+    const short = parseInt(parts[0], 10)
+    const daily = parseInt(parts[1], 10)
+    if (isNaN(short) || isNaN(daily)) continue
+    if (
+      short >= LIMIT_15MIN * SAFETY_MARGIN ||
+      daily >= LIMIT_DAILY * SAFETY_MARGIN
+    ) {
+      return true
+    }
+  }
 
-  const short = parseInt(parts[0], 10)
-  const daily = parseInt(parts[1], 10)
-
-  if (isNaN(short) || isNaN(daily)) return false
-
-  return (
-    short >= LIMIT_15MIN * SAFETY_MARGIN ||
-    daily >= LIMIT_DAILY * SAFETY_MARGIN
-  )
+  return false
 }
 
 /**

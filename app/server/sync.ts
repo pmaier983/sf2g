@@ -10,7 +10,7 @@ import { fetchAthleteActivities, type StravaActivitySummary } from '../lib/strav
 import { classifyRoute } from '../lib/route-classifier'
 import { classifyDestination } from '../lib/destination-classifier'
 import { clearSessionData } from '../lib/session'
-import type { RideInsert, RideUpdate, RouteCategory, UserUpdate, JsonValue } from '../lib/database.types'
+import type { RideInsert, RideUpdate, RouteCategory, UserUpdate } from '../lib/database.types'
 import { enrichMissingWindData } from './wind-enrichment'
 
 // ---------------------------------------------------------------------------
@@ -86,7 +86,9 @@ function activityToRideInsert(
     destination_company: destination?.company ?? null,
     destination_office: destination?.officeName ?? null,
     destination_distance_meters: destination?.distanceMeters ?? null,
-    strava_raw: activity as unknown as JsonValue,
+    // Note: strava_raw column intentionally omitted — Strava API TOS prohibits
+    // persistent caching of full raw API responses. The column is kept in the DB
+    // for backward compat but no longer receives new data.
   }
 }
 

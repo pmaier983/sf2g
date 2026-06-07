@@ -104,6 +104,20 @@ export function SyncStatus() {
         return
       }
 
+      if (message.startsWith('SYNC_COOLDOWN:')) {
+        toast.info('Sync cooldown', {
+          description: message.replace('SYNC_COOLDOWN:', ''),
+        })
+        return
+      }
+
+      if (message.startsWith('SYNC_BUSY:')) {
+        toast.warning('Server busy', {
+          description: message.replace('SYNC_BUSY:', ''),
+        })
+        return
+      }
+
       // Handle SYNC_FAILED (Strava outage etc)
       const cleanMessage = message.startsWith('SYNC_FAILED:')
         ? message.replace('SYNC_FAILED:', '')
@@ -144,17 +158,21 @@ export function SyncStatus() {
     <div className="sync-status sync-status--banner">
       <div className="sync-status__info">
         <span className="sync-status__text">
-          Last sync:{' '}
-          <span className="sync-status__time">
-            {user.last_sync_at
-              ? new Date(user.last_sync_at).toLocaleString('en-US', {
+          {user.last_sync_at ? (
+            <>
+              Last sync:{' '}
+              <span className="sync-status__time">
+                {new Date(user.last_sync_at).toLocaleString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   hour: 'numeric',
                   minute: '2-digit',
-                })
-              : 'Never'}
-          </span>
+                })}
+              </span>
+            </>
+          ) : (
+            'Rides not yet synced — tap Sync Now to import your ride history.'
+          )}
         </span>
       </div>
       <div className="sync-status__btn-group">

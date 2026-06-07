@@ -32,6 +32,12 @@ export function TinyPie({
   }
 
   const pct = sf2gSharePct(sf2g, total)
+
+  // Compute color interpolation from grey to Strava orange based on percentage
+  // At 0%: var(--color-text-muted) (grey)
+  // At 100%: #FC4C02 (Strava orange)
+  const gradientColor = `color-mix(in srgb, #FC4C02 ${Math.round(pct)}%, var(--color-text-muted))`
+  const colorStyle = { color: gradientColor }
   const radius = (size - 4) / 2
   const circumference = 2 * Math.PI * radius
   const filled = (pct / 100) * circumference
@@ -69,7 +75,7 @@ export function TinyPie({
           cy={center}
           r={radius}
           fill="none"
-          stroke={pct >= 50 ? '#FC4C02' : 'var(--color-text-muted)'}
+          stroke={gradientColor}
           strokeWidth={3}
           strokeDasharray={`${filled} ${circumference - filled}`}
           strokeDashoffset={circumference * 0.25}
@@ -77,7 +83,7 @@ export function TinyPie({
           style={{ transition: 'stroke-dasharray 0.3s ease' }}
         />
       </svg>
-      <span className="tiny-pie__label">{pct.toFixed(0)}%</span>
+      <span className="tiny-pie__label" style={colorStyle}>{pct.toFixed(0)}%</span>
     </span>
   )
 }

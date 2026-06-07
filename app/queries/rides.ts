@@ -107,6 +107,7 @@ export interface RidesLeaderboardParams {
   includeOther?: boolean
   excludeWeekends?: boolean
   pprRideIds?: string[]
+  reverse?: boolean
 }
 
 /**

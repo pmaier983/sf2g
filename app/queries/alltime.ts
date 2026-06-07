@@ -16,6 +16,7 @@ export interface AllTimeParams {
   dateTo?: string
   includeOther?: boolean
   company?: string
+  reverse?: boolean
 }
 
 /**

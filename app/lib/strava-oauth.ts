@@ -66,7 +66,7 @@ export function getAuthorizationUrl(): string {
     redirect_uri: `${appUrl}/auth/callback`,
     response_type: 'code',
     scope: STRAVA_SCOPES,
-    approval_prompt: 'force', // Always show consent screen so users can check all boxes
+    approval_prompt: 'auto', // 'auto' skips consent for returning users; 'force' would show it every time
     state: crypto.randomUUID(), // CSRF protection
   })
 

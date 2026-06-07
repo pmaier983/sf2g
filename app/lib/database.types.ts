@@ -404,6 +404,8 @@ export interface RideLeaderboardEntry {
   moving_time_seconds: number
   destination_company: DestinationCompany | null
   tailwind_component_ms: number | null
+  start_latlng: [number, number] | null
+  end_latlng: [number, number] | null
 }
 
 export interface RidesLeaderboardResponse {

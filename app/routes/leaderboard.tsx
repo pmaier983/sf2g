@@ -80,6 +80,7 @@ export interface LeaderboardSearch {
   dateTo: string | undefined
   datePreset: string | undefined
   density: 'condensed' | 'expanded'
+  reverse: boolean
 }
 
 /** Default search param values — used for validation and URL cleanup */
@@ -103,6 +104,7 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   dateTo: undefined,
   datePreset: undefined,
   density: 'condensed',
+  reverse: false,
 }
 
 const toBool = (v: unknown) => v === 'true' || v === true
@@ -130,6 +132,7 @@ export const Route = createFileRoute('/leaderboard')({
     dateTo: (raw.dateTo as string) || undefined,
     datePreset: (raw.datePreset as string) || undefined,
     density: (raw.density as 'condensed' | 'expanded') || 'condensed',
+    reverse: toBool(raw.reverse),
   }),
   // Strip defaults to keep URLs clean
   search: {
@@ -177,7 +180,7 @@ function LeaderboardPage() {
   const {
     routes, search, ppr, other: includeOther, weekends, company, user,
     view, chart: chartOpen, sort, dir, rSort, rDir, page,
-    dateFrom, dateTo, datePreset, density, duration,
+    dateFrom, dateTo, datePreset, density, duration, reverse,
   } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
@@ -209,8 +212,9 @@ function LeaderboardPage() {
     if (rDir !== 'desc') return true
     if (page !== 1) return true
     if (duration !== '1y') return true
+    if (reverse) return true
     return false
-  }, [routes, search, ppr, includeOther, weekends, company, user, dateFrom, dateTo, datePreset, view, chartOpen, density, sort, dir, rSort, rDir, page, duration])
+  }, [routes, search, ppr, includeOther, weekends, company, user, dateFrom, dateTo, datePreset, view, chartOpen, density, sort, dir, rSort, rDir, page, duration, reverse])
 
   // ---- Clear all filters → reset to defaults ----
   const handleClearAll = useCallback(
@@ -230,7 +234,7 @@ function LeaderboardPage() {
   // Weekend exclusion (default) forces the compound filter path so we use
   // the parameterized RPC instead of the materialized view.
   const excludeWeekends = !weekends
-  const hasCompoundFilters = routes.length > 0 || !!company || !!dateFrom || !!dateTo || excludeWeekends
+  const hasCompoundFilters = routes.length > 0 || !!company || !!dateFrom || !!dateTo || excludeWeekends || !!reverse
 
   const leaderboardOptions = hasCompoundFilters
     ? filteredLeaderboardQueryOptions({
@@ -241,6 +245,7 @@ function LeaderboardPage() {
         routeCategories: routes.length > 0 ? routes : undefined,
         company: company || undefined,
         excludeWeekends,
+        reverse: reverse || undefined,
       })
     : leaderboardQueryOptions({ sortBy: sort, sortDir: dir })
   const { data: leaderboardData, isLoading, error } = useQuery(leaderboardOptions)
@@ -271,6 +276,7 @@ function LeaderboardPage() {
       excludeWeekends,
       // When PPR filter is active, only show qualifying PPR rides
       pprRideIds: ppr ? pprRideIds : undefined,
+      reverse: reverse || undefined,
     }),
   )
 
@@ -285,6 +291,7 @@ function LeaderboardPage() {
       dateTo: dateTo || undefined,
       includeOther,
       company: company || undefined,
+      reverse: reverse || undefined,
     }),
   )
 
@@ -540,6 +547,8 @@ function LeaderboardPage() {
           view={view}
           duration={duration}
           onDurationChange={(d) => updateSearch({ duration: d })}
+          reverseActive={reverse}
+          onReverseChange={(v) => updateSearch({ reverse: v })}
           hasActiveFilters={hasActiveFilters}
           onClearAll={handleClearAll}
         />
@@ -678,6 +687,8 @@ function LeaderboardPage() {
         dateTo={dateTo}
         datePreset={datePreset}
         onDateChange={(from, to, preset) => updateSearch({ dateFrom: from, dateTo: to, datePreset: preset, page: 1 })}
+        reverseActive={reverse}
+        onReverseChange={(v) => updateSearch({ reverse: v })}
         hasActiveFilters={hasActiveFilters}
         onClearAll={handleClearAll}
       />

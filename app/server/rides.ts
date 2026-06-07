@@ -5,6 +5,7 @@
  */
 import { createServerFn } from '@tanstack/react-start'
 import { createAnonClient } from '../lib/supabase'
+import { getCommuteDirection } from '../lib/route-classifier'
 import type { Ride, RouteCategory, DestinationCompany, RideLeaderboardEntry, RidesLeaderboardResponse } from '../lib/database.types'
 
 // ---------------------------------------------------------------------------
@@ -106,6 +107,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       includeOther?: boolean
       excludeWeekends?: boolean
       pprRideIds?: string[]
+      reverse?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<RidesLeaderboardResponse> => {
@@ -135,6 +137,8 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
         moving_time_seconds,
         destination_company,
         tailwind_component_ms,
+        start_latlng,
+        end_latlng,
         users!inner ( display_name, avatar_url, username )
       `,
         { count: 'exact' },
@@ -166,6 +170,9 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
     }
 
     query = query.or('is_hidden.eq.false,is_hidden.is.null')
+
+    // Strava API compliance: exclude private rides from public views
+    query = query.or('is_private.eq.false,is_private.is.null')
 
     // PPR filter: only show rides that are PPR-qualifying
     if (data.pprRideIds && data.pprRideIds.length > 0) {
@@ -234,8 +241,17 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
         })
       : (rows ?? [])
 
+    // Filter by commute direction when reverse filter is active
+    const directionFiltered = data.reverse
+      ? filteredRows.filter((row: Record<string, unknown>) => {
+          const startLatLng = row.start_latlng as [number, number] | null
+          const endLatLng = row.end_latlng as [number, number] | null
+          return getCommuteDirection(startLatLng, endLatLng) === 'g2sf'
+        })
+      : filteredRows
+
     // Flatten the joined user data into each ride entry
-    const rides: RideLeaderboardEntry[] = filteredRows.map((row: Record<string, unknown>) => {
+    const rides: RideLeaderboardEntry[] = directionFiltered.map((row: Record<string, unknown>) => {
       const user = row.users as { display_name: string | null; avatar_url: string | null; username: string | null } | null
       return {
         id: row.id as string,
@@ -253,12 +269,14 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
         moving_time_seconds: (row.moving_time_seconds as number) ?? 0,
         destination_company: row.destination_company as RideLeaderboardEntry['destination_company'],
         tailwind_component_ms: row.tailwind_component_ms as number | null,
+        start_latlng: row.start_latlng as [number, number] | null,
+        end_latlng: row.end_latlng as [number, number] | null,
       }
     })
 
     return {
       rides,
-      totalCount: excludeWeekends ? rides.length : (count ?? 0),
+      totalCount: (excludeWeekends || data.reverse) ? rides.length : (count ?? 0),
       page,
       pageSize,
     }

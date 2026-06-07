@@ -156,6 +156,9 @@ export interface FilterChipsProps {
   // Clear all filters
   hasActiveFilters: boolean
   onClearAll: () => void
+  // Reverse commute filter
+  reverseActive: boolean
+  onReverseChange: (active: boolean) => void
   /** Prefix for form element IDs to avoid duplicates when rendered in multiple places */
   idPrefix?: string
 }
@@ -183,6 +186,8 @@ export function FilterChips({
   onDurationChange,
   hasActiveFilters,
   onClearAll,
+  reverseActive,
+  onReverseChange,
   idPrefix = '',
 }: FilterChipsProps) {
   // Toggle a route in the multi-select set
@@ -392,6 +397,27 @@ export function FilterChips({
                 📅
               </span>
               Weekends
+            </span>
+          </Tooltip>
+
+          {/* Reverse (G2SF) toggle chip */}
+          <Tooltip
+            content="Show only reverse commutes (Peninsula → San Francisco)"
+            placement="bottom"
+          >
+            <span
+              className={`filter-chip filter-chip--company${reverseActive ? ' filter-chip--selected' : ''}`}
+              role="switch"
+              aria-checked={reverseActive}
+              aria-label="Show reverse commutes only"
+              tabIndex={0}
+              onClick={() => onReverseChange(!reverseActive)}
+              onKeyDown={(e) => handleKeyDown(e, () => onReverseChange(!reverseActive))}
+            >
+              <span className="filter-chip__emoji" aria-hidden="true">
+                🔄
+              </span>
+              Reverse
             </span>
           </Tooltip>
 

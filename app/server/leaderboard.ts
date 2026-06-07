@@ -14,6 +14,7 @@ import type { LeaderboardEntry, MonthlyRideStat, RouteCategory, RouteSpeedEntry,
 import { decodePolyline } from '../lib/polyline'
 import { PPR_INTERCEPTS } from '../lib/constants'
 import type { PprIntercept } from '../lib/constants'
+import { getCommuteDirection } from '../lib/route-classifier'
 
 // ---------------------------------------------------------------------------
 // Route-category allow-list (mirrors rides.ts)
@@ -166,16 +167,24 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       routeCategories?: string[]
       company?: string
       excludeWeekends?: boolean
+      reverse?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<LeaderboardEntry[]> => {
     const supabase = createAnonClient()
 
     // Build rides query with all filters applied
+    // TODO: The leaderboard_view materialized view SQL (migration 008) should also
+    // add WHERE (is_private = false OR is_private IS NULL) AND (is_hidden = false OR is_hidden IS NULL)
+    // to exclude private/hidden rides from pre-computed rankings.
     let query = supabase
       .from('rides')
-      .select('user_id, route_category, destination_company, distance_meters, elevation_gain_meters, average_speed_mps, tailwind_component_ms, ride_date')
+      .select('user_id, route_category, destination_company, distance_meters, elevation_gain_meters, average_speed_mps, tailwind_component_ms, ride_date, start_latlng, end_latlng')
       .not('route_category', 'is', null)
+
+    // Strava API compliance: exclude hidden and private rides from public views
+    query = query.or('is_hidden.eq.false,is_hidden.is.null')
+    query = query.or('is_private.eq.false,is_private.is.null')
 
     // Route filter
     if (data.routeCategories && data.routeCategories.length > 0) {
@@ -214,6 +223,17 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
       : rides
 
     if (filteredRides.length === 0) return []
+
+    // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)
+    const directionFiltered = data.reverse
+      ? filteredRides.filter(r => {
+          const startLatLng = r.start_latlng as [number, number] | null
+          const endLatLng = r.end_latlng as [number, number] | null
+          return getCommuteDirection(startLatLng, endLatLng) === 'g2sf'
+        })
+      : filteredRides
+
+    if (directionFiltered.length === 0) return []
 
     // Fetch per-user total distance/elevation from ALL rides via RPC.
     // IMPORTANT: We use an RPC function instead of fetching raw rides because
@@ -274,7 +294,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     const userMap = new Map<string, UserAgg>()
 
-    for (const ride of filteredRides) {
+    for (const ride of directionFiltered) {
       let agg = userMap.get(ride.user_id)
       if (!agg) {
         agg = {

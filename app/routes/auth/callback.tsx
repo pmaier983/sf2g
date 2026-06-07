@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { handleStravaCallback } from '../../server/auth'
-import { triggerSync } from '../../server/trigger-sync'
-import { toast } from '../../components/Toast'
 
 export const Route = createFileRoute('/auth/callback')({
   component: CallbackPage,
@@ -10,7 +8,7 @@ export const Route = createFileRoute('/auth/callback')({
 
 function CallbackPage() {
   const [error, setError] = useState<string | null>(null)
-  const [phase, setPhase] = useState<'auth' | 'syncing' | 'done'>('auth')
+  const [phase, setPhase] = useState<'auth' | 'done'>('auth')
 
   useEffect(() => {
     let cancelled = false
@@ -44,49 +42,13 @@ function CallbackPage() {
           },
         })
 
-        // Auto-sync rides after first login
-        if (!cancelled) {
-          setPhase('syncing')
-          try {
-            const syncResult = await triggerSync()
-
-            // Surface sync results via toasts
-            if (syncResult.errors.length > 0) {
-              console.warn('[callback] Sync completed with errors:', syncResult.errors)
-              if (syncResult.totalProcessed === 0) {
-                toast.error('Could not sync rides', {
-                  description: 'Strava may be experiencing issues. You can retry from the leaderboard.',
-                  duration: 8000,
-                })
-              } else {
-                toast.warning(`Synced ${syncResult.newRides} rides with warnings`, {
-                  description: `${syncResult.errors.length} error(s) occurred. You can re-sync from the leaderboard.`,
-                })
-              }
-            } else if (syncResult.newRides > 0) {
-              toast.success(`Synced ${syncResult.newRides} rides from Strava!`)
-            }
-          } catch (syncErr) {
-            // Surface sync errors via toasts — always redirect to leaderboard
-            const syncMsg = syncErr instanceof Error ? syncErr.message : 'Sync failed'
-            console.error('[callback] Sync failed:', syncMsg)
-
-            const cleanMsg = syncMsg
-              .replace('SYNC_FAILED:', '')
-              .replace('REAUTH_REQUIRED:', '')
-
-            toast.error('Ride sync failed', {
-              description: `${cleanMsg}. You can retry from the leaderboard.`,
-              duration: 8000,
-            })
-          }
-        }
-
         if (!cancelled) {
           setPhase('done')
-          // Always redirect — sync errors show as dismissable toasts on the leaderboard
+          // Redirect to leaderboard after a short delay so user sees the "All Set" message
           if (result.redirectTo) {
-            window.location.href = result.redirectTo
+            setTimeout(() => {
+              window.location.href = result.redirectTo!
+            }, 2000)
           }
         }
       } catch (err) {
@@ -193,44 +155,6 @@ function CallbackPage() {
           </>
         )}
 
-        {phase === 'syncing' && (
-          <>
-            <h2 style={{
-              fontSize: 'var(--text-xl)',
-              fontWeight: 'var(--font-bold)',
-              color: 'var(--color-text)',
-              marginBottom: 'var(--space-2)',
-            }}>
-              Syncing Your Rides
-            </h2>
-            <p style={{
-              color: 'var(--color-text-secondary)',
-              fontSize: 'var(--text-sm)',
-              marginBottom: 'var(--space-4)',
-            }}>
-              Importing your ride history from Strava.
-            </p>
-            <div
-              style={{
-                background: 'color-mix(in srgb, var(--color-sf2g-orange) 12%, var(--color-surface))',
-                border: '1px solid color-mix(in srgb, var(--color-sf2g-orange) 30%, var(--color-border))',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--space-3) var(--space-4)',
-                marginBottom: 'var(--space-4)',
-              }}
-            >
-              <p style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-sf2g-orange)',
-                fontWeight: 500,
-                margin: 0,
-              }}>
-                ☕ This first sync may take a minute or two — hang tight!
-              </p>
-            </div>
-          </>
-        )}
-
         {phase === 'done' && (
           <>
             <h2 style={{
@@ -245,7 +169,13 @@ function CallbackPage() {
               color: 'var(--color-text-secondary)',
               fontSize: 'var(--text-sm)',
             }}>
-              Redirecting to the leaderboard...
+              Your rides will sync automatically within the hour.
+            </p>
+            <p style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--color-text-muted)',
+            }}>
+              You can also sync manually from the leaderboard.
             </p>
           </>
         )}
@@ -266,8 +196,7 @@ function CallbackPage() {
               borderRadius: '2px',
               background: 'var(--color-sf2g-orange)',
               transition: 'width 0.5s ease',
-              width: phase === 'auth' ? '30%' : phase === 'syncing' ? '70%' : '100%',
-              animation: phase === 'syncing' ? 'progress-pulse 2s ease-in-out infinite' : undefined,
+              width: phase === 'auth' ? '30%' : '100%',
             }}
           />
         </div>
@@ -286,11 +215,8 @@ function CallbackPage() {
           <span style={{ color: phase === 'auth' ? 'var(--color-sf2g-orange)' : 'var(--color-text-secondary)' }}>
             {phase !== 'auth' ? '✓' : '①'} Connect
           </span>
-          <span style={{ color: phase === 'syncing' ? 'var(--color-sf2g-orange)' : phase === 'done' ? 'var(--color-text-secondary)' : 'var(--color-text-muted)' }}>
-            {phase === 'done' ? '✓' : '②'} Sync
-          </span>
           <span style={{ color: phase === 'done' ? 'var(--color-sf2g-orange)' : 'var(--color-text-muted)' }}>
-            ③ Ready
+            {phase === 'done' ? '✓' : '②'} Ready
           </span>
         </div>
       </div>
@@ -299,10 +225,6 @@ function CallbackPage() {
         @keyframes pulse {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.1); }
-        }
-        @keyframes progress-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
         }
       `}</style>
     </div>

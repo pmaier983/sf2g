@@ -166,7 +166,28 @@ export const disconnectStrava = createServerFn({ method: 'POST' }).handler(
       throw new Error(`Failed to clear Strava tokens: ${updateError.message}`)
     }
 
-    // 5. Clear session cookie
+    // 5. Delete all user rides (Strava API compliance — data must be removed on disconnect)
+    const { error: deleteError, count: deletedCount } = await supabase
+      .from('rides')
+      .delete({ count: 'exact' })
+      .eq('user_id', session.userId)
+
+    if (deleteError) {
+      console.error(`[auth] Failed to delete rides for user ${session.userId}:`, deleteError.message)
+      // Don't throw — continue with disconnect even if ride deletion fails
+      // The user's tokens are already cleared, so they can't re-sync
+    } else {
+      console.log(`[auth] Deleted ${deletedCount ?? 0} rides for user ${session.userId}`)
+    }
+
+    // 6. Refresh leaderboard view to remove deleted user's data
+    try {
+      await supabase.rpc('refresh_leaderboard')
+    } catch (err) {
+      console.error('[auth] Failed to refresh leaderboard after ride deletion:', err)
+    }
+
+    // 7. Clear session cookie
     await clearSessionData()
 
     return { redirectTo: '/' as const }

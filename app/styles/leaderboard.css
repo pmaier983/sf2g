@@ -746,6 +746,16 @@
 }
 
 @media (max-width: 768px) {
+  /* TinyPie: hide circle on mobile, show text-only */
+  .tiny-pie svg {
+    display: none;
+  }
+
+  .tiny-pie__label {
+    font-weight: 600;
+    font-size: var(--text-sm);
+  }
+
   .leaderboard__table-wrapper {
     margin: 0;
     border-radius: 0;
@@ -830,10 +840,7 @@
     width: 32px;
   }
 
-  /* Hide tiny pie on very small screens to save space */
-  .tiny-pie__label {
-    display: none;
-  }
+  /* TinyPie: keep text-only label visible on small screens */
 
   .leaderboard__title {
     font-size: var(--text-xl);

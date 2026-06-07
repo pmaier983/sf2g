@@ -294,6 +294,24 @@ export function isCommutableRoute(activity: ClassifiableActivity): boolean {
   return (startInSF && endInCorridor) || (startInCorridor && endInSF)
 }
 
+/**
+ * Determine the commute direction of a ride.
+ * @returns 'sf2g' if SF→Peninsula, 'g2sf' if Peninsula→SF, null if not a commute
+ */
+export function getCommuteDirection(
+  startLatlng: [number, number] | null | undefined,
+  endLatlng: [number, number] | null | undefined,
+): 'sf2g' | 'g2sf' | null {
+  const startInSF = isInSF(startLatlng)
+  const endInCorridor = isInPeninsulaCorridor(endLatlng)
+  const startInCorridor = isInPeninsulaCorridor(startLatlng)
+  const endInSF = isInSF(endLatlng)
+
+  if (startInSF && endInCorridor) return 'sf2g'
+  if (startInCorridor && endInSF) return 'g2sf'
+  return null
+}
+
 // ---------------------------------------------------------------------------
 // Main Classification Entry Point
 // ---------------------------------------------------------------------------

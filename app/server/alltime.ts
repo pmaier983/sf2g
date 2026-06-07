@@ -8,6 +8,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { createAnonClient } from '../lib/supabase'
 import type { RouteCategory, DestinationCompany } from '../lib/database.types'
+import { getCommuteDirection } from '../lib/route-classifier'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,6 +48,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
       dateTo?: string
       includeOther?: boolean
       company?: string
+      reverse?: boolean
     }) => input,
   )
   .handler(async ({ data }): Promise<AllTimeEntry[]> => {
@@ -58,7 +60,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
     // Build the rides query
     let query = supabase
       .from('rides')
-      .select('user_id, ride_date, route_category, destination_company')
+      .select('user_id, ride_date, route_category, destination_company, start_latlng, end_latlng')
       .not('route_category', 'is', null)
 
     // Apply route filter
@@ -91,9 +93,20 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: 'GET' })
     }
     if (!rides?.length) return []
 
+    // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)
+    const directionFilteredRides = data.reverse
+      ? rides.filter(r => {
+          const startLatLng = r.start_latlng as [number, number] | null
+          const endLatLng = r.end_latlng as [number, number] | null
+          return getCommuteDirection(startLatLng, endLatLng) === 'g2sf'
+        })
+      : rides
+
+    if (directionFilteredRides.length === 0) return []
+
     // Group rides by user, optionally excluding weekends
     const ridesByUser = new Map<string, string[]>()
-    for (const ride of rides) {
+    for (const ride of directionFilteredRides) {
       if (data.excludeWeekends) {
         const day = new Date(ride.ride_date).getUTCDay()
         if (day === 0 || day === 6) continue

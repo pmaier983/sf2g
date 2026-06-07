@@ -202,6 +202,13 @@
   display: none;
 }
 
+/* Hide tagline on tablets and smaller screens */
+@media (max-width: 1024px) {
+  .navbar__tagline {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .navbar__links {
     display: none;
@@ -213,10 +220,6 @@
 
   .navbar__brand-text {
     font-size: 1.4rem;
-  }
-
-  .navbar__tagline {
-    display: none;
   }
 
   .navbar__hamburger {
@@ -467,6 +470,28 @@
 
 .footer__link:hover {
   color: var(--color-sf2g-orange);
+}
+
+.footer__strava-badge {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer__strava-badge-img {
+  display: none;
+}
+
+/* Default (no theme set) — show white version (dark mode is default) */
+.footer__strava-badge-img--dark {
+  display: block;
+}
+
+[data-theme='light'] .footer__strava-badge-img--dark {
+  display: none;
+}
+
+[data-theme='light'] .footer__strava-badge-img--light {
+  display: block;
 }
 
 /* ----- Route Tag ----- */
