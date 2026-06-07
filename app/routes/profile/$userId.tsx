@@ -283,9 +283,20 @@ function ProfilePage() {
                 </button>
               ) : (
                 <div className="profile-header__disconnect-confirm">
-                  <p className="profile-header__disconnect-warning">
-                    This will revoke SF2G's access to your Strava account. You can reconnect anytime by logging in again.
-                  </p>
+                  <div className="profile-header__disconnect-warning">
+                    <p style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>
+                      Are you sure? This action will:
+                    </p>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--space-3) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                      <li>🔑 Revoke SF2G's access to your Strava account</li>
+                      <li>🗑️ Permanently delete all your ride data ({totalRides} rides) from SF2G</li>
+                      <li>📊 Remove your leaderboard rankings and stats</li>
+                      <li>🏆 Remove your profile from the community network</li>
+                    </ul>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+                      You can reconnect anytime by logging in again — your rides will be re-synced from Strava.
+                    </p>
+                  </div>
                   <div className="profile-header__disconnect-actions">
                     <button
                       id="disconnect-strava-confirm-btn"

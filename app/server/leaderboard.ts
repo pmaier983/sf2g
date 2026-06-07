@@ -379,6 +379,17 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
 
     const userInfo = new Map((users ?? []).map(u => [u.id, u]))
 
+    // Fetch unfiltered active_years from the materialized view
+    // so the years badge always shows total career years, not filtered years
+    const { data: unfilteredYears } = await supabase
+      .from('leaderboard_view')
+      .select('user_id, active_years')
+      .in('user_id', userIds)
+
+    const unfilteredYearsMap = new Map(
+      (unfilteredYears ?? []).map((u: { user_id: string; active_years: number }) => [u.user_id, u.active_years]),
+    )
+
     // Build LeaderboardEntry array
     const entries: LeaderboardEntry[] = []
     for (const [userId, agg] of userMap) {
@@ -407,7 +418,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: 'GET' })
         // Use totals from ALL rides (including unclassified) for accurate % dist/elev
         total_distance_meters: allTotals?.distance ?? agg.total_distance,
         total_elevation_meters: allTotals?.elevation ?? agg.total_elevation,
-        active_years: agg.years.size,
+        active_years: unfilteredYearsMap.get(userId) ?? agg.years.size,
         last_ride_date: agg.lastRideDate,
         first_ride_date: agg.firstRideDate,
         avg_tailwind_ms: agg.tailwindCount > 0 ? agg.tailwindSum / agg.tailwindCount : 0,

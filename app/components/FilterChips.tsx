@@ -383,14 +383,14 @@ export function FilterChips({
 
           {/* Weekends toggle chip */}
           <Tooltip
-            content="Include rides from Saturday and Sunday"
+            content="Exclude rides from Saturday and Sunday"
             placement="bottom"
           >
             <span
-              className={`filter-chip filter-chip--company${weekendsActive ? ' filter-chip--selected' : ''}`}
+              className={`filter-chip filter-chip--company${!weekendsActive ? ' filter-chip--selected' : ''}`}
               role="switch"
-              aria-checked={weekendsActive}
-              aria-label="Include weekend rides"
+              aria-checked={!weekendsActive}
+              aria-label="Exclude weekend rides"
               tabIndex={0}
               onClick={() => onWeekendsChange(!weekendsActive)}
               onKeyDown={(e) => handleKeyDown(e, () => onWeekendsChange(!weekendsActive))}
@@ -398,7 +398,7 @@ export function FilterChips({
               <span className="filter-chip__emoji" aria-hidden="true">
                 📅
               </span>
-              Weekends
+              Exclude Weekends
             </span>
           </Tooltip>
 
@@ -419,7 +419,7 @@ export function FilterChips({
               <span className="filter-chip__emoji" aria-hidden="true">
                 🔄
               </span>
-              Reverse
+              Only Reverse
             </span>
           </Tooltip>
 

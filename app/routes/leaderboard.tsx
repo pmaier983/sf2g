@@ -253,7 +253,6 @@ function LeaderboardPage() {
   const { data: pprDawnData } = useQuery(pprDawnRiderIdsQueryOptions({
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
-    routeCategories: routes.length > 0 ? routes : undefined,
   }))
   const pprDawnRiderIds = pprDawnData?.riderIds
   const pprRideCounts = pprDawnData?.rideCounts
@@ -351,11 +350,16 @@ function LeaderboardPage() {
       })
     }
 
-    // Exclude riders with zero SF2G rides
-    data = data.filter((entry) => (entry.sf2g_total ?? 0) > 0)
+    // Exclude riders with zero matching rides
+    data = data.filter((entry) => {
+      const total = includeOther || routes.includes('other' as RouteCategory)
+        ? (entry.sf2g_total ?? 0) + (entry.other_count ?? 0)
+        : (entry.sf2g_total ?? 0)
+      return total > 0
+    })
 
     return data
-  }, [leaderboardData, routes, ppr, pprDawnRiderIds, pprRideCounts, company, companyRiderIds, search, hasCompoundFilters, sort, dir])
+  }, [leaderboardData, routes, includeOther, ppr, pprDawnRiderIds, pprRideCounts, company, companyRiderIds, search, hasCompoundFilters, sort, dir])
 
   // ---- Default selection: top 10 by sf2g_total ----
   useEffect(() => {
