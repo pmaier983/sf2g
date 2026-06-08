@@ -232,8 +232,8 @@ export const fetchRidesLeaderboard = createServerFn({ method: 'GET' })
       console.log(`[rides-leaderboard] Rides span ${userIds.size} unique users: ${[...userIds].join(', ')}`)
     }
 
-    // Filter out weekend rides if excludeWeekends is true (default)
-    const excludeWeekends = data.excludeWeekends ?? true
+    // Filter out weekend rides if excludeWeekends is true
+    const excludeWeekends = data.excludeWeekends ?? false
     const filteredRows = excludeWeekends
       ? (rows ?? []).filter((row: Record<string, unknown>) => {
           const day = new Date(row.ride_date as string).getUTCDay()
