@@ -16,11 +16,13 @@ import { allTimeQueryOptions } from '../queries/alltime'
 import { LeaderboardTable } from '../components/LeaderboardTable'
 import { RidesLeaderboardTable } from '../components/RidesLeaderboardTable'
 import { AllTimeTable } from '../components/AllTimeTable'
+import { GroupRidesTable } from '../components/GroupRidesTable'
 import { GrowthChart } from '../components/GrowthChart'
 import { AllTimeChart } from '../components/AllTimeChart'
 import { FilterChips } from '../components/FilterChips'
 import { SyncStatus } from '../components/SyncStatus'
 import { RIDER_COLORS } from '../lib/constants'
+import { groupRidesQueryOptions } from '../queries/group-rides'
 import type { RouteCategory, DestinationCompany } from '../lib/database.types'
 import '../styles/leaderboard.css'
 
@@ -69,7 +71,7 @@ export interface LeaderboardSearch {
   weekends: boolean
   company: string | undefined
   user: string | undefined
-  view: 'riders' | 'rides' | 'alltime'
+  view: 'riders' | 'rides' | 'alltime' | 'groups'
   duration: string
   chart: boolean
   sort: string
@@ -82,6 +84,9 @@ export interface LeaderboardSearch {
   datePreset: string | undefined
   density: 'condensed' | 'expanded'
   reverse: boolean
+  gSort: string
+  gDir: 'asc' | 'desc'
+  gPage: number
 }
 
 /** Default search param values — used for validation and URL cleanup */
@@ -106,6 +111,9 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   datePreset: undefined,
   density: 'condensed',
   reverse: false,
+  gSort: 'date',
+  gDir: 'desc',
+  gPage: 1,
 }
 
 const toBool = (v: unknown) => v === 'true' || v === true
@@ -121,7 +129,7 @@ export const Route = createFileRoute('/leaderboard')({
     weekends: raw.weekends === undefined ? true : toBool(raw.weekends),
     company: (raw.company as string) || undefined,
     user: (raw.user as string) || undefined,
-    view: (raw.view as 'riders' | 'rides' | 'alltime') || 'riders',
+    view: (raw.view as 'riders' | 'rides' | 'alltime' | 'groups') || 'riders',
     duration: (raw.duration as string) || '1y',
     chart: toBool(raw.chart),
     sort: (raw.sort as string) || 'sf2g_total',
@@ -134,6 +142,9 @@ export const Route = createFileRoute('/leaderboard')({
     datePreset: (raw.datePreset as string) || undefined,
     density: (raw.density as 'condensed' | 'expanded') || 'condensed',
     reverse: toBool(raw.reverse),
+    gSort: (raw.gSort as string) || 'date',
+    gDir: (raw.gDir as 'asc' | 'desc') || 'desc',
+    gPage: Number(raw.gPage) || 1,
   }),
   // Strip defaults to keep URLs clean
   search: {
@@ -182,6 +193,7 @@ function LeaderboardPage() {
     routes, search, ppr, other: includeOther, weekends, company, user,
     view, chart: chartOpen, sort, dir, rSort, rDir, page,
     dateFrom, dateTo, datePreset, density, duration, reverse,
+    gSort, gDir, gPage,
   } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
@@ -292,6 +304,17 @@ function LeaderboardPage() {
       includeOther,
       company: company || undefined,
       reverse: reverse || undefined,
+    }),
+  )
+
+  // ---- Group Rides query ----
+  const groupRidesQuery = useQuery(
+    groupRidesQueryOptions({
+      page: gPage,
+      sortBy: gSort,
+      sortDir: gDir,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
     }),
   )
 
@@ -476,6 +499,14 @@ function LeaderboardPage() {
           >
             🚴 Rides
           </button>
+          <button
+            type="button"
+            className={`mobile-view-header__btn${view === 'groups' ? ' mobile-view-header__btn--active' : ''}`}
+            onClick={() => updateSearch({ view: 'groups', gPage: 1 })}
+            aria-pressed={view === 'groups'}
+          >
+            👥 Groups
+          </button>
         </div>
       </div>
 
@@ -502,6 +533,13 @@ function LeaderboardPage() {
             aria-pressed={view === 'rides'}
           >
             🚴 Rides
+          </button>
+          <button
+            className={`leaderboard__view-btn ${view === 'groups' ? 'leaderboard__view-btn--active' : ''}`}
+            onClick={() => updateSearch({ view: 'groups', gPage: 1 })}
+            aria-pressed={view === 'groups'}
+          >
+            👥 Groups
           </button>
         </div>
         <button
@@ -670,6 +708,24 @@ function LeaderboardPage() {
               onPageChange={(p) => updateSearch({ page: p })}
               activeUser={user}
               onClearUser={() => updateSearch({ user: undefined, page: 1 })}
+            />
+          ) : view === 'groups' ? (
+            <GroupRidesTable
+              data={groupRidesQuery.data?.groupRides ?? []}
+              onGroupRideClick={(gr) => {
+                navigate({
+                  to: '/group-rides/$groupRideId',
+                  params: { groupRideId: gr.id },
+                  search: {
+                    date: gr.date,
+                    route: gr.routeCategory,
+                    riders: gr.riders.map((r) => r.userId).join(','),
+                  },
+                })
+              }}
+              sortBy={gSort}
+              sortDir={gDir}
+              onSortChange={(col, d) => updateSearch({ gSort: col, gDir: d, gPage: 1 })}
             />
           ) : (
             <AllTimeTable

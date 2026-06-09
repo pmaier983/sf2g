@@ -152,7 +152,7 @@ export interface FilterChipsProps {
   datePreset: string | undefined
   onDateChange: (dateFrom: string | undefined, dateTo: string | undefined, preset: string | undefined) => void
   // View & duration (for All Time view)
-  view: 'riders' | 'rides' | 'alltime'
+  view: 'riders' | 'rides' | 'alltime' | 'groups'
   duration: string
   onDurationChange: (duration: string) => void
   // Clear all filters

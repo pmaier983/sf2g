@@ -1889,3 +1889,132 @@
   }
 }
 
+/* ============================================================
+   GroupRideComparisonTable
+   ============================================================ */
+
+.group-ride-comparison {
+  width: 100%;
+}
+
+.group-ride-comparison__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.5rem;
+}
+
+.group-ride-comparison__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.group-ride-comparison__th {
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-elevated);
+  border-bottom: 2px solid var(--color-border-subtle);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.group-ride-comparison__th:hover {
+  color: var(--color-text);
+}
+
+.group-ride-comparison__th--sorted {
+  color: var(--color-text);
+}
+
+.group-ride-comparison__th--sticky {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface-elevated);
+}
+
+.group-ride-comparison__sort-indicator {
+  margin-left: 0.25rem;
+  font-size: 0.625rem;
+}
+
+.group-ride-comparison__sort-indicator--placeholder {
+  visibility: hidden;
+}
+
+.group-ride-comparison__row {
+  transition: background-color 0.15s ease;
+}
+
+.group-ride-comparison__row:hover {
+  background: var(--color-surface-hover);
+}
+
+.group-ride-comparison__td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text);
+}
+
+.group-ride-comparison__td--sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-surface);
+}
+
+.group-ride-comparison__row:hover .group-ride-comparison__td--sticky {
+  background: var(--color-surface-hover);
+}
+
+.group-ride-comparison__td--best {
+  font-weight: 700;
+  color: var(--color-sf2g-orange);
+}
+
+.group-ride-comparison__rider-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 10rem;
+}
+
+.group-ride-comparison__avatar {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background-color: var(--color-surface-elevated);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.group-ride-comparison__rider-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+/* Mobile: tighter padding */
+@media (max-width: 640px) {
+  .group-ride-comparison__th,
+  .group-ride-comparison__td {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .group-ride-comparison__rider-cell {
+    min-width: 8rem;
+  }
+}
+
