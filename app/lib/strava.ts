@@ -99,3 +99,39 @@ export async function fetchAthleteActivities(
 
   return { activities, response }
 }
+
+/**
+ * Fetch a single activity from Strava API by ID.
+ *
+ * Used by the webhook handler to fetch full activity details after receiving
+ * a webhook event (which only contains the activity ID, not the full data).
+ *
+ * @param accessToken - Valid Strava access token
+ * @param activityId - Strava activity ID
+ * @returns The activity summary and the raw response for rate limit checking
+ */
+export async function fetchSingleActivity(
+  accessToken: string,
+  activityId: number,
+): Promise<{ activity: StravaActivitySummary; response: RateLimitedResponse }> {
+  const url = `${STRAVA_API_BASE}/activities/${activityId}`
+
+  console.log(`[strava] Fetching single activity ${activityId}`)
+
+  const response = await fetchWithRateLimit(url, accessToken)
+
+  console.log(`[strava] Response status: ${response.status}`)
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error(`[strava] API error (${response.status}): ${errorText}`)
+    throw new Error(
+      `Strava API error (${response.status}): ${errorText}`,
+    )
+  }
+
+  const activity = (await response.json()) as StravaActivitySummary
+  console.log(`[strava] Fetched activity: ${activity.name} (${activity.type})`)
+
+  return { activity, response }
+}
