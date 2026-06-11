@@ -43,14 +43,23 @@ export const triggerSync = createServerFn({ method: 'POST' }).handler(
     const supabase = createAnonClient()
     const { data: user } = await supabase
       .from('users')
-      .select('last_sync_at')
+      .select('last_sync_at, created_at')
       .eq('id', session.userId)
       .single()
 
     if (user?.last_sync_at) {
       const lastSync = new Date(user.last_sync_at)
       const elapsed = Date.now() - lastSync.getTime()
-      if (elapsed < SYNC_COOLDOWN_MS) {
+
+      // Skip cooldown if the only sync so far was the initial one from OAuth callback.
+      // Detect this by checking if last_sync_at is within 10 minutes of account creation.
+      // This lets new users immediately trigger a manual re-sync after joining.
+      const createdAt = user.created_at ? new Date(user.created_at) : null
+      const isFirstSyncEver =
+        createdAt &&
+        Math.abs(lastSync.getTime() - createdAt.getTime()) < 10 * 60 * 1000
+
+      if (elapsed < SYNC_COOLDOWN_MS && !isFirstSyncEver) {
         const remainingMinutes = Math.ceil(
           (SYNC_COOLDOWN_MS - elapsed) / 60_000,
         )

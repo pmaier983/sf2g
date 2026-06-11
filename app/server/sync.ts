@@ -29,6 +29,14 @@ export interface SyncOptions {
   skipWindEnrichment?: boolean
   /** Skip per-user leaderboard refresh (cron's reclassify step handles it) */
   skipLeaderboardRefresh?: boolean
+  /**
+   * Hint that this is the user's initial sync (first login).
+   * When true, we ignore the rate limit safety margin and paginate through
+   * ALL historical rides. This is critical because webhooks only fire for
+   * future activities — if we bail early, historical rides are permanently lost.
+   * Hard 429s are still respected (retried with backoff).
+   */
+  isInitialSync?: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +150,12 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
     ? Math.floor(new Date(userData.last_activity_at).getTime() / 1000)
     : undefined
 
-  console.log(`[sync] Incremental sync after: ${lastActivityAt ?? 'none (full sync)'}`)  
+  // Detect initial sync: either explicitly flagged or no previous activity timestamp
+  const isInitialSync = options?.isInitialSync ?? lastActivityAt === undefined
+
+  console.log(
+    `[sync] ${isInitialSync ? 'INITIAL sync (fetching ALL rides)' : `Incremental sync after: ${lastActivityAt}`}`,
+  )
 
   // 3. Paginate through Strava activities
   const allRides: RideInsert[] = []
@@ -210,12 +223,23 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
         hasMore = false
       } else if (response.__approachingRateLimit) {
         const info = response.__rateLimitInfo
-        const msg = info
-          ? `Approaching Strava rate limit (${info.usage}/${info.limit} ${info.limitType} requests) — stopping pagination early. Resets ${info.resetsIn}.`
-          : 'Approaching Strava rate limit — stopping pagination early'
-        console.warn(`[sync] ${msg}`)
-        errors.push(msg)
-        hasMore = false
+        if (isInitialSync) {
+          // Initial sync: warn but DON'T stop — we need all historical rides
+          // because webhooks only handle future activities.
+          const msg = info
+            ? `Approaching rate limit (${info.usage}/${info.limit} ${info.limitType}) — continuing anyway (initial sync)`
+            : 'Approaching rate limit — continuing anyway (initial sync)'
+          console.warn(`[sync] ${msg}`)
+          page++
+        } else {
+          // Incremental sync: stop early to preserve budget for other users
+          const msg = info
+            ? `Approaching Strava rate limit (${info.usage}/${info.limit} ${info.limitType} requests) — stopping pagination early. Resets ${info.resetsIn}.`
+            : 'Approaching Strava rate limit — stopping pagination early'
+          console.warn(`[sync] ${msg}`)
+          errors.push(msg)
+          hasMore = false
+        }
       } else {
         page++
       }

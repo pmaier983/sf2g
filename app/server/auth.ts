@@ -103,7 +103,7 @@ export const handleStravaCallback = createServerFn({ method: 'GET' })
     try {
       const { performSync } = await import('./sync')
       console.log(`[auth] Triggering initial sync for user ${user.id} (${user.display_name ?? user.username ?? 'new user'})`)
-      syncResult = await performSync(user.id, { skipWindEnrichment: true })
+      syncResult = await performSync(user.id, { skipWindEnrichment: true, isInitialSync: true })
       console.log(`[auth] Initial sync complete: ${syncResult.newRides} new rides, ${syncResult.totalProcessed} total`)
     } catch (err) {
       // Don't block auth on sync failure — the user can manually sync later.
