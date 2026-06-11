@@ -842,20 +842,114 @@
   margin-top: var(--space-4);
 }
 
-.profile-header__disconnect-confirm {
+/* ============================================================
+   Disconnect Strava Dialog — centered modal overlay
+   ============================================================ */
+
+.disconnect-dialog__backdrop {
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100%;
+  height: 100%;
+}
+
+.disconnect-dialog__backdrop[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disconnect-dialog__backdrop::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.disconnect-dialog__content {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  width: min(28rem, 90vw);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: var(--color-text);
   animation: fadeIn 0.2s ease forwards;
 }
 
-.profile-header__disconnect-warning {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-3);
-  line-height: 1.5;
+.disconnect-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
 }
 
-.profile-header__disconnect-actions {
+.disconnect-dialog__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.disconnect-dialog__close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  line-height: 1;
+}
+
+.disconnect-dialog__close:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
+.disconnect-dialog__warning {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+}
+
+.disconnect-dialog__warning-heading {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+.disconnect-dialog__consequences {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-3) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.disconnect-dialog__reassurance {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.disconnect-dialog__actions {
   display: flex;
   gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .disconnect-dialog__content {
+    width: 95vw;
+    padding: var(--space-4);
+  }
+
+  .disconnect-dialog__actions {
+    flex-direction: column-reverse;
+  }
 }
 
 .profile-header__share-buttons {
@@ -900,10 +994,6 @@
   }
 
   .profile-header__share-buttons {
-    justify-content: center;
-  }
-
-  .profile-header__disconnect-actions {
     justify-content: center;
   }
 }

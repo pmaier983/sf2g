@@ -209,7 +209,10 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
       if (activities.length < PAGE_SIZE) {
         hasMore = false
       } else if (response.__approachingRateLimit) {
-        const msg = 'Approaching Strava rate limit — stopping pagination early'
+        const info = response.__rateLimitInfo
+        const msg = info
+          ? `Approaching Strava rate limit (${info.usage}/${info.limit} ${info.limitType} requests) — stopping pagination early. Resets ${info.resetsIn}.`
+          : 'Approaching Strava rate limit — stopping pagination early'
         console.warn(`[sync] ${msg}`)
         errors.push(msg)
         hasMore = false

@@ -9,7 +9,7 @@ import { ProfileRideStats } from '../../components/ProfileRideStats'
 import { ProfileFunStats } from '../../components/ProfileFunStats'
 import { ProfileRidesTable } from '../../components/ProfileRidesTable'
 import type { User } from '../../lib/database.types'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useUnit } from '../../lib/useUnit'
 import { formatDistance, formatElevation, formatSpeed, formatMovingTime } from '../../lib/leaderboard-utils'
 import { toast } from '../../components/Toast'
@@ -26,6 +26,7 @@ function ProfilePage() {
   const [profileLoading, setProfileLoading] = useState(true)
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
+  const disconnectDialogRef = useRef<HTMLDialogElement>(null)
 
   const unit = useUnit()
   const isOwnProfile = currentUser?.id === userId
@@ -34,6 +35,17 @@ function ProfilePage() {
     data: rides,
     isLoading: ridesLoading,
   } = useQuery(userRidesQueryOptions(userId))
+
+  // Sync native <dialog> open/close with React state
+  useEffect(() => {
+    const dialog = disconnectDialogRef.current
+    if (!dialog) return
+    if (showDisconnectConfirm && !dialog.open) {
+      dialog.showModal()
+    } else if (!showDisconnectConfirm && dialog.open) {
+      dialog.close()
+    }
+  }, [showDisconnectConfirm])
 
   const handleDisconnectStrava = async () => {
     setDisconnecting(true)
@@ -47,6 +59,25 @@ function ProfilePage() {
       setShowDisconnectConfirm(false)
     }
   }
+
+  // Close dialog on backdrop click
+  const handleDisconnectDialogClick = useCallback(
+    (e: React.MouseEvent<HTMLDialogElement>) => {
+      if (e.target === disconnectDialogRef.current) {
+        setShowDisconnectConfirm(false)
+      }
+    },
+    [],
+  )
+
+  // Close dialog on Escape
+  const handleDisconnectDialogCancel = useCallback(
+    (e: React.SyntheticEvent) => {
+      e.preventDefault()
+      setShowDisconnectConfirm(false)
+    },
+    [],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -273,50 +304,66 @@ function ProfilePage() {
           {/* Disconnect Strava — only on own profile */}
           {isOwnProfile && (
             <div className="profile-header__disconnect">
-              {!showDisconnectConfirm ? (
-                <button
-                  id="disconnect-strava-btn"
-                  className="btn btn--danger btn--sm"
-                  onClick={() => setShowDisconnectConfirm(true)}
-                >
-                  Disconnect Strava
-                </button>
-              ) : (
-                <div className="profile-header__disconnect-confirm">
-                  <div className="profile-header__disconnect-warning">
-                    <p style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>
+              <button
+                id="disconnect-strava-btn"
+                className="btn btn--danger btn--sm"
+                onClick={() => setShowDisconnectConfirm(true)}
+              >
+                Disconnect Strava
+              </button>
+
+              {/* Centered disconnect confirmation dialog */}
+              <dialog
+                ref={disconnectDialogRef}
+                className="disconnect-dialog__backdrop"
+                onClick={handleDisconnectDialogClick}
+                onCancel={handleDisconnectDialogCancel}
+              >
+                <div className="disconnect-dialog__content">
+                  <div className="disconnect-dialog__header">
+                    <h3 className="disconnect-dialog__title">Disconnect Strava</h3>
+                    <button
+                      className="disconnect-dialog__close"
+                      onClick={() => setShowDisconnectConfirm(false)}
+                      aria-label="Close dialog"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="disconnect-dialog__warning">
+                    <p className="disconnect-dialog__warning-heading">
                       Are you sure? This action will:
                     </p>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--space-3) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                    <ul className="disconnect-dialog__consequences">
                       <li>🔑 Revoke SF2G's access to your Strava account</li>
                       <li>🗑️ Permanently delete all your ride data ({totalRides} rides) from SF2G</li>
                       <li>📊 Remove your leaderboard rankings and stats</li>
                       <li>🏆 Remove your profile from the community network</li>
                     </ul>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
+                    <p className="disconnect-dialog__reassurance">
                       You can reconnect anytime by logging in again — your rides will be re-synced from Strava.
                     </p>
                   </div>
-                  <div className="profile-header__disconnect-actions">
-                    <button
-                      id="disconnect-strava-confirm-btn"
-                      className="btn btn--danger btn--sm"
-                      onClick={handleDisconnectStrava}
-                      disabled={disconnecting}
-                    >
-                      {disconnecting ? 'Disconnecting…' : 'Yes, Disconnect'}
-                    </button>
+                  <div className="disconnect-dialog__actions">
                     <button
                       id="disconnect-strava-cancel-btn"
-                      className="btn btn--ghost btn--sm"
+                      className="btn btn--ghost"
                       onClick={() => setShowDisconnectConfirm(false)}
                       disabled={disconnecting}
                     >
                       Cancel
                     </button>
+                    <button
+                      id="disconnect-strava-confirm-btn"
+                      className="btn btn--danger"
+                      onClick={handleDisconnectStrava}
+                      disabled={disconnecting}
+                    >
+                      {disconnecting ? 'Disconnecting…' : 'Yes, Disconnect'}
+                    </button>
                   </div>
                 </div>
-              )}
+              </dialog>
             </div>
           )}
         </div>

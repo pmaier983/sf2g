@@ -330,6 +330,8 @@ export const STRAVA_OAUTH_BASE = 'https://www.strava.com/oauth'
 export const STRAVA_AUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/authorize`
 export const STRAVA_TOKEN_URL = `${STRAVA_OAUTH_BASE}/token`
 export const STRAVA_REVOKE_URL = `${STRAVA_OAUTH_BASE}/revoke`
+export const STRAVA_DEAUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/deauthorize`
+export const STRAVA_WEBHOOK_URL = `${STRAVA_API_BASE}/push_subscriptions`
 
 /** Strava Standard Tier Rate Limits (effective June 1, 2026) */
 export const STRAVA_RATE_LIMIT = {

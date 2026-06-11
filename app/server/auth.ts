@@ -87,11 +87,38 @@ export const handleStravaCallback = createServerFn({ method: 'GET' })
       )
     }
 
-    // 3. Set session cookie
+    // 4. Set session cookie
     await setSessionData({ userId: user.id, stravaId: user.strava_id })
 
-    // 4. Return redirect URL
-    return { redirectTo: '/leaderboard' as const }
+    // 5. Trigger initial ride sync so the user sees their history immediately.
+    //    With the webhook transition, the cron no longer polls Strava for rides.
+    //    Webhooks only fire for future activities, not historical backfill.
+    //    This sync runs inline so the callback page can show progress/results.
+    //    Wind enrichment is skipped here — it queries ALL rides globally and
+    //    makes hundreds of API calls, causing the callback to stall for 30+ seconds.
+    //    Wind data is backfilled by the cron or manual sync.
+    let syncResult: { newRides: number; totalProcessed: number; errors: string[] } | null = null
+    let syncError: string | null = null
+
+    try {
+      const { performSync } = await import('./sync')
+      console.log(`[auth] Triggering initial sync for user ${user.id} (${user.display_name ?? user.username ?? 'new user'})`)
+      syncResult = await performSync(user.id, { skipWindEnrichment: true })
+      console.log(`[auth] Initial sync complete: ${syncResult.newRides} new rides, ${syncResult.totalProcessed} total`)
+    } catch (err) {
+      // Don't block auth on sync failure — the user can manually sync later.
+      // But propagate rate limit errors so the callback page can show them.
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`[auth] Initial sync failed (non-blocking): ${message}`)
+      syncError = message
+    }
+
+    // 6. Return redirect URL with sync result metadata
+    return {
+      redirectTo: '/leaderboard' as const,
+      syncResult,
+      syncError,
+    }
   })
 
 // ---------------------------------------------------------------------------
@@ -124,7 +151,63 @@ export const logout = createServerFn({ method: 'POST' }).handler(async () => {
 })
 
 // ---------------------------------------------------------------------------
-// disconnectStrava — revokes Strava access, clears tokens, clears session
+// cleanupDeauthorizedUser — shared cleanup for disconnect + webhook deauth
+// ---------------------------------------------------------------------------
+
+/**
+ * Clean up a user's data after deauthorization.
+ *
+ * Called by both:
+ * - User-initiated disconnect (`disconnectStrava`)
+ * - Strava webhook deauth events (`handleAthleteDeauth` in webhook.ts)
+ *
+ * Does NOT revoke the Strava token — the caller handles that if needed.
+ * Does NOT clear the session — the caller handles that if needed.
+ */
+export async function cleanupDeauthorizedUser(userId: string): Promise<{ deletedRides: number }> {
+  const supabase = createServiceClient()
+
+  // 1. Clear Strava tokens from the database
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      strava_access_token: '',
+      strava_refresh_token: '',
+      strava_token_expires_at: new Date(0).toISOString(),
+      strava_scopes: '',
+    })
+    .eq('id', userId)
+
+  if (updateError) {
+    throw new Error(`Failed to clear Strava tokens: ${updateError.message}`)
+  }
+
+  // 2. Delete all user rides (Strava API compliance — data must be removed on disconnect)
+  const { error: deleteError, count: deletedCount } = await supabase
+    .from('rides')
+    .delete({ count: 'exact' })
+    .eq('user_id', userId)
+
+  if (deleteError) {
+    console.error(`[auth] Failed to delete rides for user ${userId}:`, deleteError.message)
+    // Don't throw — continue with disconnect even if ride deletion fails
+    // The user's tokens are already cleared, so they can't re-sync
+  } else {
+    console.log(`[auth] Deleted ${deletedCount ?? 0} rides for user ${userId}`)
+  }
+
+  // 3. Refresh leaderboard view to remove deleted user's data
+  try {
+    await supabase.rpc('refresh_leaderboard')
+  } catch (err) {
+    console.error('[auth] Failed to refresh leaderboard after ride deletion:', err)
+  }
+
+  return { deletedRides: deletedCount ?? 0 }
+}
+
+// ---------------------------------------------------------------------------
+// disconnectStrava — revokes Strava access, cleans up data, clears session
 // ---------------------------------------------------------------------------
 export const disconnectStrava = createServerFn({ method: 'POST' }).handler(
   async () => {
@@ -150,44 +233,10 @@ export const disconnectStrava = createServerFn({ method: 'POST' }).handler(
       console.error('Failed to get valid token for revocation, continuing with local cleanup', err)
     }
 
-    // 4. Clear Strava tokens from the database (service client bypasses RLS)
-    const supabase = createServiceClient()
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        strava_access_token: '',
-        strava_refresh_token: '',
-        strava_token_expires_at: new Date(0).toISOString(),
-        strava_scopes: '',
-      })
-      .eq('id', session.userId)
+    // 4. Clean up user data (tokens, rides, leaderboard)
+    await cleanupDeauthorizedUser(session.userId)
 
-    if (updateError) {
-      throw new Error(`Failed to clear Strava tokens: ${updateError.message}`)
-    }
-
-    // 5. Delete all user rides (Strava API compliance — data must be removed on disconnect)
-    const { error: deleteError, count: deletedCount } = await supabase
-      .from('rides')
-      .delete({ count: 'exact' })
-      .eq('user_id', session.userId)
-
-    if (deleteError) {
-      console.error(`[auth] Failed to delete rides for user ${session.userId}:`, deleteError.message)
-      // Don't throw — continue with disconnect even if ride deletion fails
-      // The user's tokens are already cleared, so they can't re-sync
-    } else {
-      console.log(`[auth] Deleted ${deletedCount ?? 0} rides for user ${session.userId}`)
-    }
-
-    // 6. Refresh leaderboard view to remove deleted user's data
-    try {
-      await supabase.rpc('refresh_leaderboard')
-    } catch (err) {
-      console.error('[auth] Failed to refresh leaderboard after ride deletion:', err)
-    }
-
-    // 7. Clear session cookie
+    // 5. Clear session cookie
     await clearSessionData()
 
     return { redirectTo: '/' as const }

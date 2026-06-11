@@ -118,6 +118,14 @@ export function SyncStatus() {
         return
       }
 
+      if (message.startsWith('RATE_LIMITED:')) {
+        toast.warning('🚦 Strava rate limit reached', {
+          description: message.replace('RATE_LIMITED:', ''),
+          duration: 15_000, // Show for 15 seconds so user can read the reset time
+        })
+        return
+      }
+
       // Handle SYNC_FAILED (Strava outage etc)
       const cleanMessage = message.startsWith('SYNC_FAILED:')
         ? message.replace('SYNC_FAILED:', '')

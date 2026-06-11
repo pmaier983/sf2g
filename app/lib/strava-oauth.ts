@@ -14,6 +14,7 @@ import {
   STRAVA_AUTHORIZE_URL,
   STRAVA_TOKEN_URL,
   STRAVA_REVOKE_URL,
+  STRAVA_DEAUTHORIZE_URL,
   STRAVA_SCOPES,
 } from './constants'
 
@@ -222,26 +223,68 @@ export async function ensureValidToken(userId: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 /**
- * Revoke the user's Strava access by calling the new oauth/revoke endpoint.
+ * Deauthorize and revoke the user's Strava access.
  *
- * This fully disconnects the app from the athlete's Strava account.
- * After revocation, the access token and refresh token are no longer valid.
+ * Calls BOTH Strava endpoints:
+ * 1. POST /oauth/deauthorize — the proven endpoint that fully disconnects the
+ *    app from the athlete's account, removes it from their apps settings page,
+ *    and decrements the "athletes connected" count.
+ * 2. POST /oauth/revoke — the newer endpoint (June 2026) for token revocation
+ *    with Basic Auth. Called as a belt-and-suspenders measure. This will become
+ *    the only endpoint effective June 2027.
  *
  * @param accessToken - The user's current Strava access token
- * @throws Error if revocation fails
+ * @throws Error if deauthorization fails
  */
 export async function revokeToken(accessToken: string): Promise<void> {
-  const response = await fetch(STRAVA_REVOKE_URL, {
+  const clientId = process.env.STRAVA_CLIENT_ID
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables')
+  }
+
+  // 1. Call the old /oauth/deauthorize endpoint — this is what actually removes
+  //    the app from the athlete's settings page and decrements the athlete count.
+  //    Takes access_token as a body parameter.
+  const deauthResponse = await fetch(STRAVA_DEAUTHORIZE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ access_token: accessToken }),
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[strava-oauth] Token revocation failed:', response.status, errorText)
+  if (!deauthResponse.ok) {
+    const errorText = await deauthResponse.text()
+    console.error('[strava-oauth] Deauthorize failed:', deauthResponse.status, errorText)
     throw new Error(
-      `Strava token revocation failed (${response.status}): ${errorText}`,
+      `Strava deauthorization failed (${deauthResponse.status}): ${errorText}`,
     )
+  }
+
+  // 2. Also call the new /oauth/revoke endpoint (belt-and-suspenders).
+  //    This requires Basic Auth: base64(client_id:client_secret)
+  //    Uses `token` param instead of `access_token`.
+  //    Returns 200 whether or not the token was found, so we don't throw on failure.
+  try {
+    const credentials = btoa(`${clientId}:${clientSecret}`)
+    const revokeResponse = await fetch(STRAVA_REVOKE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${credentials}`,
+      },
+      body: new URLSearchParams({
+        token: accessToken,
+        token_type_hint: 'access_token',
+      }),
+    })
+
+    if (!revokeResponse.ok) {
+      // Non-critical — the deauthorize call already succeeded
+      console.warn('[strava-oauth] Revoke endpoint returned', revokeResponse.status, '(non-critical, deauthorize already succeeded)')
+    }
+  } catch (err) {
+    // Non-critical — the deauthorize call already succeeded
+    console.warn('[strava-oauth] Revoke endpoint failed (non-critical):', err)
   }
 }
