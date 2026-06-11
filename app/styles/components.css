@@ -369,35 +369,26 @@
 .strava-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-strava);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
   cursor: pointer;
   text-decoration: none;
   transition: all var(--transition-base);
   white-space: nowrap;
-}
-
-.strava-btn:hover {
-  background: var(--color-strava-hover);
-  box-shadow: 0 2px 8px rgba(252, 76, 2, 0.35);
-  color: #ffffff;
-}
-
-.strava-btn--lg {
-  padding: var(--space-3) var(--space-6);
-  font-size: var(--text-base);
   border-radius: var(--radius-md);
 }
 
-.strava-btn__icon {
-  width: 20px;
-  height: 20px;
+.strava-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(252, 76, 2, 0.35);
+}
+
+.strava-btn--lg .strava-btn__img {
+  height: 48px;
+}
+
+.strava-btn__img {
+  height: 36px;
+  display: block;
+  border-radius: var(--radius-md);
 }
 
 /* ----- SF2G Join Button (Orange) ----- */

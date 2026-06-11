@@ -80,13 +80,18 @@ function PrivacyPage() {
             visibility settings
           </li>
           <li>
+            <strong>Performance metrics</strong> — average and max heart rate,
+            average and max power (watts), kilojoules, and relative effort
+            score, when available from your device
+          </li>
+          <li>
             <strong>OAuth tokens</strong> — access and refresh tokens used to
             sync your rides from Strava
           </li>
         </ul>
         <p style={paragraphStyle}>
-          We do <strong>not</strong> collect your email address, password, heart
-          rate, power data, or any health-related metrics.
+          We do <strong>not</strong> collect your email address, password, or
+          any data beyond what is listed above.
         </p>
       </section>
 

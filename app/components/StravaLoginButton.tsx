@@ -2,6 +2,9 @@ import { Link } from '@tanstack/react-router'
 
 /**
  * StravaLoginButton — "Connect with Strava" CTA.
+ * Uses the official Strava button asset per Brand Guidelines:
+ * https://developers.strava.com/guidelines/
+ *
  * Links to /auth/login which triggers the OAuth flow.
  */
 export function StravaLoginButton({ large }: { large?: boolean }) {
@@ -10,15 +13,11 @@ export function StravaLoginButton({ large }: { large?: boolean }) {
       to="/auth/login"
       className={`strava-btn${large ? ' strava-btn--lg' : ''}`}
     >
-      <svg
-        className="strava-btn__icon"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169" />
-      </svg>
-      Connect with Strava
+      <img
+        src="/connect-with-strava-orange.svg"
+        alt="Connect with Strava"
+        className="strava-btn__img"
+      />
     </Link>
   )
 }
