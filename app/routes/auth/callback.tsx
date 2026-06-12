@@ -146,12 +146,15 @@ function CallbackPage() {
   const getSyncMessage = () => {
     if (!syncInfo) return 'Redirecting to leaderboard...'
     if (syncInfo.syncError) {
-      // Sync failed but auth succeeded
+      // Sync failed but auth succeeded — strip error prefixes for clean display
+      const cleanError = syncInfo.syncError
+        .replace(/^(SYNC_FAILED|RATE_LIMITED|REAUTH_REQUIRED):/, '')
+        .trim()
       const isRateLimit = syncInfo.syncError.startsWith('RATE_LIMITED:')
       if (isRateLimit) {
-        return 'Connected! Your rides will sync when the rate limit resets. Tap "Sync Now" on the leaderboard later.'
+        return `Connected! ${cleanError} Tap "Sync Now" on the leaderboard later.`
       }
-      return 'Connected! Ride sync had an issue — tap "Sync Now" on the leaderboard to try again.'
+      return `Connected! Initial sync issue: ${cleanError}. Tap "Sync Now" on the leaderboard to try again.`
     }
     if (syncInfo.newRides > 0) {
       return `Imported ${syncInfo.newRides} ride${syncInfo.newRides !== 1 ? 's' : ''}! Redirecting...`

@@ -49,6 +49,10 @@ const BATCH_SIZE = 100
 /** Max activities per page from Strava */
 const PAGE_SIZE = 200
 
+/** Minimum moving time (seconds) for a ride to be imported.
+ *  30 minutes — anything shorter is not a real SF2G commute. */
+const MIN_RIDE_DURATION_SECONDS = 30 * 60
+
 /**
  * Transform a Strava activity summary into a RideInsert object.
  */
@@ -153,8 +157,14 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
   // Detect initial sync: either explicitly flagged or no previous activity timestamp
   const isInitialSync = options?.isInitialSync ?? lastActivityAt === undefined
 
+  // For initial syncs, IGNORE the stored last_activity_at and fetch ALL rides.
+  // This handles returning users whose old last_activity_at persisted through
+  // deauthorization — without this, the sync would only look for activities
+  // after the old timestamp and find nothing.
+  const syncAfter = isInitialSync ? undefined : lastActivityAt
+
   console.log(
-    `[sync] ${isInitialSync ? 'INITIAL sync (fetching ALL rides)' : `Incremental sync after: ${lastActivityAt}`}`,
+    `[sync] ${isInitialSync ? 'INITIAL sync (fetching ALL rides)' : `Incremental sync after: ${syncAfter}`}`,
   )
 
   // 3. Paginate through Strava activities
@@ -173,7 +183,7 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
       const { activities, response } = await fetchAthleteActivities(
         accessToken,
         {
-          after: lastActivityAt,
+          after: syncAfter,
           perPage: PAGE_SIZE,
           page,
         },
@@ -195,15 +205,23 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
         console.log(`[sync] Activity types: ${typeBreakdown}`)
       }
 
-      // Filter to rides only (non-manual)
+      // Filter to rides only: must be type Ride, non-manual, and >= 30 minutes
       const rides = activities.filter(
-        (a) => a.type === 'Ride' && !a.manual,
+        (a) =>
+          a.type === 'Ride' &&
+          !a.manual &&
+          a.moving_time >= MIN_RIDE_DURATION_SECONDS,
       )
 
       const filtered = activities.length - rides.length
       totalFilteredOut += filtered
       if (filtered > 0) {
-        console.log(`[sync] Filtered out ${filtered} non-ride/manual activities, keeping ${rides.length} rides`)
+        const tooShort = activities.filter(
+          (a) => a.type === 'Ride' && !a.manual && a.moving_time < MIN_RIDE_DURATION_SECONDS,
+        ).length
+        console.log(
+          `[sync] Filtered out ${filtered} activities (${tooShort} rides under 30min), keeping ${rides.length} rides`,
+        )
       }
 
       // Transform and classify each ride
@@ -274,7 +292,7 @@ export async function performSync(userId: string, options?: SyncOptions): Promis
       )
 
       const todayRides = todayActivities.filter(
-        (a) => a.type === 'Ride' && !a.manual,
+        (a) => a.type === 'Ride' && !a.manual && a.moving_time >= MIN_RIDE_DURATION_SECONDS,
       )
 
       // Deduplicate: only process rides we didn't already fetch in the main pass

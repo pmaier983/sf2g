@@ -155,10 +155,16 @@ async function handleActivityCreateOrUpdate(
   // 3. Fetch full activity from Strava
   const { activity } = await fetchSingleActivity(accessToken, event.object_id)
 
-  // 4. Filter: only process Rides (non-manual)
-  if (activity.type !== 'Ride' || activity.manual) {
+  // 4. Filter: only process Rides (non-manual, >= 30 minutes)
+  const MIN_RIDE_DURATION_SECONDS = 30 * 60
+  if (activity.type !== 'Ride' || activity.manual || activity.moving_time < MIN_RIDE_DURATION_SECONDS) {
+    const reason = activity.type !== 'Ride'
+      ? `non-ride (${activity.type})`
+      : activity.manual
+        ? 'manual entry'
+        : `too short (${Math.round(activity.moving_time / 60)}min < 30min)`
     console.log(
-      `[webhook] Skipping non-ride activity: ${activity.type}${activity.manual ? ' (manual)' : ''}`,
+      `[webhook] Skipping activity: ${reason}`,
     )
     return {
       event_type: eventType,

@@ -167,7 +167,9 @@ export const logout = createServerFn({ method: 'POST' }).handler(async () => {
 export async function cleanupDeauthorizedUser(userId: string): Promise<{ deletedRides: number }> {
   const supabase = createServiceClient()
 
-  // 1. Clear Strava tokens from the database
+  // 1. Clear Strava tokens and sync timestamps from the database
+  //    Resetting last_activity_at and last_sync_at ensures a clean initial
+  //    sync if the user reconnects later (no stale 'after' parameter).
   const { error: updateError } = await supabase
     .from('users')
     .update({
@@ -175,6 +177,8 @@ export async function cleanupDeauthorizedUser(userId: string): Promise<{ deleted
       strava_refresh_token: '',
       strava_token_expires_at: new Date(0).toISOString(),
       strava_scopes: '',
+      last_activity_at: null,
+      last_sync_at: null,
     })
     .eq('id', userId)
 
