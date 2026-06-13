@@ -52,6 +52,16 @@ export interface StravaActivitySummary {
   manual: boolean
   private: boolean
   trainer: boolean
+  // Power data (optional — only present if rider has a power meter)
+  average_watts?: number
+  max_watts?: number
+  weighted_average_watts?: number
+  kilojoules?: number
+  // Heart rate data (optional — only present if rider has HR monitor)
+  has_heartrate?: boolean
+  average_heartrate?: number
+  max_heartrate?: number
+  suffer_score?: number
 }
 
 // ---------------------------------------------------------------------------

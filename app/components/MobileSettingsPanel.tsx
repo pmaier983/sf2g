@@ -14,7 +14,7 @@ export interface MobileSettingsPanelProps extends FilterChipsProps {
   search: string
   onSearchChange: (value: string) => void
   /** Current view */
-  view: 'riders' | 'rides' | 'alltime'
+  view: 'riders' | 'rides' | 'alltime' | 'groups'
   /** Density for the riders view */
   density: 'condensed' | 'expanded'
   onDensityChange: (density: 'condensed' | 'expanded') => void

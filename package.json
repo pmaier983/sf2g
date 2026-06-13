@@ -23,6 +23,7 @@
     "@tanstack/react-virtual": "^3.13.25",
     "@vitejs/plugin-react": "^6.0.2",
     "leaflet": "^1.9.4",
+    "mapbox-gl": "^3.24.0",
     "posthog-js": "^1.376.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.29.0",
     "@types/leaflet": "^1.9.21",
+    "@types/mapbox-gl": "^3.5.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

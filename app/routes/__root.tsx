@@ -17,6 +17,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 // Import CSS as side effects — rsbuild injects them automatically
 import '../styles/global.css'
 import '../styles/components.css'
+import '../styles/group-rides.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

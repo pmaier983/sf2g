@@ -98,6 +98,16 @@ function activityToRideInsert(
     destination_company: destination?.company ?? null,
     destination_office: destination?.officeName ?? null,
     destination_distance_meters: destination?.distanceMeters ?? null,
+    // Power data (only present for riders with power meters)
+    average_watts: activity.average_watts ?? null,
+    max_watts: activity.max_watts ?? null,
+    has_power_meter: !!(activity.average_watts),
+    kilojoules: activity.kilojoules ?? null,
+    // Heart rate data (only present for riders with HR monitors)
+    average_heartrate: activity.average_heartrate ?? null,
+    max_heartrate: activity.max_heartrate ?? null,
+    has_heartrate: !!(activity.has_heartrate),
+    suffer_score: activity.suffer_score ?? null,
     // Note: strava_raw column intentionally omitted — Strava API TOS prohibits
     // persistent caching of full raw API responses. The column is kept in the DB
     // for backward compat but no longer receives new data.

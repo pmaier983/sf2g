@@ -116,6 +116,14 @@ export interface Database {
           tailwind_component_ms: number | null
           crosswind_component_ms: number | null
           wind_data_source: string | null
+          average_watts: number | null
+          max_watts: number | null
+          average_heartrate: number | null
+          max_heartrate: number | null
+          kilojoules: number | null
+          suffer_score: number | null
+          has_power_meter: boolean
+          has_heartrate: boolean
           created_at: string
         }
         Insert: {
@@ -151,6 +159,14 @@ export interface Database {
           tailwind_component_ms?: number | null
           crosswind_component_ms?: number | null
           wind_data_source?: string | null
+          average_watts?: number | null
+          max_watts?: number | null
+          average_heartrate?: number | null
+          max_heartrate?: number | null
+          kilojoules?: number | null
+          suffer_score?: number | null
+          has_power_meter?: boolean
+          has_heartrate?: boolean
           created_at?: string
         }
         Update: {
@@ -186,7 +202,45 @@ export interface Database {
           tailwind_component_ms?: number | null
           crosswind_component_ms?: number | null
           wind_data_source?: string | null
+          average_watts?: number | null
+          max_watts?: number | null
+          average_heartrate?: number | null
+          max_heartrate?: number | null
+          kilojoules?: number | null
+          suffer_score?: number | null
+          has_power_meter?: boolean
+          has_heartrate?: boolean
           created_at?: string
+        }
+        Relationships: []
+      }
+      ride_streams: {
+        Row: {
+          id: string
+          ride_id: string
+          latlng_stream: [number, number][]
+          time_stream: number[]
+          watts_stream: number[] | null
+          heartrate_stream: number[] | null
+          fetched_at: string
+        }
+        Insert: {
+          id?: string
+          ride_id: string
+          latlng_stream: [number, number][]
+          time_stream: number[]
+          watts_stream?: number[] | null
+          heartrate_stream?: number[] | null
+          fetched_at?: string
+        }
+        Update: {
+          id?: string
+          ride_id?: string
+          latlng_stream?: [number, number][]
+          time_stream?: number[]
+          watts_stream?: number[] | null
+          heartrate_stream?: number[] | null
+          fetched_at?: string
         }
         Relationships: []
       }
@@ -384,6 +438,9 @@ export type CompanyLeaderboardEntry = Views['company_leaderboard_view']['Row']
 export type MonthlyRideStat = Views['monthly_ride_stats']['Row']
 export type RouteSpeedEntry = Views['route_speed_leaderboard']['Row']
 export type PprDawnRide = Views['ppr_dawn_rides']['Row']
+export type RideCoOccurrence = Views['ride_co_occurrences']['Row']
+export type RideStream = Tables['ride_streams']['Row']
+export type RideStreamInsert = Tables['ride_streams']['Insert']
 
 // ---------------------------------------------------------------------------
 // Rides leaderboard types
