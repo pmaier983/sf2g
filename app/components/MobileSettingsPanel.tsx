@@ -4,25 +4,24 @@
  * Contains ALL filter controls (reuses FilterChips), plus search input,
  * density toggle, and duration selector (for All Time view).
  */
-import { FilterChips } from './FilterChips'
-import type { FilterChipsProps } from './FilterChips'
+import { FilterChips } from "./FilterChips";
+import type { FilterChipsProps } from "./FilterChips";
 
 export interface MobileSettingsPanelProps extends FilterChipsProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   /** Current search query */
-  search: string
-  onSearchChange: (value: string) => void
+  search: string;
+  onSearchChange: (value: string) => void;
   /** Current view */
-  view: 'riders' | 'rides' | 'alltime'
+  view: "riders" | "rides" | "alltime" | "groups";
   /** Density for the riders view */
-  density: 'condensed' | 'expanded'
-  onDensityChange: (density: 'condensed' | 'expanded') => void
+  density: "condensed" | "expanded";
+  onDensityChange: (density: "condensed" | "expanded") => void;
   /** Duration for the All Time view */
-  duration: string
-  onDurationChange: (duration: string) => void
+  duration: string;
+  onDurationChange: (duration: string) => void;
 }
-
 
 export function MobileSettingsPanel({
   isOpen,
@@ -50,7 +49,7 @@ export function MobileSettingsPanel({
 
       {/* Slide-up panel */}
       <div
-        className={`mobile-settings-panel${isOpen ? ' mobile-settings-panel--open' : ''}`}
+        className={`mobile-settings-panel${isOpen ? " mobile-settings-panel--open" : ""}`}
         role="dialog"
         aria-label="Leaderboard filters"
         aria-hidden={!isOpen}
@@ -74,7 +73,7 @@ export function MobileSettingsPanel({
               type="search"
               className="mobile-settings-panel__search"
               placeholder={
-                view === 'rides' ? 'Search rides...' : 'Search riders...'
+                view === "rides" ? "Search rides..." : "Search riders..."
               }
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -82,7 +81,7 @@ export function MobileSettingsPanel({
           </div>
 
           {/* Density toggle — only in riders view */}
-          {view === 'riders' && (
+          {view === "riders" && (
             <div className="mobile-settings-panel__section">
               <span className="mobile-settings-panel__section-label">
                 Density
@@ -90,17 +89,17 @@ export function MobileSettingsPanel({
               <div className="mobile-settings-panel__density-toggle">
                 <button
                   type="button"
-                  className={`mobile-settings-panel__density-btn${density === 'condensed' ? ' mobile-settings-panel__density-btn--active' : ''}`}
-                  onClick={() => onDensityChange('condensed')}
-                  aria-pressed={density === 'condensed'}
+                  className={`mobile-settings-panel__density-btn${density === "condensed" ? " mobile-settings-panel__density-btn--active" : ""}`}
+                  onClick={() => onDensityChange("condensed")}
+                  aria-pressed={density === "condensed"}
                 >
                   ≡ Condensed
                 </button>
                 <button
                   type="button"
-                  className={`mobile-settings-panel__density-btn${density === 'expanded' ? ' mobile-settings-panel__density-btn--active' : ''}`}
-                  onClick={() => onDensityChange('expanded')}
-                  aria-pressed={density === 'expanded'}
+                  className={`mobile-settings-panel__density-btn${density === "expanded" ? " mobile-settings-panel__density-btn--active" : ""}`}
+                  onClick={() => onDensityChange("expanded")}
+                  aria-pressed={density === "expanded"}
                 >
                   ⊞ Expanded
                 </button>
@@ -113,10 +112,16 @@ export function MobileSettingsPanel({
             <span className="mobile-settings-panel__section-label">
               Filters
             </span>
-            <FilterChips {...filterChipsProps} view={view} duration={duration} onDurationChange={onDurationChange} idPrefix="mobile-" />
+            <FilterChips
+              {...filterChipsProps}
+              view={view}
+              duration={duration}
+              onDurationChange={onDurationChange}
+              idPrefix="mobile-"
+            />
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }

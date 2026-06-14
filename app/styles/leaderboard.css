@@ -2001,7 +2001,7 @@
     display: flex;
     gap: 0;
     border-radius: var(--radius-full);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid var(--color-border);
     width: 100%;
     max-width: 20rem;
@@ -2009,12 +2009,13 @@
 
   .mobile-view-header__btn {
     flex: 1;
+    flex-shrink: 0;
     padding: var(--space-2) var(--space-2);
     background: transparent;
     border: none;
     color: var(--color-text-muted);
     cursor: pointer;
-    font-size: var(--text-sm);
+    font-size: clamp(0.7rem, 2.5vw, var(--text-sm));
     font-weight: var(--font-semibold);
     transition: background 0.15s, color 0.15s;
     white-space: nowrap;
@@ -2032,7 +2033,16 @@
     color: #fff;
     cursor: default;
   }
+}
 
+@media (max-width: 480px) {
+  .mobile-view-header__btn {
+    padding: var(--space-1) var(--space-1);
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
   /* ---- Compact mobile header ---- */
   .leaderboard {
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));

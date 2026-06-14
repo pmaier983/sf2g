@@ -11,73 +11,79 @@
  * - Uses a PostgreSQL RPC for bulk updates (1 call per batch, not 1 per ride)
  * - Refreshes materialized views in parallel
  */
-import { createServerFn } from '@tanstack/react-start'
-import { createServiceClient } from '../lib/supabase'
-import { classifyRoute } from '../lib/route-classifier'
-import { classifyDestination } from '../lib/destination-classifier'
-import type { RouteCategory, ClassificationMethod, DestinationCompany, RideUpdate } from '../lib/database.types'
+import { createServerFn } from "@tanstack/react-start";
+import { createServiceClient } from "../lib/supabase";
+import type { Json } from "../lib/database.types";
+import { classifyRoute } from "../lib/route-classifier";
+import { classifyDestination } from "../lib/destination-classifier";
+import type {
+  RouteCategory,
+  ClassificationMethod,
+  DestinationCompany,
+  RideUpdate,
+} from "../lib/database.types";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface ReclassifyResult {
-  totalRides: number
-  updated: number
-  routeChanges: number
-  destinationChanges: number
-  skippedOverrides: number
-  errors: string[]
-  breakdown: Record<string, number>
-  durationMs: number
+  totalRides: number;
+  updated: number;
+  routeChanges: number;
+  destinationChanges: number;
+  skippedOverrides: number;
+  errors: string[];
+  breakdown: Record<string, number>;
+  durationMs: number;
   /** Debug: sample of first few rides and their classification for diagnostics */
   debug?: Array<{
-    name: string | null
-    id: string
-    hasPolyline: boolean
-    polylineLen: number
-    startLatlng: [number, number] | null
-    endLatlng: [number, number] | null
-    distance: number | null
-    elevation: number | null
-    oldCategory: string | null
-    newCategory: string | null
-    method: string
-    confidence: number
-  }>
+    name: string | null;
+    id: string;
+    hasPolyline: boolean;
+    polylineLen: number;
+    startLatlng: [number, number] | null;
+    endLatlng: [number, number] | null;
+    distance: number | null;
+    elevation: number | null;
+    oldCategory: string | null;
+    newCategory: string | null;
+    method: string;
+    confidence: number;
+  }>;
 }
 
 /** Minimal ride shape for classification — avoids fetching strava_raw etc. */
 interface ClassifiableRide {
-  id: string
-  summary_polyline: string | null
-  distance_meters: number | null
-  elevation_gain_meters: number | null
-  start_latlng: [number, number] | null
-  end_latlng: [number, number] | null
-  route_category: RouteCategory | null
-  classification_confidence: number | null
-  classification_method: ClassificationMethod | null
-  destination_company: DestinationCompany | null
-  destination_office: string | null
-  destination_distance_meters: number | null
+  id: string;
+  summary_polyline: string | null;
+  distance_meters: number | null;
+  elevation_gain_meters: number | null;
+  start_latlng: [number, number] | null;
+  end_latlng: [number, number] | null;
+  route_category: RouteCategory | null;
+  classification_confidence: number | null;
+  classification_method: ClassificationMethod | null;
+  destination_company: DestinationCompany | null;
+  destination_office: string | null;
+  destination_distance_meters: number | null;
 }
 
 /** Shape sent to the batch_update_ride_classifications RPC */
 interface BatchUpdateEntry {
-  id: string
+  id: string;
   /** route_category (empty string = null for non-SF2G rides) */
-  rc: string
+  rc: string;
   /** classification_confidence */
-  cc: number
+  cc: number;
   /** classification_method */
-  cm: string
+  cm: string;
   /** destination_company (empty string = null) */
-  dc: string
+  dc: string;
   /** destination_office (empty string = null) */
-  do: string
+  do: string;
   /** destination_distance_meters (null if no match) */
-  dd: number | null
+  dd: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -86,26 +92,26 @@ interface BatchUpdateEntry {
 
 /** Columns selected — excludes strava_raw and other unneeded data */
 const CLASSIFICATION_COLUMNS = [
-  'id',
-  'name',
-  'summary_polyline',
-  'distance_meters',
-  'elevation_gain_meters',
-  'start_latlng',
-  'end_latlng',
-  'route_category',
-  'classification_confidence',
-  'classification_method',
-  'destination_company',
-  'destination_office',
-  'destination_distance_meters',
-].join(',')
+  "id",
+  "name",
+  "summary_polyline",
+  "distance_meters",
+  "elevation_gain_meters",
+  "start_latlng",
+  "end_latlng",
+  "route_category",
+  "classification_confidence",
+  "classification_method",
+  "destination_company",
+  "destination_office",
+  "destination_distance_meters",
+].join(",");
 
 /** Batch size for reading rides from the database */
-const READ_BATCH_SIZE = 1000
+const READ_BATCH_SIZE = 1000;
 
 /** Batch size for writing updates via RPC (JSON payload limit) */
-const WRITE_BATCH_SIZE = 500
+const WRITE_BATCH_SIZE = 500;
 
 // ---------------------------------------------------------------------------
 // Core Reclassification Logic
@@ -117,7 +123,11 @@ const WRITE_BATCH_SIZE = 500
  */
 function reclassifyRide(
   ride: ClassifiableRide,
-): { entry: BatchUpdateEntry; routeChanged: boolean; destChanged: boolean } | null {
+): {
+  entry: BatchUpdateEntry;
+  routeChanged: boolean;
+  destChanged: boolean;
+} | null {
   // Re-run route classification
   const routeResult = classifyRoute({
     summary_polyline: ride.summary_polyline,
@@ -125,45 +135,45 @@ function reclassifyRide(
     total_elevation_gain: ride.elevation_gain_meters,
     start_latlng: ride.start_latlng,
     end_latlng: ride.end_latlng,
-  })
+  });
 
   // Re-run destination classification
   const destResult = classifyDestination({
     start_latlng: ride.start_latlng,
     end_latlng: ride.end_latlng,
     summary_polyline: ride.summary_polyline,
-  })
+  });
 
-  const newCompany = destResult?.company ?? null
-  const newOffice = destResult?.officeName ?? null
-  const newDistance = destResult?.distanceMeters ?? null
+  const newCompany = destResult?.company ?? null;
+  const newOffice = destResult?.officeName ?? null;
+  const newDistance = destResult?.distanceMeters ?? null;
 
   // Check if anything changed
   const routeChanged =
     routeResult.category !== ride.route_category ||
     routeResult.confidence !== ride.classification_confidence ||
-    routeResult.method !== ride.classification_method
+    routeResult.method !== ride.classification_method;
 
   const destChanged =
     newCompany !== ride.destination_company ||
     newOffice !== ride.destination_office ||
-    newDistance !== ride.destination_distance_meters
+    newDistance !== ride.destination_distance_meters;
 
-  if (!routeChanged && !destChanged) return null
+  if (!routeChanged && !destChanged) return null;
 
   return {
     entry: {
       id: ride.id,
-      rc: routeResult.category ?? '',
+      rc: routeResult.category ?? "",
       cc: routeResult.confidence,
       cm: routeResult.method,
-      dc: newCompany ?? '',
-      do: newOffice ?? '',
+      dc: newCompany ?? "",
+      do: newOffice ?? "",
       dd: newDistance,
     },
     routeChanged,
     destChanged,
-  }
+  };
 }
 
 /**
@@ -175,118 +185,127 @@ function reclassifyRide(
  * 4. Refresh leaderboard materialized views in parallel
  */
 export async function performReclassification(): Promise<ReclassifyResult> {
-  const startTime = Date.now()
-  const supabase = createServiceClient()
-  const errors: string[] = []
-  let totalRides = 0
-  let updated = 0
-  let routeChanges = 0
-  let destinationChanges = 0
-  let skippedOverrides = 0
-  const breakdown: Record<string, number> = {}
-  const debugSamples: ReclassifyResult['debug'] = []
+  const startTime = Date.now();
+  const supabase = createServiceClient();
+  const errors: string[] = [];
+  let totalRides = 0;
+  let updated = 0;
+  let routeChanges = 0;
+  let destinationChanges = 0;
+  let skippedOverrides = 0;
+  const breakdown: Record<string, number> = {};
+  const debugSamples: ReclassifyResult["debug"] = [];
 
   // ---------------------------------------------------------------------------
   // Fetch ride IDs with manual route overrides — these must NOT be reclassified
   // ---------------------------------------------------------------------------
-  const overrideRouteRideIds = new Set<string>()
+  const overrideRouteRideIds = new Set<string>();
   /** Full overrides for re-application after reclassification */
-  const overridesByRideId = new Map<string, {
-    override_route_category: string | null
-    is_not_sf2g: boolean
-  }>()
+  const overridesByRideId = new Map<
+    string,
+    {
+      override_route_category: string | null;
+      is_not_sf2g: boolean;
+    }
+  >();
 
   try {
     const { data: overrides, error: overrideError } = await supabase
-      .from('ride_overrides')
-      .select('ride_id, override_route_category, is_not_sf2g')
-      .or('override_route_category.not.is.null,is_not_sf2g.eq.true')
+      .from("ride_overrides")
+      .select("ride_id, override_route_category, is_not_sf2g")
+      .or("override_route_category.not.is.null,is_not_sf2g.eq.true");
 
     if (overrideError) {
-      errors.push(`Failed to fetch ride overrides: ${overrideError.message}`)
+      errors.push(`Failed to fetch ride overrides: ${overrideError.message}`);
     } else if (overrides) {
       for (const ov of overrides) {
         if (ov.override_route_category !== null || ov.is_not_sf2g) {
-          overrideRouteRideIds.add(ov.ride_id)
+          overrideRouteRideIds.add(ov.ride_id);
           overridesByRideId.set(ov.ride_id, {
             override_route_category: ov.override_route_category,
             is_not_sf2g: ov.is_not_sf2g ?? false,
-          })
+          });
         }
       }
       if (overrideRouteRideIds.size > 0) {
-        console.log(`[reclassify] Skipping route reclassification for ${overrideRouteRideIds.size} ride(s) with manual overrides`)
+        console.log(
+          `[reclassify] Skipping route reclassification for ${overrideRouteRideIds.size} ride(s) with manual overrides`,
+        );
       }
     }
   } catch (err) {
-    errors.push(`Failed to fetch ride overrides: ${err instanceof Error ? err.message : String(err)}`)
+    errors.push(
+      `Failed to fetch ride overrides: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   // Paginate through all non-hidden rides
-  let offset = 0
-  let hasMore = true
+  let offset = 0;
+  let hasMore = true;
 
   while (hasMore) {
     const { data: rides, error: readError } = await supabase
-      .from('rides')
+      .from("rides")
       .select(CLASSIFICATION_COLUMNS)
-      .or('is_hidden.eq.false,is_hidden.is.null')
-      .order('created_at', { ascending: true })
-      .range(offset, offset + READ_BATCH_SIZE - 1)
+      .or("is_hidden.eq.false,is_hidden.is.null")
+      .order("created_at", { ascending: true })
+      .range(offset, offset + READ_BATCH_SIZE - 1);
 
     if (readError) {
-      errors.push(`Failed to read rides at offset ${offset}: ${readError.message}`)
-      break
+      errors.push(
+        `Failed to read rides at offset ${offset}: ${readError.message}`,
+      );
+      break;
     }
 
     if (!rides || rides.length === 0) {
-      hasMore = false
-      break
+      hasMore = false;
+      break;
     }
 
-    totalRides += rides.length
+    totalRides += rides.length;
 
     // Classify all rides in this page (pure CPU, very fast)
-    const batchUpdates: BatchUpdateEntry[] = []
+    const batchUpdates: BatchUpdateEntry[] = [];
 
     for (const ride of rides as unknown as ClassifiableRide[]) {
       try {
-        const hasRouteOverride = overrideRouteRideIds.has(ride.id)
+        const hasRouteOverride = overrideRouteRideIds.has(ride.id);
 
         if (hasRouteOverride) {
           // This ride has a manual route override — skip route reclassification
           // but still re-run destination classification
-          skippedOverrides++
+          skippedOverrides++;
 
           const destResult = classifyDestination({
             start_latlng: ride.start_latlng,
             end_latlng: ride.end_latlng,
             summary_polyline: ride.summary_polyline,
-          })
+          });
 
-          const newCompany = destResult?.company ?? null
-          const newOffice = destResult?.officeName ?? null
-          const newDistance = destResult?.distanceMeters ?? null
+          const newCompany = destResult?.company ?? null;
+          const newOffice = destResult?.officeName ?? null;
+          const newDistance = destResult?.distanceMeters ?? null;
 
           const destChanged =
             newCompany !== ride.destination_company ||
             newOffice !== ride.destination_office ||
-            newDistance !== ride.destination_distance_meters
+            newDistance !== ride.destination_distance_meters;
 
           if (destChanged) {
-            destinationChanges++
+            destinationChanges++;
             batchUpdates.push({
               id: ride.id,
               // Preserve current route classification
-              rc: ride.route_category ?? '',
+              rc: ride.route_category ?? "",
               cc: ride.classification_confidence ?? 0,
-              cm: ride.classification_method ?? 'none',
-              dc: newCompany ?? '',
-              do: newOffice ?? '',
+              cm: ride.classification_method ?? "none",
+              dc: newCompany ?? "",
+              do: newOffice ?? "",
               dd: newDistance,
-            })
+            });
           }
-          continue
+          continue;
         }
 
         // Classify the ride
@@ -296,7 +315,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
           total_elevation_gain: ride.elevation_gain_meters,
           start_latlng: ride.start_latlng,
           end_latlng: ride.end_latlng,
-        })
+        });
 
         // Capture debug sample for the first 10 rides
         if (debugSamples!.length < 10) {
@@ -313,58 +332,62 @@ export async function performReclassification(): Promise<ReclassifyResult> {
             newCategory: routeResult.category,
             method: routeResult.method,
             confidence: routeResult.confidence,
-          })
+          });
         }
 
-        const result = reclassifyRide(ride)
+        const result = reclassifyRide(ride);
         if (result) {
-          batchUpdates.push(result.entry)
+          batchUpdates.push(result.entry);
 
-          if (result.routeChanged) routeChanges++
-          if (result.destChanged) destinationChanges++
+          if (result.routeChanged) routeChanges++;
+          if (result.destChanged) destinationChanges++;
 
           // Track category transitions
-          const oldCat = ride.route_category ?? 'null'
-          const newCat = result.entry.rc || 'null'
+          const oldCat = ride.route_category ?? "null";
+          const newCat = result.entry.rc || "null";
           if (oldCat !== newCat) {
-            const key = `${oldCat} → ${newCat}`
-            breakdown[key] = (breakdown[key] ?? 0) + 1
+            const key = `${oldCat} → ${newCat}`;
+            breakdown[key] = (breakdown[key] ?? 0) + 1;
           }
         }
       } catch (err) {
         errors.push(
           `Failed to reclassify ride ${ride.id}: ${err instanceof Error ? err.message : String(err)}`,
-        )
+        );
       }
     }
 
     // Batch update via RPC (single HTTP call per WRITE_BATCH_SIZE chunk)
     for (let i = 0; i < batchUpdates.length; i += WRITE_BATCH_SIZE) {
-      const batch = batchUpdates.slice(i, i + WRITE_BATCH_SIZE)
+      const batch = batchUpdates.slice(i, i + WRITE_BATCH_SIZE);
 
       try {
-        const { data: affectedCount, error: rpcError } = await supabase
-          .rpc('batch_update_ride_classifications', {
-            updates: batch,
-          })
+        const { data: affectedCount, error: rpcError } = await supabase.rpc(
+          "batch_update_ride_classifications",
+          {
+            updates: batch as unknown as Json,
+          },
+        );
 
         if (rpcError) {
-          errors.push(`Batch update RPC error (offset ${offset}, chunk ${i}): ${rpcError.message}`)
+          errors.push(
+            `Batch update RPC error (offset ${offset}, chunk ${i}): ${rpcError.message}`,
+          );
         } else {
-          updated += (affectedCount as number) ?? batch.length
+          updated += (affectedCount as number) ?? batch.length;
         }
       } catch (err) {
         errors.push(
           `Batch update exception (offset ${offset}): ${err instanceof Error ? err.message : String(err)}`,
-        )
+        );
       }
     }
 
     // Check if we got a full page (might have more)
     if (rides.length < READ_BATCH_SIZE) {
-      hasMore = false
+      hasMore = false;
     } else {
-      offset += READ_BATCH_SIZE
+      offset += READ_BATCH_SIZE;
     }
   }
 
@@ -372,40 +395,44 @@ export async function performReclassification(): Promise<ReclassifyResult> {
   // Re-apply route overrides as a safety net
   // ---------------------------------------------------------------------------
   if (overridesByRideId.size > 0) {
-    console.log(`[reclassify] Re-applying ${overridesByRideId.size} route override(s)`)
+    console.log(
+      `[reclassify] Re-applying ${overridesByRideId.size} route override(s)`,
+    );
     for (const [rideId, override] of overridesByRideId) {
       try {
-        const updateFields: RideUpdate = {}
+        const updateFields: RideUpdate = {};
         if (override.is_not_sf2g) {
-          updateFields.route_category = null
+          updateFields.route_category = null;
         } else if (override.override_route_category !== null) {
-          updateFields.route_category = override.override_route_category as RouteCategory
+          updateFields.route_category =
+            override.override_route_category as RouteCategory;
         }
 
         if (Object.keys(updateFields).length > 0) {
-          await supabase
-            .from('rides')
-            .update(updateFields)
-            .eq('id', rideId)
+          await supabase.from("rides").update(updateFields).eq("id", rideId);
         }
       } catch (err) {
         // Non-critical — log but don't fail
-        console.warn(`[reclassify] Failed to re-apply override for ride ${rideId}: ${err instanceof Error ? err.message : String(err)}`)
+        console.warn(
+          `[reclassify] Failed to re-apply override for ride ${rideId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }
 
   // Refresh both materialized views in parallel
   const [leaderboardResult, companyResult] = await Promise.allSettled([
-    supabase.rpc('refresh_leaderboard'),
-    supabase.rpc('refresh_company_leaderboard'),
-  ])
+    supabase.rpc("refresh_leaderboard"),
+    supabase.rpc("refresh_company_leaderboard"),
+  ]);
 
-  if (leaderboardResult.status === 'rejected') {
-    errors.push(`Failed to refresh leaderboard: ${leaderboardResult.reason}`)
+  if (leaderboardResult.status === "rejected") {
+    errors.push(`Failed to refresh leaderboard: ${leaderboardResult.reason}`);
   }
-  if (companyResult.status === 'rejected') {
-    errors.push(`Failed to refresh company leaderboard: ${companyResult.reason}`)
+  if (companyResult.status === "rejected") {
+    errors.push(
+      `Failed to refresh company leaderboard: ${companyResult.reason}`,
+    );
   }
 
   return {
@@ -418,7 +445,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
     breakdown,
     durationMs: Date.now() - startTime,
     debug: debugSamples,
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -432,8 +459,8 @@ export async function performReclassification(): Promise<ReclassifyResult> {
  *
  * TODO(security): In production, gate this behind an admin role check.
  */
-export const triggerReclassify = createServerFn({ method: 'POST' }).handler(
+export const triggerReclassify = createServerFn({ method: "POST" }).handler(
   async (): Promise<ReclassifyResult> => {
-    return performReclassification()
+    return performReclassification();
   },
-)
+);

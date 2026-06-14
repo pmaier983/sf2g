@@ -1,55 +1,55 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/privacy')({
+export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: 'Privacy Policy — SF2G' },
+      { title: "Privacy Policy — SF2G" },
       {
-        name: 'description',
+        name: "description",
         content:
-          'SF2G privacy policy — what data we collect and how we use it.',
+          "SF2G privacy policy — what data we collect and how we use it.",
       },
     ],
   }),
-})
+});
 
 const sectionStyle = {
-  marginBottom: 'var(--space-6)',
-} as const
+  marginBottom: "var(--space-6)",
+} as const;
 
 const headingStyle = {
-  marginBottom: 'var(--space-3)',
-  color: 'var(--color-text)',
-} as const
+  marginBottom: "var(--space-3)",
+  color: "var(--color-text)",
+} as const;
 
 const listStyle = {
-  paddingLeft: 'var(--space-5)',
-  marginBottom: 'var(--space-4)',
-  lineHeight: '1.7',
-} as const
+  paddingLeft: "var(--space-5)",
+  marginBottom: "var(--space-4)",
+  lineHeight: "1.7",
+} as const;
 
 const paragraphStyle = {
-  lineHeight: '1.7',
-  marginBottom: 'var(--space-3)',
-  color: 'var(--color-text-secondary)',
-} as const
+  lineHeight: "1.7",
+  marginBottom: "var(--space-3)",
+  color: "var(--color-text-secondary)",
+} as const;
 
 function PrivacyPage() {
   return (
     <div
       className="container"
       style={{
-        maxWidth: '720px',
-        padding: 'var(--space-6) var(--space-4)',
+        maxWidth: "720px",
+        padding: "var(--space-6) var(--space-4)",
       }}
     >
-      <h1 style={{ marginBottom: 'var(--space-2)' }}>Privacy Policy</h1>
+      <h1 style={{ marginBottom: "var(--space-2)" }}>Privacy Policy</h1>
       <p
         style={{
-          color: 'var(--color-text-muted)',
-          marginBottom: 'var(--space-6)',
-          fontSize: 'var(--font-size-sm)',
+          color: "var(--color-text-muted)",
+          marginBottom: "var(--space-6)",
+          fontSize: "var(--font-size-sm)",
         }}
       >
         Last updated: June 2026
@@ -58,9 +58,9 @@ function PrivacyPage() {
       <section style={sectionStyle}>
         <h2 style={headingStyle}>Overview</h2>
         <p style={paragraphStyle}>
-          SF2G is a community cycling commute tracker for the SF2G (San Francisco
-          to the Peninsula) community. This policy explains what data we collect,
-          how we store it, and your rights regarding that data.
+          SF2G is a community cycling commute tracker for the SF2G (San
+          Francisco to the Peninsula) community. This policy explains what data
+          we collect, how we store it, and your rights regarding that data.
         </p>
       </section>
 
@@ -93,7 +93,7 @@ function PrivacyPage() {
       <section style={sectionStyle}>
         <h2 style={headingStyle}>How Data Is Stored</h2>
         <p style={paragraphStyle}>
-          Your data is stored in a PostgreSQL database hosted on{' '}
+          Your data is stored in a PostgreSQL database hosted on{" "}
           <a
             href="https://supabase.com"
             target="_blank"
@@ -115,7 +115,9 @@ function PrivacyPage() {
         </p>
         <ul style={listStyle}>
           <li>Your display name and profile photo</li>
-          <li>Ride statistics — date, distance, speed, elevation, route category</li>
+          <li>
+            Ride statistics — date, distance, speed, elevation, route category
+          </li>
           <li>Leaderboard rankings and aggregate ride counts</li>
         </ul>
         <p style={paragraphStyle}>
@@ -153,13 +155,15 @@ function PrivacyPage() {
           page. When you disconnect:
         </p>
         <ul style={listStyle}>
-          <li>All of your ride data is permanently deleted from our database</li>
+          <li>
+            All of your ride data is permanently deleted from our database
+          </li>
           <li>Your OAuth tokens are cleared</li>
           <li>Your Strava access is revoked</li>
           <li>Your data is removed from the leaderboard</li>
         </ul>
         <p style={paragraphStyle}>
-          You can also revoke SF2G&apos;s access directly from your{' '}
+          You can also revoke SF2G&apos;s access directly from your{" "}
           <a
             href="https://www.strava.com/settings/apps"
             target="_blank"
@@ -178,7 +182,8 @@ function PrivacyPage() {
         </p>
         <ul style={listStyle}>
           <li>
-            <strong>Strava API</strong> — ride data sync and OAuth authentication
+            <strong>Strava API</strong> — ride data sync and OAuth
+            authentication
           </li>
           <li>
             <strong>Supabase</strong> — database hosting and API layer
@@ -187,8 +192,8 @@ function PrivacyPage() {
             <strong>Cloudflare Pages</strong> — application hosting and CDN
           </li>
           <li>
-            <strong>Mapbox</strong> — interactive map rendering on the routes
-            page
+            <strong>OpenStreetMap / CARTO</strong> — interactive map tile
+            rendering
           </li>
         </ul>
         <p style={paragraphStyle}>
@@ -199,9 +204,7 @@ function PrivacyPage() {
 
       <section style={sectionStyle}>
         <h2 style={headingStyle}>Cookies &amp; Local Storage</h2>
-        <p style={paragraphStyle}>
-          SF2G uses minimal browser storage:
-        </p>
+        <p style={paragraphStyle}>SF2G uses minimal browser storage:</p>
         <ul style={listStyle}>
           <li>
             <strong>Session cookie</strong> — a signed, HTTP-only cookie used to
@@ -251,7 +254,7 @@ function PrivacyPage() {
         <h2 style={headingStyle}>Contact</h2>
         <p style={paragraphStyle}>
           If you have questions about this privacy policy or your data, please
-          open an issue on our{' '}
+          open an issue on our{" "}
           <a
             href="https://github.com/pmaier983/sf2g/issues"
             target="_blank"
@@ -263,5 +266,5 @@ function PrivacyPage() {
         </p>
       </section>
     </div>
-  )
+  );
 }

@@ -12,16 +12,63 @@
  * Route components should import from this file.
  * Server-only code (cron.ts) should import directly from sync.ts.
  */
-import { createServerFn } from '@tanstack/react-start'
-import { getSessionData } from '../lib/session'
-import { createAnonClient, createServiceClient } from '../lib/supabase'
-import { performSync } from './sync'
+import { createServerFn } from "@tanstack/react-start";
+import { getSessionData } from "../lib/session";
+import { createAnonClient, createServiceClient } from "../lib/supabase";
+import { performSync } from "./sync";
 
 /** Maximum number of simultaneous syncs allowed globally. */
-const MAX_CONCURRENT_SYNCS = 5
+const MAX_CONCURRENT_SYNCS = 5;
 
 /** Minimum time between syncs per user (in milliseconds). */
-const SYNC_COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
+const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Shared pre-sync validation: auth, cooldown, and concurrency checks.
+ * Returns the authenticated userId on success, throws on failure.
+ */
+async function validateSyncPrereqs(): Promise<string> {
+  const session = await getSessionData();
+  if (!session) {
+    throw new Error("Not authenticated");
+  }
+
+  // Check sync cooldown (5 minutes)
+  const supabase = createAnonClient();
+  const { data: user } = await supabase
+    .from("users")
+    .select("last_sync_at")
+    .eq("id", session.userId)
+    .single();
+
+  if (user?.last_sync_at) {
+    const lastSync = new Date(user.last_sync_at);
+    const elapsed = Date.now() - lastSync.getTime();
+    if (elapsed < SYNC_COOLDOWN_MS) {
+      const remainingMinutes = Math.ceil((SYNC_COOLDOWN_MS - elapsed) / 60_000);
+      throw new Error(
+        `SYNC_COOLDOWN:Please wait ${remainingMinutes} minute${remainingMinutes !== 1 ? "s" : ""} before syncing again.`,
+      );
+    }
+  }
+
+  // Check global sync concurrency (max 5 simultaneous syncs)
+  // Heuristic: users who synced within the last 3 minutes are likely still active
+  const serviceClient = createServiceClient();
+  const { count: activeCount } = await serviceClient
+    .from("users")
+    .select("id", { count: "exact", head: true })
+    .not("last_sync_at", "is", null)
+    .gte("last_sync_at", new Date(Date.now() - 3 * 60 * 1000).toISOString());
+
+  if ((activeCount ?? 0) >= MAX_CONCURRENT_SYNCS) {
+    throw new Error(
+      "SYNC_BUSY:Too many syncs in progress. Try again in a minute.",
+    );
+  }
+
+  return session.userId;
+}
 
 /**
  * Trigger a ride sync for the currently authenticated user.
@@ -32,52 +79,25 @@ const SYNC_COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
  *
  * Returns the sync result with counts of new rides, total processed, and errors.
  */
-export const triggerSync = createServerFn({ method: 'POST' }).handler(
+export const triggerSync = createServerFn({ method: "POST" }).handler(
   async () => {
-    const session = await getSessionData()
-    if (!session) {
-      throw new Error('Not authenticated')
-    }
-
-    // Check sync cooldown (5 minutes)
-    const supabase = createAnonClient()
-    const { data: user } = await supabase
-      .from('users')
-      .select('last_sync_at')
-      .eq('id', session.userId)
-      .single()
-
-    if (user?.last_sync_at) {
-      const lastSync = new Date(user.last_sync_at)
-      const elapsed = Date.now() - lastSync.getTime()
-      if (elapsed < SYNC_COOLDOWN_MS) {
-        const remainingMinutes = Math.ceil(
-          (SYNC_COOLDOWN_MS - elapsed) / 60_000,
-        )
-        throw new Error(
-          `SYNC_COOLDOWN:Please wait ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''} before syncing again.`,
-        )
-      }
-    }
-
-    // Check global sync concurrency (max 5 simultaneous syncs)
-    // Heuristic: users who synced within the last 3 minutes are likely still active
-    const serviceClient = createServiceClient()
-    const { count: activeCount } = await serviceClient
-      .from('users')
-      .select('id', { count: 'exact', head: true })
-      .not('last_sync_at', 'is', null)
-      .gte(
-        'last_sync_at',
-        new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-      )
-
-    if ((activeCount ?? 0) >= MAX_CONCURRENT_SYNCS) {
-      throw new Error(
-        'SYNC_BUSY:Too many syncs in progress. Try again in a minute.',
-      )
-    }
-
-    return performSync(session.userId)
+    const userId = await validateSyncPrereqs();
+    return performSync(userId);
   },
-)
+);
+
+/**
+ * Trigger a FULL re-sync for the currently authenticated user.
+ *
+ * Ignores `last_activity_at` so that all rides are re-fetched from Strava.
+ * This updates watts/HR/calories data for historical rides. Ride overrides
+ * are re-applied after upsert, so manual adjustments are preserved.
+ *
+ * Same safety checks as triggerSync (cooldown + concurrency).
+ */
+export const triggerFullResync = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const userId = await validateSyncPrereqs();
+    return performSync(userId, { fullResync: true });
+  },
+);
