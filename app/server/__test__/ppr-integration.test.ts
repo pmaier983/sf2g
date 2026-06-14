@@ -82,21 +82,23 @@ describe("Supabase query limits (prevent 1000-row truncation)", () => {
     "utf-8",
   );
 
-  it("fetchFilteredLeaderboard uses explicit limits on ride queries", () => {
-    // All ride queries should have explicit .limit() to prevent Supabase's
-    // default 1000-row cap from silently truncating results
-    // Count occurrences of .limit(1000000) or similar explicit limits
-    const limitMatches = leaderboardServerSource.match(/\.limit\(\d+\)/g) ?? [];
-    expect(limitMatches.length).toBeGreaterThanOrEqual(3);
+  it("fetchFilteredLeaderboard uses pagination or explicit limits on ride queries", () => {
+    // The main rides query uses pagination (.range) to work around max_rows.
+    // Other queries may still use .limit(1000000).
+    const hasPagination =
+      leaderboardServerSource.includes("PAGE_SIZE") &&
+      leaderboardServerSource.includes(".range(offset,");
+    const hasLimits =
+      (leaderboardServerSource.match(/\.limit\(\d+\)/g) ?? []).length >= 2;
+    expect(hasPagination || hasLimits).toBe(true);
   });
 
-  it("allRides query has explicit limit (bug: 100% dist/elev fix)", () => {
-    // The "allRides" query that computes the denominator for %dist/%elev
-    // MUST have an explicit limit to avoid truncation at 1000 rows
-    // Look for the specific pattern near where allRides is fetched
-    const hasAllRidesLimit =
-      leaderboardServerSource.includes(".limit(1000000)");
-    expect(hasAllRidesLimit).toBe(true);
+  it("allRides query has pagination or explicit limit (bug: 100% dist/elev fix)", () => {
+    // The denominator for %dist/%elev MUST fetch all rows.
+    // This is done via pagination (.range) or RPC (bypasses max_rows).
+    const hasPagination = leaderboardServerSource.includes("PAGE_SIZE");
+    const hasLimit = leaderboardServerSource.includes(".limit(1000000)");
+    expect(hasPagination || hasLimit).toBe(true);
   });
 });
 

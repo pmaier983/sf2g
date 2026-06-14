@@ -156,55 +156,93 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
 
     if (needsSf2gComputation) {
       // Fetch SF2G aggregate per user from rides table
-      const { data: sf2gAgg } = await supabase
-        .from("rides")
-        .select(
-          "user_id, distance_meters, elevation_gain_meters, average_speed_mps, route_category",
-        )
-        .limit(1000000);
+      // Paginate to work around Supabase max_rows (1000) truncation
+      type Sf2gAggRow = {
+        user_id: string;
+        distance_meters: number | null;
+        elevation_gain_meters: number | null;
+        average_speed_mps: number | null;
+        route_category: string | null;
+      };
+      const PAGE_SIZE_SF2G = 1000;
+      const allSf2gAggRows: Sf2gAggRow[] = [];
+      let sf2gAggOffset = 0;
+      let sf2gAggHasMore = true;
 
-      if (sf2gAgg) {
-        // Build per-user SF2G aggregates
-        const sf2gByUser = new Map<
-          string,
-          {
-            distance: number;
-            elevation: number;
-            speedSum: number;
-            speedCount: number;
-            rideCount: number;
-          }
-        >();
-        for (const ride of sf2gAgg) {
-          if (ride.route_category === "other" || ride.route_category === null)
-            continue;
-          const existing = sf2gByUser.get(ride.user_id) ?? {
-            distance: 0,
-            elevation: 0,
-            speedSum: 0,
-            speedCount: 0,
-            rideCount: 0,
-          };
-          existing.distance += ride.distance_meters ?? 0;
-          existing.elevation += ride.elevation_gain_meters ?? 0;
-          existing.rideCount += 1;
-          if (ride.average_speed_mps != null) {
-            existing.speedSum += ride.average_speed_mps;
-            existing.speedCount += 1;
-          }
-          sf2gByUser.set(ride.user_id, existing);
+      while (sf2gAggHasMore) {
+        const { data: page, error: pageError } = await supabase
+          .from("rides")
+          .select(
+            "user_id, distance_meters, elevation_gain_meters, average_speed_mps, route_category",
+          )
+          .range(sf2gAggOffset, sf2gAggOffset + PAGE_SIZE_SF2G - 1)
+          .order("ride_date", { ascending: true });
+
+        if (pageError) {
+          console.error(
+            "[leaderboard] Failed to fetch SF2G aggregation rides:",
+            pageError,
+          );
+          throw new Error(
+            `Failed to fetch SF2G aggregation rides: ${pageError.message}`,
+          );
         }
 
-        // Patch entries with computed values
-        for (const entry of entries) {
-          const agg = sf2gByUser.get(entry.user_id ?? "");
-          entry.sf2g_distance_meters = agg?.distance ?? 0;
-          entry.sf2g_elevation_meters = agg?.elevation ?? 0;
-          entry.sf2g_total = agg?.rideCount ?? 0;
-          // avg_speed_mps should only average SF2G rides
-          entry.avg_speed_mps =
-            agg && agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0;
+        if (!page || page.length === 0) {
+          sf2gAggHasMore = false;
+        } else {
+          allSf2gAggRows.push(...(page as Sf2gAggRow[]));
+          sf2gAggOffset += page.length;
+          if (page.length < PAGE_SIZE_SF2G) {
+            sf2gAggHasMore = false;
+          }
         }
+      }
+      console.log(
+        `[leaderboard] Paginated fetch (sf2gAgg): ${allSf2gAggRows.length} total rows`,
+      );
+      const sf2gAgg = allSf2gAggRows;
+
+      // Build per-user SF2G aggregates
+      const sf2gByUser = new Map<
+        string,
+        {
+          distance: number;
+          elevation: number;
+          speedSum: number;
+          speedCount: number;
+          rideCount: number;
+        }
+      >();
+      for (const ride of sf2gAgg) {
+        if (ride.route_category === "other" || ride.route_category === null)
+          continue;
+        const existing = sf2gByUser.get(ride.user_id) ?? {
+          distance: 0,
+          elevation: 0,
+          speedSum: 0,
+          speedCount: 0,
+          rideCount: 0,
+        };
+        existing.distance += ride.distance_meters ?? 0;
+        existing.elevation += ride.elevation_gain_meters ?? 0;
+        existing.rideCount += 1;
+        if (ride.average_speed_mps != null) {
+          existing.speedSum += ride.average_speed_mps;
+          existing.speedCount += 1;
+        }
+        sf2gByUser.set(ride.user_id, existing);
+      }
+
+      // Patch entries with computed values
+      for (const entry of entries) {
+        const agg = sf2gByUser.get(entry.user_id ?? "");
+        entry.sf2g_distance_meters = agg?.distance ?? 0;
+        entry.sf2g_elevation_meters = agg?.elevation ?? 0;
+        entry.sf2g_total = agg?.rideCount ?? 0;
+        // avg_speed_mps should only average SF2G rides
+        entry.avg_speed_mps =
+          agg && agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0;
       }
     }
 
@@ -272,11 +310,58 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
     if (dateFrom) query = query.gte("ride_date", dateFrom);
     if (dateTo) query = query.lte("ride_date", dateTo);
 
-    const { data: rides, error } = await query.limit(1000000);
-    if (error) {
-      console.error("[leaderboard] Failed to fetch filtered rides:", error);
-      throw new Error(`Failed to fetch filtered rides: ${error.message}`);
+    // Paginate through ALL rides to work around Supabase's max_rows limit
+    // (default 1000) which silently truncates .limit() calls.
+    type FilteredRide = {
+      user_id: string;
+      route_category: string | null;
+      destination_company: string | null;
+      distance_meters: number | null;
+      elevation_gain_meters: number | null;
+      average_speed_mps: number | null;
+      tailwind_component_ms: number | null;
+      average_watts: number | null;
+      average_heartrate: number | null;
+      kilojoules: number | null;
+      ride_date: string;
+      start_latlng: [number, number] | null;
+      end_latlng: [number, number] | null;
+    };
+    const PAGE_SIZE = 1000;
+    const allRides: FilteredRide[] = [];
+    let offset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data: page, error: pageError } = await query
+        .range(offset, offset + PAGE_SIZE - 1)
+        .order("ride_date", { ascending: false });
+
+      if (pageError) {
+        console.error(
+          "[leaderboard] Failed to fetch filtered rides:",
+          pageError,
+        );
+        throw new Error(`Failed to fetch filtered rides: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allRides.push(...(page as FilteredRide[]));
+        offset += page.length;
+        // If we got fewer than PAGE_SIZE, we've reached the end
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        }
+      }
     }
+
+    console.log(
+      `[leaderboard] Paginated fetch: ${allRides.length} total rides in ${Math.ceil(offset / PAGE_SIZE)} pages`,
+    );
+
+    const rides = allRides;
 
     if (!rides || rides.length === 0) return [];
 
@@ -813,17 +898,44 @@ export interface DailyRideStat {
 export const fetchDailyGrowthData = createServerFn({ method: "GET" }).handler(
   async (): Promise<DailyRideStat[]> => {
     const supabase = createAnonClient();
-    const { data, error } = await supabase
-      .from("rides")
-      .select("user_id, ride_date, route_category")
-      .not("route_category", "is", null)
-      .order("ride_date", { ascending: true })
-      .limit(1000000);
-    if (error) {
-      console.error("[leaderboard] Failed to fetch daily growth data:", error);
-      throw new Error(`Failed to fetch daily growth data: ${error.message}`);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    const PAGE_SIZE = 1000;
+    const allRows: DailyRideStat[] = [];
+    let offset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("rides")
+        .select("user_id, ride_date, route_category")
+        .not("route_category", "is", null)
+        .range(offset, offset + PAGE_SIZE - 1)
+        .order("ride_date", { ascending: true });
+
+      if (pageError) {
+        console.error(
+          "[leaderboard] Failed to fetch daily growth data:",
+          pageError,
+        );
+        throw new Error(
+          `Failed to fetch daily growth data: ${pageError.message}`,
+        );
+      }
+
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allRows.push(...(page as DailyRideStat[]));
+        offset += page.length;
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        }
+      }
     }
-    return (data ?? []) as DailyRideStat[];
+    console.log(
+      `[leaderboard] Paginated fetch (dailyGrowth): ${allRows.length} total rows`,
+    );
+    return allRows;
   },
 );
 
@@ -887,39 +999,89 @@ export const fetchCommunityBreakdown = createServerFn({
   const supabase = createAnonClient();
 
   // Fetch SF2G commute totals (bayway + skyline + hmbw + royale)
-  const { data: sf2gData, error: sf2gError } = await supabase
-    .from("rides")
-    .select("distance_meters, elevation_gain_meters")
-    .in("route_category", [
-      "bayway",
-      "skyline",
-      "hmbw",
-      "royale",
-      "fleaway",
-      "mebw",
-      "febw",
-    ])
-    .limit(1000000);
+  // Paginate to work around Supabase max_rows (1000) truncation
+  type BreakdownRow = {
+    distance_meters: number | null;
+    elevation_gain_meters: number | null;
+  };
+  const PAGE_SIZE_BD = 1000;
 
-  if (sf2gError) {
-    console.error("[leaderboard] Failed to fetch SF2G rides:", sf2gError);
-    throw new Error(`Failed to fetch SF2G rides: ${sf2gError.message}`);
+  const allSf2gRows: BreakdownRow[] = [];
+  let sf2gOffset = 0;
+  let sf2gHasMore = true;
+
+  while (sf2gHasMore) {
+    const { data: page, error: pageError } = await supabase
+      .from("rides")
+      .select("distance_meters, elevation_gain_meters")
+      .in("route_category", [
+        "bayway",
+        "skyline",
+        "hmbw",
+        "royale",
+        "fleaway",
+        "mebw",
+        "febw",
+      ])
+      .range(sf2gOffset, sf2gOffset + PAGE_SIZE_BD - 1)
+      .order("ride_date", { ascending: true });
+
+    if (pageError) {
+      console.error("[leaderboard] Failed to fetch SF2G rides:", pageError);
+      throw new Error(`Failed to fetch SF2G rides: ${pageError.message}`);
+    }
+
+    if (!page || page.length === 0) {
+      sf2gHasMore = false;
+    } else {
+      allSf2gRows.push(...(page as BreakdownRow[]));
+      sf2gOffset += page.length;
+      if (page.length < PAGE_SIZE_BD) {
+        sf2gHasMore = false;
+      }
+    }
   }
+  console.log(
+    `[leaderboard] Paginated fetch (sf2gBreakdown): ${allSf2gRows.length} total rows`,
+  );
+  const sf2gData = allSf2gRows;
 
   // Fetch "other" ride totals
-  const { data: otherData, error: otherError } = await supabase
-    .from("rides")
-    .select("distance_meters, elevation_gain_meters")
-    .eq("route_category", "other")
-    .limit(1000000);
+  // Paginate to work around Supabase max_rows (1000) truncation
+  const allOtherRows: BreakdownRow[] = [];
+  let otherOffset = 0;
+  let otherHasMore = true;
 
-  if (otherError) {
-    console.error("[leaderboard] Failed to fetch other rides:", otherError);
-    throw new Error(`Failed to fetch other rides: ${otherError.message}`);
+  while (otherHasMore) {
+    const { data: page, error: pageError } = await supabase
+      .from("rides")
+      .select("distance_meters, elevation_gain_meters")
+      .eq("route_category", "other")
+      .range(otherOffset, otherOffset + PAGE_SIZE_BD - 1)
+      .order("ride_date", { ascending: true });
+
+    if (pageError) {
+      console.error("[leaderboard] Failed to fetch other rides:", pageError);
+      throw new Error(`Failed to fetch other rides: ${pageError.message}`);
+    }
+
+    if (!page || page.length === 0) {
+      otherHasMore = false;
+    } else {
+      allOtherRows.push(...(page as BreakdownRow[]));
+      otherOffset += page.length;
+      if (page.length < PAGE_SIZE_BD) {
+        otherHasMore = false;
+      }
+    }
   }
+  console.log(
+    `[leaderboard] Paginated fetch (otherBreakdown): ${allOtherRows.length} total rows`,
+  );
+  const otherData = allOtherRows;
 
-  const sf2gRides = sf2gData ?? [];
-  const otherRides = otherData ?? [];
+  const sf2gRides = sf2gData;
+  const otherRides = otherData;
 
   const sf2gDistance = sf2gRides.reduce(
     (sum, r) => sum + (r.distance_meters ?? 0),
@@ -975,21 +1137,47 @@ export const fetchCompanyRiderIds = createServerFn({ method: "GET" })
     const supabase = createAnonClient();
 
     // Query rides table directly for distinct user_ids with this destination_company
-    const { data: rows, error } = await supabase
-      .from("rides")
-      .select("user_id")
-      .eq("destination_company", data.company as DestinationCompany)
-      .not("route_category", "is", null)
-      .limit(1000000);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    const PAGE_SIZE = 1000;
+    const allCompanyRows: { user_id: string }[] = [];
+    let offset = 0;
+    let hasMore = true;
 
-    if (error) {
-      console.error("[leaderboard] Failed to fetch company rider IDs:", error);
-      throw new Error(`Failed to fetch company rider IDs: ${error.message}`);
+    while (hasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("rides")
+        .select("user_id")
+        .eq("destination_company", data.company as DestinationCompany)
+        .not("route_category", "is", null)
+        .range(offset, offset + PAGE_SIZE - 1)
+        .order("user_id", { ascending: true });
+
+      if (pageError) {
+        console.error(
+          "[leaderboard] Failed to fetch company rider IDs:",
+          pageError,
+        );
+        throw new Error(
+          `Failed to fetch company rider IDs: ${pageError.message}`,
+        );
+      }
+
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allCompanyRows.push(...(page as { user_id: string }[]));
+        offset += page.length;
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        }
+      }
     }
+    console.log(
+      `[leaderboard] Paginated fetch (companyRiderIds): ${allCompanyRows.length} total rows`,
+    );
+    const rows = allCompanyRows;
 
     // Deduplicate user IDs
-    const uniqueIds = new Set(
-      (rows ?? []).map((r: { user_id: string }) => r.user_id),
-    );
+    const uniqueIds = new Set(rows.map((r: { user_id: string }) => r.user_id));
     return Array.from(uniqueIds);
   });

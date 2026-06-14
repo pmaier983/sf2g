@@ -1755,11 +1755,6 @@
 
 /* ---- Mobile responsive ---- */
 @media (max-width: 768px) {
-  .leaderboard {
-    height: auto;
-    overflow: visible;
-  }
-
   .leaderboard__toolbar {
     flex-wrap: wrap;
     padding: var(--space-2) var(--space-3);
@@ -2043,14 +2038,17 @@
 }
 
 @media (max-width: 768px) {
-  /* ---- Compact mobile header ---- */
+  /* ---- Compact mobile layout ---- */
   .leaderboard {
+    /* Reserve space for the fixed bottom bar so content isn't hidden behind it */
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
   }
 
-  /* ---- Table fills available viewport ---- */
+  /* ---- Table fills remaining flex space and scrolls ---- */
   .leaderboard__table-area {
-    height: calc(100vh - 3rem - 2.75rem - 3.5rem - env(safe-area-inset-bottom));
+    /* Use flex:1 from the base styles — just enable scrolling */
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }

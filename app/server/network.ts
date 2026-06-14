@@ -95,26 +95,91 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
     const supabase = createAnonClient();
 
     // 1. Fetch candidate co-ride pairs from the materialized view
-    const { data: coRides, error: coRideError } = await supabase
-      .from("ride_co_occurrences" as never)
-      .select("rider1_id, rider2_id, route_category, polyline1, polyline2")
-      .limit(1000000);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    type CoRideRow = {
+      rider1_id: string;
+      rider2_id: string;
+      route_category: string;
+      polyline1: string | null;
+      polyline2: string | null;
+    };
+    const CO_RIDE_PAGE_SIZE = 1000;
+    const allCoRides: CoRideRow[] = [];
+    let coRideOffset = 0;
+    let coRideHasMore = true;
 
-    if (coRideError) {
-      throw new Error(`Failed to fetch co-ride data: ${coRideError.message}`);
+    while (coRideHasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("ride_co_occurrences" as never)
+        .select("rider1_id, rider2_id, route_category, polyline1, polyline2")
+        .order("rider1_id", { ascending: true })
+        .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1);
+
+      if (pageError) {
+        throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        coRideHasMore = false;
+      } else {
+        allCoRides.push(...(page as CoRideRow[]));
+        coRideOffset += page.length;
+        if (page.length < CO_RIDE_PAGE_SIZE) {
+          coRideHasMore = false;
+        }
+      }
     }
+    console.log(
+      `[network] Paginated fetch: ${allCoRides.length} total co-ride rows`,
+    );
+    const coRides = allCoRides;
 
     // 2. Fetch rider metadata from leaderboard view
-    const { data: riders, error: riderError } = await supabase
-      .from("leaderboard_view")
-      .select(
-        "user_id, display_name, avatar_url, sf2g_total, bayway_count, skyline_count, hmbw_count, royale_count, fleaway_count, mebw_count, febw_count",
-      )
-      .limit(1000000);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    const RIDER_PAGE_SIZE = 1000;
+    const allRiders: Record<string, unknown>[] = [];
+    let riderOffset = 0;
+    let riderHasMore = true;
 
-    if (riderError) {
-      throw new Error(`Failed to fetch rider data: ${riderError.message}`);
+    while (riderHasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("leaderboard_view")
+        .select(
+          "user_id, display_name, avatar_url, sf2g_total, bayway_count, skyline_count, hmbw_count, royale_count, fleaway_count, mebw_count, febw_count",
+        )
+        .order("user_id", { ascending: true })
+        .range(riderOffset, riderOffset + RIDER_PAGE_SIZE - 1);
+
+      if (pageError) {
+        throw new Error(`Failed to fetch rider data: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        riderHasMore = false;
+      } else {
+        allRiders.push(...(page as Record<string, unknown>[]));
+        riderOffset += page.length;
+        if (page.length < RIDER_PAGE_SIZE) {
+          riderHasMore = false;
+        }
+      }
     }
+    console.log(
+      `[network] Paginated fetch: ${allRiders.length} total rider rows`,
+    );
+    const riders = allRiders as Array<{
+      user_id: string | null;
+      display_name: string | null;
+      avatar_url: string | null;
+      sf2g_total: number | null;
+      bayway_count: number | null;
+      skyline_count: number | null;
+      hmbw_count: number | null;
+      royale_count: number | null;
+      fleaway_count: number | null;
+      mebw_count: number | null;
+      febw_count: number | null;
+    }>;
 
     // 3. Build rider lookup
     const riderMap = new Map<

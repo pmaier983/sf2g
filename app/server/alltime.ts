@@ -114,13 +114,42 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
     if (dateFrom) query = query.gte("ride_date", dateFrom);
     if (dateTo) query = query.lte("ride_date", dateTo);
 
-    const { data: rides, error } = await query
-      .order("ride_date", { ascending: true })
-      .limit(1000000);
-    if (error) {
-      console.error("[alltime] Failed to fetch rides:", error);
-      throw new Error(`Failed to fetch rides: ${error.message}`);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    type AllTimeRide = {
+      user_id: string;
+      ride_date: string;
+      route_category: string | null;
+      destination_company: string | null;
+      start_latlng: [number, number] | null;
+      end_latlng: [number, number] | null;
+    };
+    const PAGE_SIZE = 1000;
+    const allRows: AllTimeRide[] = [];
+    let offset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data: page, error: pageError } = await query
+        .order("ride_date", { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (pageError) {
+        console.error("[alltime] Failed to fetch rides:", pageError);
+        throw new Error(`Failed to fetch rides: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allRows.push(...(page as AllTimeRide[]));
+        offset += page.length;
+        if (page.length < PAGE_SIZE) {
+          hasMore = false;
+        }
+      }
     }
+    console.log(`[alltime] Paginated fetch: ${allRows.length} total rows`);
+    const rides = allRows;
     if (!rides?.length) return [];
 
     // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)

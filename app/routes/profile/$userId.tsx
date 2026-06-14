@@ -79,17 +79,20 @@ function ProfilePage() {
   }, [userId]);
 
   // Rides are server-side filtered (is_hidden=false), so all stats exclude hidden rides
-  const totalRides = rides?.length ?? 0;
-  const totalDistanceMeters = rides
-    ? rides.reduce((sum, r) => sum + (r.distance_meters ?? 0), 0)
-    : 0;
+  // SF2G rides exclude 'other' category to match leaderboard's sf2g_total definition
+  const sf2gRides = rides
+    ? rides.filter((r) => r.route_category !== "other")
+    : [];
+  const sf2gRideCount = sf2gRides.length;
+  const sf2gDistanceMeters = sf2gRides.reduce(
+    (sum, r) => sum + (r.distance_meters ?? 0),
+    0,
+  );
 
   const currentYear = new Date().getFullYear();
-  const ytdRides = rides
-    ? rides.filter(
-        (r) => new Date(r.ride_date).getUTCFullYear() === currentYear,
-      )
-    : [];
+  const ytdRides = sf2gRides.filter(
+    (r) => new Date(r.ride_date).getUTCFullYear() === currentYear,
+  );
   const ytdRideCount = ytdRides.length;
   const ytdDistanceMeters = ytdRides.reduce(
     (sum, r) => sum + (r.distance_meters ?? 0),
@@ -137,8 +140,8 @@ function ProfilePage() {
     const lines = [
       `🚴 ${displayName}'s SF2G Stats`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `🏁 ${totalRides} SF2G rides`,
-      `📏 ${formatDistance(totalDistanceMeters, unit)} total distance`,
+      `🏁 ${sf2gRideCount} SF2G rides`,
+      `📏 ${formatDistance(sf2gDistanceMeters, unit)} total distance`,
       `🏔️ ${formatElevation(totalElevation, unit)} total climbing`,
       `⏱️ ${formatMovingTime(totalMovingSeconds)} on the bike`,
     ];
@@ -173,8 +176,8 @@ function ProfilePage() {
   }, [
     rides,
     displayName,
-    totalRides,
-    totalDistanceMeters,
+    sf2gRideCount,
+    sf2gDistanceMeters,
     ytdRideCount,
     ytdDistanceMeters,
     currentYear,
@@ -276,12 +279,14 @@ function ProfilePage() {
             </h1>
             <div className="profile-header__stats">
               <div className="profile-header__stat">
-                <span className="profile-header__stat-value">{totalRides}</span>
+                <span className="profile-header__stat-value">
+                  {sf2gRideCount}
+                </span>
                 SF2G Rides
               </div>
               <div className="profile-header__stat">
                 <span className="profile-header__stat-value">
-                  {formatDistance(totalDistanceMeters, unit)}
+                  {formatDistance(sf2gDistanceMeters, unit)}
                 </span>
                 SF2G Distance
               </div>
@@ -351,8 +356,8 @@ function ProfilePage() {
                     >
                       <li>🔑 Revoke SF2G's access to your Strava account</li>
                       <li>
-                        🗑️ Permanently delete all your ride data ({totalRides}{" "}
-                        rides) from SF2G
+                        🗑️ Permanently delete all your ride data (
+                        {rides?.length ?? 0} rides) from SF2G
                       </li>
                       <li>📊 Remove your leaderboard rankings and stats</li>
                       <li>🏆 Remove your profile from the community network</li>

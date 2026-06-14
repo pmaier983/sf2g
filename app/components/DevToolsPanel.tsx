@@ -1,7 +1,10 @@
-import { useState } from 'react'
-import { triggerReclassify, type ReclassifyResult } from '../server/reclassify'
-import { triggerWindEnrichment, type WindEnrichmentResult } from '../server/wind-enrichment'
-import type { CronResult } from '../server/cron'
+import { useState } from "react";
+import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
+import {
+  triggerWindEnrichment,
+  type WindEnrichmentResult,
+} from "../server/wind-enrichment";
+import type { CronResult } from "../server/cron";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -10,66 +13,68 @@ import type { CronResult } from '../server/cron'
  * Only rendered when VITE_APP_URL contains 'localhost' (dev mode).
  */
 export function DevToolsPanel() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isRunning, setIsRunning] = useState(false)
-  const [result, setResult] = useState<ReclassifyResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [result, setResult] = useState<ReclassifyResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Wind enrichment state
-  const [windIsRunning, setWindIsRunning] = useState(false)
-  const [windResult, setWindResult] = useState<WindEnrichmentResult | null>(null)
-  const [windError, setWindError] = useState<string | null>(null)
+  const [windIsRunning, setWindIsRunning] = useState(false);
+  const [windResult, setWindResult] = useState<WindEnrichmentResult | null>(
+    null,
+  );
+  const [windError, setWindError] = useState<string | null>(null);
 
   // Cron jobs state
-  const [cronIsRunning, setCronIsRunning] = useState(false)
-  const [cronResult, setCronResult] = useState<CronResult | null>(null)
-  const [cronError, setCronError] = useState<string | null>(null)
+  const [cronIsRunning, setCronIsRunning] = useState(false);
+  const [cronResult, setCronResult] = useState<CronResult | null>(null);
+  const [cronError, setCronError] = useState<string | null>(null);
 
   const handleReclassify = async () => {
-    setIsRunning(true)
-    setResult(null)
-    setError(null)
+    setIsRunning(true);
+    setResult(null);
+    setError(null);
 
     try {
-      const res = await triggerReclassify()
-      setResult(res)
+      const res = await triggerReclassify();
+      setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setIsRunning(false)
+      setIsRunning(false);
     }
-  }
+  };
 
   const handleWindEnrichment = async () => {
-    setWindIsRunning(true)
-    setWindResult(null)
-    setWindError(null)
+    setWindIsRunning(true);
+    setWindResult(null);
+    setWindError(null);
 
     try {
-      const res = await triggerWindEnrichment()
-      setWindResult(res)
+      const res = await triggerWindEnrichment();
+      setWindResult(res);
     } catch (err) {
-      setWindError(err instanceof Error ? err.message : String(err))
+      setWindError(err instanceof Error ? err.message : String(err));
     } finally {
-      setWindIsRunning(false)
+      setWindIsRunning(false);
     }
-  }
+  };
 
   const handleCronJobs = async () => {
-    setCronIsRunning(true)
-    setCronResult(null)
-    setCronError(null)
+    setCronIsRunning(true);
+    setCronResult(null);
+    setCronError(null);
 
     try {
-      const { triggerCronJobs } = await import('../server/cron')
-      const res = await triggerCronJobs()
-      setCronResult(res)
+      const { triggerCronJobs } = await import("../server/cron");
+      const res = await triggerCronJobs();
+      setCronResult(res);
     } catch (err) {
-      setCronError(err instanceof Error ? err.message : String(err))
+      setCronError(err instanceof Error ? err.message : String(err));
     } finally {
-      setCronIsRunning(false)
+      setCronIsRunning(false);
     }
-  }
+  };
 
   return (
     <>
@@ -100,10 +105,13 @@ export function DevToolsPanel() {
           <div className="dev-tools__content">
             {/* Reclassify Section */}
             <div className="dev-tools__section">
-              <h4 className="dev-tools__section-title">Route Reclassification</h4>
+              <h4 className="dev-tools__section-title">
+                Route Reclassification
+              </h4>
               <p className="dev-tools__section-desc">
-                Re-run route &amp; destination classifiers on <strong>all</strong> rides
-                using the latest logic. Rides with manual route overrides are preserved.
+                Re-run route &amp; destination classifiers on{" "}
+                <strong>all</strong> rides using the latest logic. Rides with
+                manual route overrides are preserved.
               </p>
               <button
                 className="dev-tools__action-btn"
@@ -117,7 +125,7 @@ export function DevToolsPanel() {
                     Reclassifying…
                   </>
                 ) : (
-                  '🔄 Reclassify All Rides'
+                  "🔄 Reclassify All Rides"
                 )}
               </button>
             </div>
@@ -133,7 +141,7 @@ export function DevToolsPanel() {
             {result && (
               <div className="dev-tools__result">
                 <div className="dev-tools__result-header">
-                  {result.updated > 0 ? '✅' : 'ℹ️'} Reclassification Complete
+                  {result.updated > 0 ? "✅" : "ℹ️"} Reclassification Complete
                   <span className="dev-tools__duration">
                     {result.durationMs < 1000
                       ? `${result.durationMs}ms`
@@ -143,25 +151,40 @@ export function DevToolsPanel() {
 
                 <div className="dev-tools__stats-grid">
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{result.totalRides}</span>
+                    <span className="dev-tools__stat-value">
+                      {result.totalRides}
+                    </span>
                     <span className="dev-tools__stat-label">Total Rides</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{result.updated}</span>
+                    <span className="dev-tools__stat-value">
+                      {result.updated}
+                    </span>
                     <span className="dev-tools__stat-label">Updated</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{result.routeChanges}</span>
+                    <span className="dev-tools__stat-value">
+                      {result.routeChanges}
+                    </span>
                     <span className="dev-tools__stat-label">Route Changes</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{result.destinationChanges}</span>
+                    <span className="dev-tools__stat-value">
+                      {result.destinationChanges}
+                    </span>
                     <span className="dev-tools__stat-label">Dest Changes</span>
                   </div>
                   {result.skippedOverrides > 0 && (
-                    <div className="dev-tools__stat" style={{ gridColumn: '1 / -1' }}>
-                      <span className="dev-tools__stat-value">{result.skippedOverrides}</span>
-                      <span className="dev-tools__stat-label">🔒 Skipped (manual overrides)</span>
+                    <div
+                      className="dev-tools__stat"
+                      style={{ gridColumn: "1 / -1" }}
+                    >
+                      <span className="dev-tools__stat-value">
+                        {result.skippedOverrides}
+                      </span>
+                      <span className="dev-tools__stat-label">
+                        🔒 Skipped (manual overrides)
+                      </span>
                     </div>
                   )}
                 </div>
@@ -169,13 +192,22 @@ export function DevToolsPanel() {
                 {/* Category transition breakdown */}
                 {Object.keys(result.breakdown).length > 0 && (
                   <div className="dev-tools__breakdown">
-                    <h5 className="dev-tools__breakdown-title">Category Transitions</h5>
-                    {Object.entries(result.breakdown).map(([transition, count]) => (
-                      <div key={transition} className="dev-tools__breakdown-row">
-                        <code>{transition}</code>
-                        <span className="dev-tools__breakdown-count">×{count}</span>
-                      </div>
-                    ))}
+                    <h5 className="dev-tools__breakdown-title">
+                      Category Transitions
+                    </h5>
+                    {Object.entries(result.breakdown).map(
+                      ([transition, count]) => (
+                        <div
+                          key={transition}
+                          className="dev-tools__breakdown-row"
+                        >
+                          <code>{transition}</code>
+                          <span className="dev-tools__breakdown-count">
+                            ×{count}
+                          </span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 )}
 
@@ -200,13 +232,32 @@ export function DevToolsPanel() {
                       🔍 Debug: First {result.debug.length} rides
                     </h5>
                     {result.debug.map((d, i) => (
-                      <div key={i} className="dev-tools__warning-item" style={{ fontSize: '10px', lineHeight: '1.4' }}>
-                        <strong>{d.name ?? 'unnamed'}</strong><br/>
-                        polyline: {d.hasPolyline ? `✅ (${d.polylineLen} chars)` : '❌ none'}<br/>
-                        start: {JSON.stringify(d.startLatlng)}<br/>
-                        end: {JSON.stringify(d.endLatlng)}<br/>
-                        dist: {d.distance ? `${(d.distance / 1000).toFixed(1)}km` : 'null'} | elev: {d.elevation ? `${d.elevation.toFixed(0)}m` : 'null'}<br/>
-                        old: <strong>{d.oldCategory ?? 'null'}</strong> → new: <strong>{d.newCategory}</strong> ({d.method}, {d.confidence})
+                      <div
+                        key={i}
+                        className="dev-tools__warning-item"
+                        style={{ fontSize: "10px", lineHeight: "1.4" }}
+                      >
+                        <strong>{d.name ?? "unnamed"}</strong>
+                        <br />
+                        polyline:{" "}
+                        {d.hasPolyline
+                          ? `✅ (${d.polylineLen} chars)`
+                          : "❌ none"}
+                        <br />
+                        start: {JSON.stringify(d.startLatlng)}
+                        <br />
+                        end: {JSON.stringify(d.endLatlng)}
+                        <br />
+                        dist:{" "}
+                        {d.distance
+                          ? `${(d.distance / 1000).toFixed(1)}km`
+                          : "null"}{" "}
+                        | elev:{" "}
+                        {d.elevation ? `${d.elevation.toFixed(0)}m` : "null"}
+                        <br />
+                        old: <strong>{d.oldCategory ?? "null"}</strong> → new:{" "}
+                        <strong>{d.newCategory}</strong> ({d.method},{" "}
+                        {d.confidence})
                       </div>
                     ))}
                   </div>
@@ -233,7 +284,7 @@ export function DevToolsPanel() {
                     Enriching…
                   </>
                 ) : (
-                  '🌬️ Enrich Wind Data'
+                  "🌬️ Enrich Wind Data"
                 )}
               </button>
             </div>
@@ -249,7 +300,8 @@ export function DevToolsPanel() {
             {windResult && (
               <div className="dev-tools__result">
                 <div className="dev-tools__result-header">
-                  {windResult.processed > 0 ? '✅' : 'ℹ️'} Wind Enrichment Complete
+                  {windResult.processed > 0 ? "✅" : "ℹ️"} Wind Enrichment
+                  Complete
                   <span className="dev-tools__duration">
                     {windResult.durationMs < 1000
                       ? `${windResult.durationMs}ms`
@@ -259,11 +311,15 @@ export function DevToolsPanel() {
 
                 <div className="dev-tools__stats-grid">
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{windResult.processed}</span>
+                    <span className="dev-tools__stat-value">
+                      {windResult.processed}
+                    </span>
                     <span className="dev-tools__stat-label">Processed</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{windResult.totalMissing - windResult.processed}</span>
+                    <span className="dev-tools__stat-value">
+                      {windResult.totalMissing - windResult.processed}
+                    </span>
                     <span className="dev-tools__stat-label">Remaining</span>
                   </div>
                 </div>
@@ -285,14 +341,21 @@ export function DevToolsPanel() {
             )}
 
             {/* Divider */}
-            <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--space-4) 0' }} />
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--color-border)",
+                margin: "var(--space-4) 0",
+              }}
+            />
 
             {/* Cron Jobs Section */}
             <div className="dev-tools__section">
               <h4 className="dev-tools__section-title">🕐 Cron Jobs</h4>
               <p className="dev-tools__section-desc">
-                Run <strong>all</strong> maintenance tasks: sync all users, reclassify rides,
-                and enrich wind data. Same as what the external cron endpoint runs.
+                Run <strong>all</strong> maintenance tasks: sync all users,
+                reclassify rides, and enrich wind data. Same as what the
+                external cron endpoint runs.
               </p>
               <button
                 className="dev-tools__action-btn"
@@ -306,7 +369,7 @@ export function DevToolsPanel() {
                     Running cron jobs…
                   </>
                 ) : (
-                  '⚡ Run All Cron Jobs'
+                  "⚡ Run All Cron Jobs"
                 )}
               </button>
             </div>
@@ -332,19 +395,27 @@ export function DevToolsPanel() {
 
                 <div className="dev-tools__stats-grid">
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.syncAll.synced}</span>
+                    <span className="dev-tools__stat-value">
+                      {cronResult.syncAll.synced}
+                    </span>
                     <span className="dev-tools__stat-label">Users Synced</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.syncAll.failed}</span>
+                    <span className="dev-tools__stat-value">
+                      {cronResult.syncAll.failed}
+                    </span>
                     <span className="dev-tools__stat-label">Sync Failures</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.reclassify.updated}</span>
+                    <span className="dev-tools__stat-value">
+                      {cronResult.reclassify.updated}
+                    </span>
                     <span className="dev-tools__stat-label">Reclassified</span>
                   </div>
                   <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">{cronResult.wind.processed}</span>
+                    <span className="dev-tools__stat-value">
+                      {cronResult.wind.processed}
+                    </span>
                     <span className="dev-tools__stat-label">Wind Enriched</span>
                   </div>
                 </div>
@@ -353,23 +424,25 @@ export function DevToolsPanel() {
                 {cronResult.syncAll.results.length > 0 && (
                   <div className="dev-tools__breakdown">
                     <h5 className="dev-tools__breakdown-title">
-                      User Sync Details ({cronResult.syncAll.synced}/{cronResult.syncAll.totalUsers})
+                      User Sync Details ({cronResult.syncAll.synced}/
+                      {cronResult.syncAll.totalUsers})
                     </h5>
                     {cronResult.syncAll.results
-                      .filter(r => !r.skipped)
+                      .filter((r) => !r.skipped)
                       .map((r) => (
-                        <div key={r.userId} className="dev-tools__breakdown-row">
+                        <div
+                          key={r.userId}
+                          className="dev-tools__breakdown-row"
+                        >
                           <code>{r.displayName ?? r.userId.slice(0, 8)}</code>
                           <span className="dev-tools__breakdown-count">
-                            {r.error
-                              ? '❌'
-                              : `${r.result?.newRides ?? 0} new`}
+                            {r.error ? "❌" : `${r.result?.newRides ?? 0} new`}
                           </span>
                         </div>
                       ))}
                     {cronResult.syncAll.skipped > 0 && (
                       <div className="dev-tools__breakdown-row">
-                        <code style={{ color: 'var(--color-text-muted)' }}>
+                        <code style={{ color: "var(--color-text-muted)" }}>
                           + {cronResult.syncAll.skipped} skipped (budget)
                         </code>
                         <span />
@@ -381,30 +454,53 @@ export function DevToolsPanel() {
                 {/* Category transition breakdown */}
                 {Object.keys(cronResult.reclassify.breakdown).length > 0 && (
                   <div className="dev-tools__breakdown">
-                    <h5 className="dev-tools__breakdown-title">Category Transitions</h5>
-                    {Object.entries(cronResult.reclassify.breakdown).map(([transition, count]) => (
-                      <div key={transition} className="dev-tools__breakdown-row">
-                        <code>{transition}</code>
-                        <span className="dev-tools__breakdown-count">×{count}</span>
-                      </div>
-                    ))}
+                    <h5 className="dev-tools__breakdown-title">
+                      Category Transitions
+                    </h5>
+                    {Object.entries(cronResult.reclassify.breakdown).map(
+                      ([transition, count]) => (
+                        <div
+                          key={transition}
+                          className="dev-tools__breakdown-row"
+                        >
+                          <code>{transition}</code>
+                          <span className="dev-tools__breakdown-count">
+                            ×{count}
+                          </span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 )}
 
                 {/* Combined errors */}
-                {(cronResult.reclassify.errors.length > 0 || cronResult.wind.errors.length > 0 || cronResult.syncAll.failed > 0) && (
+                {(cronResult.reclassify.errors.length > 0 ||
+                  cronResult.wind.errors.length > 0 ||
+                  cronResult.syncAll.failed > 0) && (
                   <div className="dev-tools__warnings">
                     <h5 className="dev-tools__breakdown-title">
-                      ⚠️ Warnings ({cronResult.reclassify.errors.length + cronResult.wind.errors.length + cronResult.syncAll.results.filter(r => r.error).length})
+                      ⚠️ Warnings (
+                      {cronResult.reclassify.errors.length +
+                        cronResult.wind.errors.length +
+                        cronResult.syncAll.results.filter((r) => r.error)
+                          .length}
+                      )
                     </h5>
                     {cronResult.syncAll.results
-                      .filter(r => r.error)
+                      .filter((r) => r.error)
                       .map((r, i) => (
-                        <div key={`sync-${i}`} className="dev-tools__warning-item">
-                          [sync] {r.displayName ?? r.userId.slice(0, 8)}: {r.error}
+                        <div
+                          key={`sync-${i}`}
+                          className="dev-tools__warning-item"
+                        >
+                          [sync] {r.displayName ?? r.userId.slice(0, 8)}:{" "}
+                          {r.error}
                         </div>
                       ))}
-                    {[...cronResult.reclassify.errors, ...cronResult.wind.errors].map((err, i) => (
+                    {[
+                      ...cronResult.reclassify.errors,
+                      ...cronResult.wind.errors,
+                    ].map((err, i) => (
                       <div key={i} className="dev-tools__warning-item">
                         {err}
                       </div>
@@ -413,6 +509,61 @@ export function DevToolsPanel() {
                 )}
               </div>
             )}
+
+            {/* Divider */}
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--color-border)",
+                margin: "var(--space-4) 0",
+              }}
+            />
+
+            {/* Debug Connected Users Section */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">
+                🔗 Debug Connected Users
+              </h4>
+              <p className="dev-tools__section-desc">
+                Fetch all users who have connected their Strava account and log
+                them to the console.
+              </p>
+              <button
+                className="dev-tools__action-btn"
+                onClick={async () => {
+                  try {
+                    const { fetchAllConnectedUsers } =
+                      await import("../server/users");
+                    const users = await fetchAllConnectedUsers();
+
+                    console.group("🔗 All Connected Users");
+                    console.log(`Total connected: ${users.length}`);
+                    console.log("");
+
+                    for (const u of users) {
+                      console.log(
+                        `${u.display_name ?? "Unknown"} | strava_id: ${u.strava_id} | last_sync: ${u.last_sync_at ?? "never"} | joined: ${u.created_at}`,
+                      );
+                    }
+
+                    console.groupEnd();
+                    console.table(
+                      users.map((u) => ({
+                        Name: u.display_name ?? "Unknown",
+                        "Strava ID": u.strava_id,
+                        "Last Sync": u.last_sync_at ?? "never",
+                        Joined: u.created_at,
+                      })),
+                    );
+                  } catch (err) {
+                    console.error("Failed to fetch connected users:", err);
+                  }
+                }}
+                id="dev-tools-connected-users-btn"
+              >
+                🔗 Log Connected Users
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -703,5 +854,5 @@ export function DevToolsPanel() {
         }
       `}</style>
     </>
-  )
+  );
 }

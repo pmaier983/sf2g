@@ -50,22 +50,28 @@ const networkSource = readFileSync(
 // ---------------------------------------------------------------------------
 
 describe("Supabase max_rows truncation prevention", () => {
-  it("fetchAllTimeLeaderboard uses explicit .limit() on rides query", () => {
-    // The rides query in alltime.ts must include .limit() to avoid
-    // Supabase's default max_rows=1000 silently truncating results
-    expect(alltimeSource).toContain(".limit(1000000)");
+  it("fetchAllTimeLeaderboard paginates to avoid max_rows truncation", () => {
+    // .limit(1000000) does NOT work — Supabase silently truncates to max_rows (1000).
+    // The fix paginates through all rows using .range() in a loop.
+    expect(alltimeSource).toContain("PAGE_SIZE");
+    expect(alltimeSource).toContain(".range(offset,");
   });
 
-  it("fetchFilteredLeaderboard uses explicit .limit() on rides query", () => {
-    expect(leaderboardSource).toContain(".limit(1000000)");
+  it("fetchFilteredLeaderboard paginates to avoid max_rows truncation", () => {
+    // .limit(1000000) does NOT work — Supabase silently truncates to max_rows (1000).
+    // The fix paginates through all rows using .range() in a loop.
+    expect(leaderboardSource).toContain("PAGE_SIZE");
+    expect(leaderboardSource).toContain(".range(offset,");
   });
 
-  it("fetchGroupRides uses explicit .limit() on co-occurrences query", () => {
-    expect(groupRidesSource).toContain(".limit(1000000)");
+  it("fetchGroupRides paginates to avoid max_rows truncation", () => {
+    expect(groupRidesSource).toContain("PAGE_SIZE");
+    expect(groupRidesSource).toContain(".range(");
   });
 
-  it("fetchRiderNetwork uses explicit .limit() on co-occurrences query", () => {
-    expect(networkSource).toContain(".limit(1000000)");
+  it("fetchRiderNetwork paginates to avoid max_rows truncation", () => {
+    expect(networkSource).toContain("PAGE_SIZE");
+    expect(networkSource).toContain(".range(");
   });
 });
 
@@ -79,15 +85,15 @@ describe("All Time leaderboard — route filtering", () => {
   });
 
   it("alltime.ts applies route filter with .in()", () => {
-    expect(alltimeSource).toContain("query.in('route_category', validCats)");
+    expect(alltimeSource).toContain('query.in("route_category", validCats)');
   });
 
   it("alltime.ts excludes other routes by default when no route filter", () => {
-    expect(alltimeSource).toContain("query.neq('route_category', 'other')");
+    expect(alltimeSource).toContain('query.neq("route_category", "other")');
   });
 
   it("alltime.ts filters null route_category by default", () => {
-    expect(alltimeSource).toContain(".not('route_category', 'is', null)");
+    expect(alltimeSource).toContain('.not("route_category", "is", null)');
   });
 
   it("alltime.ts supports all standard route categories", () => {
@@ -102,7 +108,7 @@ describe("All Time leaderboard — route filtering", () => {
       "other",
     ];
     for (const route of ALL_ROUTES) {
-      expect(alltimeSource).toContain(`'${route}'`);
+      expect(alltimeSource).toContain(`"${route}"`);
     }
   });
 });
@@ -113,12 +119,13 @@ describe("All Time leaderboard — company filtering", () => {
   });
 
   it("alltime.ts applies company filter with .eq()", () => {
-    expect(alltimeSource).toContain("query.eq('destination_company',");
+    expect(alltimeSource).toContain("query.eq(");
+    expect(alltimeSource).toContain('"destination_company"');
   });
 
   it("alltime.ts supports standard company values", () => {
     for (const company of ["netflix", "google", "apple", "meta"]) {
-      expect(alltimeSource).toContain(`'${company}'`);
+      expect(alltimeSource).toContain(`"${company}"`);
     }
   });
 });
@@ -129,11 +136,11 @@ describe("All Time leaderboard — date filtering", () => {
   });
 
   it("alltime.ts applies dateFrom with .gte()", () => {
-    expect(alltimeSource).toContain("query.gte('ride_date', dateFrom)");
+    expect(alltimeSource).toContain('query.gte("ride_date", dateFrom)');
   });
 
   it("alltime.ts applies dateTo with .lte()", () => {
-    expect(alltimeSource).toContain("query.lte('ride_date', dateTo)");
+    expect(alltimeSource).toContain('query.lte("ride_date", dateTo)');
   });
 });
 

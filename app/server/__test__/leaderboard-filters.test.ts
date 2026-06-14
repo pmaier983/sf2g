@@ -1302,8 +1302,11 @@ describe("Search sanitization — ILIKE pattern injection prevention", () => {
 // ---------------------------------------------------------------------------
 
 describe("Supabase query limits", () => {
-  it("fetchFilteredLeaderboard uses explicit .limit(1000000)", () => {
-    expect(leaderboardServerSource).toContain(".limit(1000000)");
+  it("fetchFilteredLeaderboard paginates through all rides", () => {
+    // .limit(1000000) is silently truncated by Supabase max_rows.
+    // The fix paginates using .range() in a loop.
+    expect(leaderboardServerSource).toContain("PAGE_SIZE");
+    expect(leaderboardServerSource).toContain(".range(offset,");
   });
 
   it("uses request count: exact for rides leaderboard pagination", () => {

@@ -308,18 +308,42 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
     const sortDir = data.sortDir ?? "desc";
 
     // 1. Fetch all co-ride pairs from materialized view
-    const { data: coRides, error: coRideError } = await supabase
-      .from("ride_co_occurrences" as never)
-      .select(
-        "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date, polyline1, polyline2",
-      )
-      .limit(1000000);
+    // Paginate to work around Supabase max_rows (1000) truncation
+    const CO_RIDE_PAGE_SIZE = 1000;
+    const allCoRides: CoRideRow[] = [];
+    let coRideOffset = 0;
+    let hasMoreCoRides = true;
 
-    if (coRideError) {
-      throw new Error(`Failed to fetch co-ride data: ${coRideError.message}`);
+    while (hasMoreCoRides) {
+      const { data: page, error: pageError } = await supabase
+        .from("ride_co_occurrences" as never)
+        .select(
+          "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date, polyline1, polyline2",
+        )
+        .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
+        .order("ride_date", { ascending: false });
+
+      if (pageError) {
+        throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        hasMoreCoRides = false;
+      } else {
+        allCoRides.push(...(page as CoRideRow[]));
+        coRideOffset += page.length;
+        if (page.length < CO_RIDE_PAGE_SIZE) {
+          hasMoreCoRides = false;
+        }
+      }
     }
 
-    const typedCoRides = (coRides ?? []) as CoRideRow[];
+    console.log(
+      `[group-rides] Paginated fetch: ${allCoRides.length} total co-ride rows`,
+    );
+
+    const coRides = allCoRides;
+    const typedCoRides = coRides as CoRideRow[];
 
     // 2. Apply Layer 3: polyline overlap filter
     const validPairs: Array<{
