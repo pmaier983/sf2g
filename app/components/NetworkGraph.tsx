@@ -279,9 +279,12 @@ export function NetworkGraph({
       connectedIds.add(e.target);
     }
 
-    const simNodes: SimNode[] = nodes
-      .filter((n) => connectedIds.has(n.id))
-      .map((n) => ({
+    // Split into connected and solo riders
+    const connectedNodes: SimNode[] = [];
+    const soloNodes: SimNode[] = [];
+
+    for (const n of nodes) {
+      const simNode: SimNode = {
         id: n.id,
         name: n.name,
         avatar: n.avatar,
@@ -292,7 +295,13 @@ export function NetworkGraph({
         y: 0,
         vx: 0,
         vy: 0,
-      }));
+      };
+      if (connectedIds.has(n.id)) {
+        connectedNodes.push(simNode);
+      } else {
+        soloNodes.push(simNode);
+      }
+    }
 
     const simEdges: SimEdge[] = edges.map((e) => ({
       sourceId: e.source,
@@ -301,7 +310,26 @@ export function NetworkGraph({
       dominantRoute: getDominantRoute(e.routes),
     }));
 
-    runForceSimulation(simNodes, simEdges, dimensions.width, dimensions.height);
+    // Run force simulation only on connected nodes
+    runForceSimulation(
+      connectedNodes,
+      simEdges,
+      dimensions.width,
+      dimensions.height,
+    );
+
+    // Position solo riders in a ring around the outer edge
+    const cx = dimensions.width / 2;
+    const cy = dimensions.height / 2;
+    const outerRadius = Math.min(dimensions.width, dimensions.height) * 0.46;
+    soloNodes.forEach((n, i) => {
+      const angle = (2 * Math.PI * i) / Math.max(1, soloNodes.length);
+      n.x = cx + outerRadius * Math.cos(angle);
+      n.y = cy + outerRadius * Math.sin(angle);
+    });
+
+    // Combine: connected first, then solo
+    const simNodes = [...connectedNodes, ...soloNodes];
 
     return { simNodes, simEdges };
   }, [nodes, edges, dimensions.width, dimensions.height]);
@@ -529,11 +557,19 @@ export function NetworkGraph({
               const isHighlighted = highlightedNodes.has(node.id);
               const isCurrentUser = node.id === currentUserId;
               const isSelected = node.id === selectedNodeId;
-              const isDimmed = hasHighlight && !isHighlighted && !isCurrentUser;
+              const isSolo = node.connectionCount === 0;
+              const isDimmed =
+                (hasHighlight && !isHighlighted && !isCurrentUser) ||
+                (isSolo && !isHighlighted && !isSelected);
               const color =
                 ROUTE_COLORS[node.primaryRoute] ?? ROUTE_COLORS.other;
               const showLabel = isHighlighted || isCurrentUser || isSelected;
-              const finalRadius = isCurrentUser ? radius * 1.2 : radius;
+              const baseRadius = isCurrentUser
+                ? radius * 1.2
+                : isSolo
+                  ? radius * 0.7
+                  : radius;
+              const finalRadius = baseRadius;
 
               return (
                 <g
@@ -548,7 +584,7 @@ export function NetworkGraph({
                         ? "grabbing"
                         : "pointer",
                   }}
-                  opacity={isDimmed ? 0.3 : 1}
+                  opacity={isDimmed ? (isSolo ? 0.5 : 0.3) : 1}
                 >
                   {/* Glow ring for current user */}
                   {isCurrentUser && (
