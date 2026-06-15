@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   useMemo,
   useCallback,
@@ -397,7 +397,7 @@ function LeaderboardPage() {
   });
 
   // ---- Group Rides query ----
-  const groupRidesQuery = useQuery({
+  const groupRidesQuery = useInfiniteQuery({
     ...groupRidesQueryOptions({
       page: gPage,
       sortBy: gSort,
@@ -888,8 +888,13 @@ function LeaderboardPage() {
               </div>
             ) : (
               <GroupRidesTable
-                data={groupRidesQuery.data?.groupRides ?? []}
+                data={
+                  groupRidesQuery.data?.pages.flatMap((p) => p.groupRides) ?? []
+                }
                 isLoading={groupRidesQuery.isLoading}
+                hasNextPage={groupRidesQuery.hasNextPage}
+                fetchNextPage={groupRidesQuery.fetchNextPage}
+                isFetchingNextPage={groupRidesQuery.isFetchingNextPage}
                 onGroupRideClick={(gr) => {
                   navigate({
                     to: "/group-rides/$groupRideId",

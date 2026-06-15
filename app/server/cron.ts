@@ -5,6 +5,7 @@
  * 1. **Sync all users** — fetch new rides from Strava for every registered user
  * 2. Reclassify all rides (fixes stale classifications)
  * 3. Enrich missing wind data (fetches from Open-Meteo)
+ * 4. Refresh materialized views and pre-compute group rides
  *
  * Rate limit budgets:
  * - Strava: Uses ~50% of the 15-min window (85 of 170 effective requests),
@@ -28,6 +29,7 @@ import {
   type WindEnrichmentResult,
 } from "./wind-enrichment";
 import { performSync, type SyncResult } from "./sync";
+import { computeAndStoreGroupRides } from "./group-rides";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -354,10 +356,18 @@ export async function runCronJobs(): Promise<CronResult> {
     console.log(
       `[cron] Ride co-occurrences refresh complete in ${Date.now() - coOccStart}ms`,
     );
+
+    // Pre-compute group rides from the refreshed MV
+    console.log("[cron] Computing and storing group rides...");
+    const groupStart = Date.now();
+    await computeAndStoreGroupRides();
+    console.log(
+      `[cron] Group rides computation complete in ${Date.now() - groupStart}ms`,
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.warn(
-      `[cron] Ride co-occurrences refresh failed (non-critical): ${msg}`,
+      `[cron] Ride co-occurrences / group rides failed (non-critical): ${msg}`,
     );
   }
 

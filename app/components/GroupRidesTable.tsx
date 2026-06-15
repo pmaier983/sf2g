@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -28,6 +28,9 @@ interface GroupRidesTableProps {
   sortBy: string;
   sortDir: "asc" | "desc";
   onSortChange: (column: string, direction: "asc" | "desc") => void;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -247,7 +250,29 @@ export function GroupRidesTable({
   sortBy,
   sortDir,
   onSortChange,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: GroupRidesTableProps) {
+  const loadMoreRef = useRef<HTMLTableRowElement>(null);
+
+  useEffect(() => {
+    if (!hasNextPage || !fetchNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    const el = loadMoreRef.current;
+    if (el) observer.observe(el);
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [hasNextPage, fetchNextPage]);
+
   const unit = useUnit();
   const columns = useMemo(() => getGroupRideColumns(unit), [unit]);
 
@@ -355,6 +380,22 @@ export function GroupRidesTable({
                 ))}
               </tr>
             ))
+          )}
+          {hasNextPage && (
+            <tr ref={loadMoreRef}>
+              <td
+                colSpan={columns.length}
+                style={{ textAlign: "center", padding: "1rem" }}
+              >
+                {isFetchingNextPage ? (
+                  <div className="group-rides-table__skeleton" />
+                ) : (
+                  <span style={{ color: "var(--color-text-secondary)" }}>
+                    Loading more…
+                  </span>
+                )}
+              </td>
+            </tr>
           )}
         </tbody>
       </table>

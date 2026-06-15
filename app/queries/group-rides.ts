@@ -1,12 +1,12 @@
 /**
  * TanStack Query option factories for Group Rides.
  */
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { fetchGroupRides, fetchGroupRideDetail } from "../server/group-rides";
 import type { RouteCategory } from "../lib/database.types";
 
 // ---------------------------------------------------------------------------
-// Group rides list query (leaderboard tab)
+// Group rides list query (leaderboard tab) — infinite scroll
 // ---------------------------------------------------------------------------
 
 export const groupRidesQueryOptions = (params: {
@@ -18,9 +18,15 @@ export const groupRidesQueryOptions = (params: {
   routeCategories?: string[];
   weekends?: boolean;
 }) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: ["group-rides", params],
-    queryFn: () => fetchGroupRides({ data: params }),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchGroupRides({ data: { ...params, page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.pageSize < lastPage.totalCount
+        ? lastPage.page + 1
+        : undefined,
   });
 
 // ---------------------------------------------------------------------------

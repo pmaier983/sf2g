@@ -20,6 +20,7 @@ import type {
   UserUpdate,
 } from "../lib/database.types";
 import { enrichMissingWindData } from "./wind-enrichment";
+import { computeAndStoreGroupRides } from "./group-rides";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -450,10 +451,12 @@ export async function performSync(
   // group rides immediately — this must NOT be gated by skipLeaderboardRefresh
   try {
     await supabase.rpc("refresh_ride_co_occurrences" as never);
+    // Pre-compute group rides from the refreshed MV
+    await computeAndStoreGroupRides();
   } catch (err) {
-    // Non-critical — co-occurrences will be refreshed in cron
+    // Non-critical — co-occurrences / group rides will be refreshed in cron
     console.warn(
-      `[sync] Ride co-occurrences refresh failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
+      `[sync] Ride co-occurrences / group rides failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 

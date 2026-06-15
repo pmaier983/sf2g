@@ -91,9 +91,6 @@ export interface StreamFetchError {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Page size for group rides listing */
-const PAGE_SIZE = 25;
-
 /**
  * Max IDs per Supabase .in() filter to stay within URL length limits.
  * UUIDs are 36 chars each; 300 × 36 ≈ 10.8 KB which is well under the ~15 KB
@@ -290,8 +287,38 @@ function clusterIntoGroups(
 }
 
 // ---------------------------------------------------------------------------
-// Server Function: Fetch group rides list
+// Server Function: Fetch group rides list (lightweight — reads pre-computed table)
 // ---------------------------------------------------------------------------
+
+/** Page size for group rides pagination */
+const PAGE_SIZE = 25;
+
+/**
+ * Map sort field names from the client to actual database column names.
+ */
+function mapSortColumn(sortBy: string): string {
+  switch (sortBy) {
+    case "riderCount":
+      return "rider_count";
+    case "avgSpeedMps":
+      return "avg_speed_mps";
+    case "avgWatts":
+      return "avg_watts";
+    case "avgHeartrate":
+      return "avg_heartrate";
+    case "maxWatts":
+      return "max_watts";
+    case "maxSpeedMps":
+      return "max_speed_mps";
+    case "totalDistanceMeters":
+      return "total_distance_meters";
+    case "totalElevationMeters":
+      return "total_elevation_meters";
+    case "date":
+    default:
+      return "ride_date";
+  }
+}
 
 export const fetchGroupRides = createServerFn({ method: "GET" })
   .inputValidator(
@@ -307,270 +334,319 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<GroupRidesResponse> => {
     const supabase = createAnonClient();
-    const page = data.page ?? 1;
+    const page = Math.max(1, data.page ?? 1);
     const sortBy = data.sortBy ?? "date";
     const sortDir = data.sortDir ?? "desc";
+    const sortColumn = mapSortColumn(sortBy);
 
-    // 1. Fetch all co-ride pairs from materialized view
-    // Paginate to work around Supabase max_rows (1000) truncation
-    const CO_RIDE_PAGE_SIZE = 1000;
-    const allCoRides: CoRideRow[] = [];
-    let coRideOffset = 0;
-    let hasMoreCoRides = true;
+    // Build query against pre-computed group_rides table
+    let query = supabase
+      .from("group_rides" as never)
+      .select("*, group_ride_members(*)", { count: "exact" })
+      .order(sortColumn, { ascending: sortDir === "asc" });
 
-    while (hasMoreCoRides) {
-      const { data: page, error: pageError } = await supabase
-        .from("ride_co_occurrences" as never)
-        .select(
-          "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date",
-        )
-        .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
-        .order("ride_date", { ascending: false });
-
-      if (pageError) {
-        throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
-      }
-
-      if (!page || page.length === 0) {
-        hasMoreCoRides = false;
-      } else {
-        allCoRides.push(...(page as CoRideRow[]));
-        coRideOffset += page.length;
-        if (page.length < CO_RIDE_PAGE_SIZE) {
-          hasMoreCoRides = false;
-        }
-      }
+    // Apply filters
+    if (data.dateFrom) {
+      query = query.gte("ride_date", data.dateFrom);
+    }
+    if (data.dateTo) {
+      query = query.lte("ride_date", data.dateTo);
+    }
+    if (data.routeCategories && data.routeCategories.length > 0) {
+      query = query.in("route_category", data.routeCategories);
     }
 
-    console.log(
-      `[group-rides] Paginated fetch: ${allCoRides.length} total co-ride rows`,
-    );
+    // Weekend filter — exclude Saturday (6) and Sunday (0)
+    // Supabase doesn't support day-of-week filtering in PostgREST,
+    // so we apply it client-side after fetch if needed.
+    // For now, fetch the page and filter if weekends === false.
 
-    const coRides = allCoRides;
-    const typedCoRides = coRides as CoRideRow[];
+    // Paginate
+    const offset = (page - 1) * PAGE_SIZE;
+    query = query.range(offset, offset + PAGE_SIZE - 1);
 
-    // 2. Apply date / route / weekend filters
-    // Note: polyline overlap (Layer 3) is intentionally skipped here.
-    // The MV already enforces Layer 1 (same date + route) and Layer 2
-    // (time-window overlap), which is sufficient for the listing.
-    // Polyline decoding + haversine for 1700+ pairs is too CPU-heavy
-    // for Cloudflare Workers and only filters ~1-2% of pairs.
-    const validPairs: Array<{
-      rider1Id: string;
-      rider2Id: string;
-      ride1Id: string;
-      ride2Id: string;
-      date: string;
-      route: RouteCategory;
-    }> = [];
+    const { data: rows, error, count } = await query;
 
-    for (const row of typedCoRides) {
-      // Date filter
-      if (data.dateFrom && row.ride_date < data.dateFrom) continue;
-      if (data.dateTo && row.ride_date > data.dateTo) continue;
+    if (error) {
+      throw new Error(`Failed to fetch group rides: ${error.message}`);
+    }
 
-      // Route category filter
-      if (data.routeCategories && data.routeCategories.length > 0) {
-        if (!data.routeCategories.includes(row.route_category)) continue;
-      }
+    // Transform database rows to GroupRideSummary format
+    const groupRides: GroupRideSummary[] = [];
 
-      // Weekend filter (weekends=false means exclude weekends)
+    for (const row of (rows ?? []) as Array<Record<string, unknown>>) {
+      const members = (row.group_ride_members ?? []) as Array<{
+        user_id: string;
+        display_name: string | null;
+        avatar_url: string | null;
+      }>;
+
+      const rideDate = row.ride_date as string;
+
+      // Weekend filter (client-side since PostgREST can't filter by day-of-week)
       if (data.weekends === false) {
-        const dayOfWeek = new Date(row.ride_date + "T12:00:00Z").getUTCDay();
+        const dayOfWeek = new Date(rideDate + "T12:00:00Z").getUTCDay();
         if (dayOfWeek === 0 || dayOfWeek === 6) continue;
       }
 
-      validPairs.push({
-        rider1Id: row.rider1_id,
-        rider2Id: row.rider2_id,
-        ride1Id: row.ride1_id,
-        ride2Id: row.ride2_id,
-        date: row.ride_date,
-        route: row.route_category,
+      groupRides.push({
+        id: row.id as string,
+        date: rideDate,
+        routeCategory: row.route_category as RouteCategory,
+        riders: members.map((m) => ({
+          userId: m.user_id,
+          displayName: m.display_name ?? "Rider",
+          avatarUrl: m.avatar_url ?? null,
+        })),
+        riderCount: (row.rider_count as number) ?? members.length,
+        avgSpeedMps: (row.avg_speed_mps as number) ?? 0,
+        avgWatts: (row.avg_watts as number | null) ?? null,
+        avgHeartrate: (row.avg_heartrate as number | null) ?? null,
+        maxWatts: (row.max_watts as number | null) ?? null,
+        maxSpeedMps: (row.max_speed_mps as number) ?? 0,
+        totalDistanceMeters: (row.total_distance_meters as number) ?? 0,
+        totalElevationMeters: (row.total_elevation_meters as number) ?? 0,
       });
     }
 
-    // 3. Cluster into connected components (group rides)
-    const groups = clusterIntoGroups(validPairs);
-
-    // 4. Fetch ride data for stats (batched to avoid Supabase URL length limit)
-    const allRideIds = new Set<string>();
-    for (const group of groups) {
-      for (const rideId of group.rideIds) allRideIds.add(rideId);
-    }
-
-    const rideIdArr = Array.from(allRideIds);
-    const rideMap = new Map<string, RideRow>();
-
-    for (let i = 0; i < rideIdArr.length; i += IN_BATCH_SIZE) {
-      const batch = rideIdArr.slice(i, i + IN_BATCH_SIZE);
-      const { data: ridesData, error: ridesError } = await supabase
-        .from("rides")
-        .select(
-          "id, user_id, ride_date, route_category, average_speed_mps, max_speed_mps, distance_meters, elevation_gain_meters, average_watts, max_watts, average_heartrate, max_heartrate, moving_time_seconds",
-        )
-        .in("id", batch);
-
-      if (ridesError) {
-        throw new Error(`Failed to fetch rides: ${ridesError.message}`);
-      }
-
-      for (const ride of (ridesData ?? []) as RideRow[]) {
-        rideMap.set(ride.id, ride);
-      }
-    }
-
-    // 5. Fetch user data for display names + avatars (batched)
-    const allUserIds = new Set<string>();
-    for (const group of groups) {
-      for (const riderId of group.riderIds) allUserIds.add(riderId);
-    }
-
-    const userIdArr = Array.from(allUserIds);
-    const userMap = new Map<string, UserRow>();
-
-    for (let i = 0; i < userIdArr.length; i += IN_BATCH_SIZE) {
-      const batch = userIdArr.slice(i, i + IN_BATCH_SIZE);
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("id, display_name, avatar_url")
-        .in("id", batch);
-
-      if (usersError) {
-        throw new Error(`Failed to fetch users: ${usersError.message}`);
-      }
-
-      for (const user of (usersData ?? []) as UserRow[]) {
-        userMap.set(user.id, user);
-      }
-    }
-
-    // 6. Build group ride summaries with stats
-    const groupRideSummaries: GroupRideSummary[] = [];
-
-    for (const group of groups) {
-      const groupRides: RideRow[] = [];
-      for (const rideId of group.rideIds) {
-        const ride = rideMap.get(rideId);
-        if (ride) groupRides.push(ride);
-      }
-
-      if (groupRides.length === 0) continue;
-
-      // Compute aggregated stats
-      const speeds = groupRides
-        .map((r) => r.average_speed_mps)
-        .filter((v): v is number => v != null);
-      const maxSpeeds = groupRides
-        .map((r) => r.max_speed_mps)
-        .filter((v): v is number => v != null);
-      const watts = groupRides
-        .map((r) => r.average_watts)
-        .filter((v): v is number => v != null);
-      const maxWatts = groupRides
-        .map((r) => r.max_watts)
-        .filter((v): v is number => v != null);
-      const heartrates = groupRides
-        .map((r) => r.average_heartrate)
-        .filter((v): v is number => v != null);
-      const distances = groupRides
-        .map((r) => r.distance_meters)
-        .filter((v): v is number => v != null);
-      const elevations = groupRides
-        .map((r) => r.elevation_gain_meters)
-        .filter((v): v is number => v != null);
-
-      const avg = (arr: number[]) =>
-        arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
-      const max = (arr: number[]) => (arr.length > 0 ? Math.max(...arr) : 0);
-      const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
-
-      const riders: GroupRideRider[] = Array.from(group.riderIds).map(
-        (riderId) => {
-          const user = userMap.get(riderId);
-          return {
-            userId: riderId,
-            displayName: user?.display_name ?? "Rider",
-            avatarUrl: user?.avatar_url ?? null,
-          };
-        },
-      );
-
-      const id = await generateGroupRideId(
-        group.date,
-        group.route,
-        Array.from(group.riderIds),
-      );
-
-      groupRideSummaries.push({
-        id,
-        date: group.date,
-        routeCategory: group.route,
-        riders,
-        riderCount: riders.length,
-        avgSpeedMps: avg(speeds),
-        avgWatts: watts.length > 0 ? avg(watts) : null,
-        avgHeartrate: heartrates.length > 0 ? avg(heartrates) : null,
-        maxWatts: maxWatts.length > 0 ? max(maxWatts) : null,
-        maxSpeedMps: max(maxSpeeds),
-        totalDistanceMeters: sum(distances),
-        totalElevationMeters: sum(elevations),
-      });
-    }
-
-    // 7. Sort
-    groupRideSummaries.sort((a, b) => {
-      let va: number, vb: number;
-      switch (sortBy) {
-        case "riderCount":
-          va = a.riderCount;
-          vb = b.riderCount;
-          break;
-        case "avgSpeedMps":
-          va = a.avgSpeedMps;
-          vb = b.avgSpeedMps;
-          break;
-        case "avgWatts":
-          va = a.avgWatts ?? -1;
-          vb = b.avgWatts ?? -1;
-          break;
-        case "avgHeartrate":
-          va = a.avgHeartrate ?? -1;
-          vb = b.avgHeartrate ?? -1;
-          break;
-        case "maxWatts":
-          va = a.maxWatts ?? -1;
-          vb = b.maxWatts ?? -1;
-          break;
-        case "maxSpeedMps":
-          va = a.maxSpeedMps;
-          vb = b.maxSpeedMps;
-          break;
-        case "totalDistanceMeters":
-          va = a.totalDistanceMeters;
-          vb = b.totalDistanceMeters;
-          break;
-        case "totalElevationMeters":
-          va = a.totalElevationMeters;
-          vb = b.totalElevationMeters;
-          break;
-        case "date":
-        default:
-          va = new Date(a.date).getTime();
-          vb = new Date(b.date).getTime();
-          break;
-      }
-      return sortDir === "asc" ? va - vb : vb - va;
-    });
-
-    // 8. Return all group rides (dataset is small enough — ~100-200 groups)
     return {
-      groupRides: groupRideSummaries,
-      totalCount: groupRideSummaries.length,
-      page: 1,
-      pageSize: groupRideSummaries.length,
+      groupRides,
+      totalCount: count ?? 0,
+      page,
+      pageSize: PAGE_SIZE,
     };
   });
+
+// ---------------------------------------------------------------------------
+// Cron Function: Compute and store group rides in the database
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute group rides from the ride_co_occurrences materialized view
+ * and store the results in the group_rides + group_ride_members tables.
+ *
+ * Called from cron.ts and sync.ts after refreshing the MV.
+ * Runs with service client to bypass RLS for writes.
+ */
+export async function computeAndStoreGroupRides(): Promise<void> {
+  const supabase = createServiceClient();
+
+  console.log("[group-rides] Computing and storing group rides...");
+
+  // 1. Fetch all co-ride pairs from materialized view
+  const CO_RIDE_PAGE_SIZE = 1000;
+  const allCoRides: CoRideRow[] = [];
+  let coRideOffset = 0;
+  let hasMoreCoRides = true;
+
+  while (hasMoreCoRides) {
+    const { data: page, error: pageError } = await supabase
+      .from("ride_co_occurrences" as never)
+      .select(
+        "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date",
+      )
+      .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
+      .order("ride_date", { ascending: false });
+
+    if (pageError) {
+      throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
+    }
+
+    if (!page || page.length === 0) {
+      hasMoreCoRides = false;
+    } else {
+      allCoRides.push(...(page as CoRideRow[]));
+      coRideOffset += page.length;
+      if (page.length < CO_RIDE_PAGE_SIZE) {
+        hasMoreCoRides = false;
+      }
+    }
+  }
+
+  console.log(
+    `[group-rides] Fetched ${allCoRides.length} co-ride rows from MV`,
+  );
+
+  // 2. Build pairs for clustering
+  const validPairs = allCoRides.map((row) => ({
+    rider1Id: row.rider1_id,
+    rider2Id: row.rider2_id,
+    ride1Id: row.ride1_id,
+    ride2Id: row.ride2_id,
+    date: row.ride_date,
+    route: row.route_category,
+  }));
+
+  // 3. Cluster into connected components (group rides)
+  const groups = clusterIntoGroups(validPairs);
+
+  console.log(`[group-rides] Clustered into ${groups.length} groups`);
+
+  // 4. Fetch ride data for stats (batched)
+  const allRideIds = new Set<string>();
+  for (const group of groups) {
+    for (const rideId of group.rideIds) allRideIds.add(rideId);
+  }
+
+  const rideIdArr = Array.from(allRideIds);
+  const rideMap = new Map<string, RideRow>();
+
+  for (let i = 0; i < rideIdArr.length; i += IN_BATCH_SIZE) {
+    const batch = rideIdArr.slice(i, i + IN_BATCH_SIZE);
+    const { data: ridesData, error: ridesError } = await supabase
+      .from("rides")
+      .select(
+        "id, user_id, ride_date, route_category, average_speed_mps, max_speed_mps, distance_meters, elevation_gain_meters, average_watts, max_watts, average_heartrate, max_heartrate, moving_time_seconds",
+      )
+      .in("id", batch);
+
+    if (ridesError) {
+      throw new Error(`Failed to fetch rides: ${ridesError.message}`);
+    }
+
+    for (const ride of (ridesData ?? []) as RideRow[]) {
+      rideMap.set(ride.id, ride);
+    }
+  }
+
+  // 5. Fetch user data (batched)
+  const allUserIds = new Set<string>();
+  for (const group of groups) {
+    for (const riderId of group.riderIds) allUserIds.add(riderId);
+  }
+
+  const userIdArr = Array.from(allUserIds);
+  const userMap = new Map<string, UserRow>();
+
+  for (let i = 0; i < userIdArr.length; i += IN_BATCH_SIZE) {
+    const batch = userIdArr.slice(i, i + IN_BATCH_SIZE);
+    const { data: usersData, error: usersError } = await supabase
+      .from("users")
+      .select("id, display_name, avatar_url")
+      .in("id", batch);
+
+    if (usersError) {
+      throw new Error(`Failed to fetch users: ${usersError.message}`);
+    }
+
+    for (const user of (usersData ?? []) as UserRow[]) {
+      userMap.set(user.id, user);
+    }
+  }
+
+  // 6. Build group ride records + member records
+  const groupRideRows: Array<Record<string, unknown>> = [];
+  const memberRows: Array<Record<string, unknown>> = [];
+
+  const avg = (arr: number[]) =>
+    arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+  const max = (arr: number[]) => (arr.length > 0 ? Math.max(...arr) : 0);
+  const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
+
+  for (const group of groups) {
+    const groupRides: RideRow[] = [];
+    for (const rideId of group.rideIds) {
+      const ride = rideMap.get(rideId);
+      if (ride) groupRides.push(ride);
+    }
+
+    if (groupRides.length === 0) continue;
+
+    const speeds = groupRides
+      .map((r) => r.average_speed_mps)
+      .filter((v): v is number => v != null);
+    const maxSpeeds = groupRides
+      .map((r) => r.max_speed_mps)
+      .filter((v): v is number => v != null);
+    const watts = groupRides
+      .map((r) => r.average_watts)
+      .filter((v): v is number => v != null);
+    const maxWattsArr = groupRides
+      .map((r) => r.max_watts)
+      .filter((v): v is number => v != null);
+    const heartrates = groupRides
+      .map((r) => r.average_heartrate)
+      .filter((v): v is number => v != null);
+    const distances = groupRides
+      .map((r) => r.distance_meters)
+      .filter((v): v is number => v != null);
+    const elevations = groupRides
+      .map((r) => r.elevation_gain_meters)
+      .filter((v): v is number => v != null);
+
+    const riderIds = Array.from(group.riderIds);
+    const id = await generateGroupRideId(group.date, group.route, riderIds);
+
+    groupRideRows.push({
+      id,
+      ride_date: group.date,
+      route_category: group.route,
+      rider_count: riderIds.length,
+      avg_speed_mps: avg(speeds),
+      max_speed_mps: max(maxSpeeds),
+      avg_watts: watts.length > 0 ? avg(watts) : null,
+      max_watts: maxWattsArr.length > 0 ? max(maxWattsArr) : null,
+      avg_heartrate: heartrates.length > 0 ? avg(heartrates) : null,
+      total_distance_meters: sum(distances),
+      total_elevation_meters: sum(elevations),
+      computed_at: new Date().toISOString(),
+    });
+
+    for (const riderId of riderIds) {
+      const user = userMap.get(riderId);
+      memberRows.push({
+        group_ride_id: id,
+        user_id: riderId,
+        display_name: user?.display_name ?? null,
+        avatar_url: user?.avatar_url ?? null,
+      });
+    }
+  }
+
+  console.log(
+    `[group-rides] Storing ${groupRideRows.length} groups with ${memberRows.length} members`,
+  );
+
+  // 7. Replace all data (delete old + insert new) in a transaction-like approach
+  // Delete all existing data first
+  const { error: deleteError } = await supabase
+    .from("group_rides" as never)
+    .delete()
+    .neq("id", ""); // delete all rows
+
+  if (deleteError) {
+    throw new Error(`Failed to clear group_rides: ${deleteError.message}`);
+  }
+
+  // Insert group rides in batches
+  const UPSERT_BATCH = 200;
+  for (let i = 0; i < groupRideRows.length; i += UPSERT_BATCH) {
+    const batch = groupRideRows.slice(i, i + UPSERT_BATCH);
+    const { error: insertError } = await supabase
+      .from("group_rides" as never)
+      .insert(batch as never);
+
+    if (insertError) {
+      throw new Error(`Failed to insert group_rides: ${insertError.message}`);
+    }
+  }
+
+  // Insert members in batches (CASCADE delete already removed old ones)
+  for (let i = 0; i < memberRows.length; i += UPSERT_BATCH) {
+    const batch = memberRows.slice(i, i + UPSERT_BATCH);
+    const { error: insertError } = await supabase
+      .from("group_ride_members" as never)
+      .insert(batch as never);
+
+    if (insertError) {
+      throw new Error(
+        `Failed to insert group_ride_members: ${insertError.message}`,
+      );
+    }
+  }
+
+  console.log("[group-rides] Successfully stored all group rides");
+}
 
 // ---------------------------------------------------------------------------
 // Internal: Fetch and cache Strava streams for a single ride
