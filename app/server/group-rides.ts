@@ -10,7 +10,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createAnonClient, createServiceClient } from "../lib/supabase";
-import { computePolylineOverlap } from "../lib/polyline-overlap";
+
 import { ensureValidToken } from "../lib/strava-oauth";
 import { fetchWithRateLimit, isApproachingLimit } from "../lib/rate-limiter";
 import { STRAVA_API_BASE } from "../lib/constants";
@@ -90,9 +90,6 @@ export interface StreamFetchError {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-/** Minimum polyline overlap ratio to consider two rides as "together" */
-const MIN_POLYLINE_OVERLAP = 0.3;
 
 /** Page size for group rides listing */
 const PAGE_SIZE = 25;
@@ -325,7 +322,7 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
       const { data: page, error: pageError } = await supabase
         .from("ride_co_occurrences" as never)
         .select(
-          "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date, polyline1, polyline2",
+          "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date",
         )
         .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
         .order("ride_date", { ascending: false });
@@ -352,7 +349,12 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
     const coRides = allCoRides;
     const typedCoRides = coRides as CoRideRow[];
 
-    // 2. Apply Layer 3: polyline overlap filter
+    // 2. Apply date / route / weekend filters
+    // Note: polyline overlap (Layer 3) is intentionally skipped here.
+    // The MV already enforces Layer 1 (same date + route) and Layer 2
+    // (time-window overlap), which is sufficient for the listing.
+    // Polyline decoding + haversine for 1700+ pairs is too CPU-heavy
+    // for Cloudflare Workers and only filters ~1-2% of pairs.
     const validPairs: Array<{
       rider1Id: string;
       rider2Id: string;
@@ -376,12 +378,6 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
       if (data.weekends === false) {
         const dayOfWeek = new Date(row.ride_date + "T12:00:00Z").getUTCDay();
         if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-      }
-
-      // Skip if polylines exist but don't overlap enough
-      if (row.polyline1 && row.polyline2) {
-        const overlap = computePolylineOverlap(row.polyline1, row.polyline2);
-        if (overlap < MIN_POLYLINE_OVERLAP) continue;
       }
 
       validPairs.push({
