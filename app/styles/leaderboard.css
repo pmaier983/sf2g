@@ -1755,11 +1755,6 @@
 
 /* ---- Mobile responsive ---- */
 @media (max-width: 768px) {
-  .leaderboard {
-    height: auto;
-    overflow: visible;
-  }
-
   .leaderboard__toolbar {
     flex-wrap: wrap;
     padding: var(--space-2) var(--space-3);
@@ -2001,7 +1996,7 @@
     display: flex;
     gap: 0;
     border-radius: var(--radius-full);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid var(--color-border);
     width: 100%;
     max-width: 20rem;
@@ -2009,12 +2004,13 @@
 
   .mobile-view-header__btn {
     flex: 1;
+    flex-shrink: 0;
     padding: var(--space-2) var(--space-2);
     background: transparent;
     border: none;
     color: var(--color-text-muted);
     cursor: pointer;
-    font-size: var(--text-sm);
+    font-size: clamp(0.7rem, 2.5vw, var(--text-sm));
     font-weight: var(--font-semibold);
     transition: background 0.15s, color 0.15s;
     white-space: nowrap;
@@ -2032,15 +2028,27 @@
     color: #fff;
     cursor: default;
   }
+}
 
-  /* ---- Compact mobile header ---- */
+@media (max-width: 480px) {
+  .mobile-view-header__btn {
+    padding: var(--space-1) var(--space-1);
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* ---- Compact mobile layout ---- */
   .leaderboard {
+    /* Reserve space for the fixed bottom bar so content isn't hidden behind it */
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
   }
 
-  /* ---- Table fills available viewport ---- */
+  /* ---- Table fills remaining flex space and scrolls ---- */
   .leaderboard__table-area {
-    height: calc(100vh - 3rem - 2.75rem - 3.5rem - env(safe-area-inset-bottom));
+    /* Use flex:1 from the base styles — just enable scrolling */
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }

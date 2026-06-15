@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:types": "npx supabase gen types typescript --linked > app/lib/database.types.ts"
+    "db:types": "npx supabase gen types typescript --linked > app/lib/database.types.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
@@ -37,9 +38,17 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.4",
     "supabase": "^1.200.0",
     "typescript": "^5.7.0",
     "vitest": "^4.1.7",
     "wrangler": "^4.74.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ]
   }
 }

@@ -32,7 +32,8 @@ jobs:
             echo "Attempt ${ATTEMPT}/${MAX_RETRIES}..."
 
             RESPONSE=$(curl -s -w "\n%{http_code}" \
-              --max-time 120 \
+              --connect-timeout 30 \
+              --max-time 300 \
               -X POST \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer ${CRON_SECRET}" \

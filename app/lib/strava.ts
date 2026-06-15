@@ -6,8 +6,8 @@
  * - `fetchAthleteActivities(accessToken, params)` — paginated activity list
  */
 
-import { STRAVA_API_BASE } from './constants'
-import { fetchWithRateLimit, type RateLimitedResponse } from './rate-limiter'
+import { STRAVA_API_BASE } from "./constants";
+import { fetchWithRateLimit, type RateLimitedResponse } from "./rate-limiter";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -16,11 +16,11 @@ import { fetchWithRateLimit, type RateLimitedResponse } from './rate-limiter'
 /** Parameters for fetching athlete activities */
 export interface FetchActivitiesParams {
   /** Epoch timestamp — return only activities after this time */
-  after?: number
+  after?: number;
   /** Number of activities per page (max 200) */
-  perPage?: number
+  perPage?: number;
   /** Page number (1-indexed) */
-  page?: number
+  page?: number;
 }
 
 /**
@@ -28,30 +28,40 @@ export interface FetchActivitiesParams {
  * This is a simplified type — Strava returns many more fields.
  */
 export interface StravaActivitySummary {
-  id: number
-  name: string
-  type: string
-  sport_type: string
-  distance: number
-  moving_time: number
-  elapsed_time: number
-  total_elevation_gain: number
-  start_date: string
-  start_date_local: string
-  timezone: string
-  start_latlng: [number, number] | null
-  end_latlng: [number, number] | null
-  average_speed: number
-  max_speed: number
+  id: number;
+  name: string;
+  type: string;
+  sport_type: string;
+  distance: number;
+  moving_time: number;
+  elapsed_time: number;
+  total_elevation_gain: number;
+  start_date: string;
+  start_date_local: string;
+  timezone: string;
+  start_latlng: [number, number] | null;
+  end_latlng: [number, number] | null;
+  average_speed: number;
+  max_speed: number;
   map: {
-    id: string
-    summary_polyline: string | null
-    resource_state: number
-  }
-  commute: boolean
-  manual: boolean
-  private: boolean
-  trainer: boolean
+    id: string;
+    summary_polyline: string | null;
+    resource_state: number;
+  };
+  commute: boolean;
+  manual: boolean;
+  private: boolean;
+  trainer: boolean;
+  // Power data (optional — only present if rider has a power meter)
+  average_watts?: number;
+  max_watts?: number;
+  weighted_average_watts?: number;
+  kilojoules?: number;
+  // Heart rate data (optional — only present if rider has HR monitor)
+  has_heartrate?: boolean;
+  average_heartrate?: number;
+  max_heartrate?: number;
+  suffer_score?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,34 +80,35 @@ export interface StravaActivitySummary {
 export async function fetchAthleteActivities(
   accessToken: string,
   params: FetchActivitiesParams = {},
-): Promise<{ activities: StravaActivitySummary[]; response: RateLimitedResponse }> {
-  const url = new URL(`${STRAVA_API_BASE}/athlete/activities`)
+): Promise<{
+  activities: StravaActivitySummary[];
+  response: RateLimitedResponse;
+}> {
+  const url = new URL(`${STRAVA_API_BASE}/athlete/activities`);
 
   if (params.after !== undefined) {
-    url.searchParams.set('after', String(params.after))
+    url.searchParams.set("after", String(params.after));
   }
 
-  url.searchParams.set('per_page', String(params.perPage ?? 200))
-  url.searchParams.set('page', String(params.page ?? 1))
+  url.searchParams.set("per_page", String(params.perPage ?? 200));
+  url.searchParams.set("page", String(params.page ?? 1));
 
-  console.log(`[strava] Fetching ${url.toString()}`)
+  console.log(`[strava] Fetching ${url.toString()}`);
 
-  const response = await fetchWithRateLimit(url.toString(), accessToken)
+  const response = await fetchWithRateLimit(url.toString(), accessToken);
 
-  console.log(`[strava] Response status: ${response.status}`)
+  console.log(`[strava] Response status: ${response.status}`);
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error(`[strava] API error (${response.status}): ${errorText}`)
-    throw new Error(
-      `Strava API error (${response.status}): ${errorText}`,
-    )
+    const errorText = await response.text();
+    console.error(`[strava] API error (${response.status}): ${errorText}`);
+    throw new Error(`Strava API error (${response.status}): ${errorText}`);
   }
 
-  const activities = (await response.json()) as StravaActivitySummary[]
-  console.log(`[strava] Fetched ${activities.length} activities`)
+  const activities = (await response.json()) as StravaActivitySummary[];
+  console.log(`[strava] Fetched ${activities.length} activities`);
 
-  return { activities, response }
+  return { activities, response };
 }
 
 /**
@@ -114,24 +125,22 @@ export async function fetchSingleActivity(
   accessToken: string,
   activityId: number,
 ): Promise<{ activity: StravaActivitySummary; response: RateLimitedResponse }> {
-  const url = `${STRAVA_API_BASE}/activities/${activityId}`
+  const url = `${STRAVA_API_BASE}/activities/${activityId}`;
 
-  console.log(`[strava] Fetching single activity ${activityId}`)
+  console.log(`[strava] Fetching single activity ${activityId}`);
 
-  const response = await fetchWithRateLimit(url, accessToken)
+  const response = await fetchWithRateLimit(url, accessToken);
 
-  console.log(`[strava] Response status: ${response.status}`)
+  console.log(`[strava] Response status: ${response.status}`);
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error(`[strava] API error (${response.status}): ${errorText}`)
-    throw new Error(
-      `Strava API error (${response.status}): ${errorText}`,
-    )
+    const errorText = await response.text();
+    console.error(`[strava] API error (${response.status}): ${errorText}`);
+    throw new Error(`Strava API error (${response.status}): ${errorText}`);
   }
 
-  const activity = (await response.json()) as StravaActivitySummary
-  console.log(`[strava] Fetched activity: ${activity.name} (${activity.type})`)
+  const activity = (await response.json()) as StravaActivitySummary;
+  console.log(`[strava] Fetched activity: ${activity.name} (${activity.type})`);
 
-  return { activity, response }
+  return { activity, response };
 }

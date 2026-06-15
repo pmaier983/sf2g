@@ -1,65 +1,147 @@
-import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type {
   RideLeaderboardEntry,
   RidesLeaderboardResponse,
-} from '../lib/database.types'
-import { currentUserQueryOptions } from '../queries/user'
-import { EditRideDialog } from './EditRideDialog'
-import type { EditRideData } from './EditRideDialog'
-import { Tooltip } from './Tooltip'
+} from "../lib/database.types";
+import { currentUserQueryOptions } from "../queries/user";
+import { EditRideDialog } from "./EditRideDialog";
+import type { EditRideData } from "./EditRideDialog";
+import { Tooltip } from "./Tooltip";
 import {
   formatSpeed,
   formatDistance,
   formatElevation,
   formatRideDate,
   formatMovingTime,
-} from '../lib/leaderboard-utils'
-import { msToMph } from '../lib/wind'
-import { useUnit } from '../lib/useUnit'
-import { RouteTag } from './RouteTag'
+} from "../lib/leaderboard-utils";
+import { msToMph } from "../lib/wind";
+import { useUnit } from "../lib/useUnit";
+import { RouteTag } from "./RouteTag";
 
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 export interface RidesLeaderboardTableProps {
-  data: RidesLeaderboardResponse | undefined
-  isLoading: boolean
-  sortBy: string
-  sortDir: 'asc' | 'desc'
-  onSortChange: (column: string, direction: 'asc' | 'desc') => void
-  onPageChange: (page: number) => void
-  activeUser?: string | null
-  onClearUser?: () => void
+  data: RidesLeaderboardResponse | undefined;
+  isLoading: boolean;
+  sortBy: string;
+  sortDir: "asc" | "desc";
+  onSortChange: (column: string, direction: "asc" | "desc") => void;
+  onPageChange: (page: number) => void;
+  activeUser?: string | null;
+  onClearUser?: () => void;
 }
 
 // ---------------------------------------------------------------------------
 // Sortable column definitions
 // ---------------------------------------------------------------------------
 interface ColumnDef {
-  key: string
-  label: string
-  sortable: boolean
-  className?: string
-  tooltip: string
+  key: string;
+  label: string;
+  sortable: boolean;
+  className?: string;
+  tooltip: string;
 }
 
 const COLUMNS: ColumnDef[] = [
-  { key: 'rank', label: '#', sortable: false, className: 'rides-table__rank', tooltip: 'Row number in the current sort order' },
-  { key: 'display_name', label: 'Rider', sortable: true, tooltip: 'Rider name — click to sort by name or view their profile' },
-  { key: 'name', label: 'Ride Name', sortable: true, tooltip: 'Strava activity name — click header to sort alphabetically' },
-  { key: 'ride_date', label: 'Date', sortable: true, tooltip: 'Ride date — click header to sort by date' },
-  { key: 'route_category', label: 'Route', sortable: true, tooltip: 'Classified SF2G route corridor (Bayway, Skyline, HMBW, etc.)' },
-  { key: 'average_speed_mps', label: 'Avg Speed', sortable: true, tooltip: 'Average moving speed for the ride' },
-  { key: 'distance_meters', label: 'Distance', sortable: true, tooltip: 'Total ride distance' },
-  { key: 'elevation_gain_meters', label: 'Elevation', sortable: true, tooltip: 'Total elevation gain for the ride' },
-  { key: 'moving_time_seconds', label: 'Time', sortable: true, tooltip: 'Total moving time (excludes stopped time)' },
-  { key: 'tailwind_component_ms', label: 'Tailwind', sortable: true, tooltip: 'Wind assistance along the ride direction (mph). Green (+) = tailwind pushing you forward. Red (−) = headwind slowing you down. Sourced from Open-Meteo historical weather data.' },
-  { key: 'edit', label: '', sortable: false, className: 'rides-table__edit-col', tooltip: 'Edit ride' },
-]
+  {
+    key: "rank",
+    label: "#",
+    sortable: false,
+    className: "rides-table__rank",
+    tooltip: "Row number in the current sort order",
+  },
+  {
+    key: "display_name",
+    label: "Rider",
+    sortable: true,
+    tooltip: "Rider name — click to sort by name or view their profile",
+  },
+  {
+    key: "name",
+    label: "Ride Name",
+    sortable: true,
+    tooltip: "Strava activity name — click header to sort alphabetically",
+  },
+  {
+    key: "ride_date",
+    label: "Date",
+    sortable: true,
+    tooltip: "Ride date — click header to sort by date",
+  },
+  {
+    key: "route_category",
+    label: "Route",
+    sortable: true,
+    tooltip: "Classified SF2G route corridor (Bayway, Skyline, HMBW, etc.)",
+  },
+  {
+    key: "average_speed_mps",
+    label: "Avg Speed",
+    sortable: true,
+    tooltip: "Average moving speed for the ride",
+  },
+  {
+    key: "distance_meters",
+    label: "Distance",
+    sortable: true,
+    tooltip: "Total ride distance",
+  },
+  {
+    key: "elevation_gain_meters",
+    label: "Elevation",
+    sortable: true,
+    tooltip: "Total elevation gain for the ride",
+  },
+  {
+    key: "moving_time_seconds",
+    label: "Time",
+    sortable: true,
+    tooltip: "Total moving time (excludes stopped time)",
+  },
+  {
+    key: "tailwind_component_ms",
+    label: "Tailwind",
+    sortable: true,
+    tooltip:
+      "Wind assistance along the ride direction (mph). Green (+) = tailwind pushing you forward. Red (−) = headwind slowing you down. Sourced from Open-Meteo historical weather data.",
+  },
+  {
+    key: "average_watts",
+    label: "Avg W",
+    sortable: true,
+    tooltip: "Average watts (power meter required)",
+  },
+  {
+    key: "max_watts",
+    label: "Max W",
+    sortable: true,
+    tooltip: "Maximum watts",
+  },
+  {
+    key: "average_heartrate",
+    label: "Avg HR",
+    sortable: true,
+    tooltip: "Average heart rate (HR monitor required)",
+  },
+  {
+    key: "kilojoules",
+    label: "Cal",
+    sortable: true,
+    tooltip: "Calories burned (estimated from Strava kilojoules)",
+  },
+  {
+    key: "edit",
+    label: "",
+    sortable: false,
+    className: "rides-table__edit-col",
+    tooltip: "Edit ride",
+  },
+];
 
-const SKELETON_ROWS = 8
+const SKELETON_ROWS = 8;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -74,38 +156,40 @@ export function RidesLeaderboardTable({
   activeUser,
   onClearUser,
 }: RidesLeaderboardTableProps) {
-  const { data: currentUser } = useQuery(currentUserQueryOptions())
-  const [editingRide, setEditingRide] = useState<EditRideData | null>(null)
-  const rides = data?.rides ?? []
-  const totalCount = data?.totalCount ?? 0
-  const page = data?.page ?? 1
-  const pageSize = data?.pageSize ?? 200
+  const { data: currentUser } = useQuery(currentUserQueryOptions());
+  const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
+  const rides = data?.rides ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const page = data?.page ?? 1;
+  const pageSize = data?.pageSize ?? 200;
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
-  const startIndex = (page - 1) * pageSize
-  const endIndex = Math.min(startIndex + rides.length, totalCount)
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = Math.min(startIndex + rides.length, totalCount);
 
   const handleSort = (col: ColumnDef) => {
-    if (!col.sortable) return
+    if (!col.sortable) return;
     if (sortBy === col.key) {
       // Same column: toggle direction
-      onSortChange(col.key, sortDir === 'desc' ? 'asc' : 'desc')
+      onSortChange(col.key, sortDir === "desc" ? "asc" : "desc");
     } else {
       // New column: default to descending
-      onSortChange(col.key, 'desc')
+      onSortChange(col.key, "desc");
     }
-  }
+  };
 
-  const ariaSortValue = (col: ColumnDef): 'ascending' | 'descending' | 'none' => {
-    if (sortBy !== col.key) return 'none'
-    return sortDir === 'asc' ? 'ascending' : 'descending'
-  }
+  const ariaSortValue = (
+    col: ColumnDef,
+  ): "ascending" | "descending" | "none" => {
+    if (sortBy !== col.key) return "none";
+    return sortDir === "asc" ? "ascending" : "descending";
+  };
 
   // Active user display name (find from first ride that matches)
   const activeUserName =
     activeUser && rides.length > 0
-      ? rides.find((r) => r.user_id === activeUser)?.display_name ?? 'Rider'
-      : null
+      ? (rides.find((r) => r.user_id === activeUser)?.display_name ?? "Rider")
+      : null;
 
   return (
     <div className="rides-table">
@@ -139,12 +223,20 @@ export function RidesLeaderboardTable({
                   aria-sort={col.sortable ? ariaSortValue(col) : undefined}
                   onClick={() => handleSort(col)}
                   title={col.tooltip}
-                  style={col.sortable ? { cursor: 'pointer' } : { cursor: 'help' }}
+                  style={
+                    col.sortable ? { cursor: "pointer" } : { cursor: "help" }
+                  }
                 >
                   {col.label}
                   {col.sortable && (
-                    <span className={`sort-indicator${sortBy === col.key ? '' : ' sort-indicator--placeholder'}`}>
-                      {sortBy === col.key ? (sortDir === 'asc' ? '▲' : '▼') : '▼'}
+                    <span
+                      className={`sort-indicator${sortBy === col.key ? "" : " sort-indicator--placeholder"}`}
+                    >
+                      {sortBy === col.key
+                        ? sortDir === "asc"
+                          ? "▲"
+                          : "▼"
+                        : "▼"}
                     </span>
                   )}
                 </th>
@@ -180,8 +272,7 @@ export function RidesLeaderboardTable({
       {!isLoading && totalCount > 0 && (
         <div className="rides-table__pagination" aria-live="polite">
           <span className="rides-table__page-info">
-            Showing {startIndex + 1}–{endIndex} of{' '}
-            {totalCount.toLocaleString()}
+            Showing {startIndex + 1}–{endIndex} of {totalCount.toLocaleString()}
           </span>
           <div className="rides-table__page-buttons">
             <button
@@ -213,7 +304,7 @@ export function RidesLeaderboardTable({
         />
       )}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -225,12 +316,12 @@ function RideRow({
   currentUserId,
   onEdit,
 }: {
-  ride: RideLeaderboardEntry
-  rank: number
-  currentUserId?: string
-  onEdit: (ride: EditRideData) => void
+  ride: RideLeaderboardEntry;
+  rank: number;
+  currentUserId?: string;
+  onEdit: (ride: EditRideData) => void;
 }) {
-  const unit = useUnit()
+  const unit = useUnit();
   return (
     <tr>
       {/* Rank */}
@@ -258,7 +349,7 @@ function RideRow({
             params={{ userId: ride.user_id }}
             className="rides-table__rider-name"
           >
-            {ride.display_name ?? 'Unknown Rider'}
+            {ride.display_name ?? "Unknown Rider"}
           </Link>
         </div>
       </td>
@@ -272,15 +363,15 @@ function RideRow({
             rel="noopener noreferrer"
             className="profile-rides__strava-link"
           >
-            {ride.name ?? '—'}
+            {ride.name ?? "—"}
           </a>
         ) : (
-          ride.name ?? '—'
+          (ride.name ?? "—")
         )}
       </td>
 
       {/* Date */}
-      <td>{formatRideDate(ride.ride_date) ?? '—'}</td>
+      <td>{formatRideDate(ride.ride_date) ?? "—"}</td>
 
       {/* Route */}
       <td>
@@ -306,22 +397,47 @@ function RideRow({
       {/* Tailwind */}
       <td>
         {ride.tailwind_component_ms != null ? (
-          <span style={{
-            color: ride.tailwind_component_ms > 0.5 ? 'var(--color-success)' :
-                   ride.tailwind_component_ms < -0.5 ? 'var(--color-error)' :
-                   'var(--color-text-muted)',
-            fontWeight: 500,
-          }}>
+          <span
+            style={{
+              color:
+                ride.tailwind_component_ms > 0.5
+                  ? "var(--color-success)"
+                  : ride.tailwind_component_ms < -0.5
+                    ? "var(--color-error)"
+                    : "var(--color-text-muted)",
+              fontWeight: 500,
+            }}
+          >
             {(() => {
-              const mph = msToMph(ride.tailwind_component_ms)
-              const sign = mph > 0 ? '+' : ''
-              return Math.abs(mph) < 0.5 ? '—' : `${sign}${mph.toFixed(1)}`
+              const mph = msToMph(ride.tailwind_component_ms);
+              const sign = mph > 0 ? "+" : "";
+              return Math.abs(mph) < 0.5 ? "—" : `${sign}${mph.toFixed(1)}`;
             })()}
           </span>
         ) : (
           <span className="text-muted">—</span>
         )}
       </td>
+
+      {/* Avg Watts */}
+      <td>
+        {ride.average_watts != null
+          ? `${Math.round(ride.average_watts)}W`
+          : "—"}
+      </td>
+
+      {/* Max Watts */}
+      <td>{ride.max_watts != null ? `${Math.round(ride.max_watts)}W` : "—"}</td>
+
+      {/* Avg HR */}
+      <td>
+        {ride.average_heartrate != null
+          ? `${Math.round(ride.average_heartrate)}bpm`
+          : "—"}
+      </td>
+
+      {/* Cal */}
+      <td>{ride.kilojoules != null ? Math.round(ride.kilojoules) : "—"}</td>
 
       {/* Edit */}
       <td className="rides-table__edit-col">
@@ -346,7 +462,7 @@ function RideRow({
         )}
       </td>
     </tr>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -365,5 +481,5 @@ function SkeletonRows() {
         </tr>
       ))}
     </>
-  )
+  );
 }
