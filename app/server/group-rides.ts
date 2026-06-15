@@ -97,6 +97,13 @@ const MIN_POLYLINE_OVERLAP = 0.3;
 /** Page size for group rides listing */
 const PAGE_SIZE = 25;
 
+/**
+ * Max IDs per Supabase .in() filter to stay within URL length limits.
+ * UUIDs are 36 chars each; 300 × 36 ≈ 10.8 KB which is well under the ~15 KB
+ * GET URL limit that Supabase/PostgREST enforces.
+ */
+const IN_BATCH_SIZE = 300;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -390,46 +397,56 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
     // 3. Cluster into connected components (group rides)
     const groups = clusterIntoGroups(validPairs);
 
-    // 4. Fetch ride data for stats
+    // 4. Fetch ride data for stats (batched to avoid Supabase URL length limit)
     const allRideIds = new Set<string>();
     for (const group of groups) {
       for (const rideId of group.rideIds) allRideIds.add(rideId);
     }
 
-    const { data: ridesData, error: ridesError } = await supabase
-      .from("rides")
-      .select(
-        "id, user_id, ride_date, route_category, average_speed_mps, max_speed_mps, distance_meters, elevation_gain_meters, average_watts, max_watts, average_heartrate, max_heartrate, moving_time_seconds",
-      )
-      .in("id", Array.from(allRideIds));
-
-    if (ridesError) {
-      throw new Error(`Failed to fetch rides: ${ridesError.message}`);
-    }
-
+    const rideIdArr = Array.from(allRideIds);
     const rideMap = new Map<string, RideRow>();
-    for (const ride of (ridesData ?? []) as RideRow[]) {
-      rideMap.set(ride.id, ride);
+
+    for (let i = 0; i < rideIdArr.length; i += IN_BATCH_SIZE) {
+      const batch = rideIdArr.slice(i, i + IN_BATCH_SIZE);
+      const { data: ridesData, error: ridesError } = await supabase
+        .from("rides")
+        .select(
+          "id, user_id, ride_date, route_category, average_speed_mps, max_speed_mps, distance_meters, elevation_gain_meters, average_watts, max_watts, average_heartrate, max_heartrate, moving_time_seconds",
+        )
+        .in("id", batch);
+
+      if (ridesError) {
+        throw new Error(`Failed to fetch rides: ${ridesError.message}`);
+      }
+
+      for (const ride of (ridesData ?? []) as RideRow[]) {
+        rideMap.set(ride.id, ride);
+      }
     }
 
-    // 5. Fetch user data for display names + avatars
+    // 5. Fetch user data for display names + avatars (batched)
     const allUserIds = new Set<string>();
     for (const group of groups) {
       for (const riderId of group.riderIds) allUserIds.add(riderId);
     }
 
-    const { data: usersData, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, avatar_url")
-      .in("id", Array.from(allUserIds));
-
-    if (usersError) {
-      throw new Error(`Failed to fetch users: ${usersError.message}`);
-    }
-
+    const userIdArr = Array.from(allUserIds);
     const userMap = new Map<string, UserRow>();
-    for (const user of (usersData ?? []) as UserRow[]) {
-      userMap.set(user.id, user);
+
+    for (let i = 0; i < userIdArr.length; i += IN_BATCH_SIZE) {
+      const batch = userIdArr.slice(i, i + IN_BATCH_SIZE);
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("id, display_name, avatar_url")
+        .in("id", batch);
+
+      if (usersError) {
+        throw new Error(`Failed to fetch users: ${usersError.message}`);
+      }
+
+      for (const user of (usersData ?? []) as UserRow[]) {
+        userMap.set(user.id, user);
+      }
     }
 
     // 6. Build group ride summaries with stats
