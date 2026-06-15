@@ -1,22 +1,15 @@
 /**
- * NetworkGraph — Interactive force-directed graph visualization.
+ * NetworkGraph — SVG-based force-directed network visualization.
  *
- * Renders an interactive 2D force-directed network graph using
- * react-force-graph-2d (canvas-based for performance).
+ * REBUILT FROM SCRATCH using pure SVG + a simple force simulation.
+ * No react-force-graph-2d — that library divides link widths by zoom
+ * level in its canvas renderer, making edges invisible.
  *
- * Features:
- * - Node sizing proportional to total SF2G rides
- * - Node coloring by primary route category
- * - Profile picture rendering with circular clip and route-colored border
- * - Edge thickness proportional to co-ride count
- * - Hover highlights connected nodes + tooltip
- * - Click selects a node (triggers onNodeSelect callback)
- * - Current user node has a pulsing golden glow
- * - Labels shown on hover/select only to prevent clutter
- * - Built-in zoom/pan with auto-fit on load
+ * This approach uses SVG <line> elements for edges and <circle>/<image>
+ * for nodes. SVG guarantees visibility because elements are actual DOM
+ * nodes with real CSS-like stroke widths.
  */
 import { useRef, useCallback, useState, useMemo, useEffect } from "react";
-import ForceGraph2D from "react-force-graph-2d";
 import type { NetworkNode, NetworkEdge } from "../server/network";
 import { ROUTE_COLORS } from "../lib/constants";
 import type { RouteCategory } from "../lib/database.types";
@@ -33,21 +26,22 @@ interface NetworkGraphProps {
   onNodeSelect: (nodeId: string | null) => void;
 }
 
-interface ForceGraphNode {
+interface SimNode {
   id: string;
   name: string;
   avatar: string | null;
   totalRides: number;
   primaryRoute: RouteCategory;
   connectionCount: number;
-  val: number;
-  x?: number;
-  y?: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
 }
 
-interface ForceGraphLink {
-  source: string | ForceGraphNode;
-  target: string | ForceGraphNode;
+interface SimEdge {
+  sourceId: string;
+  targetId: string;
   weight: number;
   dominantRoute: RouteCategory;
 }
@@ -55,25 +49,6 @@ interface ForceGraphLink {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const CURRENT_USER_SIZE_MULTIPLIER = 1.3;
-
-/** Maximum characters for a name label before truncation */
-const MAX_NAME_LENGTH = 10;
-
-function getNodeRadius(totalRides: number): number {
-  // Min 4, max 8 — visible at default zoom
-  return Math.max(4, Math.min(8, 4 + Math.log2(totalRides + 1) * 0.8));
-}
-
-/** Convert hex color (#RRGGBB) to rgba string — canvas doesn't reliably
- *  support 8-digit hex (#RRGGBBAA), so we convert explicitly. */
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 function getDominantRoute(
   routes: Partial<Record<RouteCategory, number>>,
@@ -89,10 +64,155 @@ function getDominantRoute(
   return best;
 }
 
-/** Truncate a name to maxLen characters, appending ellipsis if needed */
-function truncateName(name: string, maxLen: number): string {
-  if (name.length <= maxLen) return name;
-  return name.slice(0, maxLen - 1) + "\u2026";
+function getNodeRadius(totalRides: number): number {
+  return Math.max(16, Math.min(32, 16 + Math.log2(totalRides + 1) * 4));
+}
+
+function getEdgeWidth(weight: number): number {
+  return Math.max(2, Math.min(8, 2 + Math.log2(weight + 1) * 2));
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// ---------------------------------------------------------------------------
+// Simple Force Simulation (no d3 dependency)
+// ---------------------------------------------------------------------------
+
+function runForceSimulation(
+  nodes: SimNode[],
+  edges: SimEdge[],
+  width: number,
+  height: number,
+  iterations: number = 300,
+): void {
+  const nodeMap = new Map<string, SimNode>();
+  for (const n of nodes) nodeMap.set(n.id, n);
+
+  // Initialize positions in a circle
+  const cx = width / 2;
+  const cy = height / 2;
+  const initRadius = Math.min(width, height) * 0.35;
+  nodes.forEach((n, i) => {
+    const angle = (2 * Math.PI * i) / nodes.length;
+    n.x = cx + initRadius * Math.cos(angle);
+    n.y = cy + initRadius * Math.sin(angle);
+    n.vx = 0;
+    n.vy = 0;
+  });
+
+  // Pre-compute radii for collision detection
+  const radii = new Map<string, number>();
+  for (const n of nodes) {
+    radii.set(n.id, getNodeRadius(n.totalRides));
+  }
+
+  const repulsionStrength = 15000;
+  const attractionStrength = 0.003;
+  const centerStrength = 0.008;
+  const damping = 0.9;
+  const collisionPadding = 28; // accounts for name labels below nodes (4px gap + 18px label + margin)
+
+  for (let iter = 0; iter < iterations; iter++) {
+    // 1. Repulsive forces between all pairs
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 1) dist = 1;
+
+        const force = repulsionStrength / (dist * dist);
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+
+        a.vx -= fx;
+        a.vy -= fy;
+        b.vx += fx;
+        b.vy += fy;
+      }
+    }
+
+    // 2. Attractive forces along edges (stronger for higher weight)
+    for (const edge of edges) {
+      const source = nodeMap.get(edge.sourceId);
+      const target = nodeMap.get(edge.targetId);
+      if (!source || !target) continue;
+
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1) continue;
+
+      const strength =
+        attractionStrength * (1 + Math.log2(edge.weight + 1) * 0.5);
+      const force = dist * strength;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+
+      source.vx += fx;
+      source.vy += fy;
+      target.vx -= fx;
+      target.vy -= fy;
+    }
+
+    // 3. Center gravity
+    for (const n of nodes) {
+      n.vx += (cx - n.x) * centerStrength;
+      n.vy += (cy - n.y) * centerStrength;
+    }
+
+    // 4. Apply velocities with damping
+    const tempDamping = damping - (iter / iterations) * 0.3;
+    for (const n of nodes) {
+      n.vx *= tempDamping;
+      n.vy *= tempDamping;
+      n.x += n.vx;
+      n.y += n.vy;
+    }
+
+    // 5. COLLISION RESOLUTION — hard constraint, prevents overlap
+    //    Pushes any overlapping pair apart based on their actual radii.
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 0.1) dist = 0.1;
+
+        const rA = radii.get(a.id) ?? 16;
+        const rB = radii.get(b.id) ?? 16;
+        const minDist = rA + rB + collisionPadding;
+
+        if (dist < minDist) {
+          // Push apart so they don't overlap
+          const overlap = (minDist - dist) / 2;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        }
+      }
+    }
+
+    // 6. Keep in bounds with padding
+    for (const n of nodes) {
+      const r = radii.get(n.id) ?? 16;
+      const pad = r + 10;
+      n.x = Math.max(pad, Math.min(width - pad, n.x));
+      n.y = Math.max(pad, Math.min(height - pad, n.y));
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -106,36 +226,25 @@ export function NetworkGraph({
   selectedNodeId,
   onNodeSelect,
 }: NetworkGraphProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const graphRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 550 });
-  const animFrameRef = useRef<number>(0);
-  const hasZoomedRef = useRef(false);
 
-  // -----------------------------------------------------------------------
-  // Profile picture image cache
-  // -----------------------------------------------------------------------
-  const imageCacheRef = useRef(new Map<string, HTMLImageElement | null>());
-  const [, setImageLoadCount] = useState(0);
+  // Pan & Zoom state
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
 
-  useEffect(() => {
-    nodes.forEach((node) => {
-      if (node.avatar && !imageCacheRef.current.has(node.id)) {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = node.avatar;
-        img.onload = () => {
-          imageCacheRef.current.set(node.id, img);
-          setImageLoadCount((c) => c + 1);
-        };
-        img.onerror = () => {
-          imageCacheRef.current.set(node.id, null);
-        };
-      }
-    });
-  }, [nodes]);
+  // Node drag state
+  const draggingNodeRef = useRef<string | null>(null);
+  const didDragRef = useRef(false);
+
+  // Mutable node positions (updated during drag)
+  const [nodePositions, setNodePositions] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
 
   // Responsive sizing
   useEffect(() => {
@@ -153,47 +262,24 @@ export function NetworkGraph({
 
     observer.observe(el);
     setDimensions({
-      width: el.clientWidth,
+      width: el.clientWidth || 800,
       height: Math.max(400, Math.min(700, el.clientHeight || 550)),
     });
 
     return () => observer.disconnect();
   }, []);
 
-  // Animation loop for pulsing glow on current user node.
-  useEffect(() => {
-    if (!currentUserId) return;
-
-    let running = true;
-    const tick = () => {
-      if (!running) return;
-      const fg = graphRef.current;
-      if (fg) {
-        fg.renderer?.();
-      }
-      animFrameRef.current = requestAnimationFrame(tick);
-    };
-    animFrameRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      running = false;
-      cancelAnimationFrame(animFrameRef.current);
-    };
-  }, [currentUserId]);
-
   // -----------------------------------------------------------------------
-  // Build graph data — ONLY include connected nodes (removes isolates that
-  // scatter far away and break zoom-to-fit)
+  // Compute layout
   // -----------------------------------------------------------------------
-  const graphData = useMemo(() => {
-    // Find all node IDs that appear in at least one edge
+  const { simNodes, simEdges } = useMemo(() => {
     const connectedIds = new Set<string>();
     for (const e of edges) {
       connectedIds.add(e.source);
       connectedIds.add(e.target);
     }
 
-    const graphNodes: ForceGraphNode[] = nodes
+    const simNodes: SimNode[] = nodes
       .filter((n) => connectedIds.has(n.id))
       .map((n) => ({
         id: n.id,
@@ -202,310 +288,382 @@ export function NetworkGraph({
         totalRides: n.totalRides,
         primaryRoute: n.primaryRoute,
         connectionCount: n.connectionCount,
-        // val controls node area in the force simulation
-        val: Math.max(1, n.connectionCount),
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
       }));
 
-    const graphLinks: ForceGraphLink[] = edges.map((e) => ({
-      source: e.source,
-      target: e.target,
+    const simEdges: SimEdge[] = edges.map((e) => ({
+      sourceId: e.source,
+      targetId: e.target,
       weight: e.weight,
       dominantRoute: getDominantRoute(e.routes),
     }));
 
-    return { nodes: graphNodes, links: graphLinks };
-  }, [nodes, edges]);
+    runForceSimulation(simNodes, simEdges, dimensions.width, dimensions.height);
 
-  // Configure d3-force
+    return { simNodes, simEdges };
+  }, [nodes, edges, dimensions.width, dimensions.height]);
+
+  // Initialize node positions after simulation
   useEffect(() => {
-    const fg = graphRef.current;
-    if (!fg) return;
-
-    hasZoomedRef.current = false;
-
-    // Moderate repulsion — enough spacing without blowing the graph apart
-    const charge = fg.d3Force("charge");
-    if (charge && typeof charge.strength === "function") {
-      charge.strength(-200);
-      charge.distanceMax(400);
+    const positions = new Map<string, { x: number; y: number }>();
+    for (const n of simNodes) {
+      positions.set(n.id, { x: n.x, y: n.y });
     }
+    setNodePositions(positions);
+  }, [simNodes]);
 
-    // Link distance proportional to weight — strong bonds pull closer
-    const link = fg.d3Force("link");
-    if (link && typeof link.distance === "function") {
-      link.distance((l: ForceGraphLink) => {
-        const w = typeof l.weight === "number" ? l.weight : 5;
-        // Stronger connections → shorter distance (40-100 range)
-        return Math.max(40, 100 - Math.log2(w + 1) * 15);
-      });
+  // Build lookup map using current positions
+  const nodeMap = useMemo(() => {
+    const map = new Map<string, SimNode & { x: number; y: number }>();
+    for (const n of simNodes) {
+      const pos = nodePositions.get(n.id);
+      map.set(n.id, { ...n, x: pos?.x ?? n.x, y: pos?.y ?? n.y });
     }
+    return map;
+  }, [simNodes, nodePositions]);
 
-    fg.d3ReheatSimulation?.();
-  }, [graphData]);
-
-  // After simulation cools, zoom to fit (only once per data load)
-  const handleEngineStop = useCallback(() => {
-    if (hasZoomedRef.current) return;
-    hasZoomedRef.current = true;
-    const fg = graphRef.current;
-    if (fg) {
-      fg.zoomToFit(400, 60);
-    }
-  }, []);
-
-  // Set of connected node IDs for the hovered node
+  // Highlighted nodes/edges
+  const activeId = hoveredNode ?? selectedNodeId;
   const highlightedNodes = useMemo(() => {
     const set = new Set<string>();
-    if (!hoveredNode && !selectedNodeId) return set;
-
-    const activeId = hoveredNode ?? selectedNodeId;
     if (!activeId) return set;
-
     set.add(activeId);
-    for (const edge of edges) {
-      if (edge.source === activeId) set.add(edge.target);
-      if (edge.target === activeId) set.add(edge.source);
+    for (const edge of simEdges) {
+      if (edge.sourceId === activeId) set.add(edge.targetId);
+      if (edge.targetId === activeId) set.add(edge.sourceId);
     }
     return set;
-  }, [hoveredNode, selectedNodeId, edges]);
+  }, [activeId, simEdges]);
+
+  const highlightedEdges = useMemo(() => {
+    const set = new Set<string>();
+    if (!activeId) return set;
+    for (const edge of simEdges) {
+      if (edge.sourceId === activeId || edge.targetId === activeId) {
+        set.add(`${edge.sourceId}::${edge.targetId}`);
+      }
+    }
+    return set;
+  }, [activeId, simEdges]);
 
   const hasHighlight = highlightedNodes.size > 0;
 
   // -----------------------------------------------------------------------
-  // Node renderer (canvas)
+  // Mouse handlers for pan, zoom, and node drag
   // -----------------------------------------------------------------------
-  const paintNode = useCallback(
-    (node: ForceGraphNode, ctx: CanvasRenderingContext2D) => {
-      const x = node.x ?? 0;
-      const y = node.y ?? 0;
-      const baseRadius = getNodeRadius(node.totalRides);
-      const isHighlighted = highlightedNodes.has(node.id);
-      const isCurrentUser = node.id === currentUserId;
-      const isSelected = node.id === selectedNodeId;
-      const isDimmed = hasHighlight && !isHighlighted && !isCurrentUser;
 
-      const cachedImg = imageCacheRef.current.get(node.id);
-      const hasImage = cachedImg != null;
+  /** Convert screen coords to SVG graph coords */
+  const screenToGraph = useCallback(
+    (clientX: number, clientY: number) => {
+      const svg = svgRef.current;
+      if (!svg) return { x: 0, y: 0 };
+      const rect = svg.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - pan.x) / zoom,
+        y: (clientY - rect.top - pan.y) / zoom,
+      };
+    },
+    [pan, zoom],
+  );
 
-      let radius = baseRadius;
-      if (isCurrentUser) {
-        radius *= CURRENT_USER_SIZE_MULTIPLIER;
-      }
+  // Zoom with scroll wheel
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      const color = ROUTE_COLORS[node.primaryRoute] ?? ROUTE_COLORS.other;
-      const borderWidth = isCurrentUser || isSelected || isHighlighted ? 2 : 1;
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      const newZoom = Math.max(0.3, Math.min(5, zoom * factor));
 
-      // Pulsing glow for current user
-      if (isCurrentUser) {
-        const t = Date.now() / 1000;
-        const pulseAlpha = 0.3 + 0.15 * Math.sin(t * 2.5);
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 4, 0, 2 * Math.PI);
-        ctx.fillStyle = `rgba(255, 102, 0, ${pulseAlpha.toFixed(3)})`;
-        ctx.fill();
-      } else if (isSelected) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 3, 0, 2 * Math.PI);
-        ctx.fillStyle = "rgba(99, 102, 241, 0.3)";
-        ctx.fill();
-      }
+      // Zoom toward mouse position
+      setPan((prev) => ({
+        x: mouseX - (mouseX - prev.x) * (newZoom / zoom),
+        y: mouseY - (mouseY - prev.y) * (newZoom / zoom),
+      }));
+      setZoom(newZoom);
+    },
+    [zoom],
+  );
 
-      // --- Draw the node body ---
-      if (hasImage) {
-        ctx.save();
-        if (isDimmed) ctx.globalAlpha = 0.35;
+  // Start pan or node drag
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button !== 0) return;
 
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        ctx.clip();
-        ctx.drawImage(
-          cachedImg,
-          x - radius,
-          y - radius,
-          radius * 2,
-          radius * 2,
-        );
-        ctx.restore();
+      // Check if we're clicking on a node
+      const target = e.target as SVGElement;
+      const nodeGroup = target.closest("[data-node-id]");
 
-        // Route-colored border ring
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = isDimmed ? hexToRgba(color, 0.3) : color;
-        ctx.lineWidth = borderWidth;
-        ctx.stroke();
+      if (nodeGroup) {
+        // Start node drag
+        const nodeId = nodeGroup.getAttribute("data-node-id")!;
+        draggingNodeRef.current = nodeId;
+        didDragRef.current = false;
       } else {
-        // Fallback: colored circle
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = isDimmed ? hexToRgba(color, 0.2) : color;
-        ctx.fill();
-        ctx.strokeStyle = isDimmed
-          ? "rgba(255,255,255,0.1)"
-          : isCurrentUser
-            ? "#FF6600"
-            : "rgba(255,255,255,0.6)";
-        ctx.lineWidth = isCurrentUser || isSelected ? 2 : 1;
-        ctx.stroke();
+        // Start pan
+        isPanningRef.current = true;
+        panStartRef.current = {
+          x: e.clientX,
+          y: e.clientY,
+          panX: pan.x,
+          panY: pan.y,
+        };
       }
 
-      // --- "You" tag above current user ---
-      if (isCurrentUser) {
-        const tagFontSize = 5;
-        ctx.font = `bold ${tagFontSize}px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-        const tagText = "You";
-        const tagWidth = ctx.measureText(tagText).width;
-        const tagPadX = 2;
-        const tagPadY = 1;
-        const tagY = y - radius - 3;
-
-        ctx.fillStyle = "rgba(255, 102, 0, 0.9)";
-        const rr = 2;
-        const rx = x - tagWidth / 2 - tagPadX;
-        const ry = tagY - tagFontSize - tagPadY;
-        const rw = tagWidth + tagPadX * 2;
-        const rh = tagFontSize + tagPadY * 2;
-        ctx.beginPath();
-        ctx.roundRect(rx, ry, rw, rh, rr);
-        ctx.fill();
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillText(tagText, x, tagY);
-      }
-
-      // --- Name label: only on hover, select, or current user ---
-      const showLabel = isHighlighted || isCurrentUser || isSelected;
-      if (showLabel) {
-        const fontSize = 4;
-        ctx.font = `${fontSize}px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-
-        const displayName = truncateName(node.name, MAX_NAME_LENGTH);
-        const textWidth = ctx.measureText(displayName).width;
-        const padX = 2;
-        const padY = 1;
-        const labelY = y + radius + 2;
-
-        ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-        ctx.fillRect(
-          x - textWidth / 2 - padX,
-          labelY,
-          textWidth + padX * 2,
-          fontSize + padY * 2,
-        );
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-        ctx.fillText(displayName, x, labelY + padY);
-      }
+      e.preventDefault();
     },
-    [highlightedNodes, hasHighlight, currentUserId, selectedNodeId],
+    [pan],
   );
 
-  // -----------------------------------------------------------------------
-  // Link color + width via built-in props (more reliable than custom paint)
-  // -----------------------------------------------------------------------
-  const getLinkColor = useCallback(
-    (link: ForceGraphLink) => {
-      const sourceId =
-        typeof link.source === "string" ? link.source : link.source.id;
-      const targetId =
-        typeof link.target === "string" ? link.target : link.target.id;
-      const color = ROUTE_COLORS[link.dominantRoute] ?? ROUTE_COLORS.other;
-
-      if (hasHighlight) {
-        const bothHighlighted =
-          highlightedNodes.has(sourceId) && highlightedNodes.has(targetId);
-        return bothHighlighted ? hexToRgba(color, 0.9) : hexToRgba(color, 0.05);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (isPanningRef.current) {
+        const dx = e.clientX - panStartRef.current.x;
+        const dy = e.clientY - panStartRef.current.y;
+        setPan({
+          x: panStartRef.current.panX + dx,
+          y: panStartRef.current.panY + dy,
+        });
+      } else if (draggingNodeRef.current) {
+        didDragRef.current = true;
+        const graphPos = screenToGraph(e.clientX, e.clientY);
+        setNodePositions((prev) => {
+          const next = new Map(prev);
+          next.set(draggingNodeRef.current!, { x: graphPos.x, y: graphPos.y });
+          return next;
+        });
       }
-      return hexToRgba(color, 0.6);
     },
-    [highlightedNodes, hasHighlight],
+    [screenToGraph],
   );
 
-  const getLinkWidth = useCallback(
-    (link: ForceGraphLink) => {
-      const sourceId =
-        typeof link.source === "string" ? link.source : link.source.id;
-      const targetId =
-        typeof link.target === "string" ? link.target : link.target.id;
-
-      if (hasHighlight) {
-        const bothHighlighted =
-          highlightedNodes.has(sourceId) && highlightedNodes.has(targetId);
-        return bothHighlighted
-          ? Math.max(2, Math.min(5, 2 + Math.log2(link.weight + 1)))
-          : 0.3;
-      }
-      return Math.max(1, Math.min(4, 1 + Math.log2(link.weight + 1) * 0.8));
-    },
-    [highlightedNodes, hasHighlight],
-  );
-
-  const handleNodeHover = useCallback((node: ForceGraphNode | null) => {
-    setHoveredNode(node?.id ?? null);
-    if (containerRef.current) {
-      containerRef.current.style.cursor = node ? "pointer" : "default";
+  const handleMouseUp = useCallback(() => {
+    if (draggingNodeRef.current && !didDragRef.current) {
+      // It was a click, not a drag — handle as node click
+      const nodeId = draggingNodeRef.current;
+      onNodeSelect(nodeId === selectedNodeId ? null : nodeId);
     }
-  }, []);
+    isPanningRef.current = false;
+    draggingNodeRef.current = null;
+  }, [onNodeSelect, selectedNodeId]);
 
-  const handleNodeClick = useCallback(
-    (node: ForceGraphNode) => {
-      onNodeSelect(node.id === selectedNodeId ? null : node.id);
+  const handleBgClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Only deselect if clicking on the SVG background directly
+      const target = e.target as SVGElement;
+      if (target.closest("[data-node-id]")) return;
+      if (isPanningRef.current) return;
+      onNodeSelect(null);
+      setHoveredNode(null);
     },
-    [onNodeSelect, selectedNodeId],
+    [onNodeSelect],
   );
 
-  const handleBgClick = useCallback(() => {
-    onNodeSelect(null);
-  }, [onNodeSelect]);
-
-  // Tooltip for hovered node
   const hoveredNodeData = useMemo(
-    () => nodes.find((n) => n.id === hoveredNode),
-    [nodes, hoveredNode],
+    () => simNodes.find((n) => n.id === hoveredNode),
+    [simNodes, hoveredNode],
   );
 
   return (
     <div className="network-graph" ref={containerRef}>
-      <ForceGraph2D
-        ref={graphRef as never}
-        graphData={graphData}
+      <svg
+        ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        nodeCanvasObject={paintNode as never}
-        nodePointerAreaPaint={
-          ((
-            node: ForceGraphNode,
-            color: string,
-            ctx: CanvasRenderingContext2D,
-          ) => {
-            const r = getNodeRadius(node.totalRides);
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(node.x ?? 0, node.y ?? 0, r + 2, 0, 2 * Math.PI);
-            ctx.fill();
-          }) as never
-        }
-        linkColor={getLinkColor as never}
-        linkWidth={getLinkWidth as never}
-        onNodeHover={handleNodeHover as never}
-        onNodeClick={handleNodeClick as never}
-        onBackgroundClick={handleBgClick}
-        onEngineStop={handleEngineStop}
-        nodeLabel=""
-        linkLabel=""
-        cooldownTicks={150}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
-        warmupTicks={100}
-        enableNodeDrag={true}
-        enableZoomInteraction={true}
-        minZoom={0.8}
-        maxZoom={10}
-        backgroundColor="transparent"
-      />
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onClick={handleBgClick}
+        style={{
+          display: "block",
+          cursor: isPanningRef.current ? "grabbing" : "grab",
+        }}
+      >
+        {/* Single transform group for pan + zoom */}
+        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+          {/* ---------- EDGES ---------- */}
+          <g className="network-graph__edges">
+            {simEdges.map((edge) => {
+              const source = nodeMap.get(edge.sourceId);
+              const target = nodeMap.get(edge.targetId);
+              if (!source || !target) return null;
+
+              const edgeKey = `${edge.sourceId}::${edge.targetId}`;
+              const isEdgeHighlighted = highlightedEdges.has(edgeKey);
+              const isDimmed = hasHighlight && !isEdgeHighlighted;
+              const color =
+                ROUTE_COLORS[edge.dominantRoute] ?? ROUTE_COLORS.other;
+
+              return (
+                <line
+                  key={edgeKey}
+                  x1={source.x}
+                  y1={source.y}
+                  x2={target.x}
+                  y2={target.y}
+                  stroke={isDimmed ? hexToRgba(color, 0.1) : color}
+                  strokeWidth={isDimmed ? 1 : getEdgeWidth(edge.weight)}
+                  strokeOpacity={isDimmed ? 0.3 : 0.8}
+                  strokeLinecap="round"
+                />
+              );
+            })}
+          </g>
+
+          {/* ---------- NODES ---------- */}
+          <g className="network-graph__nodes">
+            {simNodes.map((node) => {
+              const pos = nodePositions.get(node.id);
+              const x = pos?.x ?? node.x;
+              const y = pos?.y ?? node.y;
+              const radius = getNodeRadius(node.totalRides);
+              const isHighlighted = highlightedNodes.has(node.id);
+              const isCurrentUser = node.id === currentUserId;
+              const isSelected = node.id === selectedNodeId;
+              const isDimmed = hasHighlight && !isHighlighted && !isCurrentUser;
+              const color =
+                ROUTE_COLORS[node.primaryRoute] ?? ROUTE_COLORS.other;
+              const showLabel = isHighlighted || isCurrentUser || isSelected;
+              const finalRadius = isCurrentUser ? radius * 1.2 : radius;
+
+              return (
+                <g
+                  key={node.id}
+                  data-node-id={node.id}
+                  transform={`translate(${x}, ${y})`}
+                  onMouseEnter={() => setHoveredNode(node.id)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  style={{
+                    cursor:
+                      draggingNodeRef.current === node.id
+                        ? "grabbing"
+                        : "pointer",
+                  }}
+                  opacity={isDimmed ? 0.3 : 1}
+                >
+                  {/* Glow ring for current user */}
+                  {isCurrentUser && (
+                    <circle
+                      r={finalRadius + 6}
+                      fill="none"
+                      stroke="#FF6600"
+                      strokeWidth={3}
+                      strokeOpacity={0.5}
+                    >
+                      <animate
+                        attributeName="stroke-opacity"
+                        values="0.3;0.7;0.3"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  )}
+
+                  {/* Selection ring */}
+                  {isSelected && !isCurrentUser && (
+                    <circle
+                      r={finalRadius + 4}
+                      fill="none"
+                      stroke="#6366F1"
+                      strokeWidth={2}
+                      strokeOpacity={0.6}
+                    />
+                  )}
+
+                  {/* Node circle (colored fallback) */}
+                  <circle r={finalRadius} fill={color} />
+
+                  {/* Profile picture */}
+                  {node.avatar && (
+                    <>
+                      <clipPath id={`clip-${node.id}`}>
+                        <circle r={finalRadius} />
+                      </clipPath>
+                      <image
+                        href={node.avatar}
+                        x={-finalRadius}
+                        y={-finalRadius}
+                        width={finalRadius * 2}
+                        height={finalRadius * 2}
+                        clipPath={`url(#clip-${node.id})`}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+                    </>
+                  )}
+
+                  {/* Route-colored border ring */}
+                  <circle
+                    r={finalRadius}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={isHighlighted || isCurrentUser ? 3 : 2}
+                  />
+
+                  {/* "You" tag */}
+                  {isCurrentUser && (
+                    <>
+                      <rect
+                        x={-14}
+                        y={-finalRadius - 20}
+                        width={28}
+                        height={16}
+                        rx={4}
+                        fill="rgba(255, 102, 0, 0.9)"
+                      />
+                      <text
+                        y={-finalRadius - 9}
+                        textAnchor="middle"
+                        fill="white"
+                        fontSize={10}
+                        fontWeight="bold"
+                        style={{ pointerEvents: "none" }}
+                      >
+                        You
+                      </text>
+                    </>
+                  )}
+
+                  {/* Name label (only on hover/select/currentUser) */}
+                  {showLabel && (
+                    <>
+                      <rect
+                        x={-40}
+                        y={finalRadius + 4}
+                        width={80}
+                        height={18}
+                        rx={4}
+                        fill="rgba(0, 0, 0, 0.7)"
+                      />
+                      <text
+                        y={finalRadius + 16}
+                        textAnchor="middle"
+                        fill="white"
+                        fontSize={11}
+                        style={{ pointerEvents: "none" }}
+                      >
+                        {node.name.length > 12
+                          ? node.name.slice(0, 11) + "\u2026"
+                          : node.name}
+                      </text>
+                    </>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        </g>
+      </svg>
+
+      {/* Tooltip */}
       {hoveredNodeData && (
         <div className="network-graph__tooltip">
           <span className="network-graph__tooltip-name">

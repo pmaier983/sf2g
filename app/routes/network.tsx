@@ -6,17 +6,11 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo } from "react";
 import { networkQueryOptions } from "../queries/network";
 import { currentUserQueryOptions } from "../queries/user";
 
-// Lazy-load NetworkGraph — it depends on react-force-graph-2d which
-// requires browser APIs (window, canvas) and crashes during SSR.
-const NetworkGraph = lazy(() =>
-  import("../components/NetworkGraph").then((m) => ({
-    default: m.NetworkGraph,
-  })),
-);
+import { NetworkGraph } from "../components/NetworkGraph";
 import { NetworkStats } from "../components/NetworkStats";
 import { NetworkSidebar } from "../components/NetworkSidebar";
 import { getEgoNeighbors } from "../lib/graph-utils";
@@ -161,22 +155,13 @@ function NetworkPage() {
       {/* Graph + Sidebar layout */}
       <div className="network-page__body">
         <div className="network-page__graph-container">
-          <Suspense
-            fallback={
-              <div className="loading-state">
-                <div className="loading-state__spinner" />
-                <p>Loading graph…</p>
-              </div>
-            }
-          >
-            <NetworkGraph
-              nodes={filteredData.nodes}
-              edges={filteredData.edges}
-              currentUserId={currentUser?.id}
-              selectedNodeId={selectedNodeId}
-              onNodeSelect={setSelectedNodeId}
-            />
-          </Suspense>
+          <NetworkGraph
+            nodes={filteredData.nodes}
+            edges={filteredData.edges}
+            currentUserId={currentUser?.id}
+            selectedNodeId={selectedNodeId}
+            onNodeSelect={setSelectedNodeId}
+          />
         </div>
 
         {selectedNodeId && (
