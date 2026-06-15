@@ -233,6 +233,12 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
     }>;
 
     for (const coRide of typedCoRides) {
+      // Skip pairs where either rider isn't in the leaderboard view
+      // (prevents "Unknown" riders from appearing in the network)
+      if (!riderMap.has(coRide.rider1_id) || !riderMap.has(coRide.rider2_id)) {
+        continue;
+      }
+
       const hasPolylines = coRide.polyline1 && coRide.polyline2;
 
       // Layer 3: Check polyline spatial overlap
@@ -263,6 +269,9 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
     }
 
     // 5. Build edges array — only keep connections with ≥5 co-rides
+    //    This is why not everyone appears in the graph: riders need at least
+    //    5 verified co-rides (same date + time overlap + GPS overlap) with
+    //    another rider to form a visible edge.
     const MIN_CONNECTION_RIDES = 5;
     const edges: NetworkEdge[] = Array.from(edgeMap.values()).filter(
       (e) => e.weight >= MIN_CONNECTION_RIDES,
