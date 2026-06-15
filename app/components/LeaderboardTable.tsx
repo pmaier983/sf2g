@@ -231,50 +231,72 @@ export function LeaderboardTable({
             ))}
           </thead>
           <tbody>
+            {/* Top spacer — pushes visible rows to the correct scroll offset */}
+            {virtualItems.length > 0 && virtualItems[0].start > 0 && (
+              <tr aria-hidden="true">
+                <td
+                  colSpan={9999}
+                  style={{
+                    height: `${virtualItems[0].start}px`,
+                    padding: 0,
+                    border: "none",
+                  }}
+                />
+              </tr>
+            )}
+            {virtualItems.length > 0 &&
+              virtualItems.map((virtualRow) => {
+                const row = rows[virtualRow.index];
+                const color = riderColorMap.get(row.original.user_id ?? "");
+                return (
+                  <tr
+                    key={row.id}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      borderLeft: color ? `3px solid ${color}` : undefined,
+                    }}
+                  >
+                    {chartOpen && (
+                      <td className="leaderboard__chart-select-cell">
+                        <button
+                          type="button"
+                          className={`leaderboard__chart-toggle ${selectedRiderIds?.has(row.original.user_id ?? "") ? "leaderboard__chart-toggle--active" : ""}`}
+                          style={
+                            selectedRiderIds?.has(row.original.user_id ?? "") &&
+                            color
+                              ? { background: color, borderColor: color }
+                              : undefined
+                          }
+                          onClick={() =>
+                            onToggleRider?.(row.original.user_id ?? "")
+                          }
+                          aria-label={`${selectedRiderIds?.has(row.original.user_id ?? "") ? "Remove" : "Add"} ${row.original.display_name ?? "rider"} ${selectedRiderIds?.has(row.original.user_id ?? "") ? "from" : "to"} chart`}
+                        />
+                      </td>
+                    )}
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            {/* Bottom spacer — fills remaining space so scrollbar is accurate */}
             {virtualItems.length > 0 && (
-              <>
-                {virtualItems.map((virtualRow) => {
-                  const row = rows[virtualRow.index];
-                  const color = riderColorMap.get(row.original.user_id ?? "");
-                  return (
-                    <tr
-                      key={row.id}
-                      style={{
-                        height: `${virtualRow.size}px`,
-                        borderLeft: color ? `3px solid ${color}` : undefined,
-                      }}
-                    >
-                      {chartOpen && (
-                        <td className="leaderboard__chart-select-cell">
-                          <button
-                            type="button"
-                            className={`leaderboard__chart-toggle ${selectedRiderIds?.has(row.original.user_id ?? "") ? "leaderboard__chart-toggle--active" : ""}`}
-                            style={
-                              selectedRiderIds?.has(
-                                row.original.user_id ?? "",
-                              ) && color
-                                ? { background: color, borderColor: color }
-                                : undefined
-                            }
-                            onClick={() =>
-                              onToggleRider?.(row.original.user_id ?? "")
-                            }
-                            aria-label={`${selectedRiderIds?.has(row.original.user_id ?? "") ? "Remove" : "Add"} ${row.original.display_name ?? "rider"} ${selectedRiderIds?.has(row.original.user_id ?? "") ? "from" : "to"} chart`}
-                          />
-                        </td>
-                      )}
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </>
+              <tr aria-hidden="true">
+                <td
+                  colSpan={9999}
+                  style={{
+                    height: `${virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end}px`,
+                    padding: 0,
+                    border: "none",
+                  }}
+                />
+              </tr>
             )}
           </tbody>
         </table>

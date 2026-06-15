@@ -284,11 +284,12 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
       degreeMap.set(edge.target, (degreeMap.get(edge.target) ?? 0) + 1);
     }
 
-    // 7. Build nodes array (include ALL riders, even those with 0 connections)
+    // 7. Build nodes array — exclude riders with zero SF2G rides since they
+    //    haven't completed a single classified commute and add noise to the graph.
     const nodes: NetworkNode[] = (riders ?? [])
       .filter(
         (rider): rider is typeof rider & { user_id: string } =>
-          rider.user_id != null,
+          rider.user_id != null && (rider.sf2g_total ?? 0) > 0,
       )
       .map((rider) => ({
         id: rider.user_id,
