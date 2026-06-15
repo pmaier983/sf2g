@@ -262,8 +262,11 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
       }
     }
 
-    // 5. Build edges array
-    const edges: NetworkEdge[] = Array.from(edgeMap.values());
+    // 5. Build edges array — only keep connections with ≥5 co-rides
+    const MIN_CONNECTION_RIDES = 5;
+    const edges: NetworkEdge[] = Array.from(edgeMap.values()).filter(
+      (e) => e.weight >= MIN_CONNECTION_RIDES,
+    );
 
     // 6. Compute degree centrality for node connectionCount
     const degreeMap = new Map<string, number>();

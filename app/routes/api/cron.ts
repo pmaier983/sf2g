@@ -1,59 +1,15 @@
 /**
- * /api/cron — Server-only API route for triggering cron jobs.
+ * /api/cron — Placeholder route for TanStack's file-based router.
  *
- * This route is called by:
- * - GitHub Actions on a schedule (every 6 hours)
- * - Manual triggers via workflow_dispatch
+ * The actual cron request handling is done at the SSR entry level (ssr.tsx)
+ * so we can access Cloudflare's ExecutionContext for fire-and-forget
+ * background execution via waitUntil().
  *
- * Authentication: Requires a Bearer token matching the CRON_SECRET env var.
- * This prevents unauthorized users from triggering expensive sync operations.
+ * See: app/server/cron-handler.ts for the implementation.
+ *
+ * This file exists so TanStack's router doesn't generate a 404 for /api/cron
+ * if the route tree is used for other purposes (e.g., preloading).
  */
-import { createFileRoute } from '@tanstack/react-router'
-import { runCronJobs } from '../../server/cron'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/api/cron')({
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
-        // Validate CRON_SECRET
-        const cronSecret = process.env.CRON_SECRET
-        if (!cronSecret) {
-          console.error('[api/cron] CRON_SECRET not configured')
-          return new Response(
-            JSON.stringify({ error: 'Cron endpoint not configured' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } },
-          )
-        }
-
-        const authHeader = request.headers.get('Authorization')
-        const token = authHeader?.replace('Bearer ', '')
-
-        if (token !== cronSecret) {
-          console.warn('[api/cron] Unauthorized cron attempt')
-          return new Response(
-            JSON.stringify({ error: 'Unauthorized' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } },
-          )
-        }
-
-        try {
-          console.log('[api/cron] Cron triggered via API')
-          const result = await runCronJobs()
-
-          return new Response(JSON.stringify(result), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          })
-        } catch (err) {
-          const message = err instanceof Error ? err.message : 'Unknown error'
-          console.error('[api/cron] Cron failed:', message)
-
-          return new Response(
-            JSON.stringify({ error: 'Cron execution failed', message }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } },
-          )
-        }
-      },
-    },
-  },
-})
+export const Route = createFileRoute("/api/cron")({});

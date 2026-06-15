@@ -134,18 +134,42 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
     }
 
     // ----- Fast path: materialized view -----
-    const { data: viewData, error } = await supabase
-      .from("leaderboard_view")
-      .select("*")
-      .gt("total_rides", 0)
-      .order(sortColumn, { ascending });
+    // Paginate to work around Supabase's default max_rows limit (1000)
+    // which silently truncates results when no .range() is specified.
+    const VIEW_PAGE_SIZE = 1000;
+    const allViewRows: LeaderboardEntry[] = [];
+    let viewOffset = 0;
+    let viewHasMore = true;
 
-    if (error) {
-      console.error("[leaderboard] Failed to fetch leaderboard:", error);
-      throw new Error(`Failed to fetch leaderboard: ${error.message}`);
+    while (viewHasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("leaderboard_view")
+        .select("*")
+        .gt("total_rides", 0)
+        .order(sortColumn, { ascending })
+        .range(viewOffset, viewOffset + VIEW_PAGE_SIZE - 1);
+
+      if (pageError) {
+        console.error("[leaderboard] Failed to fetch leaderboard:", pageError);
+        throw new Error(`Failed to fetch leaderboard: ${pageError.message}`);
+      }
+
+      if (!page || page.length === 0) {
+        viewHasMore = false;
+      } else {
+        allViewRows.push(...(page as LeaderboardEntry[]));
+        viewOffset += page.length;
+        if (page.length < VIEW_PAGE_SIZE) {
+          viewHasMore = false;
+        }
+      }
     }
 
-    const entries = (viewData ?? []) as LeaderboardEntry[];
+    console.log(
+      `[leaderboard] Materialized view: ${allViewRows.length} users fetched in ${Math.ceil(viewOffset / VIEW_PAGE_SIZE)} page(s)`,
+    );
+
+    const entries = allViewRows;
 
     // Check if the view has sf2g columns (migration 006+)
     // If not, compute them from the rides table

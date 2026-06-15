@@ -4,7 +4,6 @@ import { useMemo, useCallback, useState, useEffect } from "react";
 import { MobileBottomBar } from "../components/MobileBottomBar";
 import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
-  leaderboardQueryOptions,
   filteredLeaderboardQueryOptions,
   pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
@@ -299,8 +298,6 @@ function LeaderboardPage() {
   const [mobileGraphOpen, setMobileGraphOpen] = useState(false);
 
   // ---- Data queries ----
-  // Weekend exclusion (default) forces the compound filter path so we use
-  // the parameterized RPC instead of the materialized view.
   const excludeWeekends = !weekends;
   const hasCompoundFilters =
     routes.length > 0 ||
@@ -310,18 +307,20 @@ function LeaderboardPage() {
     excludeWeekends ||
     !!reverse;
 
-  const leaderboardOptions = hasCompoundFilters
-    ? filteredLeaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-        routeCategories: routes.length > 0 ? routes : undefined,
-        company: company || undefined,
-        excludeWeekends,
-        reverse: reverse || undefined,
-      })
-    : leaderboardQueryOptions({ sortBy: sort, sortDir: dir });
+  // Always use the live rides query (filteredLeaderboardQueryOptions) instead
+  // of the materialized view. The materialized view is a stale snapshot that
+  // only updates when refresh_leaderboard() RPC runs (cron / manual sync),
+  // which can cause recently-synced riders to vanish from the leaderboard.
+  const leaderboardOptions = filteredLeaderboardQueryOptions({
+    sortBy: sort,
+    sortDir: dir,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+    routeCategories: routes.length > 0 ? routes : undefined,
+    company: company || undefined,
+    excludeWeekends,
+    reverse: reverse || undefined,
+  });
   const {
     data: leaderboardData,
     isLoading,

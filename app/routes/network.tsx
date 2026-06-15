@@ -4,56 +4,60 @@
  * Interactive force-directed graph showing how SF2G riders are connected
  * through shared rides. Supports a "My Network" ego-graph focus mode.
  */
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useState, useMemo } from 'react'
-import { networkQueryOptions } from '../queries/network'
-import { currentUserQueryOptions } from '../queries/user'
-import { NetworkGraph } from '../components/NetworkGraph'
-import { NetworkStats } from '../components/NetworkStats'
-import { NetworkSidebar } from '../components/NetworkSidebar'
-import { getEgoNeighbors } from '../lib/graph-utils'
-import { ROUTE_LABELS, ROUTE_COLORS } from '../lib/constants'
-import type { RouteCategory } from '../lib/database.types'
-import '../styles/network.css'
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo, lazy, Suspense } from "react";
+import { networkQueryOptions } from "../queries/network";
+import { currentUserQueryOptions } from "../queries/user";
 
-export const Route = createFileRoute('/network')({
+// Lazy-load NetworkGraph — it depends on react-force-graph-2d which
+// requires browser APIs (window, canvas) and crashes during SSR.
+const NetworkGraph = lazy(() =>
+  import("../components/NetworkGraph").then((m) => ({
+    default: m.NetworkGraph,
+  })),
+);
+import { NetworkStats } from "../components/NetworkStats";
+import { NetworkSidebar } from "../components/NetworkSidebar";
+import { getEgoNeighbors } from "../lib/graph-utils";
+import { ROUTE_LABELS, ROUTE_COLORS } from "../lib/constants";
+import type { RouteCategory } from "../lib/database.types";
+import "../styles/network.css";
+
+export const Route = createFileRoute("/network")({
   component: NetworkPage,
   head: () => ({
     meta: [
-      { title: 'Rider Network — SF2G' },
+      { title: "Rider Network — SF2G" },
       {
-        name: 'description',
-        content:
-          'See how SF2G riders are connected through shared rides',
+        name: "description",
+        content: "See how SF2G riders are connected through shared rides",
       },
     ],
   }),
-})
+});
 
 function NetworkPage() {
-  const { data, isLoading, error } = useQuery(networkQueryOptions())
-  const { data: currentUser } = useQuery(currentUserQueryOptions())
-  const [focusMode, setFocusMode] = useState<'full' | 'ego'>('full')
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    null,
-  )
+  const { data, isLoading, error } = useQuery(networkQueryOptions());
+  const { data: currentUser } = useQuery(currentUserQueryOptions());
+  const [focusMode, setFocusMode] = useState<"full" | "ego">("full");
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // In ego mode, filter to only the current user + their direct connections
   const filteredData = useMemo(() => {
-    if (!data) return null
-    if (focusMode !== 'ego' || !currentUser) return data
+    if (!data) return null;
+    if (focusMode !== "ego" || !currentUser) return data;
 
-    const egoSet = getEgoNeighbors(data.edges, currentUser.id)
-    const filteredNodes = data.nodes.filter((n) => egoSet.has(n.id))
+    const egoSet = getEgoNeighbors(data.edges, currentUser.id);
+    const filteredNodes = data.nodes.filter((n) => egoSet.has(n.id));
     const filteredEdges = data.edges.filter(
       (e) => egoSet.has(e.source) && egoSet.has(e.target),
-    )
+    );
 
     // Recompute stats for the ego graph
     const connectedCount = filteredNodes.filter(
       (n) => n.connectionCount > 0,
-    ).length
+    ).length;
 
     return {
       nodes: filteredNodes,
@@ -64,27 +68,25 @@ function NetworkPage() {
         totalRiders: filteredNodes.length,
         avgConnectionsPerRider:
           connectedCount > 0
-            ? Math.round(
-                (filteredEdges.length * 2) / connectedCount * 10,
-              ) / 10
+            ? Math.round(((filteredEdges.length * 2) / connectedCount) * 10) /
+              10
             : 0,
-        isolatedRiders: filteredNodes.filter(
-          (n) => n.connectionCount === 0,
-        ).length,
+        isolatedRiders: filteredNodes.filter((n) => n.connectionCount === 0)
+          .length,
       },
-    }
-  }, [data, focusMode, currentUser])
+    };
+  }, [data, focusMode, currentUser]);
 
   // Route color legend entries
   const legendRoutes: RouteCategory[] = [
-    'bayway',
-    'skyline',
-    'hmbw',
-    'royale',
-    'fleaway',
-    'mebw',
-    'febw',
-  ]
+    "bayway",
+    "skyline",
+    "hmbw",
+    "royale",
+    "fleaway",
+    "mebw",
+    "febw",
+  ];
 
   if (isLoading) {
     return (
@@ -94,7 +96,7 @@ function NetworkPage() {
           <p>Loading rider network…</p>
         </div>
       </section>
-    )
+    );
   }
 
   if (error || !filteredData) {
@@ -105,11 +107,11 @@ function NetworkPage() {
           <p className="error-state__detail">
             {error instanceof Error
               ? error.message
-              : 'An unexpected error occurred.'}
+              : "An unexpected error occurred."}
           </p>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -126,19 +128,13 @@ function NetworkPage() {
           {currentUser && (
             <button
               className={`btn btn--sm ${
-                focusMode === 'ego'
-                  ? 'btn--primary'
-                  : 'btn--ghost'
+                focusMode === "ego" ? "btn--primary" : "btn--ghost"
               }`}
               onClick={() =>
-                setFocusMode((m) =>
-                  m === 'full' ? 'ego' : 'full',
-                )
+                setFocusMode((m) => (m === "full" ? "ego" : "full"))
               }
             >
-              {focusMode === 'ego'
-                ? '🌐 Full Network'
-                : '👤 My Network'}
+              {focusMode === "ego" ? "🌐 Full Network" : "👤 My Network"}
             </button>
           )}
         </div>
@@ -165,13 +161,22 @@ function NetworkPage() {
       {/* Graph + Sidebar layout */}
       <div className="network-page__body">
         <div className="network-page__graph-container">
-          <NetworkGraph
-            nodes={filteredData.nodes}
-            edges={filteredData.edges}
-            currentUserId={currentUser?.id}
-            selectedNodeId={selectedNodeId}
-            onNodeSelect={setSelectedNodeId}
-          />
+          <Suspense
+            fallback={
+              <div className="loading-state">
+                <div className="loading-state__spinner" />
+                <p>Loading graph…</p>
+              </div>
+            }
+          >
+            <NetworkGraph
+              nodes={filteredData.nodes}
+              edges={filteredData.edges}
+              currentUserId={currentUser?.id}
+              selectedNodeId={selectedNodeId}
+              onNodeSelect={setSelectedNodeId}
+            />
+          </Suspense>
         </div>
 
         {selectedNodeId && (
@@ -188,5 +193,5 @@ function NetworkPage() {
       {/* Stats */}
       <NetworkStats stats={filteredData.stats} />
     </section>
-  )
+  );
 }
