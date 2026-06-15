@@ -874,26 +874,40 @@ function LeaderboardPage() {
               onClearUser={() => updateSearch({ user: undefined, page: 1 })}
             />
           ) : view === "groups" ? (
-            <GroupRidesTable
-              data={groupRidesQuery.data?.groupRides ?? []}
-              isLoading={groupRidesQuery.isLoading}
-              onGroupRideClick={(gr) => {
-                navigate({
-                  to: "/group-rides/$groupRideId",
-                  params: { groupRideId: gr.id },
-                  search: {
-                    date: gr.date,
-                    route: gr.routeCategory,
-                    riders: gr.riders.map((r) => r.userId).join(","),
-                  },
-                });
-              }}
-              sortBy={gSort}
-              sortDir={gDir}
-              onSortChange={(col, d) =>
-                updateSearch({ gSort: col, gDir: d, gPage: 1 })
-              }
-            />
+            groupRidesQuery.isError ? (
+              <div className="group-rides-table__empty">
+                <p>⚠️ Error loading group rides</p>
+                <p
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
+                  {groupRidesQuery.error?.message ?? "Unknown error"}
+                </p>
+              </div>
+            ) : (
+              <GroupRidesTable
+                data={groupRidesQuery.data?.groupRides ?? []}
+                isLoading={groupRidesQuery.isLoading}
+                onGroupRideClick={(gr) => {
+                  navigate({
+                    to: "/group-rides/$groupRideId",
+                    params: { groupRideId: gr.id },
+                    search: {
+                      date: gr.date,
+                      route: gr.routeCategory,
+                      riders: gr.riders.map((r) => r.userId).join(","),
+                    },
+                  });
+                }}
+                sortBy={gSort}
+                sortDir={gDir}
+                onSortChange={(col, d) =>
+                  updateSearch({ gSort: col, gDir: d, gPage: 1 })
+                }
+              />
+            )
           ) : (
             <AllTimeTable
               data={allTimeQuery.data}
