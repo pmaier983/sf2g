@@ -130,6 +130,31 @@ export function DevToolsPanel() {
               </button>
             </div>
 
+            {/* Sync Prompt Dialog */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">Sync Prompt Dialog</h4>
+              <p className="dev-tools__section-desc">
+                Show the first-visit sync prompt dialog. Clears the localStorage
+                dismissal flag so it reappears.
+              </p>
+              <button
+                className="dev-tools__action-btn"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem("sf2g-sync-prompt-dismissed");
+                  } catch {
+                    // ignore
+                  }
+                  window.dispatchEvent(
+                    new CustomEvent("sf2g:show-sync-prompt"),
+                  );
+                }}
+                id="dev-tools-sync-prompt-btn"
+              >
+                💬 Show Sync Prompt
+              </button>
+            </div>
+
             {/* Error Display */}
             {error && (
               <div className="dev-tools__error">

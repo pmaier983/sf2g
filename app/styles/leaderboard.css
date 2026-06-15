@@ -2562,3 +2562,69 @@
   }
 
 }
+
+/* ========================================================================
+   Sync Prompt Dialog — first-visit CTA for connecting Strava
+   ======================================================================== */
+
+.sync-prompt-dialog__body {
+  margin-bottom: var(--space-4);
+}
+
+.sync-prompt-dialog__description {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0 0 var(--space-4);
+}
+
+.sync-prompt-dialog__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sync-prompt-dialog__feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.sync-prompt-dialog__feature-icon {
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.sync-prompt-dialog__actions {
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.sync-prompt-dialog__actions .strava-btn {
+  display: flex;
+  justify-content: center;
+}
+
+.sync-prompt-dialog__dismiss-btn {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.sync-prompt-dialog__dismiss-btn:hover {
+  color: var(--color-text);
+}
+
+@media (min-width: 641px) {
+  .sync-prompt-dialog__actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+

@@ -14,6 +14,7 @@ const LazyDevToolsPanel = lazy(() =>
   })),
 );
 import { ToastProvider } from "../components/Toast";
+import { SyncPromptDialog } from "../components/SyncPromptDialog";
 import {
   initAnalytics,
   setupGlobalErrorHandlers,
@@ -146,6 +147,7 @@ function RootComponent() {
       <body suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
           <ToastProvider />
+          <SyncPromptDialog />
           <div className="page-layout">
             <NavBar />
             <main className="page-content">
