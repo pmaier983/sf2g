@@ -255,7 +255,7 @@ export function NetworkGraph({
       for (const entry of entries) {
         setDimensions({
           width: entry.contentRect.width,
-          height: Math.max(400, Math.min(700, entry.contentRect.height)),
+          height: Math.max(400, Math.min(550, entry.contentRect.height)),
         });
       }
     });
@@ -263,7 +263,7 @@ export function NetworkGraph({
     observer.observe(el);
     setDimensions({
       width: el.clientWidth || 800,
-      height: Math.max(400, Math.min(700, el.clientHeight || 550)),
+      height: Math.max(400, Math.min(550, el.clientHeight || 550)),
     });
 
     return () => observer.disconnect();

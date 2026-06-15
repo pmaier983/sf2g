@@ -27,6 +27,7 @@ export type RouteSpeedEntry = {
   route_category: RouteCategory;
   route_ride_count: number;
   avg_speed_mps: number;
+  median_speed_mps: number;
   max_speed_mps: number;
   avg_distance_meters: number;
   avg_elevation_meters: number;
@@ -119,6 +120,15 @@ function getRouteSpeedColumns(unit: UnitSystem) {
     }),
     columnHelper.accessor("avg_speed_mps", {
       header: "Avg Speed",
+      cell: (info) => (
+        <span className="leaderboard__route-count">
+          {formatSpeed(info.getValue(), unit)}
+        </span>
+      ),
+      size: 96,
+    }),
+    columnHelper.accessor("median_speed_mps", {
+      header: "Med Speed",
       cell: (info) => (
         <span className="leaderboard__route-count">
           {formatSpeed(info.getValue(), unit)}

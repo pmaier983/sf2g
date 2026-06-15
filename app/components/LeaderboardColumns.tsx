@@ -251,6 +251,20 @@ export const leaderboardColumns = [
     },
     size: 96,
   }),
+  columnHelper.accessor("median_speed_mps", {
+    header: () => (
+      <HeaderWithTooltip
+        label="Med Speed"
+        tooltip="Median speed (50th percentile) across all SF2G commutes — the midpoint of all ride speeds"
+      />
+    ),
+    cell: (info) => {
+      return (
+        <span className="leaderboard__route-count">{info.getValue()}</span>
+      );
+    },
+    size: 96,
+  }),
   columnHelper.accessor("avg_tailwind_ms", {
     header: () => (
       <HeaderWithTooltip
@@ -283,6 +297,26 @@ export const leaderboardColumns = [
       <HeaderWithTooltip
         label="Avg W"
         tooltip="Average watts across SF2G rides (power meter required)"
+      />
+    ),
+    cell: (info) => {
+      const val = info.getValue();
+      return val != null ? (
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>
+          {Math.round(val)}W
+        </span>
+      ) : (
+        <span style={{ color: "var(--color-text-muted)" }}>—</span>
+      );
+    },
+    size: 72,
+    sortDescFirst: true,
+  }),
+  columnHelper.accessor("median_watts", {
+    header: () => (
+      <HeaderWithTooltip
+        label="Med W"
+        tooltip="Median watts (50th percentile) across SF2G rides (power meter required)"
       />
     ),
     cell: (info) => {
@@ -644,6 +678,16 @@ export function getLeaderboardColumns(
     }
 
     if (id === "avg_speed_mps") {
+      return {
+        ...col,
+        cell: (info: { getValue: () => unknown }) => (
+          <span className="leaderboard__route-count">
+            {formatSpeed(info.getValue(), unit)}
+          </span>
+        ),
+      };
+    }
+    if (id === "median_speed_mps") {
       return {
         ...col,
         cell: (info: { getValue: () => unknown }) => (

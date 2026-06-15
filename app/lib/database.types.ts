@@ -583,8 +583,10 @@ export type Database = {
           active_years: number | null;
           avatar_url: string | null;
           avg_speed_mps: number | null;
+          median_speed_mps: number | null;
           avg_tailwind_ms: number | null;
           avg_watts: number | null;
+          median_watts: number | null;
           avg_heartrate: number | null;
           avg_kilojoules: number | null;
           bayway_count: number | null;
@@ -758,6 +760,7 @@ export type Database = {
           avg_distance_meters: number | null;
           avg_elevation_meters: number | null;
           avg_speed_mps: number | null;
+          median_speed_mps: number | null;
           display_name: string | null;
           last_ride_date: string | null;
           max_speed_mps: number | null;
@@ -785,8 +788,10 @@ export type Database = {
           active_years: number;
           avatar_url: string;
           avg_speed_mps: number;
+          median_speed_mps: number;
           avg_tailwind_ms: number;
           avg_watts: number;
+          median_watts: number;
           avg_heartrate: number;
           avg_kilojoules: number;
           bayway_count: number;

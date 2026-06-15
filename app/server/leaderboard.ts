@@ -38,6 +38,18 @@ const VALID_ROUTE_CATEGORIES = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// Median helper (50th percentile)
+// ---------------------------------------------------------------------------
+function computeMedian(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+// ---------------------------------------------------------------------------
 // Column allow-list for sort validation
 // ---------------------------------------------------------------------------
 const VALID_LEADERBOARD_SORT_COLUMNS = new Set([
@@ -235,6 +247,7 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
           elevation: number;
           speedSum: number;
           speedCount: number;
+          speeds: number[];
           rideCount: number;
         }
       >();
@@ -246,6 +259,7 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
           elevation: 0,
           speedSum: 0,
           speedCount: 0,
+          speeds: [] as number[],
           rideCount: 0,
         };
         existing.distance += ride.distance_meters ?? 0;
@@ -254,6 +268,7 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
         if (ride.average_speed_mps != null) {
           existing.speedSum += ride.average_speed_mps;
           existing.speedCount += 1;
+          existing.speeds.push(ride.average_speed_mps);
         }
         sf2gByUser.set(ride.user_id, existing);
       }
@@ -267,6 +282,7 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
         // avg_speed_mps should only average SF2G rides
         entry.avg_speed_mps =
           agg && agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0;
+        entry.median_speed_mps = agg ? computeMedian(agg.speeds) : null;
       }
     }
 
@@ -466,10 +482,12 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
       total_elevation: number;
       speedSum: number;
       speedCount: number;
+      speeds: number[];
       tailwindSum: number;
       tailwindCount: number;
       wattsSum: number;
       wattsCount: number;
+      wattValues: number[];
       hrSum: number;
       hrCount: number;
       kjSum: number;
@@ -504,10 +522,12 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
           total_elevation: 0,
           speedSum: 0,
           speedCount: 0,
+          speeds: [],
           tailwindSum: 0,
           tailwindCount: 0,
           wattsSum: 0,
           wattsCount: 0,
+          wattValues: [],
           hrSum: 0,
           hrCount: 0,
           kjSum: 0,
@@ -557,6 +577,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
         if (ride.average_speed_mps != null) {
           agg.speedSum += ride.average_speed_mps;
           agg.speedCount++;
+          agg.speeds.push(ride.average_speed_mps);
         }
 
         // Tailwind
@@ -569,6 +590,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
         if (ride.average_watts != null) {
           agg.wattsSum += ride.average_watts;
           agg.wattsCount++;
+          agg.wattValues.push(ride.average_watts);
         }
 
         // Heart rate
@@ -651,6 +673,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
         febw_count: agg.febw_count,
         other_count: agg.other_count,
         avg_speed_mps: agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0,
+        median_speed_mps: computeMedian(agg.speeds),
         sf2g_distance_meters: agg.sf2g_distance,
         sf2g_elevation_meters: agg.sf2g_elevation,
         // Use totals from ALL rides (including unclassified) for accurate % dist/elev
@@ -662,6 +685,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
         avg_tailwind_ms:
           agg.tailwindCount > 0 ? agg.tailwindSum / agg.tailwindCount : 0,
         avg_watts: agg.wattsCount > 0 ? agg.wattsSum / agg.wattsCount : null,
+        median_watts: computeMedian(agg.wattValues),
         avg_heartrate: agg.hrCount > 0 ? agg.hrSum / agg.hrCount : null,
         avg_kilojoules: agg.kjCount > 0 ? agg.kjSum / agg.kjCount : null,
       });
