@@ -1,15 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { userRidesQueryOptions } from "../../queries/rides";
 import { fetchUserProfile } from "../../server/users";
 import { disconnectStrava } from "../../server/auth";
 import { currentUserQueryOptions } from "../../queries/user";
-import { RideFrequencyChart } from "../../components/RideFrequencyChart";
-import { ProfileRideStats } from "../../components/ProfileRideStats";
-import { ProfileFunStats } from "../../components/ProfileFunStats";
 import { ProfileRidesTable } from "../../components/ProfileRidesTable";
 import type { User } from "../../lib/database.types";
-import { useState, useEffect, useCallback } from "react";
+const RideFrequencyChart = lazy(() =>
+  import("../../components/RideFrequencyChart").then((m) => ({
+    default: m.RideFrequencyChart,
+  })),
+);
+const ProfileRideStats = lazy(() =>
+  import("../../components/ProfileRideStats").then((m) => ({
+    default: m.ProfileRideStats,
+  })),
+);
+const ProfileFunStats = lazy(() =>
+  import("../../components/ProfileFunStats").then((m) => ({
+    default: m.ProfileFunStats,
+  })),
+);
 import { useUnit } from "../../lib/useUnit";
 import {
   formatDistance,
@@ -416,7 +428,9 @@ function ProfilePage() {
               <div className="loading-state__spinner" />
             </div>
           ) : (
-            <ProfileRideStats rides={rides ?? []} />
+            <Suspense fallback={<div className="chart-skeleton" />}>
+              <ProfileRideStats rides={rides ?? []} />
+            </Suspense>
           )}
         </div>
 
@@ -440,7 +454,9 @@ function ProfilePage() {
               <div className="loading-state__spinner" />
             </div>
           ) : (
-            <ProfileFunStats rides={rides ?? []} />
+            <Suspense fallback={<div className="chart-skeleton" />}>
+              <ProfileFunStats rides={rides ?? []} />
+            </Suspense>
           )}
         </div>
 
@@ -464,7 +480,9 @@ function ProfilePage() {
               <div className="loading-state__spinner" />
             </div>
           ) : (
-            <RideFrequencyChart rides={rides ?? []} />
+            <Suspense fallback={<div className="chart-skeleton" />}>
+              <RideFrequencyChart rides={rides ?? []} />
+            </Suspense>
           )}
         </div>
 

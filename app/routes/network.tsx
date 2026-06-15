@@ -6,11 +6,15 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { networkQueryOptions } from "../queries/network";
 import { currentUserQueryOptions } from "../queries/user";
 
-import { NetworkGraph } from "../components/NetworkGraph";
+const NetworkGraph = lazy(() =>
+  import("../components/NetworkGraph").then((m) => ({
+    default: m.NetworkGraph,
+  })),
+);
 import { NetworkStats } from "../components/NetworkStats";
 import { NetworkSidebar } from "../components/NetworkSidebar";
 import { getEgoNeighbors } from "../lib/graph-utils";
@@ -155,13 +159,15 @@ function NetworkPage() {
       {/* Graph + Sidebar layout */}
       <div className="network-page__body">
         <div className="network-page__graph-container">
-          <NetworkGraph
-            nodes={filteredData.nodes}
-            edges={filteredData.edges}
-            currentUserId={currentUser?.id}
-            selectedNodeId={selectedNodeId}
-            onNodeSelect={setSelectedNodeId}
-          />
+          <Suspense fallback={<div className="chart-skeleton" />}>
+            <NetworkGraph
+              nodes={filteredData.nodes}
+              edges={filteredData.edges}
+              currentUserId={currentUser?.id}
+              selectedNodeId={selectedNodeId}
+              onNodeSelect={setSelectedNodeId}
+            />
+          </Suspense>
         </div>
 
         {selectedNodeId && (

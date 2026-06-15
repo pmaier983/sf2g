@@ -6,10 +6,26 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+  lazy,
+  Suspense,
+} from "react";
 import { groupRideDetailQueryOptions } from "../../queries/group-rides";
-import { GroupRideMap } from "../../components/GroupRideMap";
-import { GroupRideOffsetChart } from "../../components/GroupRideOffsetChart";
+const GroupRideMap = lazy(() =>
+  import("../../components/GroupRideMap").then((m) => ({
+    default: m.GroupRideMap,
+  })),
+);
+const GroupRideOffsetChart = lazy(() =>
+  import("../../components/GroupRideOffsetChart").then((m) => ({
+    default: m.GroupRideOffsetChart,
+  })),
+);
 import { GroupRideComparisonTable } from "../../components/GroupRideComparisonTable";
 import { toast } from "../../components/Toast";
 import { RIDER_COLORS } from "../../lib/constants";
@@ -406,14 +422,16 @@ function GroupRideDetailPage() {
       {hasStreams && (
         <div className="group-ride-detail__content">
           <div className="group-ride-detail__map-column">
-            <GroupRideMap
-              riders={data.riders}
-              currentTime={adjustedCurrentTime}
-              isPlaying={isPlaying}
-              trimStartSec={trimStartSec}
-              trimEndSec={trimEndSec}
-              rawDuration={rawDuration}
-            />
+            <Suspense fallback={<div className="map-skeleton" />}>
+              <GroupRideMap
+                riders={data.riders}
+                currentTime={adjustedCurrentTime}
+                isPlaying={isPlaying}
+                trimStartSec={trimStartSec}
+                trimEndSec={trimEndSec}
+                rawDuration={rawDuration}
+              />
+            </Suspense>
 
             {/* Playback Controls */}
             <div className="group-ride-playback">
@@ -522,12 +540,14 @@ function GroupRideDetailPage() {
             </div>
           </div>
 
-          <GroupRideOffsetChart
-            riders={data.riders}
-            currentTime={adjustedCurrentTime}
-            trimStartSec={trimStartSec}
-            trimEndSec={trimEndSec}
-          />
+          <Suspense fallback={<div className="chart-skeleton" />}>
+            <GroupRideOffsetChart
+              riders={data.riders}
+              currentTime={adjustedCurrentTime}
+              trimStartSec={trimStartSec}
+              trimEndSec={trimEndSec}
+            />
+          </Suspense>
         </div>
       )}
 

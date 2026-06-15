@@ -1,6 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useCallback, useState, useEffect } from "react";
+import {
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  lazy,
+  Suspense,
+} from "react";
 import { MobileBottomBar } from "../components/MobileBottomBar";
 import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
@@ -16,8 +23,14 @@ import { LeaderboardTable } from "../components/LeaderboardTable";
 import { RidesLeaderboardTable } from "../components/RidesLeaderboardTable";
 import { AllTimeTable } from "../components/AllTimeTable";
 import { GroupRidesTable } from "../components/GroupRidesTable";
-import { GrowthChart } from "../components/GrowthChart";
-import { AllTimeChart } from "../components/AllTimeChart";
+const GrowthChart = lazy(() =>
+  import("../components/GrowthChart").then((m) => ({ default: m.GrowthChart })),
+);
+const AllTimeChart = lazy(() =>
+  import("../components/AllTimeChart").then((m) => ({
+    default: m.AllTimeChart,
+  })),
+);
 import { FilterChips } from "../components/FilterChips";
 import { SyncStatus } from "../components/SyncStatus";
 import { RIDER_COLORS } from "../lib/constants";
@@ -338,11 +351,17 @@ function LeaderboardPage() {
   const { data: companyRiderIds } = useQuery(
     companyRiderIdsQueryOptions(company),
   );
-  const { data: growthData } = useQuery(riderGrowthQueryOptions());
-  const { data: dailyData } = useQuery(dailyGrowthQueryOptions());
+  const { data: growthData } = useQuery({
+    ...riderGrowthQueryOptions(),
+    enabled: chartOpen || view === "riders",
+  });
+  const { data: dailyData } = useQuery({
+    ...dailyGrowthQueryOptions(),
+    enabled: chartOpen || view === "riders",
+  });
 
-  const ridesQuery = useQuery(
-    ridesLeaderboardQueryOptions({
+  const ridesQuery = useQuery({
+    ...ridesLeaderboardQueryOptions({
       userId: user || undefined,
       routeCategories: routes.length > 0 ? routes : undefined,
       company: company || undefined,
@@ -358,12 +377,13 @@ function LeaderboardPage() {
       pprRideIds: ppr ? pprRideIds : undefined,
       reverse: reverse || undefined,
     }),
-  );
+    enabled: view === "rides",
+  });
 
   // ---- All-Time query ----
   const durationDays = parseDuration(duration);
-  const allTimeQuery = useQuery(
-    allTimeQueryOptions({
+  const allTimeQuery = useQuery({
+    ...allTimeQueryOptions({
       durationDays,
       routes: routes.length > 0 ? routes : undefined,
       excludeWeekends: !weekends,
@@ -373,11 +393,12 @@ function LeaderboardPage() {
       company: company || undefined,
       reverse: reverse || undefined,
     }),
-  );
+    enabled: view === "alltime",
+  });
 
   // ---- Group Rides query ----
-  const groupRidesQuery = useQuery(
-    groupRidesQueryOptions({
+  const groupRidesQuery = useQuery({
+    ...groupRidesQueryOptions({
       page: gPage,
       sortBy: gSort,
       sortDir: gDir,
@@ -386,7 +407,8 @@ function LeaderboardPage() {
       routeCategories: routes.length > 0 ? routes : undefined,
       weekends,
     }),
-  );
+    enabled: view === "groups",
+  });
 
   // ---- Client-side filtering for the Users table ----
   const filteredData = useMemo(() => {
@@ -759,27 +781,31 @@ function LeaderboardPage() {
         {chartOpen && (
           <aside className="leaderboard__chart-panel">
             {view === "alltime" ? (
-              <AllTimeChart
-                data={allTimeQuery.data ?? []}
-                durationDays={durationDays}
-                durationLabel={getDurationLabel(duration)}
-                riderColorMap={allTimeRiderColorMap}
-                riderNameMap={allTimeRiderNameMap}
-                selectedRiderIds={allTimeSelectedIds}
-              />
+              <Suspense fallback={<div className="chart-skeleton" />}>
+                <AllTimeChart
+                  data={allTimeQuery.data ?? []}
+                  durationDays={durationDays}
+                  durationLabel={getDurationLabel(duration)}
+                  riderColorMap={allTimeRiderColorMap}
+                  riderNameMap={allTimeRiderNameMap}
+                  selectedRiderIds={allTimeSelectedIds}
+                />
+              </Suspense>
             ) : growthData && growthData.length > 0 ? (
-              <GrowthChart
-                growthData={growthData}
-                dailyData={dailyData}
-                visibleRiderIds={selectedRiderArray}
-                riderColorMap={riderColorMap}
-                riderNameMap={riderNameMap}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                routeCategories={routes}
-                includeOther={includeOther}
-                onToggleRider={handleToggleRider}
-              />
+              <Suspense fallback={<div className="chart-skeleton" />}>
+                <GrowthChart
+                  growthData={growthData}
+                  dailyData={dailyData}
+                  visibleRiderIds={selectedRiderArray}
+                  riderColorMap={riderColorMap}
+                  riderNameMap={riderNameMap}
+                  dateFrom={dateFrom}
+                  dateTo={dateTo}
+                  routeCategories={routes}
+                  includeOther={includeOther}
+                  onToggleRider={handleToggleRider}
+                />
+              </Suspense>
             ) : (
               <div
                 className="empty-state"
@@ -950,18 +976,20 @@ function LeaderboardPage() {
           </button>
           <div className="mobile-graph-overlay__content">
             {growthData && growthData.length > 0 ? (
-              <GrowthChart
-                growthData={growthData}
-                dailyData={dailyData}
-                visibleRiderIds={selectedRiderArray}
-                riderColorMap={riderColorMap}
-                riderNameMap={riderNameMap}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                routeCategories={routes}
-                includeOther={includeOther}
-                onToggleRider={handleToggleRider}
-              />
+              <Suspense fallback={<div className="chart-skeleton" />}>
+                <GrowthChart
+                  growthData={growthData}
+                  dailyData={dailyData}
+                  visibleRiderIds={selectedRiderArray}
+                  riderColorMap={riderColorMap}
+                  riderNameMap={riderNameMap}
+                  dateFrom={dateFrom}
+                  dateTo={dateTo}
+                  routeCategories={routes}
+                  includeOther={includeOther}
+                  onToggleRider={handleToggleRider}
+                />
+              </Suspense>
             ) : (
               <div
                 className="empty-state"
