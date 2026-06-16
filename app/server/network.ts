@@ -270,9 +270,9 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
 
     // 5. Build edges array — only keep connections with ≥5 co-rides
     //    This is why not everyone appears in the graph: riders need at least
-    //    5 verified co-rides (same date + time overlap + GPS overlap) with
+    //    3 verified co-rides (same date + time overlap + GPS overlap) with
     //    another rider to form a visible edge.
-    const MIN_CONNECTION_RIDES = 5;
+    const MIN_CONNECTION_RIDES = 3;
     const edges: NetworkEdge[] = Array.from(edgeMap.values()).filter(
       (e) => e.weight >= MIN_CONNECTION_RIDES,
     );

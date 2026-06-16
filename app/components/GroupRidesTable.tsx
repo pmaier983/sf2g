@@ -325,7 +325,7 @@ export function GroupRidesTable({
     <div className="group-rides-table__wrapper" aria-label="Group rides">
       <table
         className="group-rides-table"
-        style={{ minWidth: table.getTotalSize() }}
+        style={{ width: "100%", minWidth: table.getTotalSize() }}
       >
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
