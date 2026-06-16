@@ -1,9 +1,14 @@
 /**
  * TanStack Query options for user rides data.
  */
-import { queryOptions } from '@tanstack/react-query'
-import { fetchUserRides, fetchRidesLeaderboard, fetchCommunityStartHours, fetchCommunityStreaks } from '../server/rides'
-import type { RouteCategory } from '../lib/database.types'
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import {
+  fetchUserRides,
+  fetchRidesLeaderboard,
+  fetchCommunityStartHours,
+  fetchCommunityStreaks,
+} from "../server/rides";
+import type { RouteCategory } from "../lib/database.types";
 
 /**
  * Query options for a user's ride history.
@@ -13,10 +18,10 @@ import type { RouteCategory } from '../lib/database.types'
  */
 export function userRidesQueryOptions(userId: string) {
   return queryOptions({
-    queryKey: ['rides', userId] as const,
+    queryKey: ["rides", userId] as const,
     queryFn: () => fetchUserRides({ data: { userId, limit: 10000 } }),
     staleTime: 120_000, // 2 minutes
-  })
+  });
 }
 
 /**
@@ -26,29 +31,38 @@ export function userRidesQueryOptions(userId: string) {
  * - queryKey: ['allUserRides', userId, page]
  * - staleTime: 2 minutes
  */
-export function allUserRidesQueryOptions(userId: string, page: number, pageSize = 25) {
+export function allUserRidesQueryOptions(
+  userId: string,
+  page: number,
+  pageSize = 25,
+) {
   return queryOptions({
-    queryKey: ['allUserRides', userId, page, pageSize] as const,
-    queryFn: () => fetchUserRides({
-      data: {
-        userId,
-        includeAllRides: true,
-        includeHidden: true,
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-      },
-    }),
+    queryKey: ["allUserRides", userId, page, pageSize] as const,
+    queryFn: () =>
+      fetchUserRides({
+        data: {
+          userId,
+          includeAllRides: true,
+          includeHidden: true,
+          limit: pageSize,
+          offset: (page - 1) * pageSize,
+        },
+      }),
     staleTime: 120_000,
-  })
+  });
 }
 
-export function userRouteRidesQueryOptions(userId: string, routeCategory?: RouteCategory) {
+export function userRouteRidesQueryOptions(
+  userId: string,
+  routeCategory?: RouteCategory,
+) {
   return queryOptions({
-    queryKey: ['rides', userId, routeCategory ?? 'all'] as const,
-    queryFn: () => fetchUserRides({ data: { userId, routeCategory, limit: 200 } }),
+    queryKey: ["rides", userId, routeCategory ?? "all"] as const,
+    queryFn: () =>
+      fetchUserRides({ data: { userId, routeCategory, limit: 200 } }),
     staleTime: 120_000,
     gcTime: 600_000,
-  })
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -64,11 +78,11 @@ export function userRouteRidesQueryOptions(userId: string, routeCategory?: Route
  */
 export function communityStartHoursQueryOptions() {
   return queryOptions({
-    queryKey: ['community-start-hours'] as const,
+    queryKey: ["community-start-hours"] as const,
     queryFn: () => fetchCommunityStartHours(),
-    staleTime: 30 * 60 * 1000,  // 30 minutes
-    gcTime: 60 * 60 * 1000,     // 1 hour
-  })
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -84,30 +98,30 @@ export function communityStartHoursQueryOptions() {
  */
 export function communityStreaksQueryOptions() {
   return queryOptions({
-    queryKey: ['community-streaks'] as const,
+    queryKey: ["community-streaks"] as const,
     queryFn: () => fetchCommunityStreaks(),
-    staleTime: 30 * 60 * 1000,  // 30 minutes
-    gcTime: 60 * 60 * 1000,     // 1 hour
-  })
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+  });
 }
 
 // ---------------------------------------------------------------------------
 // Rides leaderboard (cross-user, filterable)
 // ---------------------------------------------------------------------------
 export interface RidesLeaderboardParams {
-  userId?: string
-  routeCategories?: string[]
-  company?: string
-  search?: string
-  sortBy?: string
-  sortDir?: 'asc' | 'desc'
-  page?: number
-  dateFrom?: string
-  dateTo?: string
-  includeOther?: boolean
-  excludeWeekends?: boolean
-  pprRideIds?: string[]
-  reverse?: boolean
+  userId?: string;
+  routeCategories?: string[];
+  company?: string;
+  search?: string;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+  page?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  includeOther?: boolean;
+  excludeWeekends?: boolean;
+  pprRideIds?: string[];
+  reverse?: boolean;
 }
 
 /**
@@ -118,10 +132,20 @@ export interface RidesLeaderboardParams {
  * - gcTime: 30 minutes
  */
 export function ridesLeaderboardQueryOptions(params: RidesLeaderboardParams) {
-  return queryOptions({
-    queryKey: ['rides-leaderboard', params] as const,
-    queryFn: () => fetchRidesLeaderboard({ data: { ...params, pageSize: 200 } }),
-    staleTime: 5 * 60 * 1000,  // 5 minutes
-    gcTime: 30 * 60 * 1000,    // 30 minutes
-  })
+  // Omit `page` from queryKey so changing pages doesn't create separate cache entries
+  const { page: _page, ...keyParams } = params;
+  return infiniteQueryOptions({
+    queryKey: ["rides-leaderboard", keyParams] as const,
+    queryFn: ({ pageParam = 1 }) =>
+      fetchRidesLeaderboard({
+        data: { ...params, page: pageParam, pageSize: 200 },
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.pageSize < lastPage.totalCount
+        ? lastPage.page + 1
+        : undefined,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
 }

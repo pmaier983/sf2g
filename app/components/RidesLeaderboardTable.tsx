@@ -1,10 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type {
-  RideLeaderboardEntry,
-  RidesLeaderboardResponse,
-} from "../lib/database.types";
+import type { RideLeaderboardEntry } from "../lib/database.types";
 import { currentUserQueryOptions } from "../queries/user";
 import { EditRideDialog } from "./EditRideDialog";
 import type { EditRideData } from "./EditRideDialog";
@@ -25,12 +22,15 @@ import { useColumnResize } from "../lib/useColumnResize";
 // Props
 // ---------------------------------------------------------------------------
 export interface RidesLeaderboardTableProps {
-  data: RidesLeaderboardResponse | undefined;
+  rides: RideLeaderboardEntry[];
+  totalCount: number;
   isLoading: boolean;
   sortBy: string;
   sortDir: "asc" | "desc";
   onSortChange: (column: string, direction: "asc" | "desc") => void;
-  onPageChange: (page: number) => void;
+  hasNextPage: boolean;
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
   activeUser?: string | null;
   onClearUser?: () => void;
 }
@@ -148,26 +148,40 @@ const SKELETON_ROWS = 8;
 // Component
 // ---------------------------------------------------------------------------
 export function RidesLeaderboardTable({
-  data,
+  rides,
+  totalCount,
   isLoading,
   sortBy,
   sortDir,
   onSortChange,
-  onPageChange,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
   activeUser,
   onClearUser,
 }: RidesLeaderboardTableProps) {
   const tableRef = useColumnResize<HTMLTableElement>();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
   const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
-  const rides = data?.rides ?? [];
-  const totalCount = data?.totalCount ?? 0;
-  const page = data?.page ?? 1;
-  const pageSize = data?.pageSize ?? 200;
+  const loadMoreRef = useRef<HTMLTableRowElement>(null);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = Math.min(startIndex + rides.length, totalCount);
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    if (!hasNextPage || !fetchNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    const el = loadMoreRef.current;
+    if (el) observer.observe(el);
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [hasNextPage, fetchNextPage]);
 
   const handleSort = (col: ColumnDef) => {
     if (!col.sortable) return;
@@ -260,42 +274,34 @@ export function RidesLeaderboardTable({
                 <RideRow
                   key={ride.id}
                   ride={ride}
-                  rank={startIndex + idx + 1}
+                  rank={idx + 1}
                   currentUserId={currentUser?.id}
                   onEdit={setEditingRide}
                 />
               ))
             )}
+            {hasNextPage && (
+              <tr ref={loadMoreRef}>
+                <td
+                  colSpan={COLUMNS.length}
+                  style={{ textAlign: "center", padding: "1rem" }}
+                >
+                  {isFetchingNextPage ? (
+                    <div
+                      className="rides-table__skeleton"
+                      style={{ width: "60%", margin: "0 auto" }}
+                    />
+                  ) : (
+                    <span style={{ color: "var(--color-text-secondary)" }}>
+                      Loading more…
+                    </span>
+                  )}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      {!isLoading && totalCount > 0 && (
-        <div className="rides-table__pagination" aria-live="polite">
-          <span className="rides-table__page-info">
-            Showing {startIndex + 1}–{endIndex} of {totalCount.toLocaleString()}
-          </span>
-          <div className="rides-table__page-buttons">
-            <button
-              className="btn btn--secondary btn--sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-              aria-label="Go to previous page"
-            >
-              ← Previous
-            </button>
-            <button
-              className="btn btn--secondary btn--sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-              aria-label="Go to next page"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Edit Ride Dialog */}
       {editingRide && (

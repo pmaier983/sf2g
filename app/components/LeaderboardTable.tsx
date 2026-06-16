@@ -60,6 +60,7 @@ export function LeaderboardTable({
   );
   // Derive sorting state from props (visual indicator only)
   const sorting: SortingState = [{ id: sortBy, desc: sortDir === "desc" }];
+  const isResizingRef = useRef(false);
 
   const table = useReactTable({
     data,
@@ -202,7 +203,10 @@ export function LeaderboardTable({
                   return (
                     <th
                       key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
+                      onClick={(e) => {
+                        if (isResizingRef.current) return;
+                        header.column.getToggleSortingHandler()?.(e);
+                      }}
                       className={sorted ? "th--sorted" : ""}
                       style={{
                         cursor: canSort ? "pointer" : "default",
@@ -230,7 +234,17 @@ export function LeaderboardTable({
                         </span>
                       )}
                       <div
-                        onMouseDown={header.getResizeHandler()}
+                        onMouseDown={(e) => {
+                          isResizingRef.current = true;
+                          header.getResizeHandler()(e);
+                          const onUp = () => {
+                            setTimeout(() => {
+                              isResizingRef.current = false;
+                            }, 200);
+                            document.removeEventListener("mouseup", onUp);
+                          };
+                          document.addEventListener("mouseup", onUp);
+                        }}
                         onTouchStart={header.getResizeHandler()}
                         onClick={(e) => e.stopPropagation()}
                         className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}

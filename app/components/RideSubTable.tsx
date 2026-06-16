@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -139,6 +139,7 @@ export function RideSubTable({
 
   const unit = useUnit();
   const columns = useMemo(() => getRideColumns(unit), [unit]);
+  const isResizingRef = useRef(false);
 
   const table = useReactTable({
     data: safeRides,
@@ -263,7 +264,10 @@ export function RideSubTable({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={(e) => {
+                      if (isResizingRef.current) return;
+                      header.column.getToggleSortingHandler()?.(e);
+                    }}
                     style={{
                       width: header.getSize(),
                       cursor: header.column.getCanSort()
@@ -281,7 +285,17 @@ export function RideSubTable({
                       </span>
                     )}
                     <div
-                      onMouseDown={header.getResizeHandler()}
+                      onMouseDown={(e) => {
+                        isResizingRef.current = true;
+                        header.getResizeHandler()(e);
+                        const onUp = () => {
+                          setTimeout(() => {
+                            isResizingRef.current = false;
+                          }, 200);
+                          document.removeEventListener("mouseup", onUp);
+                        };
+                        document.addEventListener("mouseup", onUp);
+                      }}
                       onTouchStart={header.getResizeHandler()}
                       onClick={(e) => e.stopPropagation()}
                       className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}

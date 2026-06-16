@@ -278,6 +278,7 @@ export function GroupRidesTable({
 
   // Derive sorting state from props
   const sorting: SortingState = [{ id: sortBy, desc: sortDir === "desc" }];
+  const isResizingRef = useRef(false);
 
   const table = useReactTable({
     data,
@@ -335,7 +336,10 @@ export function GroupRidesTable({
                 return (
                   <th
                     key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={(e) => {
+                      if (isResizingRef.current) return;
+                      header.column.getToggleSortingHandler()?.(e);
+                    }}
                     className={sorted ? "th--sorted" : ""}
                     style={{
                       cursor: canSort ? "pointer" : "default",
@@ -363,7 +367,17 @@ export function GroupRidesTable({
                       </span>
                     )}
                     <div
-                      onMouseDown={header.getResizeHandler()}
+                      onMouseDown={(e) => {
+                        isResizingRef.current = true;
+                        header.getResizeHandler()(e);
+                        const onUp = () => {
+                          setTimeout(() => {
+                            isResizingRef.current = false;
+                          }, 200);
+                          document.removeEventListener("mouseup", onUp);
+                        };
+                        document.addEventListener("mouseup", onUp);
+                      }}
                       onTouchStart={header.getResizeHandler()}
                       onClick={(e) => e.stopPropagation()}
                       className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}

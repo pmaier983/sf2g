@@ -164,7 +164,7 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
         .from("leaderboard_view")
         .select("*")
         .gt("total_rides", 0)
-        .order(sortColumn, { ascending })
+        .order(sortColumn, { ascending, nullsFirst: false })
         .range(viewOffset, viewOffset + VIEW_PAGE_SIZE - 1);
 
       if (pageError) {

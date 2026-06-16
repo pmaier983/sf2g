@@ -48,6 +48,15 @@ export function useColumnResize<T extends HTMLTableElement>() {
         document.removeEventListener("mouseup", onMouseUp);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
+        // Suppress the click event that follows mouseup to prevent sort toggle
+        const suppressClick = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+        };
+        table.addEventListener("click", suppressClick, {
+          capture: true,
+          once: true,
+        });
       };
 
       const onMouseDown = (e: MouseEvent) => {

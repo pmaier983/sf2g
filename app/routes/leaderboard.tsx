@@ -360,7 +360,7 @@ function LeaderboardPage() {
     enabled: chartOpen || view === "riders",
   });
 
-  const ridesQuery = useQuery({
+  const ridesQuery = useInfiniteQuery({
     ...ridesLeaderboardQueryOptions({
       userId: user || undefined,
       routeCategories: routes.length > 0 ? routes : undefined,
@@ -368,7 +368,6 @@ function LeaderboardPage() {
       search: search || undefined,
       sortBy: rSort,
       sortDir: rDir,
-      page,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
       includeOther,
@@ -862,16 +861,17 @@ function LeaderboardPage() {
             </>
           ) : view === "rides" ? (
             <RidesLeaderboardTable
-              data={ridesQuery.data}
+              rides={ridesQuery.data?.pages.flatMap((p) => p.rides) ?? []}
+              totalCount={ridesQuery.data?.pages[0]?.totalCount ?? 0}
               isLoading={ridesQuery.isLoading}
               sortBy={rSort}
               sortDir={rDir}
-              onSortChange={(col, d) =>
-                updateSearch({ rSort: col, rDir: d, page: 1 })
-              }
-              onPageChange={(p) => updateSearch({ page: p })}
+              onSortChange={(col, d) => updateSearch({ rSort: col, rDir: d })}
+              hasNextPage={ridesQuery.hasNextPage}
+              fetchNextPage={ridesQuery.fetchNextPage}
+              isFetchingNextPage={ridesQuery.isFetchingNextPage}
               activeUser={user}
-              onClearUser={() => updateSearch({ user: undefined, page: 1 })}
+              onClearUser={() => updateSearch({ user: undefined })}
             />
           ) : view === "groups" ? (
             groupRidesQuery.isError ? (

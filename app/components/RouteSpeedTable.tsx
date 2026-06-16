@@ -175,6 +175,7 @@ export function RouteSpeedTable({
 
   const unit = useUnit();
   const columns = useMemo(() => getRouteSpeedColumns(unit), [unit]);
+  const isResizingRef = useRef(false);
 
   const table = useReactTable({
     data,
@@ -250,7 +251,10 @@ export function RouteSpeedTable({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
+                    onClick={(e) => {
+                      if (isResizingRef.current) return;
+                      header.column.getToggleSortingHandler()?.(e);
+                    }}
                     className={
                       header.column.getIsSorted()
                         ? "leaderboard__table th--sorted"
@@ -273,7 +277,17 @@ export function RouteSpeedTable({
                       </span>
                     )}
                     <div
-                      onMouseDown={header.getResizeHandler()}
+                      onMouseDown={(e) => {
+                        isResizingRef.current = true;
+                        header.getResizeHandler()(e);
+                        const onUp = () => {
+                          setTimeout(() => {
+                            isResizingRef.current = false;
+                          }, 200);
+                          document.removeEventListener("mouseup", onUp);
+                        };
+                        document.addEventListener("mouseup", onUp);
+                      }}
                       onTouchStart={header.getResizeHandler()}
                       onClick={(e) => e.stopPropagation()}
                       className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}

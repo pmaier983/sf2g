@@ -241,11 +241,15 @@ export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
     // display_name lives on the joined users table, not rides
     if (sortColumn === "display_name") {
       query = query
-        .order("display_name", { referencedTable: "users", ascending })
+        .order("display_name", {
+          referencedTable: "users",
+          ascending,
+          nullsFirst: false,
+        })
         .range(offset, offset + pageSize - 1);
     } else {
       query = query
-        .order(sortColumn, { ascending })
+        .order(sortColumn, { ascending, nullsFirst: false })
         .range(offset, offset + pageSize - 1);
     }
 
