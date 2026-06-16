@@ -250,6 +250,7 @@ export const leaderboardColumns = [
       );
     },
     size: 96,
+    sortDescFirst: true,
   }),
   columnHelper.accessor("median_speed_mps", {
     header: () => (
@@ -264,6 +265,7 @@ export const leaderboardColumns = [
       );
     },
     size: 96,
+    sortDescFirst: true,
   }),
   columnHelper.accessor("avg_tailwind_ms", {
     header: () => (

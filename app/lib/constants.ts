@@ -4,18 +4,18 @@
  * Includes route gateway definitions, known landmarks, route colors,
  * and Strava API configuration.
  */
-import type { RouteCategory } from './database.types'
+import type { RouteCategory } from "./database.types";
 
 // ---------------------------------------------------------------------------
 // Route Gateway Types & Definitions
 // ---------------------------------------------------------------------------
 
 export interface RouteGateway {
-  category: RouteCategory
-  name: string
-  lat: number
-  lng: number
-  description: string
+  category: RouteCategory;
+  name: string;
+  lat: number;
+  lng: number;
+  description: string;
 }
 
 /**
@@ -32,122 +32,127 @@ export interface RouteGateway {
 export const ROUTE_GATEWAYS: RouteGateway[] = [
   // HMBW — Coastal route (west), goes through Devil's Slide area
   {
-    category: 'hmbw',
-    name: 'HMBW South (near Half Moon Bay)',
+    category: "hmbw",
+    name: "HMBW South (near Half Moon Bay)",
     lat: 37.448732,
     lng: -122.429176,
-    description: 'Coastal corridor south checkpoint, near Half Moon Bay',
+    description: "Coastal corridor south checkpoint, near Half Moon Bay",
   },
   {
-    category: 'hmbw',
+    category: "hmbw",
     name: "HMBW North (Devil's Slide)",
-    lat: 37.578030,
+    lat: 37.57803,
     lng: -122.512407,
-    description: "Coastal corridor north checkpoint, near Devil's Slide / Pacifica",
+    description:
+      "Coastal corridor north checkpoint, near Devil's Slide / Pacifica",
   },
 
   // Skyline — Ridge route (mountain), along Skyline Blvd
   {
-    category: 'skyline',
-    name: 'Skyline North (near Daly City)',
+    category: "skyline",
+    name: "Skyline North (near Daly City)",
     lat: 37.668433,
     lng: -122.485198,
-    description: 'Skyline Blvd northern entry near Daly City / Olympic Club',
+    description: "Skyline Blvd northern entry near Daly City / Olympic Club",
   },
   {
-    category: 'skyline',
-    name: 'Skyline South (Kings Mountain)',
+    category: "skyline",
+    name: "Skyline South (Kings Mountain)",
     lat: 37.489,
     lng: -122.3202,
-    description: 'Skyline Blvd southern checkpoint near Kings Mountain Rd / Woodside',
+    description:
+      "Skyline Blvd southern checkpoint near Kings Mountain Rd / Woodside",
   },
 
   // Bayway — Bay shore route (east), follows the bay trail
   {
-    category: 'bayway',
-    name: 'Bayway North (near SFO / Millbrae)',
-    lat: 37.683980,
+    category: "bayway",
+    name: "Bayway North (near SFO / Millbrae)",
+    lat: 37.68398,
     lng: -122.389961,
-    description: 'Bay Trail northern checkpoint near SFO / Millbrae',
+    description: "Bay Trail northern checkpoint near SFO / Millbrae",
   },
   {
-    category: 'bayway',
-    name: 'Bayway South (Foster City / San Mateo)',
-    lat: 37.579180,
+    category: "bayway",
+    name: "Bayway South (Foster City / San Mateo)",
+    lat: 37.57918,
     lng: -122.310702,
-    description: 'Bay Trail southern checkpoint near Foster City / San Mateo',
+    description: "Bay Trail southern checkpoint near Foster City / San Mateo",
   },
 
   // Royale — Valley floor route (middle), El Camino Real corridor
   {
-    category: 'royale',
-    name: 'Royale North (Daly City / Colma)',
+    category: "royale",
+    name: "Royale North (Daly City / Colma)",
     lat: 37.611451,
     lng: -122.402552,
-    description: 'El Camino Real northern checkpoint near Daly City / Colma',
+    description: "El Camino Real northern checkpoint near Daly City / Colma",
   },
   {
-    category: 'royale',
-    name: 'Royale South (San Carlos / Belmont)',
+    category: "royale",
+    name: "Royale South (San Carlos / Belmont)",
     lat: 37.520997,
     lng: -122.276718,
-    description: 'El Camino Real southern checkpoint near San Carlos / Belmont',
+    description: "El Camino Real southern checkpoint near San Carlos / Belmont",
   },
 
   // Fleaway — Flat route via El Camino / Bayshore blend
   {
-    category: 'fleaway',
-    name: 'Fleaway North (near SFO / San Bruno)',
+    category: "fleaway",
+    name: "Fleaway North (near SFO / San Bruno)",
     lat: 37.624205,
     lng: -122.408411,
-    description: 'Fleaway northern checkpoint near SFO / San Bruno area',
+    description: "Fleaway northern checkpoint near SFO / San Bruno area",
   },
   {
-    category: 'fleaway',
-    name: 'Fleaway South (Redwood City / Atherton)',
+    category: "fleaway",
+    name: "Fleaway South (Redwood City / Atherton)",
     lat: 37.492333,
     lng: -122.266346,
-    description: 'Fleaway southern checkpoint near Redwood City / Atherton',
+    description: "Fleaway southern checkpoint near Redwood City / Atherton",
   },
 
   // MEBW — Middle East Bay Way
   {
-    category: 'mebw',
-    name: 'MEBW North (Castro Valley / Hayward)',
+    category: "mebw",
+    name: "MEBW North (Castro Valley / Hayward)",
     lat: 37.682566,
     lng: -122.177678,
-    description: 'Middle East Bay Way northern checkpoint near Castro Valley',
+    description: "Middle East Bay Way northern checkpoint near Castro Valley",
   },
   {
-    category: 'mebw',
-    name: 'MEBW South (Fremont / Milpitas)',
-    lat: 37.508820,
+    category: "mebw",
+    name: "MEBW South (Fremont / Milpitas)",
+    lat: 37.50882,
     lng: -122.114224,
-    description: 'Middle East Bay Way southern checkpoint near Fremont / Milpitas',
+    description:
+      "Middle East Bay Way southern checkpoint near Fremont / Milpitas",
   },
 
   // FEBW — Far East Bay Way
   {
-    category: 'febw',
-    name: 'FEBW North (Berkeley Hills / Orinda)',
+    category: "febw",
+    name: "FEBW North (Berkeley Hills / Orinda)",
     lat: 37.814338,
     lng: -122.144205,
-    description: 'Far East Bay Way northern checkpoint near Berkeley Hills / Orinda',
+    description:
+      "Far East Bay Way northern checkpoint near Berkeley Hills / Orinda",
   },
   {
-    category: 'febw',
-    name: 'FEBW South (Dublin / Pleasanton)',
+    category: "febw",
+    name: "FEBW South (Dublin / Pleasanton)",
     lat: 37.669102,
-    lng: -122.001220,
-    description: 'Far East Bay Way southern checkpoint near Dublin / Pleasanton',
+    lng: -122.00122,
+    description:
+      "Far East Bay Way southern checkpoint near Dublin / Pleasanton",
   },
-]
+];
 
 /**
  * Radius in meters for gateway matching.
  * A ride point must be within this distance of a gateway to count as a match.
  */
-export const GATEWAY_RADIUS_METERS = 500
+export const GATEWAY_RADIUS_METERS = 500;
 
 // ---------------------------------------------------------------------------
 // Commute Endpoint Zones
@@ -159,11 +164,11 @@ export const GATEWAY_RADIUS_METERS = 500
  * Treasure Island, and a small buffer into Daly City.
  */
 export const SF_BOUNDS = {
-  north: 37.820,
-  south: 37.700,
-  east: -122.340,
-  west: -122.520,
-} as const
+  north: 37.82,
+  south: 37.7,
+  east: -122.34,
+  west: -122.52,
+} as const;
 
 /**
  * Peninsula corridor polygon — the destination zone for SF2G commutes.
@@ -180,17 +185,17 @@ export const SF_BOUNDS = {
 export const PENINSULA_CORRIDOR: [number, number][] = [
   // West boundary (Hwy 280 + ~10% wider buffer), north to south
   [37.69, -122.54], // Daly City — stays below SF_BOUNDS.south (37.700)
-  [37.63, -122.50], // San Bruno (wider west buffer)
+  [37.63, -122.5], // San Bruno (wider west buffer)
   [37.57, -122.44], // Crystal Springs Reservoir
-  [37.50, -122.38], // Woodside
+  [37.5, -122.38], // Woodside
   [37.44, -122.27], // Stanford foothills
   [37.39, -122.15], // Cupertino / Stevens Creek
-  [37.35, -122.10], // West San Jose
+  [37.35, -122.1], // West San Jose
   [37.25, -122.01], // South tip — 101/280 merge area (extended south)
 
   // East boundary (Hwy 101 + ~10% wider buffer), south to north
   [37.25, -121.85], // South tip east (extended south + wider east)
-  [37.30, -121.90], // San Jose
+  [37.3, -121.9], // San Jose
   [37.35, -121.93], // Santa Clara
   [37.39, -121.99], // Sunnyvale
   [37.42, -122.02], // Mountain View / Google
@@ -198,17 +203,17 @@ export const PENINSULA_CORRIDOR: [number, number][] = [
   [37.57, -122.25], // San Mateo
   [37.63, -122.31], // SFO / Millbrae
   [37.69, -122.34], // South SF / Daly City east — stays below SF_BOUNDS.south
-]
+];
 
 // ---------------------------------------------------------------------------
 // Known Landmarks
 // ---------------------------------------------------------------------------
 
 export interface KnownLandmark {
-  name: string
-  lat: number
-  lng: number
-  description: string
+  name: string;
+  lat: number;
+  lng: number;
+  description: string;
 }
 
 /**
@@ -218,18 +223,33 @@ export interface KnownLandmark {
  * at approximately the right time (±10 min of that point's targetMinutes).
  */
 export interface PprIntercept {
-  lat: number
-  lng: number
+  lat: number;
+  lng: number;
   /** Expected arrival time in minutes from midnight (local time) */
-  targetMinutes: number
-  label: string
+  targetMinutes: number;
+  label: string;
 }
 
 export const PPR_INTERCEPTS: readonly PprIntercept[] = [
-  { lat: 37.773433, lng: -122.438898, targetMinutes: 360, label: 'PPR @ Peets' },       // 6:00 AM
-  { lat: 37.770192, lng: -122.494076, targetMinutes: 370, label: 'PPR @ JFK/36' },      // 6:10 AM
-  { lat: 37.698411, lng: -122.495033, targetMinutes: 390, label: 'PPR @ JD/Skyline' },  // 6:30 AM
-] as const
+  {
+    lat: 37.773433,
+    lng: -122.438898,
+    targetMinutes: 360,
+    label: "PPR @ Peets",
+  }, // 6:00 AM
+  {
+    lat: 37.770192,
+    lng: -122.494076,
+    targetMinutes: 370,
+    label: "PPR @ JFK/36",
+  }, // 6:10 AM
+  {
+    lat: 37.698411,
+    lng: -122.495033,
+    targetMinutes: 390,
+    label: "PPR @ JD/Skyline",
+  }, // 6:30 AM
+] as const;
 
 /**
  * @deprecated Use PPR_INTERCEPTS instead. Kept for backward compatibility
@@ -239,56 +259,58 @@ export const PPR_COORDS: KnownLandmark = {
   name: "PPR (Peet's Coffee at Park Presidio)",
   lat: PPR_INTERCEPTS[0].lat,
   lng: PPR_INTERCEPTS[0].lng,
-  description: 'Classic SF2G morning departure point',
-}
+  description: "Classic SF2G morning departure point",
+};
 
 /** Known ride intercept points — where riders join the group mid-route */
 export const KNOWN_INTERCEPTS: KnownLandmark[] = [
   {
-    name: 'JD/Skyline',
+    name: "JD/Skyline",
     lat: 37.698413,
-    lng: -122.495000,
-    description: 'Common intercept point where riders join on Skyline Blvd',
+    lng: -122.495,
+    description: "Common intercept point where riders join on Skyline Blvd",
   },
   // Add more intercepts as the community identifies them
-]
+];
 
 // ---------------------------------------------------------------------------
 // Route Colors
 // ---------------------------------------------------------------------------
 
 export const ROUTE_COLORS: Record<RouteCategory, string> = {
-  bayway: '#3B82F6',
-  skyline: '#10B981',
-  hmbw: '#F59E0B',
-  royale: '#EF4444',
-  fleaway: '#8B5CF6',
-  mebw: '#06B6D4',
-  febw: '#EC4899',
-  other: '#6B7280',
-}
+  bayway: "#22A722",
+  skyline: "#3366CC",
+  hmbw: "#FF6600",
+  royale: "#CC0000",
+  fleaway: "#8B5CF6",
+  mebw: "#06B6D4",
+  febw: "#EC4899",
+  other: "#6B7280",
+};
 
 export const ROUTE_LABELS: Record<RouteCategory, string> = {
-  bayway: 'Bayway',
-  skyline: 'Skyline',
-  hmbw: 'HMBW',
-  royale: 'Royale',
-  fleaway: 'Fleaway',
-  mebw: 'MEBW',
-  febw: 'FEBW',
-  other: 'Other',
-}
+  bayway: "Bayway",
+  skyline: "Skyline",
+  hmbw: "HMBW",
+  royale: "Royale",
+  fleaway: "Fleaway",
+  mebw: "MEBW",
+  febw: "FEBW",
+  other: "Other",
+};
 
 export const ROUTE_DESCRIPTIONS: Record<RouteCategory, string> = {
-  bayway: 'Bay shore route following the bay trail through Foster City and along SFO',
-  skyline: 'Mountain ridge route along Skyline Blvd with serious climbing',
+  bayway:
+    "Bay shore route following the bay trail through Foster City and along SFO",
+  skyline: "Mountain ridge route along Skyline Blvd with serious climbing",
   hmbw: "Coastal route through Devil's Slide and Half Moon Bay — scenic and exposed",
-  royale: 'Valley floor route along El Camino Real corridor through the peninsula',
-  fleaway: 'Flat route via El Camino / Bayshore blend through the peninsula',
-  mebw: 'Middle East Bay Way — through Castro Valley and Fremont',
-  febw: 'Far East Bay Way — through Berkeley Hills, Orinda, and Dublin',
-  other: 'Unclassified or alternate route',
-}
+  royale:
+    "Valley floor route along El Camino Real corridor through the peninsula",
+  fleaway: "Flat route via El Camino / Bayshore blend through the peninsula",
+  mebw: "Middle East Bay Way — through Castro Valley and Fremont",
+  febw: "Far East Bay Way — through Berkeley Hills, Orinda, and Dublin",
+  other: "Unclassified or alternate route",
+};
 
 // ---------------------------------------------------------------------------
 // Rider Color Palette (Top 10 chart)
@@ -296,58 +318,58 @@ export const ROUTE_DESCRIPTIONS: Record<RouteCategory, string> = {
 
 /** Colors assigned to the top 10 visible riders in the growth chart */
 export const RIDER_COLORS = [
-  '#6366f1', // indigo
-  '#f43f5e', // rose
-  '#14b8a6', // teal
-  '#f97316', // orange
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#ec4899', // pink
-  '#84cc16', // lime
-  '#eab308', // yellow
-  '#64748b', // slate
-] as const
+  "#6366f1", // indigo
+  "#f43f5e", // rose
+  "#14b8a6", // teal
+  "#f97316", // orange
+  "#8b5cf6", // violet
+  "#06b6d4", // cyan
+  "#ec4899", // pink
+  "#84cc16", // lime
+  "#eab308", // yellow
+  "#64748b", // slate
+] as const;
 
 // ---------------------------------------------------------------------------
 // Unit Conversions
 // ---------------------------------------------------------------------------
 
 /** Meters per second → miles per hour */
-export const MPS_TO_MPH = 2.23694
+export const MPS_TO_MPH = 2.23694;
 
 /** Meters → miles */
-export const METERS_PER_MILE = 1609.34
+export const METERS_PER_MILE = 1609.34;
 
 /** Meters → feet */
-export const METERS_TO_FEET = 3.281
+export const METERS_TO_FEET = 3.281;
 
 // ---------------------------------------------------------------------------
 // Strava API Configuration
 // ---------------------------------------------------------------------------
 
-export const STRAVA_API_BASE = 'https://www.strava.com/api/v3'
-export const STRAVA_OAUTH_BASE = 'https://www.strava.com/oauth'
-export const STRAVA_AUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/authorize`
-export const STRAVA_TOKEN_URL = `${STRAVA_OAUTH_BASE}/token`
-export const STRAVA_REVOKE_URL = `${STRAVA_OAUTH_BASE}/revoke`
-export const STRAVA_DEAUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/deauthorize`
-export const STRAVA_WEBHOOK_URL = `${STRAVA_API_BASE}/push_subscriptions`
+export const STRAVA_API_BASE = "https://www.strava.com/api/v3";
+export const STRAVA_OAUTH_BASE = "https://www.strava.com/oauth";
+export const STRAVA_AUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/authorize`;
+export const STRAVA_TOKEN_URL = `${STRAVA_OAUTH_BASE}/token`;
+export const STRAVA_REVOKE_URL = `${STRAVA_OAUTH_BASE}/revoke`;
+export const STRAVA_DEAUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/deauthorize`;
+export const STRAVA_WEBHOOK_URL = `${STRAVA_API_BASE}/push_subscriptions`;
 
 /** Strava Standard Tier Rate Limits (effective June 1, 2026) */
 export const STRAVA_RATE_LIMIT = {
   LIMIT_15MIN: 200,
   LIMIT_DAILY: 2000,
   SAFETY_MARGIN: 0.85,
-} as const
+} as const;
 
-export const STRAVA_SCOPES = 'read,activity:read_all'
+export const STRAVA_SCOPES = "read,activity:read_all";
 
 /**
  * Individual scopes that MUST be granted for the app to function.
  * If a user unchecks any checkbox on Strava's OAuth consent screen,
  * the API silently returns incomplete data (e.g. no private rides).
  */
-export const STRAVA_REQUIRED_SCOPES = ['read', 'activity:read_all'] as const
+export const STRAVA_REQUIRED_SCOPES = ["read", "activity:read_all"] as const;
 
 /**
  * Check whether the granted scopes string contains all required scopes.
@@ -356,8 +378,8 @@ export const STRAVA_REQUIRED_SCOPES = ['read', 'activity:read_all'] as const
  * @returns Array of missing scope names, or empty array if all granted.
  */
 export function getMissingScopes(grantedScopes: string): string[] {
-  const granted = new Set(grantedScopes.split(',').map((s) => s.trim()))
-  return STRAVA_REQUIRED_SCOPES.filter((scope) => !granted.has(scope))
+  const granted = new Set(grantedScopes.split(",").map((s) => s.trim()));
+  return STRAVA_REQUIRED_SCOPES.filter((scope) => !granted.has(scope));
 }
 
 /**
@@ -378,7 +400,7 @@ export const OPEN_METEO_RATE_LIMIT = {
   LIMIT_PER_DAY: 10_000,
   /** Max API calls the cron job should use per invocation (leaves ~50% for manual use) */
   CRON_BUDGET: 200,
-} as const
+} as const;
 
 /**
  * Cron sync budget for Strava API calls.
@@ -415,61 +437,61 @@ export const CRON_SYNC_BUDGET = {
   DELAY_BETWEEN_USERS_MS: 2_000,
   /** Max time allowed for the entire sync-all-users operation (ms) */
   MAX_TOTAL_DURATION_MS: 10 * 60 * 1000, // 10 minutes
-} as const
+} as const;
 
 // ---------------------------------------------------------------------------
 // Route Waypoints (for weather forecast sampling)
 // ---------------------------------------------------------------------------
 
 export interface RouteWaypoint {
-  lat: number
-  lng: number
-  mile: number
-  label: string
+  lat: number;
+  lng: number;
+  mile: number;
+  label: string;
 }
 
 /** Simplified waypoints per route for weather sampling (8-10 points each) */
 export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
   bayway: [
-    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
-    { lat: 37.755, lng: -122.418, mile: 2, label: 'Mission / UCSF' },
-    { lat: 37.728, lng: -122.400, mile: 4, label: 'Glen Park' },
-    { lat: 37.690, lng: -122.400, mile: 7, label: 'Daly City' },
-    { lat: 37.660, lng: -122.390, mile: 10, label: 'South SF / SFO' },
-    { lat: 37.630, lng: -122.370, mile: 13, label: 'Millbrae' },
-    { lat: 37.580, lng: -122.310, mile: 18, label: 'Foster City / San Mateo' },
-    { lat: 37.540, lng: -122.280, mile: 22, label: 'Belmont / San Carlos' },
-    { lat: 37.500, lng: -122.260, mile: 26, label: 'Redwood City' },
-    { lat: 37.450, lng: -122.180, mile: 30, label: 'Palo Alto / Mountain View' },
+    { lat: 37.773, lng: -122.439, mile: 0, label: "Peets / Start" },
+    { lat: 37.755, lng: -122.418, mile: 2, label: "Mission / UCSF" },
+    { lat: 37.728, lng: -122.4, mile: 4, label: "Glen Park" },
+    { lat: 37.69, lng: -122.4, mile: 7, label: "Daly City" },
+    { lat: 37.66, lng: -122.39, mile: 10, label: "South SF / SFO" },
+    { lat: 37.63, lng: -122.37, mile: 13, label: "Millbrae" },
+    { lat: 37.58, lng: -122.31, mile: 18, label: "Foster City / San Mateo" },
+    { lat: 37.54, lng: -122.28, mile: 22, label: "Belmont / San Carlos" },
+    { lat: 37.5, lng: -122.26, mile: 26, label: "Redwood City" },
+    { lat: 37.45, lng: -122.18, mile: 30, label: "Palo Alto / Mountain View" },
   ],
   skyline: [
-    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
-    { lat: 37.755, lng: -122.450, mile: 2, label: 'Golden Gate Park' },
-    { lat: 37.730, lng: -122.470, mile: 4, label: 'Sunset / Lake Merced' },
-    { lat: 37.690, lng: -122.485, mile: 7, label: 'Daly City / Skyline entry' },
-    { lat: 37.630, lng: -122.470, mile: 12, label: 'San Bruno Mountain' },
-    { lat: 37.570, lng: -122.440, mile: 18, label: 'Crystal Springs' },
-    { lat: 37.520, lng: -122.350, mile: 24, label: 'Woodside' },
-    { lat: 37.450, lng: -122.280, mile: 30, label: 'Stanford / Palo Alto' },
+    { lat: 37.773, lng: -122.439, mile: 0, label: "Peets / Start" },
+    { lat: 37.755, lng: -122.45, mile: 2, label: "Golden Gate Park" },
+    { lat: 37.73, lng: -122.47, mile: 4, label: "Sunset / Lake Merced" },
+    { lat: 37.69, lng: -122.485, mile: 7, label: "Daly City / Skyline entry" },
+    { lat: 37.63, lng: -122.47, mile: 12, label: "San Bruno Mountain" },
+    { lat: 37.57, lng: -122.44, mile: 18, label: "Crystal Springs" },
+    { lat: 37.52, lng: -122.35, mile: 24, label: "Woodside" },
+    { lat: 37.45, lng: -122.28, mile: 30, label: "Stanford / Palo Alto" },
   ],
   hmbw: [
-    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
-    { lat: 37.755, lng: -122.500, mile: 3, label: 'Great Highway' },
-    { lat: 37.700, lng: -122.505, mile: 6, label: 'Pacifica / Sharp Park' },
-    { lat: 37.630, lng: -122.490, mile: 10, label: "Devil's Slide" },
-    { lat: 37.550, lng: -122.510, mile: 16, label: 'Half Moon Bay (north)' },
-    { lat: 37.470, lng: -122.430, mile: 22, label: 'Half Moon Bay (south)' },
-    { lat: 37.400, lng: -122.350, mile: 28, label: 'Hwy 92 / inland' },
-    { lat: 37.450, lng: -122.180, mile: 35, label: 'Peninsula (south)' },
+    { lat: 37.773, lng: -122.439, mile: 0, label: "Peets / Start" },
+    { lat: 37.755, lng: -122.5, mile: 3, label: "Great Highway" },
+    { lat: 37.7, lng: -122.505, mile: 6, label: "Pacifica / Sharp Park" },
+    { lat: 37.63, lng: -122.49, mile: 10, label: "Devil's Slide" },
+    { lat: 37.55, lng: -122.51, mile: 16, label: "Half Moon Bay (north)" },
+    { lat: 37.47, lng: -122.43, mile: 22, label: "Half Moon Bay (south)" },
+    { lat: 37.4, lng: -122.35, mile: 28, label: "Hwy 92 / inland" },
+    { lat: 37.45, lng: -122.18, mile: 35, label: "Peninsula (south)" },
   ],
   royale: [
-    { lat: 37.773, lng: -122.439, mile: 0, label: 'Peets / Start' },
-    { lat: 37.740, lng: -122.420, mile: 2, label: 'Mission / Cesar Chavez' },
-    { lat: 37.710, lng: -122.405, mile: 5, label: 'Bernal Heights' },
-    { lat: 37.660, lng: -122.405, mile: 8, label: 'Daly City / Colma' },
-    { lat: 37.610, lng: -122.400, mile: 12, label: 'South SF / El Camino' },
-    { lat: 37.570, lng: -122.340, mile: 16, label: 'San Mateo' },
-    { lat: 37.520, lng: -122.280, mile: 21, label: 'San Carlos / Belmont' },
-    { lat: 37.450, lng: -122.180, mile: 28, label: 'Palo Alto / Mountain View' },
+    { lat: 37.773, lng: -122.439, mile: 0, label: "Peets / Start" },
+    { lat: 37.74, lng: -122.42, mile: 2, label: "Mission / Cesar Chavez" },
+    { lat: 37.71, lng: -122.405, mile: 5, label: "Bernal Heights" },
+    { lat: 37.66, lng: -122.405, mile: 8, label: "Daly City / Colma" },
+    { lat: 37.61, lng: -122.4, mile: 12, label: "South SF / El Camino" },
+    { lat: 37.57, lng: -122.34, mile: 16, label: "San Mateo" },
+    { lat: 37.52, lng: -122.28, mile: 21, label: "San Carlos / Belmont" },
+    { lat: 37.45, lng: -122.18, mile: 28, label: "Palo Alto / Mountain View" },
   ],
-}
+};
