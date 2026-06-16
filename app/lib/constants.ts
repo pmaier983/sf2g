@@ -81,35 +81,37 @@ export const ROUTE_GATEWAYS: RouteGateway[] = [
   },
 
   // Royale — Valley floor route (middle), El Camino Real corridor
+  // All Royale rides started at Cafeto on Richland Ave
   {
     category: "royale",
-    name: "Royale North (Daly City / Colma)",
-    lat: 37.611451,
-    lng: -122.402552,
-    description: "El Camino Real northern checkpoint near Daly City / Colma",
+    name: "Royale North (Cafeto / Richland)",
+    lat: 37.735942,
+    lng: -122.424561,
+    description: "Royale start point at Cafeto on Richland Ave, SF",
   },
   {
     category: "royale",
-    name: "Royale South (San Carlos / Belmont)",
-    lat: 37.520997,
-    lng: -122.276718,
-    description: "El Camino Real southern checkpoint near San Carlos / Belmont",
+    name: "Royale South (Sand Hill Rd / El Camino)",
+    lat: 37.446464,
+    lng: -122.171229,
+    description: "El Camino Real / CA-82 at Sand Hill Rd, Menlo Park",
   },
 
-  // Fleaway — Flat route via El Camino / Bayshore blend
+  // Fleaway — Flat route uniquely using the Centennial bike trail in SSF
   {
     category: "fleaway",
-    name: "Fleaway North (near SFO / San Bruno)",
-    lat: 37.624205,
-    lng: -122.408411,
-    description: "Fleaway northern checkpoint near SFO / San Bruno area",
+    name: "Fleaway North (Centennial Trail / SSF)",
+    lat: 37.662883,
+    lng: -122.442106,
+    description:
+      "Fleaway northern checkpoint on the Centennial bike trail in South SF",
   },
   {
     category: "fleaway",
-    name: "Fleaway South (Redwood City / Atherton)",
-    lat: 37.492333,
-    lng: -122.266346,
-    description: "Fleaway southern checkpoint near Redwood City / Atherton",
+    name: "Fleaway South (Sand Hill Rd)",
+    lat: 37.426494,
+    lng: -122.193272,
+    description: "Fleaway southern checkpoint near Sand Hill Rd, Menlo Park",
   },
 
   // MEBW — Middle East Bay Way
