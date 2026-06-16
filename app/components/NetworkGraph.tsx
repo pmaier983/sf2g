@@ -503,18 +503,19 @@ export function NetworkGraph({
     <div className="network-graph" ref={containerRef}>
       <svg
         ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        style={{
+          display: "block",
+          width: "100%",
+          height: "100%",
+          cursor: isPanningRef.current ? "grabbing" : "grab",
+        }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onClick={handleBgClick}
-        style={{
-          display: "block",
-          cursor: isPanningRef.current ? "grabbing" : "grab",
-        }}
       >
         {/* Single transform group for pan + zoom */}
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
