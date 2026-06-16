@@ -284,21 +284,13 @@ export const fetchRiderNetwork = createServerFn({ method: "GET" }).handler(
       degreeMap.set(edge.target, (degreeMap.get(edge.target) ?? 0) + 1);
     }
 
-    // 7. Build nodes array — only include riders who have valid SF2G rides
-    //    AND at least one connection in the graph. Isolated riders (no co-rides
-    //    meeting the ≥5 threshold) add noise without showing relationships.
-    const connectedUserIds = new Set<string>();
-    for (const edge of edges) {
-      connectedUserIds.add(edge.source);
-      connectedUserIds.add(edge.target);
-    }
-
+    // 7. Build nodes array — include all riders with valid SF2G routes
+    //    (sf2g_total > 0 excludes riders with only 'other' or null categories).
+    //    Isolated riders (no co-rides) are still shown as disconnected nodes.
     const nodes: NetworkNode[] = (riders ?? [])
       .filter(
         (rider): rider is typeof rider & { user_id: string } =>
-          rider.user_id != null &&
-          (rider.sf2g_total ?? 0) > 0 &&
-          connectedUserIds.has(rider.user_id),
+          rider.user_id != null && (rider.sf2g_total ?? 0) > 0,
       )
       .map((rider) => ({
         id: rider.user_id,
