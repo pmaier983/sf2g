@@ -303,6 +303,7 @@ export function GroupRidesTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualSorting: true,
+    columnResizeMode: "onChange",
   });
 
   const { rows } = table.getRowModel();
@@ -335,6 +336,7 @@ export function GroupRidesTable({
                     className={sorted ? "th--sorted" : ""}
                     style={{
                       cursor: canSort ? "pointer" : "default",
+                      width: header.getSize(),
                     }}
                     aria-sort={
                       canSort
@@ -357,6 +359,12 @@ export function GroupRidesTable({
                         {sorted === "asc" ? "▲" : "▼"}
                       </span>
                     )}
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}
+                    />
                   </th>
                 );
               })}
@@ -374,7 +382,7 @@ export function GroupRidesTable({
                 style={{ cursor: "pointer" }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
+                  <td key={cell.id} style={{ width: cell.column.getSize() }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

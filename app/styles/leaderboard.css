@@ -146,6 +146,35 @@
   border-bottom: none;
 }
 
+/* Column resize handle */
+.leaderboard__table th {
+  position: relative;
+}
+
+.column-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  opacity: 0;
+  background: var(--color-border);
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+
+.leaderboard__table th:hover .column-resizer,
+.group-rides-table th:hover .column-resizer {
+  opacity: 1;
+}
+
+.column-resizer--resizing {
+  opacity: 1;
+  background: var(--color-sf2g-orange);
+}
+
 /* Cell-specific styles */
 .leaderboard__rank {
   font-weight: var(--font-bold);

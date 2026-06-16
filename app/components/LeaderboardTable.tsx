@@ -92,6 +92,7 @@ export function LeaderboardTable({
     getFilteredRowModel: getFilteredRowModel(),
     // No getSortedRowModel — data comes pre-sorted from server
     manualSorting: true,
+    columnResizeMode: "onChange",
     globalFilterFn: (row, _columnId, filterValue: string) => {
       const name = row.original.display_name ?? row.original.username ?? "";
       return name.toLowerCase().includes(filterValue.toLowerCase());
@@ -202,6 +203,7 @@ export function LeaderboardTable({
                       className={sorted ? "th--sorted" : ""}
                       style={{
                         cursor: canSort ? "pointer" : "default",
+                        width: header.getSize(),
                       }}
                       aria-sort={
                         canSort
@@ -224,6 +226,12 @@ export function LeaderboardTable({
                           {sorted === "asc" ? "▲" : "▼"}
                         </span>
                       )}
+                      <div
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}
+                      />
                     </th>
                   );
                 })}
@@ -275,7 +283,10 @@ export function LeaderboardTable({
                       </td>
                     )}
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id}>
+                      <td
+                        key={cell.id}
+                        style={{ width: cell.column.getSize() }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),

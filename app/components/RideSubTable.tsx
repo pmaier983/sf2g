@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,106 +6,110 @@ import {
   flexRender,
   createColumnHelper,
   type SortingState,
-} from '@tanstack/react-table'
-import { useQuery } from '@tanstack/react-query'
-import type { Ride, RouteCategory } from '../lib/database.types'
-import { ROUTE_LABELS } from '../lib/constants'
-import { fetchUserRides } from '../server/rides'
-import { useUnit } from '../lib/useUnit'
-import { formatDistance, formatElevation, formatSpeed } from '../lib/leaderboard-utils'
-import type { UnitSystem } from './UnitToggle'
+} from "@tanstack/react-table";
+import { useQuery } from "@tanstack/react-query";
+import type { Ride, RouteCategory } from "../lib/database.types";
+import { ROUTE_LABELS } from "../lib/constants";
+import { fetchUserRides } from "../server/rides";
+import { useUnit } from "../lib/useUnit";
+import {
+  formatDistance,
+  formatElevation,
+  formatSpeed,
+} from "../lib/leaderboard-utils";
+import type { UnitSystem } from "./UnitToggle";
 
 interface RideSubTableProps {
-  userId: string
-  routeCategory?: RouteCategory
-  riderName: string
-  onClose: () => void
+  userId: string;
+  routeCategory?: RouteCategory;
+  riderName: string;
+  onClose: () => void;
 }
 
-const columnHelper = createColumnHelper<Ride>()
+const columnHelper = createColumnHelper<Ride>();
 
 /**
  * Format seconds into "H:MM" or "M:SS" format.
  */
 function formatMovingTime(seconds: number | null): string {
-  if (seconds == null || seconds === 0) return '—'
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
+  if (seconds == null || seconds === 0) return "—";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, '0')}`
+    return `${hours}:${String(minutes).padStart(2, "0")}`;
   }
-  const secs = Math.floor(seconds % 60)
-  return `${minutes}:${String(secs).padStart(2, '0')}`
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${String(secs).padStart(2, "0")}`;
 }
 
 function getRideColumns(unit: UnitSystem) {
   return [
-  columnHelper.accessor('ride_date', {
-    header: 'Date',
-    cell: (info) => {
-      const date = info.getValue()
-      return new Date(date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
-    },
-    size: 120,
-  }),
-  columnHelper.accessor('name', {
-    header: 'Name',
-    cell: (info) => {
-      const ride = info.row.original
-      const name = info.getValue() ?? 'Untitled Ride'
-      return ride.strava_activity_id ? (
-        <a
-          href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="profile-rides__strava-link"
-        >
-          {name}
-        </a>
-      ) : (
-        name
-      )
-    },
-    size: 200,
-  }),
-  columnHelper.accessor('average_speed_mps', {
-    header: 'Avg Speed',
-    cell: (info) => {
-      const mps = info.getValue()
-      if (mps == null) return '—'
-      return formatSpeed(mps, unit)
-    },
-    size: 96,
-  }),
-  columnHelper.accessor('distance_meters', {
-    header: 'Distance',
-    cell: (info) => {
-      const meters = info.getValue()
-      if (meters == null) return '—'
-      return formatDistance(meters, unit)
-    },
-    size: 96,
-  }),
-  columnHelper.accessor('elevation_gain_meters', {
-    header: 'Elevation',
-    cell: (info) => {
-      const meters = info.getValue()
-      if (meters == null) return '—'
-      return formatElevation(meters, unit)
-    },
-    size: 96,
-  }),
-  columnHelper.accessor('moving_time_seconds', {
-    header: 'Moving Time',
-    cell: (info) => formatMovingTime(info.getValue()),
-    size: 96,
-  }),
-  ]
+    columnHelper.accessor("ride_date", {
+      header: "Date",
+      cell: (info) => {
+        const date = info.getValue();
+        return new Date(date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          timeZone: "UTC",
+        });
+      },
+      size: 120,
+    }),
+    columnHelper.accessor("name", {
+      header: "Name",
+      cell: (info) => {
+        const ride = info.row.original;
+        const name = info.getValue() ?? "Untitled Ride";
+        return ride.strava_activity_id ? (
+          <a
+            href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="profile-rides__strava-link"
+          >
+            {name}
+          </a>
+        ) : (
+          name
+        );
+      },
+      size: 200,
+    }),
+    columnHelper.accessor("average_speed_mps", {
+      header: "Avg Speed",
+      cell: (info) => {
+        const mps = info.getValue();
+        if (mps == null) return "—";
+        return formatSpeed(mps, unit);
+      },
+      size: 96,
+    }),
+    columnHelper.accessor("distance_meters", {
+      header: "Distance",
+      cell: (info) => {
+        const meters = info.getValue();
+        if (meters == null) return "—";
+        return formatDistance(meters, unit);
+      },
+      size: 96,
+    }),
+    columnHelper.accessor("elevation_gain_meters", {
+      header: "Elevation",
+      cell: (info) => {
+        const meters = info.getValue();
+        if (meters == null) return "—";
+        return formatElevation(meters, unit);
+      },
+      size: 96,
+    }),
+    columnHelper.accessor("moving_time_seconds", {
+      header: "Moving Time",
+      cell: (info) => formatMovingTime(info.getValue()),
+      size: 96,
+    }),
+  ];
 }
 
 /**
@@ -119,22 +123,22 @@ export function RideSubTable({
   onClose,
 }: RideSubTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'ride_date', desc: true },
-  ])
+    { id: "ride_date", desc: true },
+  ]);
 
   const { data: rides, isLoading } = useQuery({
-    queryKey: ['rides', userId, routeCategory ?? 'all'],
+    queryKey: ["rides", userId, routeCategory ?? "all"],
     queryFn: () =>
       fetchUserRides({
         data: { userId, routeCategory, limit: 200 },
       }),
     staleTime: 120_000,
-  })
+  });
 
-  const safeRides = useMemo(() => rides ?? [], [rides])
+  const safeRides = useMemo(() => rides ?? [], [rides]);
 
-  const unit = useUnit()
-  const columns = useMemo(() => getRideColumns(unit), [unit])
+  const unit = useUnit();
+  const columns = useMemo(() => getRideColumns(unit), [unit]);
 
   const table = useReactTable({
     data: safeRides,
@@ -143,32 +147,42 @@ export function RideSubTable({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  })
+    columnResizeMode: "onChange",
+  });
 
-  const routeTag = routeCategory
-    ? ROUTE_LABELS[routeCategory]
-    : null
+  const routeTag = routeCategory ? ROUTE_LABELS[routeCategory] : null;
 
   return (
     <div className="leaderboard__sub-table surface-card">
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 'var(--space-3) var(--space-4)',
-          borderBottom: '1px solid var(--color-border-subtle)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "var(--space-3) var(--space-4)",
+          borderBottom: "1px solid var(--color-border-subtle)",
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <span style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-text)' }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-2)",
+          }}
+        >
+          <span
+            style={{
+              fontWeight: "var(--font-bold)",
+              color: "var(--color-text)",
+            }}
+          >
             ▼ {riderName}&apos;s Rides
           </span>
           {!isLoading && (
             <span
               style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--color-text-muted)',
+                fontSize: "var(--text-xs)",
+                color: "var(--color-text-muted)",
               }}
             >
               ({safeRides.length})
@@ -190,13 +204,13 @@ export function RideSubTable({
           type="button"
           onClick={onClose}
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: 'var(--text-lg)',
-            color: 'var(--color-text-muted)',
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "var(--text-lg)",
+            color: "var(--color-text-muted)",
             lineHeight: 1,
-            padding: '4px',
+            padding: "4px",
           }}
           aria-label="Close ride details"
         >
@@ -205,30 +219,38 @@ export function RideSubTable({
       </div>
 
       {isLoading ? (
-        <div style={{ padding: 'var(--space-5)', textAlign: 'center' }}>
+        <div style={{ padding: "var(--space-5)", textAlign: "center" }}>
           <div
             className="skeleton"
-            style={{ height: '1rem', width: '60%', margin: '0 auto var(--space-2)' }}
+            style={{
+              height: "1rem",
+              width: "60%",
+              margin: "0 auto var(--space-2)",
+            }}
           />
           <div
             className="skeleton"
-            style={{ height: '1rem', width: '80%', margin: '0 auto var(--space-2)' }}
+            style={{
+              height: "1rem",
+              width: "80%",
+              margin: "0 auto var(--space-2)",
+            }}
           />
           <div
             className="skeleton"
-            style={{ height: '1rem', width: '40%', margin: '0 auto' }}
+            style={{ height: "1rem", width: "40%", margin: "0 auto" }}
           />
         </div>
       ) : safeRides.length === 0 ? (
         <div
           style={{
-            padding: 'var(--space-5)',
-            textAlign: 'center',
-            color: 'var(--color-text-muted)',
-            fontSize: 'var(--text-sm)',
+            padding: "var(--space-5)",
+            textAlign: "center",
+            color: "var(--color-text-muted)",
+            fontSize: "var(--text-sm)",
           }}
         >
-          No rides found{routeTag ? ` for ${routeTag}` : ''}.
+          No rides found{routeTag ? ` for ${routeTag}` : ""}.
         </div>
       ) : (
         <table className="leaderboard__table">
@@ -242,8 +264,8 @@ export function RideSubTable({
                     style={{
                       width: header.getSize(),
                       cursor: header.column.getCanSort()
-                        ? 'pointer'
-                        : 'default',
+                        ? "pointer"
+                        : "default",
                     }}
                   >
                     {flexRender(
@@ -252,9 +274,15 @@ export function RideSubTable({
                     )}
                     {header.column.getIsSorted() && (
                       <span className="sort-indicator">
-                        {header.column.getIsSorted() === 'asc' ? '▲' : '▼'}
+                        {header.column.getIsSorted() === "asc" ? "▲" : "▼"}
                       </span>
                     )}
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}
+                    />
                   </th>
                 ))}
               </tr>
@@ -264,11 +292,8 @@ export function RideSubTable({
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                  <td key={cell.id} style={{ width: cell.column.getSize() }}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
               </tr>
@@ -277,5 +302,5 @@ export function RideSubTable({
         </table>
       )}
     </div>
-  )
+  );
 }

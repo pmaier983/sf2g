@@ -187,6 +187,7 @@ export function RouteSpeedTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    columnResizeMode: "onChange",
     globalFilterFn: (row, _columnId, filterValue: string) => {
       const name = row.original.display_name ?? row.original.username ?? "";
       return name.toLowerCase().includes(filterValue.toLowerCase());
@@ -268,6 +269,12 @@ export function RouteSpeedTable({
                         {header.column.getIsSorted() === "asc" ? "▲" : "▼"}
                       </span>
                     )}
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}
+                    />
                   </th>
                 ))}
               </tr>
@@ -300,7 +307,10 @@ export function RouteSpeedTable({
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id}>
+                      <td
+                        key={cell.id}
+                        style={{ width: cell.column.getSize() }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
