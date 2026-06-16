@@ -107,6 +107,7 @@
 }
 
 .leaderboard__table th {
+  position: relative;
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: var(--font-bold);
@@ -118,6 +119,8 @@
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -135,6 +138,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 0;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
@@ -145,11 +149,6 @@
 
 .leaderboard__table tr:last-child td {
   border-bottom: none;
-}
-
-/* Column resize handle */
-.leaderboard__table th {
-  position: relative;
 }
 
 .column-resizer {
@@ -166,8 +165,7 @@
   transition: opacity var(--transition-fast), background var(--transition-fast);
 }
 
-.leaderboard__table th:hover .column-resizer,
-.group-rides-table th:hover .column-resizer {
+th:hover > .column-resizer {
   opacity: 1;
 }
 
@@ -1156,6 +1154,7 @@
 }
 
 .rides-table__wrapper th {
+  position: relative;
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: var(--font-bold);
@@ -1166,6 +1165,8 @@
   border-bottom: 2px solid var(--color-sf2g-orange);
   user-select: none;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -1177,6 +1178,9 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border-subtle);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
   color: var(--color-text);
 }
 
@@ -1869,6 +1873,7 @@
 }
 
 .alltime-table th {
+  position: relative;
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: var(--font-bold);
@@ -1879,6 +1884,8 @@
   border-bottom: 2px solid var(--color-sf2g-orange);
   user-select: none;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -1890,6 +1897,9 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border-subtle);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
