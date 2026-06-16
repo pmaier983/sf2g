@@ -19,6 +19,7 @@ import {
 import { msToMph } from "../lib/wind";
 import { useUnit } from "../lib/useUnit";
 import { RouteTag } from "./RouteTag";
+import { useColumnResize } from "../lib/useColumnResize";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -156,6 +157,7 @@ export function RidesLeaderboardTable({
   activeUser,
   onClearUser,
 }: RidesLeaderboardTableProps) {
+  const tableRef = useColumnResize<HTMLTableElement>();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
   const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
   const rides = data?.rides ?? [];
@@ -213,7 +215,7 @@ export function RidesLeaderboardTable({
 
       {/* Table */}
       <div className="rides-table__wrapper">
-        <table role="grid" aria-label="Rides leaderboard">
+        <table ref={tableRef} role="grid" aria-label="Rides leaderboard">
           <thead>
             <tr>
               {COLUMNS.map((col) => (

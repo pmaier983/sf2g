@@ -18,6 +18,7 @@ import { allUserRidesQueryOptions } from "../queries/rides";
 import { EditRideDialog } from "./EditRideDialog";
 import type { EditRideData } from "./EditRideDialog";
 import type { RouteCategory } from "../lib/database.types";
+import { useColumnResize } from "../lib/useColumnResize";
 import { Tooltip } from "./Tooltip";
 import {
   formatDistance,
@@ -57,6 +58,7 @@ const BASE_COLUMNS: {
 const PAGE_SIZE = 25;
 
 export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
+  const tableRef = useColumnResize<HTMLTableElement>();
   const unit = useUnit();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
   const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
@@ -131,7 +133,7 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
 
       {/* Table */}
       <div className="profile-rides__table-wrapper">
-        <table className="profile-rides__table">
+        <table ref={tableRef} className="profile-rides__table">
           <thead>
             <tr>
               {BASE_COLUMNS.map((col) => {

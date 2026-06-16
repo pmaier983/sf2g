@@ -6,6 +6,7 @@ import {
   formatDistance,
   formatElevation,
 } from "../lib/leaderboard-utils";
+import { useColumnResize } from "../lib/useColumnResize";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -86,6 +87,7 @@ export function GroupRideComparisonTable({
   riders,
   riderColors,
 }: GroupRideComparisonTableProps) {
+  const tableRef = useColumnResize<HTMLTableElement>();
   const unit = useUnit();
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("time");
@@ -260,7 +262,7 @@ export function GroupRideComparisonTable({
   return (
     <div className="group-ride-comparison">
       <div className="group-ride-comparison__scroll">
-        <table className="group-ride-comparison__table">
+        <table ref={tableRef} className="group-ride-comparison__table">
           <thead>
             <tr>
               <th
