@@ -56,6 +56,7 @@ const VALID_LEADERBOARD_SORT_COLUMNS = new Set([
   "sf2g_total",
   "total_rides",
   "avg_speed_mps",
+  "median_speed_mps",
   "bayway_count",
   "skyline_count",
   "hmbw_count",
@@ -73,6 +74,7 @@ const VALID_LEADERBOARD_SORT_COLUMNS = new Set([
   "first_ride_date",
   "display_name",
   "avg_watts",
+  "median_watts",
   "avg_heartrate",
   "avg_kilojoules",
 ]);
@@ -135,8 +137,12 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
 
       // Sort in JS — simple, type-safe, avoids dynamic ORDER BY in SQL
       const sorted = [...(rows ?? [])].sort((a, b) => {
-        const aVal = (a as Record<string, unknown>)[sortColumn] ?? 0;
-        const bVal = (b as Record<string, unknown>)[sortColumn] ?? 0;
+        const aVal = (a as Record<string, unknown>)[sortColumn];
+        const bVal = (b as Record<string, unknown>)[sortColumn];
+        // Push null/undefined to the end regardless of sort direction
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
         if (aVal < bVal) return ascending ? -1 : 1;
         if (aVal > bVal) return ascending ? 1 : -1;
         return 0;
@@ -699,8 +705,12 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
     const ascending = (data.sortDir ?? "desc") === "asc";
 
     entries.sort((a, b) => {
-      const aVal = (a as Record<string, unknown>)[sortColumn] ?? 0;
-      const bVal = (b as Record<string, unknown>)[sortColumn] ?? 0;
+      const aVal = (a as Record<string, unknown>)[sortColumn];
+      const bVal = (b as Record<string, unknown>)[sortColumn];
+      // Push null/undefined to the end regardless of sort direction
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
       if (aVal < bVal) return ascending ? -1 : 1;
       if (aVal > bVal) return ascending ? 1 : -1;
       return 0;
