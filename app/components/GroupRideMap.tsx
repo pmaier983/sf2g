@@ -216,8 +216,36 @@ export function GroupRideMap({
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const initialFitDoneRef = useRef(false);
   const prevIsPlayingRef = useRef(false);
+  const [cssLoaded, setCssLoaded] = useState(false);
   const LLib = useLeaflet();
   const theme = useTheme();
+
+  // -------------------------------------------------------------------------
+  // Inject Leaflet CSS on mount — must complete before map init
+  // -------------------------------------------------------------------------
+
+  useEffect(() => {
+    const existingLink = document.querySelector('link[href*="leaflet"]');
+    if (existingLink) {
+      setCssLoaded(true);
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    link.crossOrigin = "";
+    link.onload = () => setCssLoaded(true);
+    link.onerror = () => setCssLoaded(true); // still attempt map init
+    document.head.appendChild(link);
+
+    return () => {
+      if (link.parentNode) {
+        document.head.removeChild(link);
+      }
+    };
+  }, []);
 
   // -------------------------------------------------------------------------
   // Prepare rider data (filter out those without streams, compute offsets)
@@ -309,7 +337,7 @@ export function GroupRideMap({
   }, [preparedRiders, trimStartSec, trimEndSec, rawDuration]);
 
   useEffect(() => {
-    if (!LLib || !containerRef.current || mapRef.current) return;
+    if (!LLib || !cssLoaded || !containerRef.current || mapRef.current) return;
 
     const map = LLib.map(containerRef.current, {
       scrollWheelZoom: false,
@@ -369,7 +397,7 @@ export function GroupRideMap({
       mapRef.current = null;
       initialFitDoneRef.current = false;
     };
-  }, [LLib, trimmedRiders]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [LLib, cssLoaded, trimmedRiders]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -------------------------------------------------------------------------
   // Update tiles when theme changes
@@ -499,27 +527,7 @@ export function GroupRideMap({
     }
   }, [isPlaying, LLib, preparedRiders, currentTime]);
 
-  // -------------------------------------------------------------------------
-  // Inject Leaflet CSS on mount
-  // -------------------------------------------------------------------------
-
-  useEffect(() => {
-    const existingLink = document.querySelector('link[href*="leaflet"]');
-    if (existingLink) return;
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-    link.crossOrigin = "";
-    document.head.appendChild(link);
-
-    return () => {
-      if (link.parentNode) {
-        document.head.removeChild(link);
-      }
-    };
-  }, []);
+  // (Leaflet CSS injection moved above map init — see cssLoaded state)
 
   // -------------------------------------------------------------------------
   // Render
