@@ -116,7 +116,7 @@ function getRouteSpeedColumns(unit: UnitSystem) {
           {info.getValue()}
         </button>
       ),
-      size: 72,
+      size: 80,
     }),
     columnHelper.accessor("avg_speed_mps", {
       header: "Avg Speed",
@@ -125,7 +125,7 @@ function getRouteSpeedColumns(unit: UnitSystem) {
           {formatSpeed(info.getValue(), unit)}
         </span>
       ),
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("median_speed_mps", {
       header: "Med Speed",
@@ -134,7 +134,7 @@ function getRouteSpeedColumns(unit: UnitSystem) {
           {formatSpeed(info.getValue(), unit)}
         </span>
       ),
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("max_speed_mps", {
       header: "Max Speed",
@@ -143,17 +143,17 @@ function getRouteSpeedColumns(unit: UnitSystem) {
           {formatSpeed(info.getValue(), unit)}
         </span>
       ),
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("avg_distance_meters", {
       header: "Avg Distance",
       cell: (info) => <span>{formatDistance(info.getValue(), unit)}</span>,
-      size: 96,
+      size: 120,
     }),
     columnHelper.accessor("avg_elevation_meters", {
       header: "Avg Elevation",
       cell: (info) => <span>{formatElevation(info.getValue(), unit)}</span>,
-      size: 96,
+      size: 130,
     }),
   ];
 }

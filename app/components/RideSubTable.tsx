@@ -84,7 +84,7 @@ function getRideColumns(unit: UnitSystem) {
         if (mps == null) return "—";
         return formatSpeed(mps, unit);
       },
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("distance_meters", {
       header: "Distance",
@@ -93,7 +93,7 @@ function getRideColumns(unit: UnitSystem) {
         if (meters == null) return "—";
         return formatDistance(meters, unit);
       },
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("elevation_gain_meters", {
       header: "Elevation",
@@ -102,12 +102,12 @@ function getRideColumns(unit: UnitSystem) {
         if (meters == null) return "—";
         return formatElevation(meters, unit);
       },
-      size: 96,
+      size: 110,
     }),
     columnHelper.accessor("moving_time_seconds", {
       header: "Moving Time",
       cell: (info) => formatMovingTime(info.getValue()),
-      size: 96,
+      size: 120,
     }),
   ];
 }

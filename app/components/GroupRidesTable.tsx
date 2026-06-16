@@ -92,7 +92,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
       header: "Route",
       cell: (info) => <RouteTag category={info.getValue()} />,
       enableSorting: false,
-      size: 96,
+      size: 110,
     }),
 
     columnHelper.display({
@@ -164,14 +164,14 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
     columnHelper.accessor("riderCount", {
       header: "# Riders",
       cell: (info) => info.getValue(),
-      size: 80,
+      size: 90,
       sortDescFirst: true,
     }),
 
     columnHelper.accessor("avgSpeedMps", {
       header: "Avg Speed",
       cell: (info) => formatSpeed(info.getValue(), unit),
-      size: 100,
+      size: 110,
       sortDescFirst: true,
     }),
 
@@ -183,7 +183,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
           return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
         return Math.round(val);
       },
-      size: 96,
+      size: 110,
       sortDescFirst: true,
       sortUndefined: "last",
     }),
@@ -196,7 +196,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
           return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
         return Math.round(val);
       },
-      size: 80,
+      size: 90,
       sortDescFirst: true,
       sortUndefined: "last",
     }),
@@ -209,7 +209,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
           return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
         return Math.round(val);
       },
-      size: 96,
+      size: 110,
       sortDescFirst: true,
       sortUndefined: "last",
     }),
@@ -217,7 +217,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
     columnHelper.accessor("maxSpeedMps", {
       header: "Max Speed",
       cell: (info) => formatSpeed(info.getValue(), unit),
-      size: 100,
+      size: 110,
       sortDescFirst: true,
     }),
 
@@ -228,7 +228,7 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
         id: "avgDistance",
         header: "Distance",
         cell: (info) => formatDistance(info.getValue(), unit),
-        size: 100,
+        size: 110,
         sortDescFirst: true,
       },
     ),

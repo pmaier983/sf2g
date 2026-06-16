@@ -221,7 +221,7 @@ export const leaderboardColumns = [
         {info.getValue()}
       </button>
     ),
-    size: 72,
+    size: 80,
   }),
   columnHelper.accessor("active_years", {
     header: () => (
@@ -234,7 +234,7 @@ export const leaderboardColumns = [
       const years = safeNumber(getValue());
       return years > 0 ? years : "—";
     },
-    size: 56,
+    size: 64,
     sortDescFirst: true,
   }),
   columnHelper.accessor("avg_speed_mps", {
@@ -249,7 +249,7 @@ export const leaderboardColumns = [
         <span className="leaderboard__route-count">{info.getValue()}</span>
       );
     },
-    size: 96,
+    size: 110,
     sortDescFirst: true,
   }),
   columnHelper.accessor("median_speed_mps", {
@@ -264,7 +264,7 @@ export const leaderboardColumns = [
         <span className="leaderboard__route-count">{info.getValue()}</span>
       );
     },
-    size: 96,
+    size: 110,
     sortDescFirst: true,
   }),
   columnHelper.accessor("avg_tailwind_ms", {
@@ -291,7 +291,7 @@ export const leaderboardColumns = [
         </span>
       );
     },
-    size: 88,
+    size: 100,
     sortDescFirst: true,
   }),
   columnHelper.accessor("avg_watts", {
@@ -311,7 +311,7 @@ export const leaderboardColumns = [
         <span style={{ color: "var(--color-text-muted)" }}>—</span>
       );
     },
-    size: 72,
+    size: 80,
     sortDescFirst: true,
   }),
   columnHelper.accessor("median_watts", {
@@ -331,7 +331,7 @@ export const leaderboardColumns = [
         <span style={{ color: "var(--color-text-muted)" }}>—</span>
       );
     },
-    size: 72,
+    size: 80,
     sortDescFirst: true,
   }),
   columnHelper.accessor("avg_heartrate", {
@@ -351,7 +351,7 @@ export const leaderboardColumns = [
         <span style={{ color: "var(--color-text-muted)" }}>—</span>
       );
     },
-    size: 80,
+    size: 90,
     sortDescFirst: true,
   }),
   columnHelper.accessor("avg_kilojoules", {
@@ -371,7 +371,7 @@ export const leaderboardColumns = [
         <span style={{ color: "var(--color-text-muted)" }}>—</span>
       );
     },
-    size: 80,
+    size: 90,
     sortDescFirst: true,
   }),
   columnHelper.accessor("bayway_count", {
@@ -390,7 +390,7 @@ export const leaderboardColumns = [
         "var(--color-bayway)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("skyline_count", {
     header: () => (
@@ -408,7 +408,7 @@ export const leaderboardColumns = [
         "var(--color-skyline)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("hmbw_count", {
     header: () => (
@@ -426,7 +426,7 @@ export const leaderboardColumns = [
         "var(--color-hmbw)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("royale_count", {
     header: () => (
@@ -444,7 +444,7 @@ export const leaderboardColumns = [
         "var(--color-royale)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("fleaway_count", {
     header: () => (
@@ -462,7 +462,7 @@ export const leaderboardColumns = [
         "var(--color-fleaway)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("mebw_count", {
     header: () => (
@@ -480,7 +480,7 @@ export const leaderboardColumns = [
         "var(--color-mebw)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("febw_count", {
     header: () => (
@@ -498,7 +498,7 @@ export const leaderboardColumns = [
         "var(--color-febw)",
         info.table.options.meta,
       ),
-    size: 72,
+    size: 85,
   }),
   columnHelper.accessor("other_count", {
     header: () => (
@@ -538,7 +538,7 @@ export const leaderboardColumns = [
           kind="distance"
         />
       ),
-      size: 72,
+      size: 80,
       sortDescFirst: true,
     },
   ),
@@ -562,7 +562,7 @@ export const leaderboardColumns = [
           kind="elevation"
         />
       ),
-      size: 72,
+      size: 80,
       sortDescFirst: true,
     },
   ),
@@ -576,7 +576,7 @@ export const leaderboardColumns = [
     cell: (info) => {
       return <span>{info.getValue()}</span>;
     },
-    size: 96,
+    size: 110,
   }),
   columnHelper.accessor("sf2g_elevation_meters", {
     header: () => (
@@ -588,7 +588,7 @@ export const leaderboardColumns = [
     cell: (info) => {
       return <span>{info.getValue()}</span>;
     },
-    size: 96,
+    size: 110,
   }),
   columnHelper.accessor("last_ride_date", {
     header: () => (
