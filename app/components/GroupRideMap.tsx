@@ -5,8 +5,8 @@
  * circular markers (with avatar or fallback gradient + initials) that
  * move along the route based on `currentTime`.
  *
- * Uses Leaflet with OpenStreetMap/CartoDB tiles (free, no API key needed),
- * matching the same patterns as InteractiveMap.tsx.
+ * Uses Leaflet with CartoDB tiles (free, no API key needed).
+ * Matches InteractiveMap.tsx patterns exactly for reliable rendering.
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import type L from "leaflet";
@@ -42,7 +42,7 @@ interface PreparedRider {
 }
 
 // ---------------------------------------------------------------------------
-// Tile layer URL (OpenStreetMap — dark-friendly via CartoDB)
+// Tile layer URL (CartoDB — dark/light variants)
 // ---------------------------------------------------------------------------
 
 const TILE_LIGHT =
@@ -53,7 +53,43 @@ const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
 // ---------------------------------------------------------------------------
-// Leaflet dynamic import (SSR-safe, same pattern as InteractiveMap)
+// Leaflet CSS — injected once globally (not in component lifecycle)
+// ---------------------------------------------------------------------------
+
+let leafletCssInjected = false;
+
+function ensureLeafletCss(): Promise<void> {
+  return new Promise((resolve) => {
+    if (leafletCssInjected) {
+      resolve();
+      return;
+    }
+    const existingLink = document.querySelector('link[href*="leaflet"]');
+    if (existingLink) {
+      leafletCssInjected = true;
+      resolve();
+      return;
+    }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    link.crossOrigin = "";
+    link.onload = () => {
+      leafletCssInjected = true;
+      resolve();
+    };
+    link.onerror = () => {
+      // Still try to render even if CSS fails
+      leafletCssInjected = true;
+      resolve();
+    };
+    document.head.appendChild(link);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hooks
 // ---------------------------------------------------------------------------
 
 function useLeaflet() {
@@ -92,10 +128,6 @@ function useTheme(): "dark" | "light" {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Compute the earliest start_date across all riders.
- * Returns epoch in seconds.
- */
 function getEarliestStartEpoch(riders: GroupRideDetailRider[]): number {
   let earliest = Infinity;
   for (const rider of riders) {
@@ -105,9 +137,6 @@ function getEarliestStartEpoch(riders: GroupRideDetailRider[]): number {
   return earliest;
 }
 
-/**
- * Get rider initials from display name (max 2 chars).
- */
 function getInitials(displayName: string): string {
   const parts = displayName.trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -116,14 +145,6 @@ function getInitials(displayName: string): string {
   return displayName.slice(0, 2).toUpperCase();
 }
 
-/**
- * Linearly interpolate position along a rider's latlng stream.
- *
- * @param riderTime - seconds into this rider's own time stream (currentTime - offset)
- * @param timeStream - rider's time samples (seconds from their start)
- * @param latlngStream - rider's GPS coords matching timeStream indices
- * @returns interpolated [lat, lng] or null if out of range
- */
 function interpolatePosition(
   riderTime: number,
   timeStream: number[],
@@ -136,7 +157,6 @@ function interpolatePosition(
   )
     return null;
 
-  // Binary search for the bracket
   let lo = 0;
   let hi = timeStream.length - 1;
   while (lo < hi - 1) {
@@ -145,12 +165,10 @@ function interpolatePosition(
     else hi = mid;
   }
 
-  // Exact match or single-point bracket
   if (lo === hi || timeStream[lo] === timeStream[hi]) {
     return latlngStream[lo];
   }
 
-  // Linear interpolation factor
   const t = (riderTime - timeStream[lo]) / (timeStream[hi] - timeStream[lo]);
   const lat =
     latlngStream[lo][0] + t * (latlngStream[hi][0] - latlngStream[lo][0]);
@@ -159,23 +177,11 @@ function interpolatePosition(
   return [lat, lng];
 }
 
-// ---------------------------------------------------------------------------
-// Marker icon creation (Leaflet divIcon — uses DOM API for security)
-// ---------------------------------------------------------------------------
-
-/**
- * Create a Leaflet DivIcon for a rider marker.
- * Uses DOM API (createElement, textContent) instead of innerHTML for XSS safety.
- */
 function createRiderIcon(LLib: typeof L, rider: PreparedRider): L.DivIcon {
   const size = 32;
-
-  // Build the inner HTML safely — avatar URLs are from Strava (trusted origin)
-  // and rider names are sanitized via textContent in createMarkerElement
   let innerHtml: string;
 
   if (rider.avatarUrl) {
-    // Sanitize URL: only allow https protocol
     const safeUrl = rider.avatarUrl.startsWith("https://")
       ? rider.avatarUrl
       : "";
@@ -184,7 +190,6 @@ function createRiderIcon(LLib: typeof L, rider: PreparedRider): L.DivIcon {
     </div>`;
   } else {
     const initials = getInitials(rider.displayName);
-    // Escape initials for safe HTML rendering
     const safeInitials = initials.replace(/[<>&"']/g, "");
     innerHtml = `<div class="group-ride-map__marker group-ride-map__marker--fallback" style="border-color: ${rider.color}; background: linear-gradient(135deg, ${rider.color}, ${rider.color}88);">
       <span style="color:#fff;font-size:11px;font-weight:700;font-family:Inter,sans-serif;line-height:1;">${safeInitials}</span>
@@ -214,41 +219,14 @@ export function GroupRideMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
-  const initialFitDoneRef = useRef(false);
+  const polylinesRef = useRef<L.Polyline[]>([]);
+  const mapReadyRef = useRef(false);
   const prevIsPlayingRef = useRef(false);
-  const [cssLoaded, setCssLoaded] = useState(false);
   const LLib = useLeaflet();
   const theme = useTheme();
 
   // -------------------------------------------------------------------------
-  // Inject Leaflet CSS on mount — must complete before map init
-  // -------------------------------------------------------------------------
-
-  useEffect(() => {
-    const existingLink = document.querySelector('link[href*="leaflet"]');
-    if (existingLink) {
-      setCssLoaded(true);
-      return;
-    }
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-    link.crossOrigin = "";
-    link.onload = () => setCssLoaded(true);
-    link.onerror = () => setCssLoaded(true); // still attempt map init
-    document.head.appendChild(link);
-
-    return () => {
-      if (link.parentNode) {
-        document.head.removeChild(link);
-      }
-    };
-  }, []);
-
-  // -------------------------------------------------------------------------
-  // Prepare rider data (filter out those without streams, compute offsets)
+  // Prepare rider data (stable — only changes when riders prop changes)
   // -------------------------------------------------------------------------
 
   const preparedRiders = useMemo((): PreparedRider[] => {
@@ -288,10 +266,9 @@ export function GroupRideMap({
   }, [riders]);
 
   // -------------------------------------------------------------------------
-  // Initialize the map
+  // Trimmed polyline coords (for display only — not used in map init deps)
   // -------------------------------------------------------------------------
 
-  // Compute the trimmed latlng slice indices for each rider
   const trimmedRiders = useMemo(() => {
     const globalTrimStart = trimStartSec;
     const globalTrimEnd = rawDuration - trimEndSec;
@@ -311,7 +288,6 @@ export function GroupRideMap({
         return { ...rider, trimmedLatlng: [] as [number, number][] };
       }
 
-      // Find start index: first time >= riderTrimStart
       let startIdx = 0;
       for (let i = 0; i < rider.time.length; i++) {
         if (rider.time[i] >= riderTrimStart) {
@@ -320,7 +296,6 @@ export function GroupRideMap({
         }
       }
 
-      // Find end index: last time <= riderTrimEnd
       let endIdx = rider.time.length - 1;
       for (let i = rider.time.length - 1; i >= 0; i--) {
         if (rider.time[i] <= riderTrimEnd) {
@@ -336,71 +311,104 @@ export function GroupRideMap({
     });
   }, [preparedRiders, trimStartSec, trimEndSec, rawDuration]);
 
+  // -------------------------------------------------------------------------
+  // Initialize map ONCE — never torn down due to data changes
+  // -------------------------------------------------------------------------
+
   useEffect(() => {
-    if (!LLib || !cssLoaded || !containerRef.current || mapRef.current) return;
+    if (!LLib || !containerRef.current) return;
+    if (mapRef.current) return; // Already initialized
 
-    const map = LLib.map(containerRef.current, {
-      scrollWheelZoom: false,
-      zoomControl: true,
-    }).setView([37.6, -122.4], 10);
+    let cancelled = false;
 
-    LLib.tileLayer(theme === "dark" ? TILE_DARK : TILE_LIGHT, {
-      attribution: TILE_ATTRIBUTION,
-      maxZoom: 18,
-    }).addTo(map);
+    ensureLeafletCss().then(() => {
+      if (cancelled || !containerRef.current || mapRef.current) return;
 
-    // Add polylines for each rider's trimmed route
-    for (const rider of trimmedRiders) {
-      if (rider.trimmedLatlng.length === 0) continue;
-      LLib.polyline(rider.trimmedLatlng, {
-        color: rider.color,
-        weight: 3,
-        opacity: 0.7,
-        smoothFactor: 1,
+      const map = LLib.map(containerRef.current, {
+        scrollWheelZoom: false,
+        zoomControl: true,
+      }).setView([37.6, -122.4], 10);
+
+      LLib.tileLayer(theme === "dark" ? TILE_DARK : TILE_LIGHT, {
+        attribution: TILE_ATTRIBUTION,
+        maxZoom: 18,
       }).addTo(map);
-    }
 
-    // Initial camera: fit to all trimmed polylines
+      mapRef.current = map;
+
+      // invalidateSize after CSS+layout settle
+      requestAnimationFrame(() => {
+        if (!cancelled) {
+          map.invalidateSize();
+          // Second pass for safety
+          setTimeout(() => {
+            if (!cancelled) map.invalidateSize();
+          }, 250);
+        }
+      });
+
+      // Watch for container resize
+      const ro = new ResizeObserver(() => {
+        map.invalidateSize();
+      });
+      ro.observe(containerRef.current);
+
+      // Store cleanup fn
+      (map as any)._cleanupRo = () => ro.disconnect();
+    });
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        const m = mapRef.current;
+        (m as any)._cleanupRo?.();
+        for (const marker of markersRef.current.values()) marker.remove();
+        markersRef.current.clear();
+        for (const poly of polylinesRef.current) poly.remove();
+        polylinesRef.current = [];
+        m.remove();
+        mapRef.current = null;
+        mapReadyRef.current = false;
+      }
+    };
+  }, [LLib]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -------------------------------------------------------------------------
+  // Draw / redraw polylines when trimmedRiders changes
+  // -------------------------------------------------------------------------
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !LLib) return;
+
+    // Remove old polylines
+    for (const poly of polylinesRef.current) poly.remove();
+    polylinesRef.current = [];
+
+    // Draw new polylines
     const allCoords: [number, number][] = [];
     for (const rider of trimmedRiders) {
-      for (const coord of rider.trimmedLatlng) {
-        allCoords.push(coord);
-      }
+      if (rider.trimmedLatlng.length === 0) continue;
+      const poly = LLib.polyline(rider.trimmedLatlng, {
+        color: rider.color,
+        weight: 3,
+        opacity: 0.8,
+        smoothFactor: 1,
+      }).addTo(map);
+      polylinesRef.current.push(poly);
+      for (const coord of rider.trimmedLatlng) allCoords.push(coord);
     }
 
+    // Fit camera to all routes
     if (allCoords.length > 0) {
       map.fitBounds(LLib.latLngBounds(allCoords).pad(0.1));
     }
 
-    mapRef.current = map;
-    initialFitDoneRef.current = true;
-
-    // Leaflet doesn't render tiles correctly when the container isn't at
-    // its final size yet. Invalidate after a short delay to fix blank/black tiles.
-    setTimeout(() => map.invalidateSize(), 100);
-    setTimeout(() => map.invalidateSize(), 300);
-
-    // Leaflet doesn't auto-resize — watch container and notify
-    const ro = new ResizeObserver(() => {
-      map.invalidateSize();
-    });
-    ro.observe(containerRef.current);
-
-    return () => {
-      ro.disconnect();
-      // Cleanup markers
-      for (const marker of markersRef.current.values()) {
-        marker.remove();
-      }
-      markersRef.current.clear();
-      map.remove();
-      mapRef.current = null;
-      initialFitDoneRef.current = false;
-    };
-  }, [LLib, cssLoaded, trimmedRiders]); // eslint-disable-line react-hooks/exhaustive-deps
+    mapReadyRef.current = true;
+  }, [LLib, trimmedRiders]);
 
   // -------------------------------------------------------------------------
-  // Update tiles when theme changes
+  // Update tile layer when theme changes
   // -------------------------------------------------------------------------
 
   useEffect(() => {
@@ -422,7 +430,7 @@ export function GroupRideMap({
 
   const updateMarkers = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !LLib || !initialFitDoneRef.current) return;
+    if (!map || !LLib || !mapReadyRef.current) return;
 
     const activePositions: [number, number][] = [];
 
@@ -433,33 +441,27 @@ export function GroupRideMap({
       const existingMarker = markersRef.current.get(rider.userId);
 
       if (position) {
-        // Rider is active at this time
         activePositions.push(position);
-
         if (!existingMarker) {
-          // Create marker
           const icon = createRiderIcon(LLib, rider);
           const marker = LLib.marker([position[0], position[1]], {
             icon,
           }).addTo(map);
           markersRef.current.set(rider.userId, marker);
         } else {
-          // Update position
           existingMarker.setLatLng([position[0], position[1]]);
           existingMarker.setOpacity(1);
         }
       } else if (existingMarker) {
-        // Rider not active — hide marker
         existingMarker.setOpacity(0);
       }
     }
 
-    // Camera: fit to active rider positions while playing
+    // Camera: fit to active riders while playing
     if (isPlaying && activePositions.length > 0) {
       const bounds = LLib.latLngBounds(activePositions);
       const mapBounds = map.getBounds();
 
-      // Only refit when a rider is near the edge of the visible map (15% padding)
       const needsRefit = activePositions.some(([lat, lng]) => {
         const padding = 0.15;
         const latRange = mapBounds.getNorth() - mapBounds.getSouth();
@@ -487,7 +489,7 @@ export function GroupRideMap({
   }, [updateMarkers]);
 
   // -------------------------------------------------------------------------
-  // Fit bounds when playback starts (false → true transition)
+  // Fit bounds when playback starts
   // -------------------------------------------------------------------------
 
   useEffect(() => {
@@ -501,7 +503,6 @@ export function GroupRideMap({
       LLib &&
       preparedRiders.length > 0
     ) {
-      // Collect starting positions for all riders at current time
       const positions: [number, number][] = [];
       for (const rider of preparedRiders) {
         const riderTime = currentTime - rider.offset;
@@ -509,16 +510,12 @@ export function GroupRideMap({
         if (pos) positions.push(pos);
       }
 
-      // Fallback: use first GPS point of each rider if no current positions
       if (positions.length === 0) {
-        for (const rider of preparedRiders) {
-          positions.push(rider.latlng[0]);
-        }
+        for (const rider of preparedRiders) positions.push(rider.latlng[0]);
       }
 
       if (positions.length > 0) {
-        const bounds = LLib.latLngBounds(positions).pad(0.5);
-        mapRef.current.fitBounds(bounds, {
+        mapRef.current.fitBounds(LLib.latLngBounds(positions).pad(0.5), {
           maxZoom: 12,
           animate: true,
           duration: 0.5,
@@ -526,8 +523,6 @@ export function GroupRideMap({
       }
     }
   }, [isPlaying, LLib, preparedRiders, currentTime]);
-
-  // (Leaflet CSS injection moved above map init — see cssLoaded state)
 
   // -------------------------------------------------------------------------
   // Render
