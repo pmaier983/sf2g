@@ -253,7 +253,10 @@ export function RideSubTable({
           No rides found{routeTag ? ` for ${routeTag}` : ""}.
         </div>
       ) : (
-        <table className="leaderboard__table">
+        <table
+          className="leaderboard__table"
+          style={{ width: table.getTotalSize() }}
+        >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>

@@ -93,9 +93,10 @@
 }
 
 .leaderboard__table {
-  width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+  table-layout: fixed;
 }
 
 .leaderboard__table thead {

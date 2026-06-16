@@ -240,7 +240,10 @@ export function RouteSpeedTable({
   return (
     <div className="leaderboard__table-wrapper">
       <div ref={parentRef} style={{ maxHeight: "600px", overflow: "auto" }}>
-        <table className="leaderboard__table">
+        <table
+          className="leaderboard__table"
+          style={{ width: table.getTotalSize() }}
+        >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>

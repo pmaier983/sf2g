@@ -166,7 +166,10 @@ export function LeaderboardTable({
   return (
     <div className="leaderboard__table-wrapper" aria-label="Riders leaderboard">
       <div ref={parentRef} style={{ flex: 1, overflow: "auto" }}>
-        <table className="leaderboard__table">
+        <table
+          className="leaderboard__table"
+          style={{ width: table.getTotalSize() }}
+        >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>

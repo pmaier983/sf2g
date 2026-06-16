@@ -15,9 +15,10 @@
 }
 
 .group-rides-table {
-  width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+  table-layout: fixed;
 }
 
 .group-rides-table thead {
@@ -28,6 +29,7 @@
 }
 
 .group-rides-table thead th {
+  position: relative;
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: var(--font-bold);
