@@ -347,6 +347,11 @@ export function GroupRideMap({
     mapRef.current = map;
     initialFitDoneRef.current = true;
 
+    // Leaflet doesn't render tiles correctly when the container isn't at
+    // its final size yet. Invalidate after a short delay to fix blank/black tiles.
+    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 300);
+
     // Leaflet doesn't auto-resize — watch container and notify
     const ro = new ResizeObserver(() => {
       map.invalidateSize();
