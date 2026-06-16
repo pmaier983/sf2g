@@ -103,9 +103,6 @@ export function useColumnResize<T extends HTMLTableElement>() {
       handle.addEventListener("touchstart", onTouchStart);
     });
 
-    // Set table-layout: fixed for resize to work
-    table.style.tableLayout = "fixed";
-
     cleanupRef.current = () => {
       handles.forEach((h) => h.remove());
     };

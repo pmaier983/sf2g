@@ -96,7 +96,6 @@
   min-width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
-  table-layout: fixed;
 }
 
 .leaderboard__table thead {
@@ -119,8 +118,6 @@
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -138,7 +135,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 0;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
@@ -1165,8 +1161,6 @@ th:hover > .column-resizer {
   border-bottom: 2px solid var(--color-sf2g-orange);
   user-select: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -1180,7 +1174,6 @@ th:hover > .column-resizer {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 0;
   color: var(--color-text);
 }
 
@@ -1884,8 +1877,6 @@ th:hover > .column-resizer {
   border-bottom: 2px solid var(--color-sf2g-orange);
   user-select: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: color var(--transition-fast);
 }
 
@@ -1899,7 +1890,6 @@ th:hover > .column-resizer {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 0;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }

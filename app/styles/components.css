@@ -1229,8 +1229,6 @@
   background: var(--color-surface-elevated);
   border-bottom: 2px solid var(--color-border);
   user-select: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .profile-rides__table th:hover {
@@ -1253,7 +1251,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 0;
 }
 
 .profile-rides__table tr:hover td {

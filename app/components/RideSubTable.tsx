@@ -256,7 +256,7 @@ export function RideSubTable({
       ) : (
         <table
           className="leaderboard__table"
-          style={{ width: table.getTotalSize() }}
+          style={{ minWidth: table.getTotalSize() }}
         >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -269,7 +269,7 @@ export function RideSubTable({
                       header.column.getToggleSortingHandler()?.(e);
                     }}
                     style={{
-                      width: header.getSize(),
+                      minWidth: header.getSize(),
                       cursor: header.column.getCanSort()
                         ? "pointer"
                         : "default",
@@ -309,7 +309,7 @@ export function RideSubTable({
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} style={{ width: cell.column.getSize() }}>
+                  <td key={cell.id} style={{ minWidth: cell.column.getSize() }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

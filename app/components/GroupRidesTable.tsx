@@ -325,7 +325,7 @@ export function GroupRidesTable({
     <div className="group-rides-table__wrapper" aria-label="Group rides">
       <table
         className="group-rides-table"
-        style={{ width: table.getTotalSize() }}
+        style={{ minWidth: table.getTotalSize() }}
       >
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -343,7 +343,7 @@ export function GroupRidesTable({
                     className={sorted ? "th--sorted" : ""}
                     style={{
                       cursor: canSort ? "pointer" : "default",
-                      width: header.getSize(),
+                      minWidth: header.getSize(),
                     }}
                     aria-sort={
                       canSort
@@ -399,7 +399,7 @@ export function GroupRidesTable({
                 style={{ cursor: "pointer" }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} style={{ width: cell.column.getSize() }}>
+                  <td key={cell.id} style={{ minWidth: cell.column.getSize() }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

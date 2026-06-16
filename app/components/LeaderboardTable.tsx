@@ -169,7 +169,7 @@ export function LeaderboardTable({
       <div ref={parentRef} style={{ flex: 1, overflow: "auto" }}>
         <table
           className="leaderboard__table"
-          style={{ width: table.getTotalSize() }}
+          style={{ minWidth: table.getTotalSize() }}
         >
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -210,7 +210,7 @@ export function LeaderboardTable({
                       className={sorted ? "th--sorted" : ""}
                       style={{
                         cursor: canSort ? "pointer" : "default",
-                        width: header.getSize(),
+                        minWidth: header.getSize(),
                       }}
                       aria-sort={
                         canSort
@@ -302,7 +302,7 @@ export function LeaderboardTable({
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        style={{ width: cell.column.getSize() }}
+                        style={{ minWidth: cell.column.getSize() }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
