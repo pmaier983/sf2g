@@ -115,14 +115,14 @@ export const Route = createFileRoute("/should-i-sf2g")({
       {
         name: "description",
         content:
-          "Check the weather along your SF2G commute route before you ride. Wind, rain, fog, and temperature forecast for Bayway, Skyline, HMBW, and Royale.",
+          "Check the weather along your SF2G commute route before you ride. Rain, fog, and temperature forecast for Bayway, Skyline, HMBW, and Royale.",
       },
       // Open Graph tags for rich link previews
       { property: "og:title", content: "Should I SF2G? — Weather Forecast" },
       {
         property: "og:description",
         content:
-          "Weather intelligence for your SF2G commute. Check wind, rain, fog, and temperature before you ride.",
+          "Weather intelligence for your SF2G commute. Check rain, fog, and temperature before you ride.",
       },
       { property: "og:type", content: "website" },
       // Twitter card tags
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/should-i-sf2g")({
       {
         name: "twitter:description",
         content:
-          "Weather intelligence for your SF2G commute. Check wind, rain, fog, and temperature before you ride.",
+          "Weather intelligence for your SF2G commute. Check rain, fog, and temperature before you ride.",
       },
     ],
   }),
@@ -352,7 +352,7 @@ function ShouldISf2gPage() {
           {/* YES / MAYBE / NO Recommendation (top of results) */}
           <RideRecommendation summary={data.summary} />
 
-          {/* Weather Chart (with integrated wind direction) */}
+          {/* Weather Chart */}
           <Suspense fallback={<div className="chart-skeleton" />}>
             <WeatherChart
               waypoints={data.waypoints}

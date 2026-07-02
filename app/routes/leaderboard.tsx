@@ -117,11 +117,11 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   search: "",
   ppr: false,
   other: false,
-  weekends: true,
+  weekends: false,
   company: undefined,
   user: undefined,
   view: "riders",
-  duration: "1y",
+  duration: "1w",
   chart: false,
   sort: "sf2g_total",
   dir: "desc",
@@ -131,7 +131,7 @@ const SEARCH_DEFAULTS: LeaderboardSearch = {
   dateFrom: undefined,
   dateTo: undefined,
   datePreset: undefined,
-  density: "condensed",
+  density: "expanded",
   reverse: false,
   gSort: "date",
   gDir: "desc",
@@ -151,11 +151,11 @@ export const Route = createFileRoute("/leaderboard")({
     search: (raw.search as string) || "",
     ppr: toBool(raw.ppr),
     other: toBool(raw.other),
-    weekends: raw.weekends === undefined ? true : toBool(raw.weekends),
+    weekends: raw.weekends === undefined ? false : toBool(raw.weekends),
     company: (raw.company as string) || undefined,
     user: (raw.user as string) || undefined,
     view: (raw.view as "riders" | "rides" | "alltime" | "groups") || "riders",
-    duration: (raw.duration as string) || "1y",
+    duration: (raw.duration as string) || "1w",
     chart: toBool(raw.chart),
     sort: (raw.sort as string) || "sf2g_total",
     dir: (raw.dir as "asc" | "desc") || "desc",
@@ -165,7 +165,7 @@ export const Route = createFileRoute("/leaderboard")({
     dateFrom: (raw.dateFrom as string) || undefined,
     dateTo: (raw.dateTo as string) || undefined,
     datePreset: (raw.datePreset as string) || undefined,
-    density: (raw.density as "condensed" | "expanded") || "condensed",
+    density: (raw.density as "condensed" | "expanded") || "expanded",
     reverse: toBool(raw.reverse),
     gSort: (raw.gSort as string) || "date",
     gDir: (raw.gDir as "asc" | "desc") || "desc",
@@ -254,7 +254,7 @@ function LeaderboardPage() {
     if (search !== "") return true;
     if (ppr) return true;
     if (includeOther) return true;
-    if (!weekends) return true;
+    if (weekends) return true;
     if (company) return true;
     if (user) return true;
     if (dateFrom) return true;
@@ -262,13 +262,13 @@ function LeaderboardPage() {
     if (datePreset) return true;
     if (view !== "riders") return true;
     if (chartOpen) return true;
-    if (density !== "condensed") return true;
+    if (density !== "expanded") return true;
     if (sort !== "sf2g_total") return true;
     if (dir !== "desc") return true;
     if (rSort !== "ride_date") return true;
     if (rDir !== "desc") return true;
     if (page !== 1) return true;
-    if (duration !== "1y") return true;
+    if (duration !== "1w") return true;
     if (reverse) return true;
     return false;
   }, [

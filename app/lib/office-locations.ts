@@ -12,18 +12,25 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type DestinationCompany = 'netflix' | 'google' | 'apple' | 'meta' | 'nvidia' | 'stanford' | 'tesla'
+export type DestinationCompany =
+  | "netflix"
+  | "google"
+  | "apple"
+  | "meta"
+  | "nvidia"
+  | "stanford"
+  | "tesla";
 
 export interface OfficeLocation {
-  company: DestinationCompany
-  name: string
-  lat: number
-  lng: number
-  city: string
-  address: string
-  status: 'active' | 'closed'
+  company: DestinationCompany;
+  name: string;
+  lat: number;
+  lng: number;
+  city: string;
+  address: string;
+  status: "active" | "closed";
   /** Override the default radius for this office (meters). If omitted, DESTINATION_RADIUS_METERS is used. */
-  radiusMeters?: number
+  radiusMeters?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -35,252 +42,261 @@ export const OFFICE_LOCATIONS: OfficeLocation[] = [
   // NETFLIX — Los Gatos
   // =========================================================================
   {
-    company: 'netflix',
-    name: 'Netflix HQ (Main Campus)',
-    lat: 37.2560,
+    company: "netflix",
+    name: "Netflix HQ (Main Campus)",
+    lat: 37.256,
     lng: -121.9553,
-    city: 'Los Gatos',
-    address: '100 Winchester Circle',
-    status: 'active',
+    city: "Los Gatos",
+    address: "100 Winchester Circle",
+    status: "active",
   },
   {
-    company: 'netflix',
-    name: 'Netflix Albright Way',
-    lat: 37.2530,
-    lng: -121.9570,
-    city: 'Los Gatos',
-    address: '121 Albright Way',
-    status: 'active',
+    company: "netflix",
+    name: "Netflix Albright Way",
+    lat: 37.253,
+    lng: -121.957,
+    city: "Los Gatos",
+    address: "121 Albright Way",
+    status: "active",
   },
   {
-    company: 'netflix',
-    name: 'Netflix Epic Way',
+    company: "netflix",
+    name: "Netflix Epic Way",
     lat: 37.2512,
     lng: -121.9522,
-    city: 'Los Gatos',
-    address: '888 Epic Way',
-    status: 'active',
+    city: "Los Gatos",
+    address: "888 Epic Way",
+    status: "active",
   },
   {
-    company: 'netflix',
-    name: 'Netflix Winchester 250',
+    company: "netflix",
+    name: "Netflix Winchester 250",
     lat: 37.2555,
-    lng: -121.9530,
-    city: 'Los Gatos',
-    address: '250 Winchester Circle',
-    status: 'active',
+    lng: -121.953,
+    city: "Los Gatos",
+    address: "250 Winchester Circle",
+    status: "active",
   },
 
   // =========================================================================
   // GOOGLE — Mountain View, Sunnyvale, San Francisco, San Jose
   // =========================================================================
   {
-    company: 'google',
-    name: 'Googleplex (HQ)',
-    lat: 37.4220,
+    company: "google",
+    name: "Googleplex (HQ)",
+    lat: 37.422,
     lng: -122.0841,
-    city: 'Mountain View',
-    address: '1600 Amphitheatre Parkway',
-    status: 'active',
+    city: "Mountain View",
+    address: "1600 Amphitheatre Parkway",
+    status: "active",
   },
   {
-    company: 'google',
-    name: 'Google Bay View Campus',
+    company: "google",
+    name: "Google Bay View Campus",
     lat: 37.4135,
     lng: -122.0695,
-    city: 'Mountain View',
-    address: '1625 Plymouth Street',
-    status: 'active',
+    city: "Mountain View",
+    address: "1625 Plymouth Street",
+    status: "active",
   },
   {
-    company: 'google',
-    name: 'Google Charleston East',
+    company: "google",
+    name: "Google Charleston East",
     lat: 37.4145,
     lng: -122.0775,
-    city: 'Mountain View',
-    address: '2000 N Shoreline Blvd',
-    status: 'active',
+    city: "Mountain View",
+    address: "2000 N Shoreline Blvd",
+    status: "active",
   },
   {
-    company: 'google',
-    name: 'Google Sunnyvale (Moffett Park)',
+    company: "google",
+    name: "Google Sunnyvale (Moffett Park)",
     lat: 37.4078,
-    lng: -122.0310,
-    city: 'Sunnyvale',
-    address: '803 11th Avenue',
-    status: 'active',
+    lng: -122.031,
+    city: "Sunnyvale",
+    address: "803 11th Avenue",
+    status: "active",
   },
 
   {
-    company: 'google',
-    name: 'Google San Jose',
-    lat: 37.3340,
-    lng: -121.8940,
-    city: 'San Jose',
-    address: '500 W San Fernando St',
-    status: 'active',
+    company: "google",
+    name: "Google San Jose",
+    lat: 37.334,
+    lng: -121.894,
+    city: "San Jose",
+    address: "500 W San Fernando St",
+    status: "active",
   },
 
   // =========================================================================
   // APPLE — Cupertino, Sunnyvale, Santa Clara, San Jose
   // =========================================================================
   {
-    company: 'apple',
-    name: 'Apple Park (HQ)',
+    company: "apple",
+    name: "Apple Park (HQ)",
     lat: 37.3349,
-    lng: -122.0090,
-    city: 'Cupertino',
-    address: '1 Apple Park Way',
-    status: 'active',
+    lng: -122.009,
+    city: "Cupertino",
+    address: "1 Apple Park Way",
+    status: "active",
   },
   {
-    company: 'apple',
-    name: 'Infinite Loop (Old HQ)',
+    company: "apple",
+    name: "Infinite Loop (Old HQ)",
     lat: 37.3318,
     lng: -122.0312,
-    city: 'Cupertino',
-    address: '1 Infinite Loop',
-    status: 'active',
+    city: "Cupertino",
+    address: "1 Infinite Loop",
+    status: "active",
   },
   {
-    company: 'apple',
-    name: 'Apple De Anza Campus',
+    company: "apple",
+    name: "Apple De Anza Campus",
     lat: 37.3358,
     lng: -122.0275,
-    city: 'Cupertino',
-    address: '10500 N De Anza Blvd',
-    status: 'active',
+    city: "Cupertino",
+    address: "10500 N De Anza Blvd",
+    status: "active",
   },
   {
-    company: 'apple',
-    name: 'Apple Sunnyvale Campus',
-    lat: 37.3690,
-    lng: -122.0300,
-    city: 'Sunnyvale',
-    address: '100 S Mathilda Ave',
-    status: 'active',
+    company: "apple",
+    name: "Apple Sunnyvale Campus",
+    lat: 37.369,
+    lng: -122.03,
+    city: "Sunnyvale",
+    address: "100 S Mathilda Ave",
+    status: "active",
   },
   {
-    company: 'apple',
-    name: 'Apple Santa Clara',
-    lat: 37.3230,
-    lng: -121.9950,
-    city: 'Santa Clara',
-    address: '5300 Stevens Creek Blvd',
-    status: 'active',
+    company: "apple",
+    name: "Apple Santa Clara",
+    lat: 37.323,
+    lng: -121.995,
+    city: "Santa Clara",
+    address: "5300 Stevens Creek Blvd",
+    status: "active",
   },
   {
-    company: 'apple',
-    name: 'Apple San Jose (North)',
-    lat: 37.3750,
-    lng: -121.9150,
-    city: 'San Jose',
-    address: 'Orchard Parkway area',
-    status: 'active',
+    company: "apple",
+    name: "Apple San Jose (North)",
+    lat: 37.375,
+    lng: -121.915,
+    city: "San Jose",
+    address: "Orchard Parkway area",
+    status: "active",
   },
 
   // =========================================================================
   // META / FACEBOOK — Menlo Park, Burlingame, Sunnyvale
   // =========================================================================
   {
-    company: 'meta',
-    name: 'Meta MPK HQ',
+    company: "meta",
+    name: "Meta MPK HQ",
     lat: 37.4848,
     lng: -122.1484,
-    city: 'Menlo Park',
-    address: '1 Hacker Way',
-    status: 'active',
+    city: "Menlo Park",
+    address: "1 Hacker Way",
+    status: "active",
   },
   {
-    company: 'meta',
-    name: 'Meta MPK West Campus',
+    company: "meta",
+    name: "Meta MPK West Campus",
     lat: 37.4815,
-    lng: -122.1540,
-    city: 'Menlo Park',
-    address: '1 Facebook Way',
-    status: 'active',
+    lng: -122.154,
+    city: "Menlo Park",
+    address: "1 Facebook Way",
+    status: "active",
   },
   {
-    company: 'meta',
-    name: 'Meta Burlingame Campus',
-    lat: 37.5920,
-    lng: -122.3640,
-    city: 'Burlingame',
-    address: '300 Airport Blvd',
-    status: 'active',
+    company: "meta",
+    name: "Meta Burlingame Campus",
+    lat: 37.592,
+    lng: -122.364,
+    city: "Burlingame",
+    address: "300 Airport Blvd",
+    status: "active",
   },
 
   {
-    company: 'meta',
-    name: 'Meta Sunnyvale Campus',
+    company: "meta",
+    name: "Meta Sunnyvale Campus",
     lat: 37.4095,
     lng: -122.0245,
-    city: 'Sunnyvale',
-    address: '1020 Enterprise Way',
-    status: 'active',
+    city: "Sunnyvale",
+    address: "1020 Enterprise Way",
+    status: "active",
+  },
+  {
+    company: "meta",
+    name: "Meta MPK 21",
+    lat: 37.48081458843967,
+    lng: -122.16179651665975,
+    city: "Menlo Park",
+    address: "Building 21, Menlo Park",
+    status: "active",
   },
 
   // =========================================================================
   // NVIDIA — Santa Clara
   // =========================================================================
   {
-    company: 'nvidia',
-    name: 'Nvidia Endeavor (HQ)',
+    company: "nvidia",
+    name: "Nvidia Endeavor (HQ)",
     lat: 37.3705,
     lng: -121.9638,
-    city: 'Santa Clara',
-    address: '2788 San Tomas Expressway',
-    status: 'active',
+    city: "Santa Clara",
+    address: "2788 San Tomas Expressway",
+    status: "active",
   },
   {
-    company: 'nvidia',
-    name: 'Nvidia Voyager',
+    company: "nvidia",
+    name: "Nvidia Voyager",
     lat: 37.3835,
-    lng: -121.9680,
-    city: 'Santa Clara',
-    address: '3200 Bowers Avenue',
-    status: 'active',
+    lng: -121.968,
+    city: "Santa Clara",
+    address: "3200 Bowers Avenue",
+    status: "active",
   },
   {
-    company: 'nvidia',
-    name: 'Nvidia Building E (Old HQ)',
-    lat: 37.3690,
-    lng: -121.9640,
-    city: 'Santa Clara',
-    address: '2701 San Tomas Expressway',
-    status: 'active',
+    company: "nvidia",
+    name: "Nvidia Building E (Old HQ)",
+    lat: 37.369,
+    lng: -121.964,
+    city: "Santa Clara",
+    address: "2701 San Tomas Expressway",
+    status: "active",
   },
   {
-    company: 'nvidia',
-    name: 'Nvidia Scott Blvd Campus',
-    lat: 37.3720,
-    lng: -121.9580,
-    city: 'Santa Clara',
-    address: '2800 Scott Boulevard',
-    status: 'active',
+    company: "nvidia",
+    name: "Nvidia Scott Blvd Campus",
+    lat: 37.372,
+    lng: -121.958,
+    city: "Santa Clara",
+    address: "2800 Scott Boulevard",
+    status: "active",
   },
 
   // =========================================================================
   // STANFORD — Stanford University
   // =========================================================================
   {
-    company: 'stanford',
-    name: 'Stanford University (Main Campus)',
+    company: "stanford",
+    name: "Stanford University (Main Campus)",
     lat: 37.425744,
-    lng: -122.167450,
-    city: 'Stanford',
-    address: 'Stanford University',
-    status: 'active',
+    lng: -122.16745,
+    city: "Stanford",
+    address: "Stanford University",
+    status: "active",
     radiusMeters: 2000,
   },
   {
-    company: 'stanford',
-    name: 'Stanford Research Park',
+    company: "stanford",
+    name: "Stanford Research Park",
     lat: 37.4069125008984,
     lng: -122.14533885863798,
-    city: 'Stanford',
-    address: 'Stanford Research Park',
-    status: 'active',
+    city: "Stanford",
+    address: "Stanford Research Park",
+    status: "active",
     radiusMeters: 500,
   },
 
@@ -288,57 +304,57 @@ export const OFFICE_LOCATIONS: OfficeLocation[] = [
   // TESLA — Palo Alto
   // =========================================================================
   {
-    company: 'tesla',
-    name: 'Tesla Page Mill',
+    company: "tesla",
+    name: "Tesla Page Mill",
     lat: 37.4133,
     lng: -122.1515,
-    city: 'Palo Alto',
-    address: '1501 Page Mill Rd',
-    status: 'active',
+    city: "Palo Alto",
+    address: "1501 Page Mill Rd",
+    status: "active",
   },
   {
-    company: 'tesla',
-    name: 'Tesla Hanover',
+    company: "tesla",
+    name: "Tesla Hanover",
     lat: 37.4053,
     lng: -122.1456,
-    city: 'Palo Alto',
-    address: '3000 Hanover St',
-    status: 'active',
+    city: "Palo Alto",
+    address: "3000 Hanover St",
+    status: "active",
   },
   {
-    company: 'tesla',
-    name: 'Tesla Deer Creek',
-    lat: 37.4020,
+    company: "tesla",
+    name: "Tesla Deer Creek",
+    lat: 37.402,
     lng: -122.1413,
-    city: 'Palo Alto',
-    address: '3500 Deer Creek Rd',
-    status: 'active',
+    city: "Palo Alto",
+    address: "3500 Deer Creek Rd",
+    status: "active",
   },
-]
+];
 
 // ---------------------------------------------------------------------------
 // Display Metadata
 // ---------------------------------------------------------------------------
 
 export const COMPANY_LABELS: Record<DestinationCompany, string> = {
-  netflix: 'Netflix',
-  google: 'Google',
-  apple: 'Apple',
-  meta: 'Meta',
-  nvidia: 'Nvidia',
-  stanford: 'Stanford',
-  tesla: 'Tesla',
-}
+  netflix: "Netflix",
+  google: "Google",
+  apple: "Apple",
+  meta: "Meta",
+  nvidia: "Nvidia",
+  stanford: "Stanford",
+  tesla: "Tesla",
+};
 
 export const COMPANY_COLORS: Record<DestinationCompany, string> = {
-  netflix: '#E50914',  // Netflix red
-  google: '#FBBC05',   // Google yellow
-  apple: '#A2AAAD',    // Apple silver
-  meta: '#0668E1',     // Meta blue
-  nvidia: '#76B900',   // Nvidia green
-  stanford: '#8C1515',  // Stanford cardinal red
-  tesla: '#CC0000',     // Tesla red
-}
+  netflix: "#E50914", // Netflix red
+  google: "#FBBC05", // Google yellow
+  apple: "#A2AAAD", // Apple silver
+  meta: "#0668E1", // Meta blue
+  nvidia: "#76B900", // Nvidia green
+  stanford: "#8C1515", // Stanford cardinal red
+  tesla: "#CC0000", // Tesla red
+};
 
 /**
  * Default radius in meters for destination matching.
@@ -347,4 +363,4 @@ export const COMPANY_COLORS: Record<DestinationCompany, string> = {
  *
  * 1250m (~4100ft / ~0.8mi) provides a generous capture area around campus endpoints.
  */
-export const DESTINATION_RADIUS_METERS = 1250
+export const DESTINATION_RADIUS_METERS = 1250;

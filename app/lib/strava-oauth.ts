@@ -9,41 +9,41 @@
  * NO `Buffer` — uses `btoa`/`atob` for Cloudflare Workers compatibility.
  */
 
-import { createServiceClient } from './supabase'
+import { createServiceClient } from "./supabase";
 import {
   STRAVA_AUTHORIZE_URL,
   STRAVA_TOKEN_URL,
   STRAVA_REVOKE_URL,
   STRAVA_DEAUTHORIZE_URL,
   STRAVA_SCOPES,
-} from './constants'
+} from "./constants";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface StravaTokenResponse {
-  token_type: string
-  expires_at: number
-  expires_in: number
-  refresh_token: string
-  access_token: string
+  token_type: string;
+  expires_at: number;
+  expires_in: number;
+  refresh_token: string;
+  access_token: string;
   athlete: {
-    id: number
-    username: string | null
-    firstname: string | null
-    lastname: string | null
-    profile: string | null
-    profile_medium: string | null
-  }
+    id: number;
+    username: string | null;
+    firstname: string | null;
+    lastname: string | null;
+    profile: string | null;
+    profile_medium: string | null;
+  };
 }
 
 export interface StravaRefreshResponse {
-  token_type: string
-  access_token: string
-  expires_at: number
-  expires_in: number
-  refresh_token: string
+  token_type: string;
+  access_token: string;
+  expires_at: number;
+  expires_in: number;
+  refresh_token: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,24 +54,26 @@ export interface StravaRefreshResponse {
  * Build the Strava OAuth authorization URL.
  * The user is redirected here to grant access.
  */
-export function getAuthorizationUrl(): string {
-  const clientId = process.env.STRAVA_CLIENT_ID
-  const appUrl = process.env.APP_URL
+export function getAuthorizationUrl(forceConsent = false): string {
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const appUrl = process.env.APP_URL;
 
   if (!clientId || !appUrl) {
-    throw new Error('Missing STRAVA_CLIENT_ID or APP_URL environment variables')
+    throw new Error(
+      "Missing STRAVA_CLIENT_ID or APP_URL environment variables",
+    );
   }
 
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: `${appUrl}/auth/callback`,
-    response_type: 'code',
+    response_type: "code",
     scope: STRAVA_SCOPES,
-    approval_prompt: 'auto', // 'auto' skips consent for returning users; 'force' would show it every time
+    approval_prompt: forceConsent ? "force" : "auto",
     state: crypto.randomUUID(), // CSRF protection
-  })
+  });
 
-  return `${STRAVA_AUTHORIZE_URL}?${params.toString()}`
+  return `${STRAVA_AUTHORIZE_URL}?${params.toString()}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -83,33 +85,39 @@ export function getAuthorizationUrl(): string {
  * Called during the OAuth callback flow.
  */
 export async function exchangeCode(code: string): Promise<StravaTokenResponse> {
-  const clientId = process.env.STRAVA_CLIENT_ID
-  const clientSecret = process.env.STRAVA_CLIENT_SECRET
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables')
+    throw new Error(
+      "Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables",
+    );
   }
 
   const response = await fetch(STRAVA_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
       code,
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
     }),
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[strava-oauth] Token exchange failed:', response.status, errorText)
+    const errorText = await response.text();
+    console.error(
+      "[strava-oauth] Token exchange failed:",
+      response.status,
+      errorText,
+    );
     throw new Error(
       `Strava token exchange failed (${response.status}): ${errorText}`,
-    )
+    );
   }
 
-  return (await response.json()) as StravaTokenResponse
+  return (await response.json()) as StravaTokenResponse;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,33 +130,39 @@ export async function exchangeCode(code: string): Promise<StravaTokenResponse> {
 export async function refreshToken(
   currentRefreshToken: string,
 ): Promise<StravaRefreshResponse> {
-  const clientId = process.env.STRAVA_CLIENT_ID
-  const clientSecret = process.env.STRAVA_CLIENT_SECRET
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables')
+    throw new Error(
+      "Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables",
+    );
   }
 
   const response = await fetch(STRAVA_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       refresh_token: currentRefreshToken,
     }),
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[strava-oauth] Token refresh failed:', response.status, errorText)
+    const errorText = await response.text();
+    console.error(
+      "[strava-oauth] Token refresh failed:",
+      response.status,
+      errorText,
+    );
     throw new Error(
       `Strava token refresh failed (${response.status}): ${errorText}`,
-    )
+    );
   }
 
-  return (await response.json()) as StravaRefreshResponse
+  return (await response.json()) as StravaRefreshResponse;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +170,7 @@ export async function refreshToken(
 // ---------------------------------------------------------------------------
 
 /** 5-minute buffer before expiry to trigger refresh */
-const TOKEN_BUFFER_MS = 5 * 60 * 1000
+const TOKEN_BUFFER_MS = 5 * 60 * 1000;
 
 /**
  * Ensure the user has a valid (non-expired) Strava access token.
@@ -169,39 +183,41 @@ const TOKEN_BUFFER_MS = 5 * 60 * 1000
  * @returns A valid Strava access token
  */
 export async function ensureValidToken(userId: string): Promise<string> {
-  const supabase = createServiceClient()
+  const supabase = createServiceClient();
 
   const { data: user, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
-    .single()
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
 
   if (error || !user) {
     // Log the actual Supabase error for debugging — the generic "User not found"
     // message was masking real issues (e.g., subrequest limits, connection errors)
     console.error(`[strava-oauth] ensureValidToken failed for ${userId}:`, {
-      error: error?.message ?? 'no error object',
+      error: error?.message ?? "no error object",
       errorCode: error?.code,
       hasUser: !!user,
-    })
-    throw new Error(`User not found: ${userId}${error ? ` (${error.message})` : ''}`)
+    });
+    throw new Error(
+      `User not found: ${userId}${error ? ` (${error.message})` : ""}`,
+    );
   }
 
   // Check if the token is still valid (with 5-minute buffer)
-  const expiresAt = new Date(user.strava_token_expires_at).getTime()
-  const now = Date.now()
+  const expiresAt = new Date(user.strava_token_expires_at).getTime();
+  const now = Date.now();
 
   if (now < expiresAt - TOKEN_BUFFER_MS) {
-    return user.strava_access_token // Still valid
+    return user.strava_access_token; // Still valid
   }
 
   // Refresh the token
-  const newTokens = await refreshToken(user.strava_refresh_token)
+  const newTokens = await refreshToken(user.strava_refresh_token);
 
   // CRITICAL: Store the new refresh token — Strava may rotate it
   const { error: updateError } = await supabase
-    .from('users')
+    .from("users")
     .update({
       strava_access_token: newTokens.access_token,
       strava_refresh_token: newTokens.refresh_token,
@@ -209,13 +225,15 @@ export async function ensureValidToken(userId: string): Promise<string> {
         newTokens.expires_at * 1000,
       ).toISOString(),
     })
-    .eq('id', userId)
+    .eq("id", userId);
 
   if (updateError) {
-    throw new Error(`Failed to update tokens for user ${userId}: ${updateError.message}`)
+    throw new Error(
+      `Failed to update tokens for user ${userId}: ${updateError.message}`,
+    );
   }
 
-  return newTokens.access_token
+  return newTokens.access_token;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,28 +255,34 @@ export async function ensureValidToken(userId: string): Promise<string> {
  * @throws Error if deauthorization fails
  */
 export async function revokeToken(accessToken: string): Promise<void> {
-  const clientId = process.env.STRAVA_CLIENT_ID
-  const clientSecret = process.env.STRAVA_CLIENT_SECRET
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables')
+    throw new Error(
+      "Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET environment variables",
+    );
   }
 
   // 1. Call the old /oauth/deauthorize endpoint — this is what actually removes
   //    the app from the athlete's settings page and decrements the athlete count.
   //    Takes access_token as a body parameter.
   const deauthResponse = await fetch(STRAVA_DEAUTHORIZE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ access_token: accessToken }),
-  })
+  });
 
   if (!deauthResponse.ok) {
-    const errorText = await deauthResponse.text()
-    console.error('[strava-oauth] Deauthorize failed:', deauthResponse.status, errorText)
+    const errorText = await deauthResponse.text();
+    console.error(
+      "[strava-oauth] Deauthorize failed:",
+      deauthResponse.status,
+      errorText,
+    );
     throw new Error(
       `Strava deauthorization failed (${deauthResponse.status}): ${errorText}`,
-    )
+    );
   }
 
   // 2. Also call the new /oauth/revoke endpoint (belt-and-suspenders).
@@ -266,25 +290,29 @@ export async function revokeToken(accessToken: string): Promise<void> {
   //    Uses `token` param instead of `access_token`.
   //    Returns 200 whether or not the token was found, so we don't throw on failure.
   try {
-    const credentials = btoa(`${clientId}:${clientSecret}`)
+    const credentials = btoa(`${clientId}:${clientSecret}`);
     const revokeResponse = await fetch(STRAVA_REVOKE_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${credentials}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${credentials}`,
       },
       body: new URLSearchParams({
         token: accessToken,
-        token_type_hint: 'access_token',
+        token_type_hint: "access_token",
       }),
-    })
+    });
 
     if (!revokeResponse.ok) {
       // Non-critical — the deauthorize call already succeeded
-      console.warn('[strava-oauth] Revoke endpoint returned', revokeResponse.status, '(non-critical, deauthorize already succeeded)')
+      console.warn(
+        "[strava-oauth] Revoke endpoint returned",
+        revokeResponse.status,
+        "(non-critical, deauthorize already succeeded)",
+      );
     }
   } catch (err) {
     // Non-critical — the deauthorize call already succeeded
-    console.warn('[strava-oauth] Revoke endpoint failed (non-critical):', err)
+    console.warn("[strava-oauth] Revoke endpoint failed (non-critical):", err);
   }
 }

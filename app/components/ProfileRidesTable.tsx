@@ -4,12 +4,14 @@
  * Features:
  * - Shows ALL rides (SF2G and non-SF2G), not just classified ones
  * - Server-side pagination (25 per page)
+ * - Server-side search (debounced 300ms)
+ * - Route category filter chips
  * - Sortable columns (date, route, speed, distance, elevation, time)
  * - Route category tag (or "—" for non-SF2G rides)
  * - Unit-aware formatting (mi/km)
  * - Edit button for own profile
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RouteTag } from "./RouteTag";
 import { useUnit } from "../lib/useUnit";
@@ -20,6 +22,7 @@ import type { EditRideData } from "./EditRideDialog";
 import type { RouteCategory } from "../lib/database.types";
 import { useColumnResize } from "../lib/useColumnResize";
 import { Tooltip } from "./Tooltip";
+import { ROUTE_LABELS, ROUTE_COLORS } from "../lib/constants";
 import {
   formatDistance,
   formatElevation,
@@ -57,6 +60,8 @@ const BASE_COLUMNS: {
 
 const PAGE_SIZE = 25;
 
+const FILTER_ROUTES = ["bayway", "skyline", "hmbw", "royale"] as const;
+
 export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
   const tableRef = useColumnResize<HTMLTableElement>();
   const unit = useUnit();
@@ -67,9 +72,28 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [routeFilter, setRouteFilter] = useState<string[]>([]);
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, routeFilter]);
 
   const { data: rides, isLoading } = useQuery(
-    allUserRidesQueryOptions(profileUserId, page, PAGE_SIZE),
+    allUserRidesQueryOptions(
+      profileUserId,
+      page,
+      PAGE_SIZE,
+      debouncedSearch || undefined,
+      routeFilter.length > 0 ? routeFilter : undefined,
+    ),
   );
 
   const handleSort = (key: SortKey) => {
@@ -83,12 +107,7 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
 
   const sorted = useMemo(() => {
     if (!rides) return [];
-    let filtered = rides;
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      filtered = rides.filter((r) => r.name?.toLowerCase().includes(term));
-    }
-    return [...filtered].sort((a, b) => {
+    return [...rides].sort((a, b) => {
       const aVal = a[sortKey];
       const bVal = b[sortKey];
 
@@ -108,7 +127,7 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
       const numB = Number(bVal);
       return sortDir === "asc" ? numA - numB : numB - numA;
     });
-  }, [rides, sortKey, sortDir, search]);
+  }, [rides, sortKey, sortDir]);
 
   const hasMore = rides?.length === PAGE_SIZE;
   const totalShown = (page - 1) * PAGE_SIZE + (rides?.length ?? 0);
@@ -129,6 +148,36 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+      </div>
+
+      {/* Route filter chips */}
+      <div className="profile-route-chips">
+        {FILTER_ROUTES.map((route) => {
+          const isActive = routeFilter.includes(route);
+          return (
+            <button
+              key={route}
+              className={`filter-chip${isActive ? " filter-chip--active" : ""}`}
+              style={
+                isActive
+                  ? {
+                      backgroundColor: ROUTE_COLORS[route as RouteCategory],
+                      borderColor: ROUTE_COLORS[route as RouteCategory],
+                    }
+                  : {}
+              }
+              onClick={() => {
+                setRouteFilter((prev) =>
+                  prev.includes(route)
+                    ? prev.filter((r) => r !== route)
+                    : [...prev, route],
+                );
+              }}
+            >
+              {ROUTE_LABELS[route as RouteCategory]}
+            </button>
+          );
+        })}
       </div>
 
       {/* Table */}

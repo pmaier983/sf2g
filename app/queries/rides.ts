@@ -35,9 +35,18 @@ export function allUserRidesQueryOptions(
   userId: string,
   page: number,
   pageSize = 25,
+  search?: string,
+  routeCategories?: string[],
 ) {
   return queryOptions({
-    queryKey: ["allUserRides", userId, page, pageSize] as const,
+    queryKey: [
+      "allUserRides",
+      userId,
+      page,
+      pageSize,
+      search,
+      routeCategories,
+    ] as const,
     queryFn: () =>
       fetchUserRides({
         data: {
@@ -46,6 +55,10 @@ export function allUserRidesQueryOptions(
           includeHidden: true,
           limit: pageSize,
           offset: (page - 1) * pageSize,
+          search: search || undefined,
+          routeCategories: routeCategories?.length
+            ? routeCategories
+            : undefined,
         },
       }),
     staleTime: 120_000,

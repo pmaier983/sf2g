@@ -322,7 +322,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
     let query = supabase
       .from("rides")
       .select(
-        "user_id, route_category, destination_company, distance_meters, elevation_gain_meters, average_speed_mps, tailwind_component_ms, average_watts, average_heartrate, kilojoules, ride_date, start_latlng, end_latlng",
+        "user_id, route_category, destination_company, distance_meters, elevation_gain_meters, average_speed_mps, average_watts, average_heartrate, kilojoules, ride_date, start_latlng, end_latlng",
       )
       .not("route_category", "is", null);
 
@@ -365,7 +365,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
       distance_meters: number | null;
       elevation_gain_meters: number | null;
       average_speed_mps: number | null;
-      tailwind_component_ms: number | null;
+
       average_watts: number | null;
       average_heartrate: number | null;
       kilojoules: number | null;
@@ -489,8 +489,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
       speedSum: number;
       speedCount: number;
       speeds: number[];
-      tailwindSum: number;
-      tailwindCount: number;
+
       wattsSum: number;
       wattsCount: number;
       wattValues: number[];
@@ -529,8 +528,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
           speedSum: 0,
           speedCount: 0,
           speeds: [],
-          tailwindSum: 0,
-          tailwindCount: 0,
+
           wattsSum: 0,
           wattsCount: 0,
           wattValues: [],
@@ -584,12 +582,6 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
           agg.speedSum += ride.average_speed_mps;
           agg.speedCount++;
           agg.speeds.push(ride.average_speed_mps);
-        }
-
-        // Tailwind
-        if (ride.tailwind_component_ms != null) {
-          agg.tailwindSum += ride.tailwind_component_ms;
-          agg.tailwindCount++;
         }
 
         // Watts
@@ -688,8 +680,7 @@ export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
         active_years: unfilteredYearsMap.get(userId) ?? agg.years.size,
         last_ride_date: agg.lastRideDate,
         first_ride_date: agg.firstRideDate,
-        avg_tailwind_ms:
-          agg.tailwindCount > 0 ? agg.tailwindSum / agg.tailwindCount : 0,
+        avg_tailwind_ms: 0,
         avg_watts: agg.wattsCount > 0 ? agg.wattsSum / agg.wattsCount : null,
         median_watts: computeMedian(agg.wattValues),
         avg_heartrate: agg.hrCount > 0 ? agg.hrSum / agg.hrCount : null,
@@ -803,23 +794,39 @@ export const fetchPprDawnRiderIds = createServerFn({ method: "GET" })
     const routeCategories =
       data.routeCategories?.filter((c) => VALID_ROUTE_CATEGORIES.has(c)) ?? [];
 
-    const { data: rides, error } = await supabase
-      .from("ppr_dawn_rides")
-      .select("*");
-
-    if (error) {
-      console.error("[leaderboard] Failed to fetch PPR dawn rides:", error);
-      throw new Error(`Failed to fetch PPR dawn rides: ${error.message}`);
+    const PAGE_SIZE = 1000;
+    const allRides: PprDawnRide[] = [];
+    let offset = 0;
+    let hasMore = true;
+    while (hasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("ppr_dawn_rides")
+        .select("*")
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (pageError) {
+        console.error(
+          "[leaderboard] Failed to fetch PPR dawn rides:",
+          pageError,
+        );
+        throw new Error(`Failed to fetch PPR dawn rides: ${pageError.message}`);
+      }
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allRides.push(...page);
+        offset += page.length;
+        if (page.length < PAGE_SIZE) hasMore = false;
+      }
     }
-    if (!rides || rides.length === 0)
+    if (allRides.length === 0)
       return { riderIds: [], rideCounts: {}, rideIds: [] };
 
     // Filter by date range in JS using the ride's local date.
     // start_date is a UTC timestamptz — we convert to the ride's local timezone
     // to get the correct YYYY-MM-DD date for comparison.
-    let filteredByDate = rides;
+    let filteredByDate = allRides;
     if (dateFrom || dateTo) {
-      filteredByDate = rides.filter((ride) => {
+      filteredByDate = allRides.filter((ride) => {
         const tz = extractTimezone(ride.timezone);
         // en-CA locale gives YYYY-MM-DD format
         const localDate = new Date(ride.start_date ?? "").toLocaleDateString(
@@ -928,16 +935,30 @@ function extractTimezone(tz: string | null | undefined): string {
 export const fetchRiderGrowthData = createServerFn({ method: "GET" }).handler(
   async (): Promise<MonthlyRideStat[]> => {
     const supabase = createAnonClient();
-    const { data, error } = await supabase
-      .from("monthly_ride_stats")
-      .select("user_id, month, route_category, ride_count")
-      .not("route_category", "is", null)
-      .order("month", { ascending: true });
-    if (error) {
-      console.error("[leaderboard] Failed to fetch growth data:", error);
-      throw new Error(`Failed to fetch growth data: ${error.message}`);
+    const PAGE_SIZE = 1000;
+    const allRows: MonthlyRideStat[] = [];
+    let offset = 0;
+    let hasMore = true;
+    while (hasMore) {
+      const { data: page, error: pageError } = await supabase
+        .from("monthly_ride_stats")
+        .select("user_id, month, route_category, ride_count")
+        .not("route_category", "is", null)
+        .range(offset, offset + PAGE_SIZE - 1)
+        .order("month", { ascending: true });
+      if (pageError) {
+        console.error("[leaderboard] Failed to fetch growth data:", pageError);
+        throw new Error(`Failed to fetch growth data: ${pageError.message}`);
+      }
+      if (!page || page.length === 0) {
+        hasMore = false;
+      } else {
+        allRows.push(...(page as MonthlyRideStat[]));
+        offset += page.length;
+        if (page.length < PAGE_SIZE) hasMore = false;
+      }
     }
-    return (data ?? []) as MonthlyRideStat[];
+    return allRows;
   },
 );
 

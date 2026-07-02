@@ -19,7 +19,6 @@ import type {
   RouteCategory,
   UserUpdate,
 } from "../lib/database.types";
-import { enrichMissingWindData } from "./wind-enrichment";
 import { computeAndStoreGroupRides } from "./group-rides";
 
 // ---------------------------------------------------------------------------
@@ -34,8 +33,6 @@ export interface SyncResult {
 
 /** Options to control sync behavior (used by cron to reduce subrequests) */
 export interface SyncOptions {
-  /** Skip per-user wind enrichment (cron runs it as a separate step) */
-  skipWindEnrichment?: boolean;
   /** Skip per-user leaderboard refresh (cron's reclassify step handles it) */
   skipLeaderboardRefresh?: boolean;
   /** Ignore last_activity_at and re-fetch all rides from Strava */
@@ -51,6 +48,9 @@ const BATCH_SIZE = 100;
 
 /** Max activities per page from Strava */
 const PAGE_SIZE = 200;
+
+/** Max pages to fetch per sync invocation (prevents Cloudflare subrequest exhaustion) */
+const MAX_PAGES_PER_SYNC = 5;
 
 /**
  * Transform a Strava activity summary into a RideInsert object.
@@ -253,6 +253,14 @@ export async function performSync(
         hasMore = false;
       } else {
         page++;
+        // Safety valve: stop after MAX_PAGES_PER_SYNC to stay within Cloudflare subrequest limits
+        if (page > MAX_PAGES_PER_SYNC) {
+          const msg =
+            "Large history detected — synced first 1000 activities. Click sync again for more.";
+          console.warn(`[sync] ${msg}`);
+          errors.push(msg);
+          hasMore = false;
+        }
       }
     } catch (err) {
       const errMsg = `Failed to fetch page ${page}: ${err instanceof Error ? err.message : String(err)}`;
@@ -458,26 +466,6 @@ export async function performSync(
     console.warn(
       `[sync] Ride co-occurrences / group rides failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
     );
-  }
-
-  // 7. Enrich wind data for newly synced rides (skipped in cron — runs as separate step)
-  if (!options?.skipWindEnrichment) {
-    try {
-      const windResult = await enrichMissingWindData();
-      console.log(
-        `[sync] Wind enrichment: ${windResult.processed} rides enriched`,
-      );
-      if (windResult.errors.length > 0) {
-        console.warn(
-          `[sync] Wind enrichment errors: ${windResult.errors.join(" | ")}`,
-        );
-      }
-    } catch (err) {
-      // Wind enrichment is non-critical — don't fail the sync
-      console.warn(
-        `[sync] Wind enrichment failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
   }
 
   const result: SyncResult = {

@@ -4,14 +4,11 @@
  * Runs periodic maintenance tasks:
  * 1. **Sync all users** — fetch new rides from Strava for every registered user
  * 2. Reclassify all rides (fixes stale classifications)
- * 3. Enrich missing wind data (fetches from Open-Meteo)
- * 4. Refresh materialized views and pre-compute group rides
+ * 3. Refresh materialized views and pre-compute group rides
  *
  * Rate limit budgets:
  * - Strava: Uses ~50% of the 15-min window (85 of 170 effective requests),
  *   leaving the other half for manual user syncs.
- * - Open-Meteo: Uses 200 of 10,000 daily calls, leaving plenty for manual
- *   wind enrichment triggers and future growth.
  *
  * Protected by CRON_SECRET — must match the secret set in environment variables.
  * Can be triggered via:
@@ -24,10 +21,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
 import { CRON_SYNC_BUDGET } from "../lib/constants";
 import { performReclassification, type ReclassifyResult } from "./reclassify";
-import {
-  enrichMissingWindData,
-  type WindEnrichmentResult,
-} from "./wind-enrichment";
 import { performSync, type SyncResult } from "./sync";
 import { computeAndStoreGroupRides } from "./group-rides";
 
@@ -55,7 +48,6 @@ export interface SyncAllUsersResult {
 export interface CronResult {
   syncAll: SyncAllUsersResult;
   reclassify: ReclassifyResult;
-  wind: WindEnrichmentResult;
   totalDurationMs: number;
 }
 
@@ -179,10 +171,9 @@ async function syncAllUsers(): Promise<SyncAllUsersResult> {
 
     try {
       const syncResult = await performSync(user.id, {
-        // Skip per-user wind enrichment and leaderboard refresh in cron mode.
-        // These run as separate cron steps (reclassify + wind), which is more
+        // Skip per-user leaderboard refresh in cron mode.
+        // The reclassify step handles it in batch, which is more
         // efficient and avoids blowing through Cloudflare's subrequest limit.
-        skipWindEnrichment: true,
         skipLeaderboardRefresh: true,
       });
 
@@ -285,7 +276,6 @@ export const triggerCronJobs = createServerFn({ method: "POST" }).handler(
  * Order matters:
  * 1. Sync all users (produces new rides)
  * 2. Reclassify rides (fixes classifications on new + old rides)
- * 3. Wind enrichment (fetches weather data for new rides)
  */
 export async function runCronJobs(): Promise<CronResult> {
   const startTime = Date.now();
@@ -324,28 +314,7 @@ export async function runCronJobs(): Promise<CronResult> {
     };
   }
 
-  // 3. Enrich missing wind data (may fail on free plan if subrequests exhausted)
-  let windResult: WindEnrichmentResult;
-  try {
-    console.log("[cron] Running wind enrichment...");
-    windResult = await enrichMissingWindData();
-    console.log(
-      `[cron] Wind enrichment complete: ${windResult.processed} processed in ${windResult.durationMs}ms`,
-    );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(
-      `[cron] Wind enrichment failed (may be subrequest limit): ${msg}`,
-    );
-    windResult = {
-      processed: 0,
-      totalMissing: 0,
-      errors: [`Skipped: ${msg}`],
-      durationMs: 0,
-    };
-  }
-
-  // 4. Refresh ride co-occurrences MV for the rider network
+  // 3. Refresh ride co-occurrences MV for the rider network
   //    Runs after sync + reclassify so new rides are included.
   //    Non-concurrent refresh (no unique index), but fast for small rider pools.
   try {
@@ -371,7 +340,7 @@ export async function runCronJobs(): Promise<CronResult> {
     );
   }
 
-  // 5. Refresh PPR dawn rides MV so the PPR @ 6am filter includes new rides
+  // 4. Refresh PPR dawn rides MV so the PPR @ 6am filter includes new rides
   try {
     console.log("[cron] Refreshing PPR dawn rides MV...");
     const pprStart = Date.now();
@@ -393,7 +362,6 @@ export async function runCronJobs(): Promise<CronResult> {
   return {
     syncAll: syncAllResult,
     reclassify: reclassifyResult,
-    wind: windResult,
     totalDurationMs,
   };
 }

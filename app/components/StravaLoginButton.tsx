@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 
 /**
  * StravaLoginButton — "Connect with Strava" CTA.
@@ -11,7 +11,8 @@ export function StravaLoginButton({ large }: { large?: boolean }) {
   return (
     <Link
       to="/auth/login"
-      className={`strava-btn${large ? ' strava-btn--lg' : ''}`}
+      search={{ force: false }}
+      className={`strava-btn${large ? " strava-btn--lg" : ""}`}
     >
       <img
         src="/connect-with-strava-orange.svg"
@@ -19,5 +20,5 @@ export function StravaLoginButton({ large }: { large?: boolean }) {
         className="strava-btn__img"
       />
     </Link>
-  )
+  );
 }

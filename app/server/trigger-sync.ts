@@ -82,7 +82,19 @@ async function validateSyncPrereqs(): Promise<string> {
 export const triggerSync = createServerFn({ method: "POST" }).handler(
   async () => {
     const userId = await validateSyncPrereqs();
-    return performSync(userId);
+    try {
+      return await performSync(userId);
+    } catch (error) {
+      console.error("[trigger-sync] performSync crashed:", error);
+      return {
+        newRides: 0,
+        totalProcessed: 0,
+        errors: [
+          `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ],
+        skippedExisting: 0,
+      };
+    }
   },
 );
 
@@ -98,6 +110,18 @@ export const triggerSync = createServerFn({ method: "POST" }).handler(
 export const triggerFullResync = createServerFn({ method: "POST" }).handler(
   async () => {
     const userId = await validateSyncPrereqs();
-    return performSync(userId, { fullResync: true });
+    try {
+      return await performSync(userId, { fullResync: true });
+    } catch (error) {
+      console.error("[trigger-sync] performSync (full resync) crashed:", error);
+      return {
+        newRides: 0,
+        totalProcessed: 0,
+        errors: [
+          `Re-sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ],
+        skippedExisting: 0,
+      };
+    }
   },
 );

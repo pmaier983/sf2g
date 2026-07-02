@@ -26,6 +26,8 @@ export const fetchUserRides = createServerFn({ method: "GET" })
       routeCategory?: RouteCategory;
       includeAllRides?: boolean;
       includeHidden?: boolean;
+      search?: string;
+      routeCategories?: string[];
     }) => input,
   )
   .handler(async ({ data }): Promise<Ride[]> => {
@@ -36,13 +38,15 @@ export const fetchUserRides = createServerFn({ method: "GET" })
 
     let query = supabase
       .from("rides")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", data.userId)
       .order("ride_date", { ascending: false });
 
     // Optional route category filter
     if (data.routeCategory) {
       query = query.eq("route_category", data.routeCategory);
+    } else if (data.routeCategories && data.routeCategories.length > 0) {
+      query = query.in("route_category", data.routeCategories);
     } else if (!data.includeAllRides) {
       // Default: only return SF2G rides (exclude rides with null route_category)
       query = query.not("route_category", "is", null);
@@ -51,6 +55,12 @@ export const fetchUserRides = createServerFn({ method: "GET" })
     // Only filter out hidden rides when includeHidden is not set
     if (!data.includeHidden) {
       query = query.or("is_hidden.eq.false,is_hidden.is.null");
+    }
+
+    // Server-side search by ride name
+    if (data.search) {
+      const sanitized = data.search.replace(/[%_\\]/g, "\\$&");
+      query = query.ilike("name", `%${sanitized}%`);
     }
 
     // Pagination
@@ -84,7 +94,7 @@ const VALID_SORT_COLUMNS = new Set([
   "elevation_gain_meters",
   "moving_time_seconds",
   "name",
-  "tailwind_component_ms",
+
   "route_category",
   "display_name",
   "average_watts",
@@ -159,7 +169,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
         elevation_gain_meters,
         moving_time_seconds,
         destination_company,
-        tailwind_component_ms,
+
         start_latlng,
         end_latlng,
         average_watts,
@@ -316,7 +326,7 @@ export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
           moving_time_seconds: (row.moving_time_seconds as number) ?? 0,
           destination_company:
             row.destination_company as RideLeaderboardEntry["destination_company"],
-          tailwind_component_ms: row.tailwind_component_ms as number | null,
+          tailwind_component_ms: null,
           start_latlng: row.start_latlng as [number, number] | null,
           end_latlng: row.end_latlng as [number, number] | null,
           average_watts: row.average_watts as number | null,

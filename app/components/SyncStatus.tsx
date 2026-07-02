@@ -49,6 +49,14 @@ export function SyncStatus() {
   const isBusy = isSyncing || isResyncing;
 
   const handleSyncResult = async (result: SyncResult, isResync: boolean) => {
+    if (!result || !Array.isArray(result.errors)) {
+      toast.error("Sync failed", {
+        description:
+          "Server returned an unexpected response. Please try again.",
+      });
+      return;
+    }
+
     setSyncResult(result);
 
     // Check if sync "succeeded" but had errors (e.g. Strava API issues)
@@ -81,13 +89,15 @@ export function SyncStatus() {
       toast.info("Already up to date — no new rides found.");
     }
 
-    // Mark as synced in session
-    try {
-      sessionStorage.setItem(SESSION_KEY, "true");
-    } catch {
-      // Ignore sessionStorage errors
+    // Only mark as synced when there's actual success (don't hide sync button on total failure)
+    if (result.errors.length === 0 || result.newRides > 0) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, "true");
+      } catch {
+        // Ignore sessionStorage errors
+      }
+      setHasSyncedThisSession(true);
     }
-    setHasSyncedThisSession(true);
 
     // Invalidate queries to refresh data
     await Promise.all([

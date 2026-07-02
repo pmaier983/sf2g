@@ -13,7 +13,7 @@ import {
   formatRideDate,
   formatMovingTime,
 } from "../lib/leaderboard-utils";
-import { msToMph } from "../lib/wind";
+
 import { useUnit } from "../lib/useUnit";
 import { RouteTag } from "./RouteTag";
 import { useColumnResize } from "../lib/useColumnResize";
@@ -102,13 +102,7 @@ const COLUMNS: ColumnDef[] = [
     sortable: true,
     tooltip: "Total moving time (excludes stopped time)",
   },
-  {
-    key: "tailwind_component_ms",
-    label: "Tailwind",
-    sortable: true,
-    tooltip:
-      "Wind assistance along the ride direction (mph). Green (+) = tailwind pushing you forward. Red (−) = headwind slowing you down. Sourced from Open-Meteo historical weather data.",
-  },
+
   {
     key: "average_watts",
     label: "Avg W",
@@ -401,31 +395,6 @@ function RideRow({
 
       {/* Moving Time */}
       <td>{formatMovingTime(ride.moving_time_seconds)}</td>
-
-      {/* Tailwind */}
-      <td>
-        {ride.tailwind_component_ms != null ? (
-          <span
-            style={{
-              color:
-                ride.tailwind_component_ms > 0.5
-                  ? "var(--color-success)"
-                  : ride.tailwind_component_ms < -0.5
-                    ? "var(--color-error)"
-                    : "var(--color-text-muted)",
-              fontWeight: 500,
-            }}
-          >
-            {(() => {
-              const mph = msToMph(ride.tailwind_component_ms);
-              const sign = mph > 0 ? "+" : "";
-              return Math.abs(mph) < 0.5 ? "—" : `${sign}${mph.toFixed(1)}`;
-            })()}
-          </span>
-        ) : (
-          <span className="text-muted">—</span>
-        )}
-      </td>
 
       {/* Avg Watts */}
       <td>

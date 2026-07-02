@@ -431,7 +431,7 @@ export const CRON_SYNC_BUDGET = {
   /**
    * Max users to sync per cron invocation.
    * Each user costs ~5-7 Cloudflare subrequests. With the free plan's 50-subrequest
-   * limit, we need to leave ~10 subrequests for the reclassify + wind steps.
+   * limit, we need to leave ~10 subrequests for the reclassify step.
    * Set to 6 for free plan safety; increase if on paid plan.
    */
   MAX_USERS_PER_RUN: 6,

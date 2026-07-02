@@ -614,7 +614,7 @@ describe("Sort columns — rides leaderboard", () => {
     "elevation_gain_meters",
     "moving_time_seconds",
     "name",
-    "tailwind_component_ms",
+
     "route_category",
     "display_name",
     "average_watts",
@@ -631,7 +631,7 @@ describe("Sort columns — rides leaderboard", () => {
       "elevation_gain_meters",
       "moving_time_seconds",
       "name",
-      "tailwind_component_ms",
+
       "route_category",
       "display_name",
       "average_watts",

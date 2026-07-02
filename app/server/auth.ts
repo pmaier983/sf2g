@@ -25,16 +25,16 @@ import type { User } from "../lib/database.types";
 // ---------------------------------------------------------------------------
 // getStravaAuthUrl — returns the Strava OAuth authorize URL
 // ---------------------------------------------------------------------------
-export const getStravaAuthUrl = createServerFn({ method: "GET" }).handler(
-  async () => {
-    return getAuthorizationUrl();
-  },
-);
+export const getStravaAuthUrl = createServerFn({ method: "GET" })
+  .inputValidator((input: { forceConsent?: boolean }) => input)
+  .handler(async ({ data }) => {
+    return getAuthorizationUrl(data.forceConsent ?? false);
+  });
 
 // ---------------------------------------------------------------------------
 // handleStravaCallback — exchanges code for tokens, upserts user, sets session
 // ---------------------------------------------------------------------------
-export const handleStravaCallback = createServerFn({ method: "GET" })
+export const handleStravaCallback = createServerFn({ method: "POST" })
   .inputValidator(
     (input: { code: string; scope: string; state: string }) => input,
   )
@@ -94,9 +94,6 @@ export const handleStravaCallback = createServerFn({ method: "GET" })
     //    With the webhook transition, the cron no longer polls Strava for rides.
     //    Webhooks only fire for future activities, not historical backfill.
     //    This sync runs inline so the callback page can show progress/results.
-    //    Wind enrichment is skipped here — it queries ALL rides globally and
-    //    makes hundreds of API calls, causing the callback to stall for 30+ seconds.
-    //    Wind data is backfilled by the cron or manual sync.
     let syncResult: {
       newRides: number;
       totalProcessed: number;
@@ -109,7 +106,7 @@ export const handleStravaCallback = createServerFn({ method: "GET" })
       console.log(
         `[auth] Triggering initial sync for user ${user.id} (${user.display_name ?? user.username ?? "new user"})`,
       );
-      syncResult = await performSync(user.id, { skipWindEnrichment: true });
+      syncResult = await performSync(user.id);
       console.log(
         `[auth] Initial sync complete: ${syncResult.newRides} new rides, ${syncResult.totalProcessed} total`,
       );

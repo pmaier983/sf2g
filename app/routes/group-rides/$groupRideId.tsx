@@ -45,12 +45,34 @@ interface GroupRideSearch {
   riders: string; // comma-separated rider IDs
 }
 
+const SEARCH_DEFAULTS: GroupRideSearch = {
+  date: "",
+  route: "bayway" as RouteCategory,
+  riders: "",
+};
+
 export const Route = createFileRoute("/group-rides/$groupRideId")({
   validateSearch: (raw: Record<string, unknown>): GroupRideSearch => ({
     date: (raw.date as string) || "",
     route: (raw.route as RouteCategory) || "bayway",
     riders: (raw.riders as string) || "",
   }),
+  search: {
+    middlewares: [
+      ({ search, next }) => {
+        const out = { ...search } as Record<string, unknown>;
+        for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
+          const val = out[key];
+          const valEmpty = val === undefined || val === null || val === "";
+          const defEmpty = def === undefined || def === null || def === "";
+          if (val === def || (valEmpty && defEmpty)) {
+            delete out[key];
+          }
+        }
+        return next(out as unknown as typeof search);
+      },
+    ],
+  },
   component: GroupRideDetailPage,
   head: () => ({
     meta: [
@@ -291,11 +313,11 @@ function GroupRideDetailPage() {
             search: "",
             ppr: false,
             other: false,
-            weekends: true,
+            weekends: false,
             company: undefined,
             user: undefined,
             view: "groups" as const,
-            duration: "1y",
+            duration: "1w",
             chart: false,
             sort: "sf2g_total",
             dir: "desc" as const,
@@ -305,7 +327,7 @@ function GroupRideDetailPage() {
             dateFrom: undefined,
             dateTo: undefined,
             datePreset: undefined,
-            density: "condensed" as const,
+            density: "expanded" as const,
             reverse: false,
             gSort: "date",
             gDir: "desc" as const,
@@ -355,11 +377,11 @@ function GroupRideDetailPage() {
             search: "",
             ppr: false,
             other: false,
-            weekends: true,
+            weekends: false,
             company: undefined,
             user: undefined,
             view: "groups" as const,
-            duration: "1y",
+            duration: "1w",
             chart: false,
             sort: "sf2g_total",
             dir: "desc" as const,
@@ -369,7 +391,7 @@ function GroupRideDetailPage() {
             dateFrom: undefined,
             dateTo: undefined,
             datePreset: undefined,
-            density: "condensed" as const,
+            density: "expanded" as const,
             reverse: false,
             gSort: "date",
             gDir: "desc" as const,

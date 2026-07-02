@@ -9,7 +9,7 @@ import {
   formatSpeed,
   formatRideDate,
 } from "../lib/leaderboard-utils";
-import { msToMph } from "../lib/wind";
+
 import type { UnitSystem } from "./UnitToggle";
 import { TinyPie } from "./TinyPie";
 import { ROUTE_LABELS } from "../lib/constants";
@@ -267,33 +267,7 @@ export const leaderboardColumns = [
     size: 110,
     sortDescFirst: true,
   }),
-  columnHelper.accessor("avg_tailwind_ms", {
-    header: () => (
-      <HeaderWithTooltip
-        label="Avg Wind"
-        tooltip="Average wind assistance across all SF2G rides (mph). Positive (green) = tailwind pushing you forward. Negative (red) = headwind slowing you down. Computed by projecting Open-Meteo historical wind data onto each ride's direction of travel."
-      />
-    ),
-    cell: (info) => {
-      const ms = safeNumber(info.getValue());
-      const mph = msToMph(ms);
-      const sign = mph > 0 ? "+" : "";
-      const color =
-        mph > 0.2
-          ? "var(--color-success)"
-          : mph < -0.2
-            ? "var(--color-error)"
-            : "var(--color-text-muted)";
-      return (
-        <span style={{ color, fontVariantNumeric: "tabular-nums" }}>
-          {sign}
-          {mph.toFixed(1)}
-        </span>
-      );
-    },
-    size: 100,
-    sortDescFirst: true,
-  }),
+
   columnHelper.accessor("avg_watts", {
     header: () => (
       <HeaderWithTooltip

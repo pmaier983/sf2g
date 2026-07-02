@@ -41,12 +41,6 @@ function formatHr(value: number | null): string {
   return `${Math.round(value)} bpm`;
 }
 
-function formatTailwind(value: number | null): string {
-  if (value == null) return "—";
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(1)} m/s`;
-}
-
 function formatCalories(kj: number | null): string {
   if (kj == null) return "—";
   return `${Math.round(kj)} kJ`;
@@ -67,7 +61,6 @@ type SortColumn =
   | "maxHr"
   | "distance"
   | "elevation"
-  | "tailwind"
   | "calories";
 
 interface ColumnDef {
@@ -142,11 +135,7 @@ export function GroupRideComparisonTable({
         label: "Elevation",
         getValue: (r) => r.ride.elevation_gain_meters,
       },
-      {
-        key: "tailwind",
-        label: "Tailwind",
-        getValue: (r) => r.ride.tailwind_component_ms,
-      },
+
       {
         key: "calories",
         label: "Calories",
@@ -232,8 +221,6 @@ export function GroupRideComparisonTable({
         return val != null ? formatDistance(val, unit) : "—";
       case "elevation":
         return val != null ? formatElevation(val, unit) : "—";
-      case "tailwind":
-        return formatTailwind(val);
       case "calories":
         return formatCalories(val);
       default:

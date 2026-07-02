@@ -1,9 +1,5 @@
 import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
-import {
-  triggerWindEnrichment,
-  type WindEnrichmentResult,
-} from "../server/wind-enrichment";
 import type { CronResult } from "../server/cron";
 
 /**
@@ -17,13 +13,6 @@ export function DevToolsPanel() {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<ReclassifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Wind enrichment state
-  const [windIsRunning, setWindIsRunning] = useState(false);
-  const [windResult, setWindResult] = useState<WindEnrichmentResult | null>(
-    null,
-  );
-  const [windError, setWindError] = useState<string | null>(null);
 
   // Cron jobs state
   const [cronIsRunning, setCronIsRunning] = useState(false);
@@ -42,21 +31,6 @@ export function DevToolsPanel() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsRunning(false);
-    }
-  };
-
-  const handleWindEnrichment = async () => {
-    setWindIsRunning(true);
-    setWindResult(null);
-    setWindError(null);
-
-    try {
-      const res = await triggerWindEnrichment();
-      setWindResult(res);
-    } catch (err) {
-      setWindError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setWindIsRunning(false);
     }
   };
 
@@ -290,81 +264,6 @@ export function DevToolsPanel() {
               </div>
             )}
 
-            {/* Wind Enrichment Section */}
-            <div className="dev-tools__section">
-              <h4 className="dev-tools__section-title">Wind Enrichment</h4>
-              <p className="dev-tools__section-desc">
-                Fetch wind data from Open-Meteo for rides missing tailwind data.
-                Processes up to 200 rides per run.
-              </p>
-              <button
-                className="dev-tools__action-btn"
-                onClick={handleWindEnrichment}
-                disabled={windIsRunning}
-                id="dev-tools-wind-btn"
-              >
-                {windIsRunning ? (
-                  <>
-                    <span className="dev-tools__spinner" />
-                    Enriching…
-                  </>
-                ) : (
-                  "🌬️ Enrich Wind Data"
-                )}
-              </button>
-            </div>
-
-            {/* Wind Error Display */}
-            {windError && (
-              <div className="dev-tools__error">
-                <strong>Error:</strong> {windError}
-              </div>
-            )}
-
-            {/* Wind Result Display */}
-            {windResult && (
-              <div className="dev-tools__result">
-                <div className="dev-tools__result-header">
-                  {windResult.processed > 0 ? "✅" : "ℹ️"} Wind Enrichment
-                  Complete
-                  <span className="dev-tools__duration">
-                    {windResult.durationMs < 1000
-                      ? `${windResult.durationMs}ms`
-                      : `${(windResult.durationMs / 1000).toFixed(1)}s`}
-                  </span>
-                </div>
-
-                <div className="dev-tools__stats-grid">
-                  <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">
-                      {windResult.processed}
-                    </span>
-                    <span className="dev-tools__stat-label">Processed</span>
-                  </div>
-                  <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">
-                      {windResult.totalMissing - windResult.processed}
-                    </span>
-                    <span className="dev-tools__stat-label">Remaining</span>
-                  </div>
-                </div>
-
-                {/* Wind Errors */}
-                {windResult.errors.length > 0 && (
-                  <div className="dev-tools__warnings">
-                    <h5 className="dev-tools__breakdown-title">
-                      ⚠️ Warnings ({windResult.errors.length})
-                    </h5>
-                    {windResult.errors.map((err, i) => (
-                      <div key={i} className="dev-tools__warning-item">
-                        {err}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Divider */}
             <hr
               style={{
@@ -378,14 +277,13 @@ export function DevToolsPanel() {
             <div className="dev-tools__section">
               <h4 className="dev-tools__section-title">🕐 Cron Jobs</h4>
               <p className="dev-tools__section-desc">
-                Run <strong>all</strong> maintenance tasks: sync all users,
-                reclassify rides, and enrich wind data. Same as what the
-                external cron endpoint runs.
+                Run <strong>all</strong> maintenance tasks: sync all users and
+                reclassify rides. Same as what the external cron endpoint runs.
               </p>
               <button
                 className="dev-tools__action-btn"
                 onClick={handleCronJobs}
-                disabled={cronIsRunning || isRunning || windIsRunning}
+                disabled={cronIsRunning || isRunning}
                 id="dev-tools-cron-btn"
               >
                 {cronIsRunning ? (
@@ -436,12 +334,6 @@ export function DevToolsPanel() {
                       {cronResult.reclassify.updated}
                     </span>
                     <span className="dev-tools__stat-label">Reclassified</span>
-                  </div>
-                  <div className="dev-tools__stat">
-                    <span className="dev-tools__stat-value">
-                      {cronResult.wind.processed}
-                    </span>
-                    <span className="dev-tools__stat-label">Wind Enriched</span>
                   </div>
                 </div>
 
@@ -500,13 +392,11 @@ export function DevToolsPanel() {
 
                 {/* Combined errors */}
                 {(cronResult.reclassify.errors.length > 0 ||
-                  cronResult.wind.errors.length > 0 ||
                   cronResult.syncAll.failed > 0) && (
                   <div className="dev-tools__warnings">
                     <h5 className="dev-tools__breakdown-title">
                       ⚠️ Warnings (
                       {cronResult.reclassify.errors.length +
-                        cronResult.wind.errors.length +
                         cronResult.syncAll.results.filter((r) => r.error)
                           .length}
                       )
@@ -522,10 +412,7 @@ export function DevToolsPanel() {
                           {r.error}
                         </div>
                       ))}
-                    {[
-                      ...cronResult.reclassify.errors,
-                      ...cronResult.wind.errors,
-                    ].map((err, i) => (
+                    {cronResult.reclassify.errors.map((err, i) => (
                       <div key={i} className="dev-tools__warning-item">
                         {err}
                       </div>
