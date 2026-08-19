@@ -19,6 +19,7 @@ import type {
   DestinationCompany,
 } from "../lib/database.types";
 import { decodePolyline } from "../lib/polyline";
+import { getCachedPolyline } from "../lib/polyline-overlap";
 import { PPR_INTERCEPTS } from "../lib/constants";
 import type { PprIntercept } from "../lib/constants";
 import { getCommuteDirection } from "../lib/route-classifier";
@@ -634,18 +635,22 @@ const PPR_RADIUS_METERS = 500;
 
 /**
  * Estimate when a ride passes through a specific intercept point.
- * Uses linear interpolation along the summary polyline.
+ * Uses linear interpolation along decoded points with fast Euclidean pre-filter.
  */
-function estimateInterceptArrival(
+function estimateInterceptArrivalFromPoints(
+  points: [number, number][],
   ride: PprDawnRide,
   intercept: PprIntercept,
 ): Date | null {
-  if (!ride.summary_polyline) return null;
-  const points = decodePolyline(ride.summary_polyline);
   if (points.length === 0) return null;
 
   for (let i = 0; i < points.length; i++) {
     const [lat, lng] = points[i];
+    const dLat = lat - intercept.lat;
+    const dLng = lng - intercept.lng;
+    // 500m radius ~ 0.0045 deg -> 2.5e-5 deg^2
+    if (dLat * dLat + dLng * dLng > 2.5e-5) continue;
+
     const dist = haversineDistance(lat, lng, intercept.lat, intercept.lng);
     if (dist <= PPR_RADIUS_METERS) {
       const fraction = points.length > 1 ? i / (points.length - 1) : 0;
@@ -751,14 +756,21 @@ export const fetchPprDawnRiderIds = createServerFn({ method: "GET" })
     const qualifyingRideMap = new Map<string, string>(); // ride_id → user_id
 
     for (const ride of filteredByDate) {
+      if (!ride.summary_polyline) continue;
+      const cached = getCachedPolyline(ride.summary_polyline);
+      if (!cached || cached.points.length === 0) continue;
+      const points = cached.points;
+
+      const tz = extractTimezone(ride.timezone);
+
       for (const intercept of PPR_INTERCEPTS) {
-        const arrivalTime = estimateInterceptArrival(
+        const arrivalTime = estimateInterceptArrivalFromPoints(
+          points,
           ride as PprDawnRide,
           intercept,
         );
         if (!arrivalTime) continue;
 
-        const tz = extractTimezone(ride.timezone);
         const localTimeStr = arrivalTime.toLocaleString("en-US", {
           timeZone: tz,
           hour12: false,

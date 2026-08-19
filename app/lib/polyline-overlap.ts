@@ -58,7 +58,8 @@ function haversineDistance(
 // Polyline decode & sample cache
 // ---------------------------------------------------------------------------
 
-interface CachedPolyline {
+export interface CachedPolyline {
+  points: [number, number][];
   sampled: [number, number][];
   longerSampled: [number, number][];
   minLat: number;
@@ -70,7 +71,7 @@ interface CachedPolyline {
 const polylineCache = new Map<string, CachedPolyline>();
 const MAX_CACHE_SIZE = 3000;
 
-function getCachedPolyline(encoded: string): CachedPolyline | null {
+export function getCachedPolyline(encoded: string): CachedPolyline | null {
   const cached = polylineCache.get(encoded);
   if (cached) return cached;
 
@@ -97,6 +98,7 @@ function getCachedPolyline(encoded: string): CachedPolyline | null {
   const longerSampled = points.filter((_, i) => i % longerSampleRate === 0);
 
   const entry: CachedPolyline = {
+    points,
     sampled,
     longerSampled,
     minLat,

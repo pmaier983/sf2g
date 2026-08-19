@@ -55,16 +55,16 @@ export const Route = createRootRoute({
         httpEquiv: "Content-Security-Policy",
         content: [
           "default-src 'self'",
-          // Scripts: 'self' + inline for theme init + eval for Vite HMR / source maps
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          // Scripts: 'self' + inline for theme init + eval for Vite HMR + Cloudflare Web Analytics
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
           // Styles: 'self' + inline for Vite HMR + Google Fonts
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
           // Fonts from Google Fonts CDN
           "font-src 'self' https://fonts.gstatic.com",
-          // Images: self + Strava CDN (avatars) + data URIs
-          "img-src 'self' data: https://*.strava.com https://dgalywyr863hv.cloudfront.net https://*.basemaps.cartocdn.com",
-          // API connections: self + Supabase + Strava + PostHog
-          "connect-src 'self' https://*.supabase.co https://www.strava.com https://us.i.posthog.com",
+          // Images: self + Strava CDN + Google avatars + Gravatar + Carto tiles + data URIs
+          "img-src 'self' data: blob: https://*.strava.com https://*.cloudfront.net https://*.googleusercontent.com https://*.gravatar.com https://*.basemaps.cartocdn.com",
+          // API connections: self + Supabase + Strava + PostHog + Cloudflare Analytics
+          "connect-src 'self' https://*.supabase.co https://www.strava.com https://us.i.posthog.com https://cloudflareinsights.com",
           // Workers for map tiles
           "worker-src 'self' blob:",
         ].join("; "),
