@@ -294,7 +294,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
 
     const userMap = new Map((users ?? []).map((u) => [u.id, u]));
 
-    return topResults.map((r) => ({
+    return topResults.map((r, index) => ({
       userId: r.userId,
       displayName: userMap.get(r.userId)?.display_name || "Unknown",
       avatarUrl: userMap.get(r.userId)?.avatar_url || null,
@@ -302,6 +302,6 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       windowStart: r.windowStart,
       windowEnd: r.windowEnd,
       totalSf2gRides: r.totalRides,
-      rideDatesInWindow: r.rideDatesInWindow,
+      rideDatesInWindow: index < 10 ? r.rideDatesInWindow : [],
     }));
   });
