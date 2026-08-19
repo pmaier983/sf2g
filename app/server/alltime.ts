@@ -95,30 +95,11 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       ridesByUser = cached.ridesByUser;
     } else {
-      // Build the rides query
+      // Build the rides query generator
       const selectFields = data.reverse
         ? "user_id, ride_date, start_latlng, end_latlng"
         : "user_id, ride_date";
 
-      let query = supabase
-        .from("rides")
-        .select(selectFields)
-        .not("route_category", "is", null);
-
-      // Apply route filter
-      if (data.routes && data.routes.length > 0) {
-        const validCats = data.routes.filter((c) =>
-          VALID_ROUTE_CATEGORIES.has(c),
-        );
-        if (validCats.length > 0) {
-          query = query.in("route_category", validCats);
-        }
-      } else if (!data.includeOther) {
-        // Default: exclude 'other' routes unless includeOther is true
-        query = query.neq("route_category", "other");
-      }
-
-      // Apply company filter
       const VALID_COMPANIES = new Set([
         "netflix",
         "google",
@@ -128,22 +109,47 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
         "stanford",
         "tesla",
       ]);
-      if (data.company && VALID_COMPANIES.has(data.company)) {
-        query = query.eq(
-          "destination_company",
-          data.company as DestinationCompany,
-        );
-      }
 
-      // Validate and apply date filters
       const dateFrom =
         data.dateFrom && isValidDateString(data.dateFrom)
           ? data.dateFrom
           : null;
       const dateTo =
         data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
-      if (dateFrom) query = query.gte("ride_date", dateFrom);
-      if (dateTo) query = query.lte("ride_date", dateTo);
+
+      function createRidesQuery(countOptions?: { count: "exact" }) {
+        let query = countOptions
+          ? supabase.from("rides").select(selectFields, countOptions)
+          : supabase.from("rides").select(selectFields);
+
+        query = query.not("route_category", "is", null);
+
+        // Apply route filter
+        if (data.routes && data.routes.length > 0) {
+          const validCats = data.routes.filter((c) =>
+            VALID_ROUTE_CATEGORIES.has(c),
+          );
+          if (validCats.length > 0) {
+            query = query.in("route_category", validCats);
+          }
+        } else if (!data.includeOther) {
+          // Default: exclude 'other' routes unless includeOther is true
+          query = query.neq("route_category", "other");
+        }
+
+        // Apply company filter
+        if (data.company && VALID_COMPANIES.has(data.company)) {
+          query = query.eq(
+            "destination_company",
+            data.company as DestinationCompany,
+          );
+        }
+
+        if (dateFrom) query = query.gte("ride_date", dateFrom);
+        if (dateTo) query = query.lte("ride_date", dateTo);
+
+        return query.order("ride_date", { ascending: true });
+      }
 
       type AllTimeRide = {
         user_id: string;
@@ -153,30 +159,37 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       };
 
       const PAGE_SIZE = 1000;
-      const allRows: AllTimeRide[] = [];
-      let offset = 0;
-      let hasMore = true;
+      // Fetch first page and exact count in a single request
+      const {
+        data: firstPage,
+        count,
+        error: firstError,
+      } = await createRidesQuery({ count: "exact" }).range(0, PAGE_SIZE - 1);
 
-      const orderedQuery = query.order("ride_date", { ascending: true });
+      if (firstError) {
+        console.error("[alltime] Failed to fetch rides:", firstError);
+        throw new Error(`Failed to fetch rides: ${firstError.message}`);
+      }
 
-      while (hasMore) {
-        const { data: page, error: pageError } = await orderedQuery.range(
-          offset,
-          offset + PAGE_SIZE - 1,
-        );
+      const allRows: AllTimeRide[] = [
+        ...((firstPage ?? []) as unknown as AllTimeRide[]),
+      ];
+      const totalCount = count ?? allRows.length;
 
-        if (pageError) {
-          console.error("[alltime] Failed to fetch rides:", pageError);
-          throw new Error(`Failed to fetch rides: ${pageError.message}`);
+      // Fetch all remaining pages in parallel
+      if (totalCount > PAGE_SIZE) {
+        const pagePromises = [];
+        for (let offset = PAGE_SIZE; offset < totalCount; offset += PAGE_SIZE) {
+          pagePromises.push(
+            createRidesQuery().range(offset, offset + PAGE_SIZE - 1),
+          );
         }
-
-        if (!page || page.length === 0) {
-          hasMore = false;
-        } else {
-          allRows.push(...(page as unknown as AllTimeRide[]));
-          offset += page.length;
-          if (page.length < PAGE_SIZE) {
-            hasMore = false;
+        const results = await Promise.all(pagePromises);
+        for (const res of results) {
+          if (res.error) {
+            console.error("[alltime] Page fetch error:", res.error);
+          } else if (res.data) {
+            allRows.push(...(res.data as unknown as AllTimeRide[]));
           }
         }
       }
