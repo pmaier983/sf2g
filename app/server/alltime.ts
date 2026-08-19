@@ -44,6 +44,16 @@ function isValidDateString(str: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// In-memory cache for ride dates to ensure instant duration toggling (1w / 1m / 1y)
+// ---------------------------------------------------------------------------
+interface RidesCacheEntry {
+  timestamp: number;
+  ridesByUser: Map<string, string[]>;
+}
+const ridesCache = new Map<string, RidesCacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// ---------------------------------------------------------------------------
 // fetchAllTimeLeaderboard — rolling-window max rides per rider
 // ---------------------------------------------------------------------------
 export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
@@ -68,111 +78,139 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       Math.min(Math.round(data.durationDays), 3650),
     );
 
-    // Build the rides query
-    let query = supabase
-      .from("rides")
-      .select(
-        "user_id, ride_date, route_category, destination_company, start_latlng, end_latlng",
-      )
-      .not("route_category", "is", null);
+    // Cache key based on all filter parameters EXCEPT durationDays
+    const cacheKey = JSON.stringify({
+      routes: data.routes?.slice().sort(),
+      excludeWeekends: !!data.excludeWeekends,
+      dateFrom: data.dateFrom,
+      dateTo: data.dateTo,
+      includeOther: !!data.includeOther,
+      company: data.company,
+      reverse: !!data.reverse,
+    });
 
-    // Apply route filter
-    if (data.routes && data.routes.length > 0) {
-      const validCats = data.routes.filter((c) =>
-        VALID_ROUTE_CATEGORIES.has(c),
-      );
-      if (validCats.length > 0) {
-        query = query.in("route_category", validCats);
-      }
-    } else if (!data.includeOther) {
-      // Default: exclude 'other' routes unless includeOther is true
-      query = query.neq("route_category", "other");
-    }
+    let ridesByUser: Map<string, string[]>;
+    const cached = ridesCache.get(cacheKey);
 
-    // Apply company filter
-    const VALID_COMPANIES = new Set([
-      "netflix",
-      "google",
-      "apple",
-      "meta",
-      "nvidia",
-      "stanford",
-      "tesla",
-    ]);
-    if (data.company && VALID_COMPANIES.has(data.company)) {
-      query = query.eq(
-        "destination_company",
-        data.company as DestinationCompany,
-      );
-    }
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      ridesByUser = cached.ridesByUser;
+    } else {
+      // Build the rides query
+      const selectFields = data.reverse
+        ? "user_id, ride_date, start_latlng, end_latlng"
+        : "user_id, ride_date";
 
-    // Validate and apply date filters
-    const dateFrom =
-      data.dateFrom && isValidDateString(data.dateFrom) ? data.dateFrom : null;
-    const dateTo =
-      data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
-    if (dateFrom) query = query.gte("ride_date", dateFrom);
-    if (dateTo) query = query.lte("ride_date", dateTo);
+      let query = supabase
+        .from("rides")
+        .select(selectFields)
+        .not("route_category", "is", null);
 
-    // Paginate to work around Supabase max_rows (1000) truncation
-    type AllTimeRide = {
-      user_id: string;
-      ride_date: string;
-      route_category: string | null;
-      destination_company: string | null;
-      start_latlng: [number, number] | null;
-      end_latlng: [number, number] | null;
-    };
-    const PAGE_SIZE = 1000;
-    const allRows: AllTimeRide[] = [];
-    let offset = 0;
-    let hasMore = true;
-
-    while (hasMore) {
-      const { data: page, error: pageError } = await query
-        .order("ride_date", { ascending: true })
-        .range(offset, offset + PAGE_SIZE - 1);
-
-      if (pageError) {
-        console.error("[alltime] Failed to fetch rides:", pageError);
-        throw new Error(`Failed to fetch rides: ${pageError.message}`);
+      // Apply route filter
+      if (data.routes && data.routes.length > 0) {
+        const validCats = data.routes.filter((c) =>
+          VALID_ROUTE_CATEGORIES.has(c),
+        );
+        if (validCats.length > 0) {
+          query = query.in("route_category", validCats);
+        }
+      } else if (!data.includeOther) {
+        // Default: exclude 'other' routes unless includeOther is true
+        query = query.neq("route_category", "other");
       }
 
-      if (!page || page.length === 0) {
-        hasMore = false;
-      } else {
-        allRows.push(...(page as AllTimeRide[]));
-        offset += page.length;
-        if (page.length < PAGE_SIZE) {
+      // Apply company filter
+      const VALID_COMPANIES = new Set([
+        "netflix",
+        "google",
+        "apple",
+        "meta",
+        "nvidia",
+        "stanford",
+        "tesla",
+      ]);
+      if (data.company && VALID_COMPANIES.has(data.company)) {
+        query = query.eq(
+          "destination_company",
+          data.company as DestinationCompany,
+        );
+      }
+
+      // Validate and apply date filters
+      const dateFrom =
+        data.dateFrom && isValidDateString(data.dateFrom)
+          ? data.dateFrom
+          : null;
+      const dateTo =
+        data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
+      if (dateFrom) query = query.gte("ride_date", dateFrom);
+      if (dateTo) query = query.lte("ride_date", dateTo);
+
+      type AllTimeRide = {
+        user_id: string;
+        ride_date: string;
+        start_latlng?: [number, number] | null;
+        end_latlng?: [number, number] | null;
+      };
+
+      const PAGE_SIZE = 1000;
+      const allRows: AllTimeRide[] = [];
+      let offset = 0;
+      let hasMore = true;
+
+      const orderedQuery = query.order("ride_date", { ascending: true });
+
+      while (hasMore) {
+        const { data: page, error: pageError } = await orderedQuery.range(
+          offset,
+          offset + PAGE_SIZE - 1,
+        );
+
+        if (pageError) {
+          console.error("[alltime] Failed to fetch rides:", pageError);
+          throw new Error(`Failed to fetch rides: ${pageError.message}`);
+        }
+
+        if (!page || page.length === 0) {
           hasMore = false;
+        } else {
+          allRows.push(...(page as unknown as AllTimeRide[]));
+          offset += page.length;
+          if (page.length < PAGE_SIZE) {
+            hasMore = false;
+          }
         }
       }
-    }
-    console.log(`[alltime] Paginated fetch: ${allRows.length} total rows`);
-    const rides = allRows;
-    if (!rides?.length) return [];
 
-    // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)
-    const directionFilteredRides = data.reverse
-      ? rides.filter((r) => {
-          const startLatLng = r.start_latlng as [number, number] | null;
-          const endLatLng = r.end_latlng as [number, number] | null;
-          return getCommuteDirection(startLatLng, endLatLng) === "g2sf";
-        })
-      : rides;
+      const rides = allRows;
+      if (!rides.length) return [];
 
-    if (directionFilteredRides.length === 0) return [];
+      // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)
+      const directionFilteredRides = data.reverse
+        ? rides.filter((r) => {
+            const startLatLng = r.start_latlng as [number, number] | null;
+            const endLatLng = r.end_latlng as [number, number] | null;
+            return getCommuteDirection(startLatLng, endLatLng) === "g2sf";
+          })
+        : rides;
 
-    // Group rides by user, optionally excluding weekends
-    const ridesByUser = new Map<string, string[]>();
-    for (const ride of directionFilteredRides) {
-      if (data.excludeWeekends) {
-        const day = new Date(ride.ride_date).getUTCDay();
-        if (day === 0 || day === 6) continue;
+      if (directionFilteredRides.length === 0) return [];
+
+      // Group rides by user, optionally excluding weekends
+      ridesByUser = new Map<string, string[]>();
+      for (const ride of directionFilteredRides) {
+        if (data.excludeWeekends) {
+          const day = new Date(ride.ride_date).getUTCDay();
+          if (day === 0 || day === 6) continue;
+        }
+        const dates = ridesByUser.get(ride.user_id) || [];
+        dates.push(ride.ride_date);
+        ridesByUser.set(ride.user_id, dates);
       }
-      const dates = ridesByUser.get(ride.user_id) || [];
-      dates.push(ride.ride_date);
-      ridesByUser.set(ride.user_id, dates);
+
+      ridesCache.set(cacheKey, {
+        timestamp: Date.now(),
+        ridesByUser,
+      });
     }
 
     // For each user, find the sliding window with the most rides using O(N) two-pointer scan
@@ -197,9 +235,10 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
 
       let right = 0;
       for (let left = 0; left < timestamps.length; left++) {
+        if (right < left) right = left;
         const windowEndMs = timestamps[left] + windowMs;
 
-        while (right < timestamps.length && timestamps[right] < windowEndMs) {
+        while (right < timestamps.length && timestamps[right] <= windowEndMs) {
           right++;
         }
 

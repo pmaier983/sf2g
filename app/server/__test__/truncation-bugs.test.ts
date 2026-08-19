@@ -54,7 +54,7 @@ describe("Supabase max_rows truncation prevention", () => {
     // .limit(1000000) does NOT work — Supabase silently truncates to max_rows (1000).
     // The fix paginates through all rows using .range() in a loop.
     expect(alltimeSource).toContain("PAGE_SIZE");
-    expect(alltimeSource).toContain(".range(offset,");
+    expect(alltimeSource).toMatch(/\.range\(\s*offset,/);
   });
 
   it("fetchFilteredLeaderboard paginates to avoid max_rows truncation", () => {

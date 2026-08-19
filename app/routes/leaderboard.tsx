@@ -384,8 +384,6 @@ function LeaderboardPage() {
       durationDays,
       routes: routes.length > 0 ? routes : undefined,
       excludeWeekends: !weekends,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
       includeOther,
       company: company || undefined,
       reverse: reverse || undefined,
@@ -620,7 +618,15 @@ function LeaderboardPage() {
           <button
             type="button"
             className={`mobile-view-header__btn${view === "alltime" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "alltime", page: 1 })}
+            onClick={() =>
+              updateSearch({
+                view: "alltime",
+                page: 1,
+                dateFrom: undefined,
+                dateTo: undefined,
+                datePreset: undefined,
+              })
+            }
             aria-pressed={view === "alltime"}
           >
             🏆 All Time
@@ -656,7 +662,15 @@ function LeaderboardPage() {
           </button>
           <button
             className={`leaderboard__view-btn ${view === "alltime" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "alltime", page: 1 })}
+            onClick={() =>
+              updateSearch({
+                view: "alltime",
+                page: 1,
+                dateFrom: undefined,
+                dateTo: undefined,
+                datePreset: undefined,
+              })
+            }
             aria-pressed={view === "alltime"}
           >
             🏆 All Time
