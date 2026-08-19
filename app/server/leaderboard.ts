@@ -188,110 +188,6 @@ export const fetchLeaderboard = createServerFn({ method: "GET" })
     );
 
     const entries = allViewRows;
-
-    // Check if the view has sf2g columns (migration 006+)
-    // If not, compute them from the rides table
-    const needsSf2gComputation =
-      entries.length > 0 &&
-      (entries[0].sf2g_distance_meters === undefined ||
-        entries[0].sf2g_distance_meters === null);
-
-    if (needsSf2gComputation) {
-      // Fetch SF2G aggregate per user from rides table
-      // Paginate to work around Supabase max_rows (1000) truncation
-      type Sf2gAggRow = {
-        user_id: string;
-        distance_meters: number | null;
-        elevation_gain_meters: number | null;
-        average_speed_mps: number | null;
-        route_category: string | null;
-      };
-      const PAGE_SIZE_SF2G = 1000;
-      const allSf2gAggRows: Sf2gAggRow[] = [];
-      let sf2gAggOffset = 0;
-      let sf2gAggHasMore = true;
-
-      while (sf2gAggHasMore) {
-        const { data: page, error: pageError } = await supabase
-          .from("rides")
-          .select(
-            "user_id, distance_meters, elevation_gain_meters, average_speed_mps, route_category",
-          )
-          .range(sf2gAggOffset, sf2gAggOffset + PAGE_SIZE_SF2G - 1)
-          .order("ride_date", { ascending: true });
-
-        if (pageError) {
-          console.error(
-            "[leaderboard] Failed to fetch SF2G aggregation rides:",
-            pageError,
-          );
-          throw new Error(
-            `Failed to fetch SF2G aggregation rides: ${pageError.message}`,
-          );
-        }
-
-        if (!page || page.length === 0) {
-          sf2gAggHasMore = false;
-        } else {
-          allSf2gAggRows.push(...(page as Sf2gAggRow[]));
-          sf2gAggOffset += page.length;
-          if (page.length < PAGE_SIZE_SF2G) {
-            sf2gAggHasMore = false;
-          }
-        }
-      }
-      console.log(
-        `[leaderboard] Paginated fetch (sf2gAgg): ${allSf2gAggRows.length} total rows`,
-      );
-      const sf2gAgg = allSf2gAggRows;
-
-      // Build per-user SF2G aggregates
-      const sf2gByUser = new Map<
-        string,
-        {
-          distance: number;
-          elevation: number;
-          speedSum: number;
-          speedCount: number;
-          speeds: number[];
-          rideCount: number;
-        }
-      >();
-      for (const ride of sf2gAgg) {
-        if (ride.route_category === "other" || ride.route_category === null)
-          continue;
-        const existing = sf2gByUser.get(ride.user_id) ?? {
-          distance: 0,
-          elevation: 0,
-          speedSum: 0,
-          speedCount: 0,
-          speeds: [] as number[],
-          rideCount: 0,
-        };
-        existing.distance += ride.distance_meters ?? 0;
-        existing.elevation += ride.elevation_gain_meters ?? 0;
-        existing.rideCount += 1;
-        if (ride.average_speed_mps != null) {
-          existing.speedSum += ride.average_speed_mps;
-          existing.speedCount += 1;
-          existing.speeds.push(ride.average_speed_mps);
-        }
-        sf2gByUser.set(ride.user_id, existing);
-      }
-
-      // Patch entries with computed values
-      for (const entry of entries) {
-        const agg = sf2gByUser.get(entry.user_id ?? "");
-        entry.sf2g_distance_meters = agg?.distance ?? 0;
-        entry.sf2g_elevation_meters = agg?.elevation ?? 0;
-        entry.sf2g_total = agg?.rideCount ?? 0;
-        // avg_speed_mps should only average SF2G rides
-        entry.avg_speed_mps =
-          agg && agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0;
-        entry.median_speed_mps = agg ? computeMedian(agg.speeds) : null;
-      }
-    }
-
     return entries;
   });
 
@@ -799,10 +695,19 @@ export const fetchPprDawnRiderIds = createServerFn({ method: "GET" })
     let offset = 0;
     let hasMore = true;
     while (hasMore) {
-      const { data: page, error: pageError } = await supabase
+      let query = supabase
         .from("ppr_dawn_rides")
         .select("*")
         .range(offset, offset + PAGE_SIZE - 1);
+
+      if (dateFrom) {
+        query = query.gte("start_date", `${dateFrom}T00:00:00Z`);
+      }
+      if (dateTo) {
+        query = query.lte("start_date", `${dateTo}T23:59:59Z`);
+      }
+
+      const { data: page, error: pageError } = await query;
       if (pageError) {
         console.error(
           "[leaderboard] Failed to fetch PPR dawn rides:",

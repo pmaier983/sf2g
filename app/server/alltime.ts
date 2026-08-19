@@ -175,7 +175,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       ridesByUser.set(ride.user_id, dates);
     }
 
-    // For each user, find the sliding window with the most rides
+    // For each user, find the sliding window with the most rides using O(N) two-pointer scan
     const results: Array<{
       userId: string;
       maxRides: number;
@@ -185,32 +185,30 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       rideDatesInWindow: string[];
     }> = [];
 
+    const windowMs = durationDays * 86_400_000;
+
     for (const [userId, dates] of ridesByUser) {
       const sortedDates = dates.sort();
+      const timestamps = sortedDates.map((d) => Date.parse(d));
       let maxRides = 0;
       let bestStart = "";
       let bestEnd = "";
       let bestDates: string[] = [];
 
-      for (let i = 0; i < sortedDates.length; i++) {
-        const windowStart = new Date(sortedDates[i]);
-        const windowEnd = new Date(windowStart);
-        windowEnd.setDate(windowEnd.getDate() + durationDays);
+      let right = 0;
+      for (let left = 0; left < timestamps.length; left++) {
+        const windowEndMs = timestamps[left] + windowMs;
 
-        // Count rides in this window
-        let count = 0;
-        for (let j = i; j < sortedDates.length; j++) {
-          if (new Date(sortedDates[j]) < windowEnd) {
-            count++;
-          } else break;
+        while (right < timestamps.length && timestamps[right] < windowEndMs) {
+          right++;
         }
 
+        const count = right - left;
         if (count > maxRides) {
           maxRides = count;
-          bestStart = sortedDates[i];
-          bestEnd =
-            sortedDates[Math.min(i + count - 1, sortedDates.length - 1)];
-          bestDates = sortedDates.slice(i, i + count);
+          bestStart = sortedDates[left];
+          bestEnd = sortedDates[right - 1];
+          bestDates = sortedDates.slice(left, right);
         }
       }
 

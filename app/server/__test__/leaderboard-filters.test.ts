@@ -57,13 +57,13 @@ describe("Route filtering", () => {
 
   it("VALID_ROUTE_CATEGORIES in leaderboard.ts contains all 8 routes", () => {
     for (const route of ALL_ROUTES) {
-      expect(leaderboardServerSource).toContain(`'${route}'`);
+      expect(leaderboardServerSource).toContain(route);
     }
   });
 
   it("VALID_ROUTE_CATEGORIES in rides.ts contains all 8 routes", () => {
     for (const route of ALL_ROUTES) {
-      expect(ridesServerSource).toContain(`'${route}'`);
+      expect(ridesServerSource).toContain(route);
     }
   });
 
@@ -76,23 +76,27 @@ describe("Route filtering", () => {
   });
 
   it("fetchFilteredLeaderboard uses .in() for route category filter", () => {
-    expect(leaderboardServerSource).toContain(
-      "query.in('route_category', validCats",
+    expect(leaderboardServerSource).toMatch(
+      /query\.in\(["']route_category["'], validCats/,
     );
   });
 
   it("fetchRidesLeaderboard uses .in() for route category filter", () => {
-    expect(ridesServerSource).toContain("query.in('route_category', validCats");
+    expect(ridesServerSource).toMatch(
+      /query\.in\(["']route_category["'], validCats/,
+    );
   });
 
   it("fetchFilteredLeaderboard filters out null route_category by default", () => {
-    expect(leaderboardServerSource).toContain(
-      ".not('route_category', 'is', null)",
+    expect(leaderboardServerSource).toMatch(
+      /\.not\(["']route_category["'],\s*["']is["'],\s*null\)/,
     );
   });
 
   it("fetchRidesLeaderboard filters out null route_category by default", () => {
-    expect(ridesServerSource).toContain(".not('route_category', 'is', null)");
+    expect(ridesServerSource).toMatch(
+      /\.not\(["']route_category["'],\s*["']is["'],\s*null\)/,
+    );
   });
 
   it("leaderboard page passes routes to fetchFilteredLeaderboard", () => {
@@ -220,33 +224,35 @@ describe("Time filtering — server integration", () => {
   });
 
   it("fetchLeaderboard uses RPC for date-filtered queries", () => {
-    expect(leaderboardServerSource).toContain(
-      "'get_leaderboard_by_date_range'",
-    );
+    expect(leaderboardServerSource).toContain("get_leaderboard_by_date_range");
   });
 
   it("fetchLeaderboard falls back to materialized view when no dates provided", () => {
-    expect(leaderboardServerSource).toContain("from('leaderboard_view')");
+    expect(leaderboardServerSource).toMatch(/from\(["']leaderboard_view["']\)/);
   });
 
   it("fetchFilteredLeaderboard applies .gte for dateFrom", () => {
-    expect(leaderboardServerSource).toContain(
-      "query.gte('ride_date', dateFrom)",
+    expect(leaderboardServerSource).toMatch(
+      /query\.gte\(["']ride_date["'], dateFrom\)/,
     );
   });
 
   it("fetchFilteredLeaderboard applies .lte for dateTo", () => {
-    expect(leaderboardServerSource).toContain("query.lte('ride_date', dateTo)");
+    expect(leaderboardServerSource).toMatch(
+      /query\.lte\(["']ride_date["'], dateTo\)/,
+    );
   });
 
   it("fetchRidesLeaderboard applies .gte for dateFrom", () => {
-    expect(ridesServerSource).toContain(
-      "query.gte('ride_date', data.dateFrom)",
+    expect(ridesServerSource).toMatch(
+      /query\.gte\(["']ride_date["'], data\.dateFrom\)/,
     );
   });
 
   it("fetchRidesLeaderboard applies .lte for dateTo", () => {
-    expect(ridesServerSource).toContain("query.lte('ride_date', data.dateTo)");
+    expect(ridesServerSource).toMatch(
+      /query\.lte\(["']ride_date["'], data\.dateTo\)/,
+    );
   });
 });
 
@@ -340,7 +346,9 @@ describe("PPR filter integration", () => {
   });
 
   it("rides leaderboard filters by PPR ride IDs using .in()", () => {
-    expect(ridesServerSource).toContain("query.in('id', data.pprRideIds)");
+    expect(ridesServerSource).toMatch(
+      /query\.in\(["']id["'], data\.pprRideIds\)/,
+    );
   });
 
   it("rides leaderboard returns empty when PPR active but no qualifying rides", () => {
@@ -456,7 +464,7 @@ describe("Company filter", () => {
 
   it("VALID_COMPANIES set in leaderboard.ts contains all expected companies", () => {
     for (const company of VALID_COMPANIES) {
-      expect(leaderboardServerSource).toContain(`'${company}'`);
+      expect(leaderboardServerSource).toContain(company);
     }
   });
 
@@ -467,14 +475,14 @@ describe("Company filter", () => {
   });
 
   it("fetchFilteredLeaderboard applies company filter with .eq()", () => {
-    expect(leaderboardServerSource).toContain(
-      "query.eq('destination_company', data.company",
+    expect(leaderboardServerSource).toMatch(
+      /query\.eq\(\s*["']destination_company["'],\s*data\.company/,
     );
   });
 
   it("fetchRidesLeaderboard applies company filter with .eq()", () => {
-    expect(ridesServerSource).toContain(
-      "query.eq('destination_company', data.company",
+    expect(ridesServerSource).toMatch(
+      /query\.eq\(\s*["']destination_company["'],\s*data\.company/,
     );
   });
 
@@ -596,13 +604,15 @@ describe("Sort columns — leaderboard", () => {
   });
 
   it("server defaults to sf2g_total when invalid sort column provided", () => {
-    expect(leaderboardServerSource).toContain(
-      "? data.sortBy\n      : 'sf2g_total'",
+    expect(leaderboardServerSource).toMatch(
+      /\? data\.sortBy\s*:\s*["']sf2g_total["']/,
     );
   });
 
   it("server defaults sort direction to desc", () => {
-    expect(leaderboardServerSource).toContain("(data.sortDir ?? 'desc')");
+    expect(leaderboardServerSource).toMatch(
+      /\(data\.sortDir \?\? ["']desc["']\)/,
+    );
   });
 });
 
@@ -650,12 +660,14 @@ describe("Sort columns — rides leaderboard", () => {
   });
 
   it("server defaults to ride_date when invalid sort column provided", () => {
-    expect(ridesServerSource).toContain("? data.sortBy\n      : 'ride_date'");
+    expect(ridesServerSource).toMatch(
+      /\? data\.sortBy\s*:\s*["']ride_date["']/,
+    );
   });
 
   it("display_name sort uses referencedTable for join column", () => {
-    expect(ridesServerSource).toContain("sortColumn === 'display_name'");
-    expect(ridesServerSource).toContain("referencedTable: 'users'");
+    expect(ridesServerSource).toMatch(/sortColumn === ["']display_name["']/);
+    expect(ridesServerSource).toMatch(/referencedTable:\s*["']users["']/);
   });
 });
 
@@ -740,7 +752,7 @@ describe("Sort logic — pure unit tests", () => {
 
 describe("Watts/HR columns — leaderboard sort columns", () => {
   it("avg_watts is a valid leaderboard sort column", () => {
-    expect(leaderboardServerSource).toContain("'avg_watts'");
+    expect(leaderboardServerSource).toContain("avg_watts");
     // Verify it's in the VALID_LEADERBOARD_SORT_COLUMNS set
     const sortColumnsSection = leaderboardServerSource.match(
       /VALID_LEADERBOARD_SORT_COLUMNS[\s\S]*?\]\)/,
@@ -749,7 +761,7 @@ describe("Watts/HR columns — leaderboard sort columns", () => {
   });
 
   it("avg_heartrate is a valid leaderboard sort column", () => {
-    expect(leaderboardServerSource).toContain("'avg_heartrate'");
+    expect(leaderboardServerSource).toContain("avg_heartrate");
     const sortColumnsSection = leaderboardServerSource.match(
       /VALID_LEADERBOARD_SORT_COLUMNS[\s\S]*?\]\)/,
     );
@@ -1223,25 +1235,23 @@ describe("Aggregation logic — per-user ride aggregation", () => {
 describe("Privacy and hidden rides filtering", () => {
   it("fetchFilteredLeaderboard excludes hidden rides", () => {
     expect(leaderboardServerSource).toContain(
-      "'is_hidden.eq.false,is_hidden.is.null'",
+      "is_hidden.eq.false,is_hidden.is.null",
     );
   });
 
   it("fetchFilteredLeaderboard excludes private rides", () => {
     expect(leaderboardServerSource).toContain(
-      "'is_private.eq.false,is_private.is.null'",
+      "is_private.eq.false,is_private.is.null",
     );
   });
 
   it("fetchRidesLeaderboard excludes hidden rides", () => {
-    expect(ridesServerSource).toContain(
-      "'is_hidden.eq.false,is_hidden.is.null'",
-    );
+    expect(ridesServerSource).toContain("is_hidden.eq.false,is_hidden.is.null");
   });
 
   it("fetchRidesLeaderboard excludes private rides", () => {
     expect(ridesServerSource).toContain(
-      "'is_private.eq.false,is_private.is.null'",
+      "is_private.eq.false,is_private.is.null",
     );
   });
 });
@@ -1257,7 +1267,7 @@ describe("Reverse commute direction filter", () => {
 
   it("fetchFilteredLeaderboard filters by g2sf direction when reverse is true", () => {
     expect(leaderboardServerSource).toContain("getCommuteDirection");
-    expect(leaderboardServerSource).toContain("=== 'g2sf'");
+    expect(leaderboardServerSource).toMatch(/===\s*["']g2sf["']/);
   });
 
   it("fetchRidesLeaderboard accepts reverse param", () => {
@@ -1266,7 +1276,7 @@ describe("Reverse commute direction filter", () => {
 
   it("fetchRidesLeaderboard filters by g2sf direction when reverse is true", () => {
     expect(ridesServerSource).toContain("getCommuteDirection");
-    expect(ridesServerSource).toContain("=== 'g2sf'");
+    expect(ridesServerSource).toMatch(/===\s*["']g2sf["']/);
   });
 });
 

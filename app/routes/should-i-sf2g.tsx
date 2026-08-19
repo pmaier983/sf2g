@@ -7,7 +7,11 @@
  * All input controls (date, route, departure, speed) are synced to URL
  * search params so shared links restore the exact forecast view.
  */
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  stripSearchParams,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useCallback, lazy, Suspense } from "react";
 import { forecastQueryOptions } from "../queries/forecast";
@@ -90,23 +94,9 @@ export const Route = createFileRoute("/should-i-sf2g")({
 
     return { date, route, departure, speed };
   },
-  // Strip defaults to keep URLs clean (follows leaderboard pattern)
+  // Strip defaults to keep URLs clean
   search: {
-    middlewares: [
-      ({ search, next }) => {
-        const out = { ...search } as Record<string, unknown>;
-        // Remove values that match defaults to keep shared links short
-        for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
-          const val = out[key];
-          const valEmpty = val === undefined || val === null || val === "";
-          const defEmpty = def === undefined || def === null || def === "";
-          if (val === def || (valEmpty && defEmpty)) {
-            delete out[key];
-          }
-        }
-        return next(out as unknown as typeof search);
-      },
-    ],
+    middlewares: [stripSearchParams(SEARCH_DEFAULTS)],
   },
   component: ShouldISf2gPage,
   head: () => ({

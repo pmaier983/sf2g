@@ -176,8 +176,8 @@ describe("Group ride co-occurrences — refresh after sync", () => {
     // Ensure the refresh call has error handling so failures don't break sync
     const refreshIdx = syncSource.indexOf("refresh_ride_co_occurrences");
     const surroundingCode = syncSource.slice(
-      Math.max(0, refreshIdx - 100),
-      refreshIdx + 100,
+      Math.max(0, refreshIdx - 150),
+      refreshIdx + 200,
     );
     expect(surroundingCode).toContain("try");
     expect(surroundingCode).toContain("catch");
@@ -192,32 +192,31 @@ describe("Rolling-window algorithm correctness", () => {
   /**
    * Mirror the sliding-window logic from alltime.ts.
    * Given sorted ride dates and a window size (days), find the max rides
-   * that fit in any window.
+   * that fit in any window using O(N) two-pointer scan.
    */
   function findMaxRidesInWindow(
     sortedDates: string[],
     durationDays: number,
   ): { maxRides: number; windowStart: string; windowEnd: string } {
+    const timestamps = sortedDates.map((d) => Date.parse(d));
+    const windowMs = durationDays * 86_400_000;
     let maxRides = 0;
     let bestStart = "";
     let bestEnd = "";
 
-    for (let i = 0; i < sortedDates.length; i++) {
-      const windowStart = new Date(sortedDates[i]);
-      const windowEnd = new Date(windowStart);
-      windowEnd.setDate(windowEnd.getDate() + durationDays);
+    let right = 0;
+    for (let left = 0; left < timestamps.length; left++) {
+      const windowEndMs = timestamps[left] + windowMs;
 
-      let count = 0;
-      for (let j = i; j < sortedDates.length; j++) {
-        if (new Date(sortedDates[j]) < windowEnd) {
-          count++;
-        } else break;
+      while (right < timestamps.length && timestamps[right] < windowEndMs) {
+        right++;
       }
 
+      const count = right - left;
       if (count > maxRides) {
         maxRides = count;
-        bestStart = sortedDates[i];
-        bestEnd = sortedDates[Math.min(i + count - 1, sortedDates.length - 1)];
+        bestStart = sortedDates[left];
+        bestEnd = sortedDates[right - 1];
       }
     }
 

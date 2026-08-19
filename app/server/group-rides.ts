@@ -91,6 +91,9 @@ export interface StreamFetchError {
 // Constants
 // ---------------------------------------------------------------------------
 
+/** Minimum spatial overlap ratio required between two routes */
+const MIN_POLYLINE_OVERLAP = 0.3;
+
 /**
  * Max IDs per Supabase .in() filter to stay within URL length limits.
  * UUIDs are 36 chars each; 300 × 36 ≈ 10.8 KB which is well under the ~15 KB

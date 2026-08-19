@@ -101,16 +101,16 @@ export const ROUTE_GATEWAYS: RouteGateway[] = [
   {
     category: "fleaway",
     name: "Fleaway North (Centennial Trail / SSF)",
-    lat: 37.662883,
-    lng: -122.442106,
+    lat: 37.624205,
+    lng: -122.408411,
     description:
       "Fleaway northern checkpoint on the Centennial bike trail in South SF",
   },
   {
     category: "fleaway",
     name: "Fleaway South (Sand Hill Rd)",
-    lat: 37.426494,
-    lng: -122.193272,
+    lat: 37.492333,
+    lng: -122.266346,
     description: "Fleaway southern checkpoint near Sand Hill Rd, Menlo Park",
   },
 

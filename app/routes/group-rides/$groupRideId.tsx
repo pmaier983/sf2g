@@ -4,7 +4,11 @@
  * Shows an animated map replay, offset chart, and comparison table
  * for a group ride. Streams are lazily fetched from Strava on first view.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  stripSearchParams,
+} from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   useState,
@@ -58,20 +62,7 @@ export const Route = createFileRoute("/group-rides/$groupRideId")({
     riders: (raw.riders as string) || "",
   }),
   search: {
-    middlewares: [
-      ({ search, next }) => {
-        const out = { ...search } as Record<string, unknown>;
-        for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
-          const val = out[key];
-          const valEmpty = val === undefined || val === null || val === "";
-          const defEmpty = def === undefined || def === null || def === "";
-          if (val === def || (valEmpty && defEmpty)) {
-            delete out[key];
-          }
-        }
-        return next(out as unknown as typeof search);
-      },
-    ],
+    middlewares: [stripSearchParams(SEARCH_DEFAULTS)],
   },
   component: GroupRideDetailPage,
   head: () => ({

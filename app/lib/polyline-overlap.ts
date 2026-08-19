@@ -8,20 +8,20 @@
  * Reuses the existing `decodePolyline()` from ./polyline and a haversine
  * distance function consistent with the route-classifier approach.
  */
-import { decodePolyline } from './polyline'
+import { decodePolyline } from "./polyline";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 /** Two GPS points are considered "overlapping" if within this distance */
-const PROXIMITY_THRESHOLD_METERS = 200
+const PROXIMITY_THRESHOLD_METERS = 200;
 
 /** Maximum sample points to check from each polyline (for performance) */
-const MAX_SAMPLES = 50
+const MAX_SAMPLES = 50;
 
 /** Earth radius in meters (WGS84 mean) */
-const EARTH_RADIUS_METERS = 6_371_000
+const EARTH_RADIUS_METERS = 6_371_000;
 
 // ---------------------------------------------------------------------------
 // Haversine distance (mirrors route-classifier.ts)
@@ -37,21 +37,87 @@ function haversineDistance(
   lat2: number,
   lng2: number,
 ): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
 
-  const dLat = toRad(lat2 - lat1)
-  const dLng = toRad(lng2 - lng1)
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
       Math.cos(toRad(lat2)) *
       Math.sin(dLng / 2) *
-      Math.sin(dLng / 2)
+      Math.sin(dLng / 2);
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  return EARTH_RADIUS_METERS * c
+  return EARTH_RADIUS_METERS * c;
+}
+
+// ---------------------------------------------------------------------------
+// Polyline decode & sample cache
+// ---------------------------------------------------------------------------
+
+interface CachedPolyline {
+  sampled: [number, number][];
+  longerSampled: [number, number][];
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+const polylineCache = new Map<string, CachedPolyline>();
+const MAX_CACHE_SIZE = 3000;
+
+function getCachedPolyline(encoded: string): CachedPolyline | null {
+  const cached = polylineCache.get(encoded);
+  if (cached) return cached;
+
+  const points = decodePolyline(encoded);
+  if (points.length === 0) return null;
+
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+  let minLng = Infinity;
+  let maxLng = -Infinity;
+
+  for (let i = 0; i < points.length; i++) {
+    const [lat, lng] = points[i];
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+  }
+
+  const sampleRate = Math.max(1, Math.floor(points.length / 25));
+  const sampled = points.filter((_, i) => i % sampleRate === 0);
+
+  const longerSampleRate = Math.max(1, Math.floor(points.length / 50));
+  const longerSampled = points.filter((_, i) => i % longerSampleRate === 0);
+
+  const entry: CachedPolyline = {
+    sampled,
+    longerSampled,
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
+  };
+
+  if (polylineCache.size >= MAX_CACHE_SIZE) {
+    // Evict oldest quarter of entries when limit reached
+    const keysToDelete = Array.from(polylineCache.keys()).slice(
+      0,
+      Math.floor(MAX_CACHE_SIZE / 4),
+    );
+    for (const key of keysToDelete) {
+      polylineCache.delete(key);
+    }
+  }
+
+  polylineCache.set(encoded, entry);
+  return entry;
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +127,7 @@ function haversineDistance(
 /**
  * Compute the spatial overlap ratio between two encoded polylines.
  *
- * Decodes both polylines, samples points from the shorter one,
+ * Decodes both polylines (with memory caching), checks bounding-box overlap,
  * and checks what percentage of sampled points are within
  * PROXIMITY_THRESHOLD_METERS of any point on the other polyline.
  *
@@ -73,49 +139,54 @@ export function computePolylineOverlap(
   encoded1: string | null | undefined,
   encoded2: string | null | undefined,
 ): number {
-  if (!encoded1 || !encoded2) return 0
+  if (!encoded1 || !encoded2) return 0;
+  if (encoded1 === encoded2) return 1; // Identical route
 
-  const points1 = decodePolyline(encoded1)
-  const points2 = decodePolyline(encoded2)
-  if (points1.length === 0 || points2.length === 0) return 0
+  const poly1 = getCachedPolyline(encoded1);
+  const poly2 = getCachedPolyline(encoded2);
+  if (!poly1 || !poly2) return 0;
 
-  // Determine shorter/longer polyline for efficiency
-  const [shorter, longer] =
-    points1.length <= points2.length ? [points1, points2] : [points2, points1]
+  // Fast bounding-box rejection (~0.003 deg ≈ 300m)
+  if (
+    poly1.minLat - 0.003 > poly2.maxLat ||
+    poly1.maxLat + 0.003 < poly2.minLat ||
+    poly1.minLng - 0.004 > poly2.maxLng ||
+    poly1.maxLng + 0.004 < poly2.minLng
+  ) {
+    return 0;
+  }
 
-  // Sample every Nth point from the shorter polyline to cap computation
-  const sampleRate = Math.max(1, Math.floor(shorter.length / MAX_SAMPLES))
-  const sampled = shorter.filter((_, i) => i % sampleRate === 0)
+  // Determine shorter/longer sampled sets
+  const [sampled, longerSampled] =
+    poly1.sampled.length <= poly2.sampled.length
+      ? [poly1.sampled, poly2.longerSampled]
+      : [poly2.sampled, poly1.longerSampled];
 
-  // Also subsample the longer polyline for comparison (avoid O(n*m) full scan)
-  const longerSampleRate = Math.max(
-    1,
-    Math.floor(longer.length / (MAX_SAMPLES * 3)),
-  )
-  const longerSampled = longer.filter((_, i) => i % longerSampleRate === 0)
-
-  let overlapping = 0
+  let overlapping = 0;
 
   for (const [lat1, lng1] of sampled) {
-    // Quick bounding-box pre-filter: skip if clearly too far from any point
-    // (rough check: ~0.002 degrees ≈ 200m at mid-latitudes)
-    let found = false
+    let found = false;
     for (const [lat2, lng2] of longerSampled) {
-      // Quick lat/lng difference check before expensive haversine
-      if (Math.abs(lat1 - lat2) > 0.003 || Math.abs(lng1 - lng2) > 0.004) {
-        continue
+      const dLat = lat1 - lat2;
+      const dLng = (lng1 - lng2) * 0.793; // approx cos(37.5 deg) at Bay Area latitude
+      const distSq = dLat * dLat + dLng * dLng;
+
+      // 200m is ~0.0018 deg -> squared is ~3.24e-6
+      if (distSq > 0.0000035) {
+        continue;
       }
+
       if (
         haversineDistance(lat1, lng1, lat2, lng2) <= PROXIMITY_THRESHOLD_METERS
       ) {
-        found = true
-        break
+        found = true;
+        break;
       }
     }
     if (found) {
-      overlapping++
+      overlapping++;
     }
   }
 
-  return sampled.length > 0 ? overlapping / sampled.length : 0
+  return sampled.length > 0 ? overlapping / sampled.length : 0;
 }

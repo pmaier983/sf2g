@@ -131,9 +131,9 @@ describe("Bug 4: Years badge always shows unfiltered active_years", () => {
 
   it("fetches unfiltered active_years from leaderboard_view", () => {
     expect(leaderboardServerSource).toContain("unfilteredYears");
-    expect(leaderboardServerSource).toContain("from('leaderboard_view')");
-    expect(leaderboardServerSource).toContain(
-      "select('user_id, active_years')",
+    expect(leaderboardServerSource).toMatch(/from\(["']leaderboard_view["']\)/);
+    expect(leaderboardServerSource).toMatch(
+      /select\(["']user_id,\s*active_years["']\)/,
     );
   });
 
@@ -165,7 +165,7 @@ describe("Bug 5: Other route filter includes other_count in zero-ride check", ()
 
   it("checks other_count when includeOther is true or routes includes other", () => {
     expect(leaderboardPageSource).toContain("includeOther");
-    expect(leaderboardPageSource).toContain("routes.includes('other'");
+    expect(leaderboardPageSource).toMatch(/routes\.includes\(["']other["']/);
     expect(leaderboardPageSource).toContain("other_count");
   });
 
@@ -178,7 +178,7 @@ describe("Bug 5: Other route filter includes other_count in zero-ride check", ()
   it("includeOther is in the filteredData dependency array", () => {
     // The useMemo dependency array must include includeOther
     const depsMatch = leaderboardPageSource.match(
-      /\[leaderboardData,\s*routes,\s*includeOther/,
+      /\[\s*leaderboardData,\s*routes,\s*includeOther/,
     );
     expect(depsMatch).not.toBeNull();
   });

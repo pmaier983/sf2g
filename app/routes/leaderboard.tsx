@@ -1,4 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  stripSearchParams,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   useMemo,
@@ -11,6 +15,7 @@ import {
 import { MobileBottomBar } from "../components/MobileBottomBar";
 import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
+  leaderboardQueryOptions,
   filteredLeaderboardQueryOptions,
   pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
@@ -174,24 +179,16 @@ export const Route = createFileRoute("/leaderboard")({
   // Strip defaults to keep URLs clean
   search: {
     middlewares: [
+      // Use TanStack Router's built-in default-stripping — handles initial load,
+      // hydration, and navigation correctly (the custom approach was buggy).
+      stripSearchParams(SEARCH_DEFAULTS),
+      // Serialize routes array → comma string (since stripSearchParams only
+      // handles primitives, not deep array equality)
       ({ search, next }) => {
         const out = { ...search } as Record<string, unknown>;
-        // Serialize routes array → comma string
         if (Array.isArray(out.routes)) {
           const arr = out.routes as string[];
           out.routes = arr.length > 0 ? arr.join(",") : undefined;
-        }
-        // Remove values that match defaults — strict comparison handles
-        // false, 0, '' correctly so they get stripped when they ARE the default.
-        for (const [key, def] of Object.entries(SEARCH_DEFAULTS)) {
-          if (key === "routes") continue; // handled above
-          const val = out[key];
-          // Both undefined/null/'' → treat as equal
-          const valEmpty = val === undefined || val === null || val === "";
-          const defEmpty = def === undefined || def === null || def === "";
-          if (val === def || (valEmpty && defEmpty)) {
-            delete out[key];
-          }
         }
         return next(out as unknown as typeof search);
       },
@@ -312,52 +309,53 @@ function LeaderboardPage() {
 
   // ---- Data queries ----
   const excludeWeekends = !weekends;
-  const hasCompoundFilters =
-    routes.length > 0 ||
-    !!company ||
-    !!dateFrom ||
-    !!dateTo ||
-    excludeWeekends ||
-    !!reverse;
+  const isCustomFiltered = routes.length > 0 || !!company || !!reverse;
 
-  // Always use the live rides query (filteredLeaderboardQueryOptions) instead
-  // of the materialized view. The materialized view is a stale snapshot that
-  // only updates when refresh_leaderboard() RPC runs (cron / manual sync),
-  // which can cause recently-synced riders to vanish from the leaderboard.
-  const leaderboardOptions = filteredLeaderboardQueryOptions({
-    sortBy: sort,
-    sortDir: dir,
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
-    routeCategories: routes.length > 0 ? routes : undefined,
-    company: company || undefined,
-    excludeWeekends,
-    reverse: reverse || undefined,
-  });
+  // Use the fast pre-computed leaderboard_view (or date-range RPC) when
+  // compound route/company/reverse filters are not active.
+  const leaderboardOptions = isCustomFiltered
+    ? filteredLeaderboardQueryOptions({
+        sortBy: sort,
+        sortDir: dir,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        routeCategories: routes.length > 0 ? routes : undefined,
+        company: company || undefined,
+        excludeWeekends,
+        reverse: reverse || undefined,
+      })
+    : leaderboardQueryOptions({
+        sortBy: sort,
+        sortDir: dir,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+      });
   const {
     data: leaderboardData,
     isLoading,
     error,
   } = useQuery(leaderboardOptions);
-  const { data: pprDawnData } = useQuery(
-    pprDawnRiderIdsQueryOptions({
+  const { data: pprDawnData } = useQuery({
+    ...pprDawnRiderIdsQueryOptions({
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
     }),
-  );
+    enabled: ppr,
+  });
   const pprDawnRiderIds = pprDawnData?.riderIds;
   const pprRideCounts = pprDawnData?.rideCounts;
   const pprRideIds = pprDawnData?.rideIds;
   const { data: companyRiderIds } = useQuery(
     companyRiderIdsQueryOptions(company),
   );
+  const isChartActive = (chartOpen || mobileGraphOpen) && view === "riders";
   const { data: growthData } = useQuery({
     ...riderGrowthQueryOptions(),
-    enabled: chartOpen || view === "riders",
+    enabled: isChartActive,
   });
   const { data: dailyData } = useQuery({
     ...dailyGrowthQueryOptions(),
-    enabled: chartOpen || view === "riders",
+    enabled: isChartActive,
   });
 
   const ridesQuery = useInfiniteQuery({
@@ -416,7 +414,7 @@ function LeaderboardPage() {
     // Track whether we've mutated values that require a client-side re-sort
     let needsResort = false;
 
-    if (!hasCompoundFilters) {
+    if (!isCustomFiltered) {
       if (routes.length > 0) {
         data = data.filter((entry) =>
           routes.some(
@@ -486,7 +484,7 @@ function LeaderboardPage() {
     company,
     companyRiderIds,
     search,
-    hasCompoundFilters,
+    isCustomFiltered,
     sort,
     dir,
   ]);
