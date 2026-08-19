@@ -46,9 +46,14 @@ function isValidDateString(str: string): boolean {
 // ---------------------------------------------------------------------------
 // In-memory cache for ride dates to ensure instant duration toggling (1w / 1m / 1y)
 // ---------------------------------------------------------------------------
+interface UserRide {
+  date: string;
+  timeMs: number;
+}
+
 interface RidesCacheEntry {
   timestamp: number;
-  ridesByUser: Map<string, string[]>;
+  ridesByUser: Map<string, UserRide[]>;
 }
 const ridesCache = new Map<string, RidesCacheEntry>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -89,7 +94,7 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       reverse: !!data.reverse,
     });
 
-    let ridesByUser: Map<string, string[]>;
+    let ridesByUser: Map<string, UserRide[]>;
     const cached = ridesCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
@@ -208,16 +213,24 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
 
       if (directionFilteredRides.length === 0) return [];
 
-      // Group rides by user, optionally excluding weekends
-      ridesByUser = new Map<string, string[]>();
+      // Group rides by user, pre-computing timestamp and optionally excluding weekends
+      ridesByUser = new Map<string, UserRide[]>();
       for (const ride of directionFilteredRides) {
         if (data.excludeWeekends) {
           const day = new Date(ride.ride_date).getUTCDay();
           if (day === 0 || day === 6) continue;
         }
-        const dates = ridesByUser.get(ride.user_id) || [];
-        dates.push(ride.ride_date);
-        ridesByUser.set(ride.user_id, dates);
+        const userList = ridesByUser.get(ride.user_id) || [];
+        userList.push({
+          date: ride.ride_date,
+          timeMs: Date.parse(ride.ride_date),
+        });
+        ridesByUser.set(ride.user_id, userList);
+      }
+
+      // Sort each user's rides chronologically once
+      for (const [, userRides] of ridesByUser) {
+        userRides.sort((a, b) => a.timeMs - b.timeMs);
       }
 
       ridesCache.set(cacheKey, {
@@ -226,51 +239,46 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
       });
     }
 
-    // For each user, find the sliding window with the most rides using O(N) two-pointer scan
+    // For each user, find the sliding window with the most rides using O(N) integer scan
     const results: Array<{
       userId: string;
       maxRides: number;
-      windowStart: string;
-      windowEnd: string;
+      bestLeft: number;
+      bestRight: number;
       totalRides: number;
-      rideDatesInWindow: string[];
     }> = [];
 
     const windowMs = durationDays * 86_400_000;
 
-    for (const [userId, dates] of ridesByUser) {
-      const sortedDates = dates.sort();
-      const timestamps = sortedDates.map((d) => Date.parse(d));
+    for (const [userId, userRides] of ridesByUser) {
+      const len = userRides.length;
       let maxRides = 0;
-      let bestStart = "";
-      let bestEnd = "";
-      let bestDates: string[] = [];
+      let bestLeft = 0;
+      let bestRight = 0;
 
       let right = 0;
-      for (let left = 0; left < timestamps.length; left++) {
+      for (let left = 0; left < len; left++) {
         if (right < left) right = left;
-        const windowEndMs = timestamps[left] + windowMs;
+        const windowEndMs = userRides[left].timeMs + windowMs;
 
-        while (right < timestamps.length && timestamps[right] <= windowEndMs) {
+        while (right < len && userRides[right].timeMs <= windowEndMs) {
           right++;
         }
 
         const count = right - left;
         if (count > maxRides) {
           maxRides = count;
-          bestStart = sortedDates[left];
-          bestEnd = sortedDates[right - 1];
-          bestDates = sortedDates.slice(left, right);
+          bestLeft = left;
+          bestRight = right;
         }
       }
 
       results.push({
         userId,
         maxRides,
-        windowStart: bestStart,
-        windowEnd: bestEnd,
-        totalRides: sortedDates.length,
-        rideDatesInWindow: bestDates,
+        bestLeft,
+        bestRight,
+        totalRides: len,
       });
     }
 
@@ -281,27 +289,50 @@ export const fetchAllTimeLeaderboard = createServerFn({ method: "GET" })
 
     // Fetch user details for top results (cap at 200)
     const topResults = results.slice(0, 200);
-    const userIds = topResults.map((r) => r.userId);
+    const userIds = topResults.map((r) => r.userId).filter(Boolean);
 
-    const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, avatar_url")
-      .in("id", userIds);
+    let userMap = new Map<
+      string,
+      { id: string; display_name: string | null; avatar_url: string | null }
+    >();
 
-    if (usersError) {
-      console.error("[alltime] Failed to fetch users:", usersError);
+    if (userIds.length > 0) {
+      const { data: users, error: usersError } = await supabase
+        .from("users")
+        .select("id, display_name, avatar_url")
+        .in("id", userIds);
+
+      if (usersError) {
+        console.error("[alltime] Failed to fetch users:", usersError);
+      }
+
+      userMap = new Map((users ?? []).map((u) => [u.id, u]));
     }
 
-    const userMap = new Map((users ?? []).map((u) => [u.id, u]));
+    return topResults.map((r, index) => {
+      const userRides = ridesByUser.get(r.userId) ?? [];
+      const windowStart =
+        r.maxRides > 0 && userRides[r.bestLeft]
+          ? userRides[r.bestLeft].date
+          : "";
+      const windowEnd =
+        r.maxRides > 0 && userRides[r.bestRight - 1]
+          ? userRides[r.bestRight - 1].date
+          : "";
+      const rideDatesInWindow =
+        index < 10 && r.maxRides > 0
+          ? userRides.slice(r.bestLeft, r.bestRight).map((u) => u.date)
+          : [];
 
-    return topResults.map((r, index) => ({
-      userId: r.userId,
-      displayName: userMap.get(r.userId)?.display_name || "Unknown",
-      avatarUrl: userMap.get(r.userId)?.avatar_url || null,
-      maxRidesInWindow: r.maxRides,
-      windowStart: r.windowStart,
-      windowEnd: r.windowEnd,
-      totalSf2gRides: r.totalRides,
-      rideDatesInWindow: index < 10 ? r.rideDatesInWindow : [],
-    }));
+      return {
+        userId: r.userId,
+        displayName: userMap.get(r.userId)?.display_name || "Unknown",
+        avatarUrl: userMap.get(r.userId)?.avatar_url || null,
+        maxRidesInWindow: r.maxRides,
+        windowStart,
+        windowEnd,
+        totalSf2gRides: r.totalRides,
+        rideDatesInWindow,
+      };
+    });
   });

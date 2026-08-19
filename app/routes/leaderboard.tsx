@@ -334,7 +334,10 @@ function LeaderboardPage() {
     data: leaderboardData,
     isLoading,
     error,
-  } = useQuery(leaderboardOptions);
+  } = useQuery({
+    ...leaderboardOptions,
+    enabled: view === "riders",
+  });
   const { data: pprDawnData } = useQuery({
     ...pprDawnRiderIdsQueryOptions({
       dateFrom: dateFrom || undefined,
@@ -345,9 +348,10 @@ function LeaderboardPage() {
   const pprDawnRiderIds = pprDawnData?.riderIds;
   const pprRideCounts = pprDawnData?.rideCounts;
   const pprRideIds = pprDawnData?.rideIds;
-  const { data: companyRiderIds } = useQuery(
-    companyRiderIdsQueryOptions(company),
-  );
+  const { data: companyRiderIds } = useQuery({
+    ...companyRiderIdsQueryOptions(company),
+    enabled: !!company && view === "riders",
+  });
   const isChartActive = (chartOpen || mobileGraphOpen) && view === "riders";
   const { data: growthData } = useQuery({
     ...riderGrowthQueryOptions(),
