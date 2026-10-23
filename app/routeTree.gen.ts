@@ -8,290 +8,290 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as ShouldISf2gRouteImport } from "./routes/should-i-sf2g";
-import { Route as RoutesRouteImport } from "./routes/routes";
-import { Route as PrivacyRouteImport } from "./routes/privacy";
-import { Route as NetworkRouteImport } from "./routes/network";
-import { Route as LeaderboardRouteImport } from "./routes/leaderboard";
-import { Route as R2sf2gRouteImport } from "./routes/2sf2g";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as ProfileUserIdRouteImport } from "./routes/profile/$userId";
-import { Route as GroupRidesGroupRideIdRouteImport } from "./routes/group-rides/$groupRideId";
-import { Route as AuthLoginRouteImport } from "./routes/auth/login";
-import { Route as AuthCallbackRouteImport } from "./routes/auth/callback";
-import { Route as ApiWebhookRouteImport } from "./routes/api/webhook";
-import { Route as ApiCronRouteImport } from "./routes/api/cron";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShouldISf2gRouteImport } from './routes/should-i-sf2g'
+import { Route as RoutesRouteImport } from './routes/routes'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as NetworkRouteImport } from './routes/network'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as R2sf2gRouteImport } from './routes/2sf2g'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileUserIdRouteImport } from './routes/profile/$userId'
+import { Route as GroupRidesGroupRideIdRouteImport } from './routes/group-rides/$groupRideId'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
+import { Route as ApiCronRouteImport } from './routes/api/cron'
 
 const ShouldISf2gRoute = ShouldISf2gRouteImport.update({
-  id: "/should-i-sf2g",
-  path: "/should-i-sf2g",
+  id: '/should-i-sf2g',
+  path: '/should-i-sf2g',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const RoutesRoute = RoutesRouteImport.update({
-  id: "/routes",
-  path: "/routes",
+  id: '/routes',
+  path: '/routes',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
-  id: "/privacy",
-  path: "/privacy",
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const NetworkRoute = NetworkRouteImport.update({
-  id: "/network",
-  path: "/network",
+  id: '/network',
+  path: '/network',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: "/leaderboard",
-  path: "/leaderboard",
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const R2sf2gRoute = R2sf2gRouteImport.update({
-  id: "/2sf2g",
-  path: "/2sf2g",
+  id: '/2sf2g',
+  path: '/2sf2g',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
-  id: "/profile/$userId",
-  path: "/profile/$userId",
+  id: '/profile/$userId',
+  path: '/profile/$userId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const GroupRidesGroupRideIdRoute = GroupRidesGroupRideIdRouteImport.update({
-  id: "/group-rides/$groupRideId",
-  path: "/group-rides/$groupRideId",
+  id: '/group-rides/$groupRideId',
+  path: '/group-rides/$groupRideId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: "/auth/login",
-  path: "/auth/login",
+  id: '/auth/login',
+  path: '/auth/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: "/auth/callback",
-  path: "/auth/callback",
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiWebhookRoute = ApiWebhookRouteImport.update({
-  id: "/api/webhook",
-  path: "/api/webhook",
+  id: '/api/webhook',
+  path: '/api/webhook',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiCronRoute = ApiCronRouteImport.update({
-  id: "/api/cron",
-  path: "/api/cron",
+  id: '/api/cron',
+  path: '/api/cron',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/2sf2g": typeof R2sf2gRoute;
-  "/leaderboard": typeof LeaderboardRoute;
-  "/network": typeof NetworkRoute;
-  "/privacy": typeof PrivacyRoute;
-  "/routes": typeof RoutesRoute;
-  "/should-i-sf2g": typeof ShouldISf2gRoute;
-  "/api/cron": typeof ApiCronRoute;
-  "/api/webhook": typeof ApiWebhookRoute;
-  "/auth/callback": typeof AuthCallbackRoute;
-  "/auth/login": typeof AuthLoginRoute;
-  "/group-rides/$groupRideId": typeof GroupRidesGroupRideIdRoute;
-  "/profile/$userId": typeof ProfileUserIdRoute;
+  '/': typeof IndexRoute
+  '/2sf2g': typeof R2sf2gRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/network': typeof NetworkRoute
+  '/privacy': typeof PrivacyRoute
+  '/routes': typeof RoutesRoute
+  '/should-i-sf2g': typeof ShouldISf2gRoute
+  '/api/cron': typeof ApiCronRoute
+  '/api/webhook': typeof ApiWebhookRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/group-rides/$groupRideId': typeof GroupRidesGroupRideIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/2sf2g": typeof R2sf2gRoute;
-  "/leaderboard": typeof LeaderboardRoute;
-  "/network": typeof NetworkRoute;
-  "/privacy": typeof PrivacyRoute;
-  "/routes": typeof RoutesRoute;
-  "/should-i-sf2g": typeof ShouldISf2gRoute;
-  "/api/cron": typeof ApiCronRoute;
-  "/api/webhook": typeof ApiWebhookRoute;
-  "/auth/callback": typeof AuthCallbackRoute;
-  "/auth/login": typeof AuthLoginRoute;
-  "/group-rides/$groupRideId": typeof GroupRidesGroupRideIdRoute;
-  "/profile/$userId": typeof ProfileUserIdRoute;
+  '/': typeof IndexRoute
+  '/2sf2g': typeof R2sf2gRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/network': typeof NetworkRoute
+  '/privacy': typeof PrivacyRoute
+  '/routes': typeof RoutesRoute
+  '/should-i-sf2g': typeof ShouldISf2gRoute
+  '/api/cron': typeof ApiCronRoute
+  '/api/webhook': typeof ApiWebhookRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/group-rides/$groupRideId': typeof GroupRidesGroupRideIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/2sf2g": typeof R2sf2gRoute;
-  "/leaderboard": typeof LeaderboardRoute;
-  "/network": typeof NetworkRoute;
-  "/privacy": typeof PrivacyRoute;
-  "/routes": typeof RoutesRoute;
-  "/should-i-sf2g": typeof ShouldISf2gRoute;
-  "/api/cron": typeof ApiCronRoute;
-  "/api/webhook": typeof ApiWebhookRoute;
-  "/auth/callback": typeof AuthCallbackRoute;
-  "/auth/login": typeof AuthLoginRoute;
-  "/group-rides/$groupRideId": typeof GroupRidesGroupRideIdRoute;
-  "/profile/$userId": typeof ProfileUserIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/2sf2g': typeof R2sf2gRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/network': typeof NetworkRoute
+  '/privacy': typeof PrivacyRoute
+  '/routes': typeof RoutesRoute
+  '/should-i-sf2g': typeof ShouldISf2gRoute
+  '/api/cron': typeof ApiCronRoute
+  '/api/webhook': typeof ApiWebhookRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/group-rides/$groupRideId': typeof GroupRidesGroupRideIdRoute
+  '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/2sf2g"
-    | "/leaderboard"
-    | "/network"
-    | "/privacy"
-    | "/routes"
-    | "/should-i-sf2g"
-    | "/api/cron"
-    | "/api/webhook"
-    | "/auth/callback"
-    | "/auth/login"
-    | "/group-rides/$groupRideId"
-    | "/profile/$userId";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/2sf2g'
+    | '/leaderboard'
+    | '/network'
+    | '/privacy'
+    | '/routes'
+    | '/should-i-sf2g'
+    | '/api/cron'
+    | '/api/webhook'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/group-rides/$groupRideId'
+    | '/profile/$userId'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/2sf2g"
-    | "/leaderboard"
-    | "/network"
-    | "/privacy"
-    | "/routes"
-    | "/should-i-sf2g"
-    | "/api/cron"
-    | "/api/webhook"
-    | "/auth/callback"
-    | "/auth/login"
-    | "/group-rides/$groupRideId"
-    | "/profile/$userId";
+    | '/'
+    | '/2sf2g'
+    | '/leaderboard'
+    | '/network'
+    | '/privacy'
+    | '/routes'
+    | '/should-i-sf2g'
+    | '/api/cron'
+    | '/api/webhook'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/group-rides/$groupRideId'
+    | '/profile/$userId'
   id:
-    | "__root__"
-    | "/"
-    | "/2sf2g"
-    | "/leaderboard"
-    | "/network"
-    | "/privacy"
-    | "/routes"
-    | "/should-i-sf2g"
-    | "/api/cron"
-    | "/api/webhook"
-    | "/auth/callback"
-    | "/auth/login"
-    | "/group-rides/$groupRideId"
-    | "/profile/$userId";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/2sf2g'
+    | '/leaderboard'
+    | '/network'
+    | '/privacy'
+    | '/routes'
+    | '/should-i-sf2g'
+    | '/api/cron'
+    | '/api/webhook'
+    | '/auth/callback'
+    | '/auth/login'
+    | '/group-rides/$groupRideId'
+    | '/profile/$userId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  R2sf2gRoute: typeof R2sf2gRoute;
-  LeaderboardRoute: typeof LeaderboardRoute;
-  NetworkRoute: typeof NetworkRoute;
-  PrivacyRoute: typeof PrivacyRoute;
-  RoutesRoute: typeof RoutesRoute;
-  ShouldISf2gRoute: typeof ShouldISf2gRoute;
-  ApiCronRoute: typeof ApiCronRoute;
-  ApiWebhookRoute: typeof ApiWebhookRoute;
-  AuthCallbackRoute: typeof AuthCallbackRoute;
-  AuthLoginRoute: typeof AuthLoginRoute;
-  GroupRidesGroupRideIdRoute: typeof GroupRidesGroupRideIdRoute;
-  ProfileUserIdRoute: typeof ProfileUserIdRoute;
+  IndexRoute: typeof IndexRoute
+  R2sf2gRoute: typeof R2sf2gRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  NetworkRoute: typeof NetworkRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RoutesRoute: typeof RoutesRoute
+  ShouldISf2gRoute: typeof ShouldISf2gRoute
+  ApiCronRoute: typeof ApiCronRoute
+  ApiWebhookRoute: typeof ApiWebhookRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  GroupRidesGroupRideIdRoute: typeof GroupRidesGroupRideIdRoute
+  ProfileUserIdRoute: typeof ProfileUserIdRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/should-i-sf2g": {
-      id: "/should-i-sf2g";
-      path: "/should-i-sf2g";
-      fullPath: "/should-i-sf2g";
-      preLoaderRoute: typeof ShouldISf2gRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/routes": {
-      id: "/routes";
-      path: "/routes";
-      fullPath: "/routes";
-      preLoaderRoute: typeof RoutesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/privacy": {
-      id: "/privacy";
-      path: "/privacy";
-      fullPath: "/privacy";
-      preLoaderRoute: typeof PrivacyRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/network": {
-      id: "/network";
-      path: "/network";
-      fullPath: "/network";
-      preLoaderRoute: typeof NetworkRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/leaderboard": {
-      id: "/leaderboard";
-      path: "/leaderboard";
-      fullPath: "/leaderboard";
-      preLoaderRoute: typeof LeaderboardRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/2sf2g": {
-      id: "/2sf2g";
-      path: "/2sf2g";
-      fullPath: "/2sf2g";
-      preLoaderRoute: typeof R2sf2gRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/profile/$userId": {
-      id: "/profile/$userId";
-      path: "/profile/$userId";
-      fullPath: "/profile/$userId";
-      preLoaderRoute: typeof ProfileUserIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/group-rides/$groupRideId": {
-      id: "/group-rides/$groupRideId";
-      path: "/group-rides/$groupRideId";
-      fullPath: "/group-rides/$groupRideId";
-      preLoaderRoute: typeof GroupRidesGroupRideIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth/login": {
-      id: "/auth/login";
-      path: "/auth/login";
-      fullPath: "/auth/login";
-      preLoaderRoute: typeof AuthLoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth/callback": {
-      id: "/auth/callback";
-      path: "/auth/callback";
-      fullPath: "/auth/callback";
-      preLoaderRoute: typeof AuthCallbackRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/webhook": {
-      id: "/api/webhook";
-      path: "/api/webhook";
-      fullPath: "/api/webhook";
-      preLoaderRoute: typeof ApiWebhookRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/cron": {
-      id: "/api/cron";
-      path: "/api/cron";
-      fullPath: "/api/cron";
-      preLoaderRoute: typeof ApiCronRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/should-i-sf2g': {
+      id: '/should-i-sf2g'
+      path: '/should-i-sf2g'
+      fullPath: '/should-i-sf2g'
+      preLoaderRoute: typeof ShouldISf2gRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/routes': {
+      id: '/routes'
+      path: '/routes'
+      fullPath: '/routes'
+      preLoaderRoute: typeof RoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/network': {
+      id: '/network'
+      path: '/network'
+      fullPath: '/network'
+      preLoaderRoute: typeof NetworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/2sf2g': {
+      id: '/2sf2g'
+      path: '/2sf2g'
+      fullPath: '/2sf2g'
+      preLoaderRoute: typeof R2sf2gRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/$userId': {
+      id: '/profile/$userId'
+      path: '/profile/$userId'
+      fullPath: '/profile/$userId'
+      preLoaderRoute: typeof ProfileUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/group-rides/$groupRideId': {
+      id: '/group-rides/$groupRideId'
+      path: '/group-rides/$groupRideId'
+      fullPath: '/group-rides/$groupRideId'
+      preLoaderRoute: typeof GroupRidesGroupRideIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhook': {
+      id: '/api/webhook'
+      path: '/api/webhook'
+      fullPath: '/api/webhook'
+      preLoaderRoute: typeof ApiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron': {
+      id: '/api/cron'
+      path: '/api/cron'
+      fullPath: '/api/cron'
+      preLoaderRoute: typeof ApiCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,16 +309,16 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   GroupRidesGroupRideIdRoute: GroupRidesGroupRideIdRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
