@@ -41,19 +41,6 @@
       "windowStart": "2025-11-26"
     },
     {
-      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
-      "displayName": "Cam Mixed",
-      "maxRidesInWindow": 2,
-      "rideDatesInWindow": [
-        "2025-01-27",
-        "2025-02-05"
-      ],
-      "totalSf2gRides": 5,
-      "userId": "00000000-0000-4000-8000-000000000003",
-      "windowEnd": "2025-02-05",
-      "windowStart": "2025-01-27"
-    },
-    {
       "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
       "displayName": "Ada Bayway",
       "maxRidesInWindow": 2,
@@ -67,17 +54,17 @@
       "windowStart": "2025-02-21"
     },
     {
-      "avatarUrl": "<string len=390 sha1=890f077a31>",
-      "displayName": "Fay Hidden",
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
       "maxRidesInWindow": 2,
       "rideDatesInWindow": [
-        "2025-03-11",
-        "2025-03-12"
+        "2025-01-27",
+        "2025-02-05"
       ],
       "totalSf2gRides": 5,
-      "userId": "00000000-0000-4000-8000-000000000006",
-      "windowEnd": "2025-03-12",
-      "windowStart": "2025-03-11"
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2025-02-05",
+      "windowStart": "2025-01-27"
     },
     {
       "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
@@ -91,6 +78,19 @@
       "userId": "00000000-0000-4000-8000-000000000005",
       "windowEnd": "2025-09-27",
       "windowStart": "2025-09-14"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-03-11",
+        "2025-03-12"
+      ],
+      "totalSf2gRides": 5,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2025-03-12",
+      "windowStart": "2025-03-11"
     }
   ],
   "fetchAllTimeLeaderboard > 30-day window, weekends excluded": [
@@ -150,7 +150,7 @@
         "2024-06-20",
         "2024-06-21"
       ],
-      "totalSf2gRides": 20,
+      "totalSf2gRides": 19,
       "userId": "00000000-0000-4000-8000-000000000006",
       "windowEnd": "2024-06-21",
       "windowStart": "2024-05-27"
@@ -347,7 +347,7 @@
         "2025-03-11",
         "2025-03-12"
       ],
-      "totalSf2gRides": 20,
+      "totalSf2gRides": 19,
       "userId": "00000000-0000-4000-8000-000000000006",
       "windowEnd": "2025-03-12",
       "windowStart": "2024-05-27"
@@ -565,7 +565,7 @@
         "2024-06-20",
         "2024-06-21"
       ],
-      "totalSf2gRides": 20,
+      "totalSf2gRides": 19,
       "userId": "00000000-0000-4000-8000-000000000006",
       "windowEnd": "2024-06-21",
       "windowStart": "2024-06-20"
@@ -657,7 +657,7 @@
         "2024-06-20",
         "2024-06-21"
       ],
-      "totalSf2gRides": 20,
+      "totalSf2gRides": 19,
       "userId": "00000000-0000-4000-8000-000000000006",
       "windowEnd": "2024-06-21",
       "windowStart": "2024-06-20"

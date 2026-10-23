@@ -4,9 +4,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import {
   fetchLeaderboard,
-  fetchPprDawnRiderIds,
-  fetchRiderGrowthData,
-  fetchDailyGrowthData,
+  fetchRiderGrowth,
+  type RiderGrowthInput,
   fetchRouteSpeedLeaderboard,
   fetchCommunityBreakdown,
 } from "../server/leaderboard";
@@ -29,42 +28,6 @@ export function leaderboardQueryOptions(params: LeaderboardQueryInput = {}) {
   });
 }
 
-export function pprDawnRiderIdsQueryOptions(params?: {
-  dateFrom?: string;
-  dateTo?: string;
-  routeCategories?: string[];
-}) {
-  return queryOptions({
-    queryKey: ["ppr-dawn-riders", params ?? {}] as const,
-    queryFn: async () =>
-      (await fetchPprDawnRiderIds({ data: params ?? {} })) ?? {
-        riderIds: [],
-        rideCounts: {},
-        rideIds: [],
-      },
-    staleTime: 300_000,
-    gcTime: 1_800_000,
-  });
-}
-
-export function riderGrowthQueryOptions() {
-  return queryOptions({
-    queryKey: ["rider-growth"] as const,
-    queryFn: async () => (await fetchRiderGrowthData()) ?? [],
-    staleTime: 300_000,
-    gcTime: 1_800_000,
-  });
-}
-
-export function dailyGrowthQueryOptions() {
-  return queryOptions({
-    queryKey: ["daily-growth"] as const,
-    queryFn: async () => (await fetchDailyGrowthData()) ?? [],
-    staleTime: 300_000,
-    gcTime: 1_800_000,
-  });
-}
-
 export function routeSpeedLeaderboardQueryOptions(
   routeCategory: RouteCategory,
 ) {
@@ -81,6 +44,16 @@ export function communityBreakdownQueryOptions() {
   return queryOptions({
     queryKey: ["community-breakdown"] as const,
     queryFn: async () => (await fetchCommunityBreakdown()) ?? null,
+    staleTime: 300_000,
+    gcTime: 1_800_000,
+  });
+}
+
+/** Chart buckets for the riders on the growth chart (same filters as the table). */
+export function riderGrowthQueryOptions(params: RiderGrowthInput) {
+  return queryOptions({
+    queryKey: ["rider-growth", params] as const,
+    queryFn: async () => (await fetchRiderGrowth({ data: params })) ?? [],
     staleTime: 300_000,
     gcTime: 1_800_000,
   });

@@ -17,10 +17,10 @@
       "other_count": 0,
       "avg_speed_mps": 7.71961904707409,
       "median_speed_mps": 7.74349999427795,
-      "sf2g_distance_meters": 4960299,
-      "sf2g_elevation_meters": 77485.2890625,
-      "total_distance_meters": 5245599,
-      "total_elevation_meters": 80635.9921875,
+      "sf2g_distance_meters": 4960300.5,
+      "sf2g_elevation_meters": 77485.28125,
+      "total_distance_meters": 5245598,
+      "total_elevation_meters": 80635.984375,
       "active_years": 9,
       "last_ride_date": "2026-10-13",
       "first_ride_date": "2018-01-25",
@@ -47,10 +47,10 @@
       "other_count": 7,
       "avg_speed_mps": 6.82422415963535,
       "median_speed_mps": 6.86250019073486,
-      "sf2g_distance_meters": 2829826.5,
-      "sf2g_elevation_meters": 12587.7998046875,
-      "total_distance_meters": 3763080,
-      "total_elevation_meters": 20339.599609375,
+      "sf2g_distance_meters": 2829825.5,
+      "sf2g_elevation_meters": 12587.798828125,
+      "total_distance_meters": 3763079.5,
+      "total_elevation_meters": 20339.603515625,
       "active_years": 8,
       "last_ride_date": "2026-10-13",
       "first_ride_date": "2019-04-30",
@@ -77,10 +77,10 @@
       "other_count": 6,
       "avg_speed_mps": 6.62106976398202,
       "median_speed_mps": 6.69199991226196,
-      "sf2g_distance_meters": 2363856.75,
-      "sf2g_elevation_meters": 22051.197265625,
-      "total_distance_meters": 3574452.5,
-      "total_elevation_meters": 32606.001953125,
+      "sf2g_distance_meters": 2363856.25,
+      "sf2g_elevation_meters": 22051.19921875,
+      "total_distance_meters": 3574453.25,
+      "total_elevation_meters": 32605.998046875,
       "active_years": 7,
       "last_ride_date": "2026-10-13",
       "first_ride_date": "2020-02-03",
@@ -107,8 +107,8 @@
       "other_count": 0,
       "avg_speed_mps": 6.53896774784211,
       "median_speed_mps": 6.51000022888184,
-      "sf2g_distance_meters": 1464261.625,
-      "sf2g_elevation_meters": 8190.5,
+      "sf2g_distance_meters": 1464261.875,
+      "sf2g_elevation_meters": 8190.5009765625,
       "total_distance_meters": 1855937.75,
       "total_elevation_meters": 11036.400390625,
       "active_years": 5,
@@ -138,8 +138,8 @@
       "avg_speed_mps": 6.38084208337884,
       "median_speed_mps": 6.34800004959106,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.30029296875,
-      "total_distance_meters": 1235504,
+      "sf2g_elevation_meters": 5687.2998046875,
+      "total_distance_meters": 1235503.875,
       "total_elevation_meters": 7478.3994140625,
       "active_years": 3,
       "last_ride_date": "2026-09-15",
@@ -168,7 +168,7 @@
       "avg_speed_mps": 6.31886657079061,
       "median_speed_mps": 6.34200000762939,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.2998046875,
+      "sf2g_elevation_meters": 3573.29956054688,
       "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.30004882812,
       "active_years": 4,
@@ -200,7 +200,7 @@
       "sf2g_distance_meters": 570513.375,
       "sf2g_elevation_meters": 8838,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838.0009765625,
+      "total_elevation_meters": 8838,
       "active_years": 2,
       "last_ride_date": "2026-10-06",
       "first_ride_date": "2025-01-13",
@@ -229,8 +229,8 @@
       "median_speed_mps": 6.77649998664856,
       "sf2g_distance_meters": 562977,
       "sf2g_elevation_meters": 8603,
-      "total_distance_meters": 1979301.375,
-      "total_elevation_meters": 29098.798828125,
+      "total_distance_meters": 1979301.5,
+      "total_elevation_meters": 29098.80078125,
       "active_years": 4,
       "last_ride_date": "2026-08-18",
       "first_ride_date": "2023-06-01",
@@ -258,7 +258,6 @@
         "elevation_gain_meters": 877.3,
         "moving_time_seconds": 8861,
         "destination_company": "google",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -271,7 +270,8 @@
         "max_watts": 789,
         "average_heartrate": 137,
         "max_heartrate": 157,
-        "kilojoules": 1701
+        "kilojoules": 1701,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000002",
@@ -288,7 +288,6 @@
         "elevation_gain_meters": 921.5,
         "moving_time_seconds": 7244,
         "destination_company": "apple",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -301,7 +300,8 @@
         "max_watts": 718,
         "average_heartrate": 142,
         "max_heartrate": 171,
-        "kilojoules": 1550
+        "kilojoules": 1550,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000003",
@@ -318,7 +318,6 @@
         "elevation_gain_meters": 967.1,
         "moving_time_seconds": 9394,
         "destination_company": null,
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -331,7 +330,8 @@
         "max_watts": null,
         "average_heartrate": null,
         "max_heartrate": null,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000004",
@@ -348,7 +348,6 @@
         "elevation_gain_meters": 916.3,
         "moving_time_seconds": 7310,
         "destination_company": "apple",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -361,7 +360,8 @@
         "max_watts": 894,
         "average_heartrate": 145,
         "max_heartrate": 163,
-        "kilojoules": 1849
+        "kilojoules": 1849,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000005",
@@ -378,7 +378,6 @@
         "elevation_gain_meters": 810.6,
         "moving_time_seconds": 7867,
         "destination_company": null,
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -391,7 +390,8 @@
         "max_watts": null,
         "average_heartrate": null,
         "max_heartrate": null,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000031",
@@ -408,7 +408,6 @@
         "elevation_gain_meters": 190.3,
         "moving_time_seconds": 7045,
         "destination_company": "google",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -421,7 +420,8 @@
         "max_watts": 757,
         "average_heartrate": 140,
         "max_heartrate": 162,
-        "kilojoules": 1268
+        "kilojoules": 1268,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000285",
@@ -438,7 +438,6 @@
         "elevation_gain_meters": 1026.8,
         "moving_time_seconds": 9964,
         "destination_company": null,
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.7599,
           -122.4148
@@ -451,7 +450,8 @@
         "max_watts": null,
         "average_heartrate": null,
         "max_heartrate": null,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000190",
@@ -468,7 +468,6 @@
         "elevation_gain_meters": 274.6,
         "moving_time_seconds": 7679,
         "destination_company": null,
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -481,7 +480,8 @@
         "max_watts": null,
         "average_heartrate": null,
         "max_heartrate": null,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000006",
@@ -498,7 +498,6 @@
         "elevation_gain_meters": 195.8,
         "moving_time_seconds": 7957,
         "destination_company": "google",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -511,7 +510,8 @@
         "max_watts": 828,
         "average_heartrate": 144,
         "max_heartrate": 172,
-        "kilojoules": 1798
+        "kilojoules": 1798,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000007",
@@ -528,7 +528,6 @@
         "elevation_gain_meters": 179.2,
         "moving_time_seconds": 7415,
         "destination_company": "meta",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -541,7 +540,8 @@
         "max_watts": null,
         "average_heartrate": 137,
         "max_heartrate": 153,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000129",
@@ -558,7 +558,6 @@
         "elevation_gain_meters": 922.8,
         "moving_time_seconds": 7102,
         "destination_company": "apple",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -571,7 +570,8 @@
         "max_watts": 674,
         "average_heartrate": 145,
         "max_heartrate": 161,
-        "kilojoules": 1584
+        "kilojoules": 1584,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000274",
@@ -588,7 +588,6 @@
         "elevation_gain_meters": 313.2,
         "moving_time_seconds": 7798,
         "destination_company": "meta",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.7599,
           -122.4148
@@ -601,7 +600,8 @@
         "max_watts": null,
         "average_heartrate": 133,
         "max_heartrate": 162,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000077",
@@ -618,7 +618,6 @@
         "elevation_gain_meters": 194.2,
         "moving_time_seconds": 6810,
         "destination_company": "google",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.7599,
           -122.4148
@@ -631,7 +630,8 @@
         "max_watts": 546,
         "average_heartrate": 145,
         "max_heartrate": 175,
-        "kilojoules": 1199
+        "kilojoules": 1199,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000268",
@@ -648,7 +648,6 @@
         "elevation_gain_meters": 310.6,
         "moving_time_seconds": 7172,
         "destination_company": null,
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.4419,
           -122.143
@@ -661,7 +660,8 @@
         "max_watts": null,
         "average_heartrate": 134,
         "max_heartrate": 163,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       },
       {
         "id": "10000000-0000-4000-8000-000000000327",
@@ -678,7 +678,6 @@
         "elevation_gain_meters": 165.9,
         "moving_time_seconds": 7820,
         "destination_company": "netflix",
-        "tailwind_component_ms": null,
         "start_latlng": [
           37.77343,
           -122.4389
@@ -691,7 +690,8 @@
         "max_watts": null,
         "average_heartrate": null,
         "max_heartrate": null,
-        "kilojoules": null
+        "kilojoules": null,
+        "tailwind_component_ms": null
       }
     ],
     "totalCount": 296,
@@ -701,12 +701,12 @@
   "allTime": [
     {
       "userId": "00000000-0000-4000-8000-000000000002",
-      "displayName": "Ben Skyline",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(94%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EBS%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 5,
-      "windowStart": "2026-08-18",
       "windowEnd": "2026-09-04",
+      "displayName": "Ben Skyline",
+      "windowStart": "2026-08-18",
       "totalSf2gRides": 86,
+      "maxRidesInWindow": 5,
       "rideDatesInWindow": [
         "2026-08-18",
         "2026-08-24",
@@ -717,12 +717,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000001",
-      "displayName": "Ada Bayway",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(47%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EAB%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 4,
-      "windowStart": "2026-09-24",
       "windowEnd": "2026-10-13",
+      "displayName": "Ada Bayway",
+      "windowStart": "2026-09-24",
       "totalSf2gRides": 58,
+      "maxRidesInWindow": 4,
       "rideDatesInWindow": [
         "2026-09-24",
         "2026-09-29",
@@ -732,12 +732,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000004",
-      "displayName": "Dee Reverse",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 4,
-      "windowStart": "2026-02-19",
       "windowEnd": "2026-03-06",
+      "displayName": "Dee Reverse",
+      "windowStart": "2026-02-19",
       "totalSf2gRides": 34,
+      "maxRidesInWindow": 4,
       "rideDatesInWindow": [
         "2026-02-19",
         "2026-02-23",
@@ -747,12 +747,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000006",
-      "displayName": "Fay Hidden",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(282%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EFH%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 4,
-      "windowStart": "2024-05-27",
       "windowEnd": "2024-06-21",
-      "totalSf2gRides": 20,
+      "displayName": "Fay Hidden",
+      "windowStart": "2024-05-27",
+      "totalSf2gRides": 19,
+      "maxRidesInWindow": 4,
       "rideDatesInWindow": [
         "2024-05-27",
         "2024-06-10",
@@ -762,12 +762,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000003",
-      "displayName": "Cam Mixed",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 3,
-      "windowStart": "2021-02-04",
       "windowEnd": "2021-03-04",
+      "displayName": "Cam Mixed",
+      "windowStart": "2021-02-04",
       "totalSf2gRides": 47,
+      "maxRidesInWindow": 3,
       "rideDatesInWindow": [
         "2021-02-04",
         "2021-02-22",
@@ -776,12 +776,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000005",
-      "displayName": "Eve Weekend",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(235%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EEW%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 3,
-      "windowStart": "2023-06-01",
       "windowEnd": "2023-06-20",
+      "displayName": "Eve Weekend",
+      "windowStart": "2023-06-01",
       "totalSf2gRides": 27,
+      "maxRidesInWindow": 3,
       "rideDatesInWindow": [
         "2023-06-01",
         "2023-06-09",
@@ -790,12 +790,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000008",
-      "displayName": "Hal Deauthorized",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(16%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EHD%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 2,
-      "windowStart": "2023-04-14",
       "windowEnd": "2023-04-21",
+      "displayName": "Hal Deauthorized",
+      "windowStart": "2023-04-14",
       "totalSf2gRides": 15,
+      "maxRidesInWindow": 2,
       "rideDatesInWindow": [
         "2023-04-14",
         "2023-04-21"
@@ -803,12 +803,12 @@
     },
     {
       "userId": "00000000-0000-4000-8000-000000000009",
-      "displayName": "Ivy NoScope",
       "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(63%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EIN%3C%2Ftext%3E%3C%2Fsvg%3E",
-      "maxRidesInWindow": 2,
-      "windowStart": "2025-11-26",
       "windowEnd": "2025-12-22",
+      "displayName": "Ivy NoScope",
+      "windowStart": "2025-11-26",
       "totalSf2gRides": 10,
+      "maxRidesInWindow": 2,
       "rideDatesInWindow": [
         "2025-11-26",
         "2025-12-22"

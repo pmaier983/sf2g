@@ -133,7 +133,8 @@ export interface RidesLeaderboardParams {
   dateTo?: string;
   includeOther?: boolean;
   excludeWeekends?: boolean;
-  pprRideIds?: string[];
+  /** Only PPR-at-dawn rides */
+  ppr?: boolean;
   reverse?: boolean;
 }
 

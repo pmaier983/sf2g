@@ -33,6 +33,8 @@ characterize("fetchRidesLeaderboard", fetchRidesLeaderboardImpl, {
   "company apple": { company: "apple" },
   "single rider": { userId: RIDER.cam },
   "date range 2026": { dateFrom: "2026-01-01", dateTo: "2026-12-31" },
+  "PPR at dawn": { ppr: true, excludeWeekends: true },
+  "search ride name": { search: "skyline" },
 });
 
 characterize("fetchCommunityStartHours", () => fetchCommunityStartHoursImpl(), {

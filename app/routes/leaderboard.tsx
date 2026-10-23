@@ -16,9 +16,7 @@ import { MobileBottomBar } from "../components/MobileBottomBar";
 import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
   leaderboardQueryOptions,
-  pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
-  dailyGrowthQueryOptions,
 } from "../queries/leaderboard";
 import { ridesLeaderboardQueryOptions } from "../queries/rides";
 import { allTimeQueryOptions } from "../queries/alltime";
@@ -40,6 +38,7 @@ import { RIDER_COLORS } from "../lib/constants";
 import { groupRidesQueryOptions } from "../queries/group-rides";
 import type { RouteCategory, DestinationCompany } from "../lib/database.types";
 import type { LeaderboardQueryInput } from "../lib/leaderboard-query";
+import { detectGranularity } from "../lib/growth-granularity";
 import "../styles/leaderboard.css";
 
 // ---------------------------------------------------------------------------
@@ -331,26 +330,7 @@ function LeaderboardPage() {
     ...leaderboardOptions,
     enabled: view === "riders",
   });
-  // PPR rider/ride ids are still needed by the Rides and All-Time views
-  // until they move to SQL (phase 03b); the Riders view filters in SQL.
-  const { data: pprDawnData } = useQuery({
-    ...pprDawnRiderIdsQueryOptions({
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    }),
-    enabled: ppr && view !== "riders",
-  });
-  const pprDawnRiderIds = pprDawnData?.riderIds;
-  const pprRideIds = pprDawnData?.rideIds;
   const isChartActive = (chartOpen || mobileGraphOpen) && view === "riders";
-  const { data: growthData } = useQuery({
-    ...riderGrowthQueryOptions(),
-    enabled: isChartActive,
-  });
-  const { data: dailyData } = useQuery({
-    ...dailyGrowthQueryOptions(),
-    enabled: isChartActive,
-  });
 
   const ridesQuery = useInfiniteQuery({
     ...ridesLeaderboardQueryOptions({
@@ -364,8 +344,7 @@ function LeaderboardPage() {
       dateTo: dateTo || undefined,
       includeOther,
       excludeWeekends,
-      // When PPR filter is active, only show qualifying PPR rides
-      pprRideIds: ppr ? pprRideIds : undefined,
+      ppr,
       reverse: reverse || undefined,
     }),
     enabled: view === "rides",
@@ -381,6 +360,7 @@ function LeaderboardPage() {
       includeOther,
       company: company || undefined,
       reverse: reverse || undefined,
+      ppr,
     }),
     enabled: view === "alltime",
   });
@@ -440,6 +420,27 @@ function LeaderboardPage() {
       .map((e) => e.user_id)
       .filter((id): id is string => id != null);
   }, [leaderboardData, selectedRiderIds]);
+
+  // Growth chart: buckets for the riders on the chart, same filters as the table
+  const chartGranularity = detectGranularity(
+    dateFrom || undefined,
+    dateTo || undefined,
+  );
+  const { data: growthBuckets } = useQuery({
+    ...riderGrowthQueryOptions({
+      routes,
+      includeOther,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      excludeWeekends,
+      ppr,
+      reverse,
+      company: (company || undefined) as LeaderboardQueryInput["company"],
+      riderIds: selectedRiderArray,
+      granularity: chartGranularity,
+    }),
+    enabled: isChartActive && selectedRiderArray.length > 0,
+  });
 
   const riderColorMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -730,18 +731,14 @@ function LeaderboardPage() {
                   selectedRiderIds={allTimeSelectedIds}
                 />
               </Suspense>
-            ) : growthData && growthData.length > 0 ? (
+            ) : growthBuckets && growthBuckets.length > 0 ? (
               <Suspense fallback={<div className="chart-skeleton" />}>
                 <GrowthChart
-                  growthData={growthData}
-                  dailyData={dailyData}
+                  buckets={growthBuckets}
+                  granularity={chartGranularity}
                   visibleRiderIds={selectedRiderArray}
                   riderColorMap={riderColorMap}
                   riderNameMap={riderNameMap}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  routeCategories={routes}
-                  includeOther={includeOther}
                   onToggleRider={handleToggleRider}
                 />
               </Suspense>
@@ -859,8 +856,6 @@ function LeaderboardPage() {
               isLoading={allTimeQuery.isLoading}
               searchFilter={search}
               durationLabel={getDurationLabel(duration)}
-              pprActive={ppr}
-              pprDawnRiderIds={pprDawnRiderIds}
               onViewRides={(userId, dateFrom, dateTo) =>
                 updateSearch({
                   view: "rides",
@@ -934,18 +929,14 @@ function LeaderboardPage() {
             ✕
           </button>
           <div className="mobile-graph-overlay__content">
-            {growthData && growthData.length > 0 ? (
+            {growthBuckets && growthBuckets.length > 0 ? (
               <Suspense fallback={<div className="chart-skeleton" />}>
                 <GrowthChart
-                  growthData={growthData}
-                  dailyData={dailyData}
+                  buckets={growthBuckets}
+                  granularity={chartGranularity}
                   visibleRiderIds={selectedRiderArray}
                   riderColorMap={riderColorMap}
                   riderNameMap={riderNameMap}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  routeCategories={routes}
-                  includeOther={includeOther}
                   onToggleRider={handleToggleRider}
                 />
               </Suspense>

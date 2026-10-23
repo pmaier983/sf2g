@@ -12,8 +12,6 @@ export interface AllTimeTableProps {
   isLoading: boolean;
   searchFilter: string;
   durationLabel: string;
-  pprActive?: boolean;
-  pprDawnRiderIds?: string[];
   onViewRides?: (userId: string, dateFrom: string, dateTo: string) => void;
 }
 
@@ -73,29 +71,22 @@ export function AllTimeTable({
   isLoading,
   searchFilter,
   durationLabel,
-  pprActive,
-  pprDawnRiderIds,
   onViewRides,
 }: AllTimeTableProps) {
   const tableRef = useColumnResize<HTMLTableElement>();
   const [sortKey, setSortKey] = useState("maxRidesInWindow");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  // Client-side search + PPR filtering
+  // Client-side search (PPR and every other filter are applied in SQL)
   const filteredData = useMemo(() => {
     if (!data) return [];
-    let result = data;
-    // PPR filter: only show riders with qualifying PPR rides
-    if (pprActive && pprDawnRiderIds) {
-      const pprSet = new Set(pprDawnRiderIds);
-      result = result.filter((entry) => pprSet.has(entry.userId));
-    }
+    const result = data;
     if (!searchFilter) return result;
     const q = searchFilter.toLowerCase();
     return result.filter((entry) =>
       entry.displayName.toLowerCase().includes(q),
     );
-  }, [data, searchFilter, pprActive, pprDawnRiderIds]);
+  }, [data, searchFilter]);
 
   // Client-side sorting
   const sortedData = useMemo(() => {
