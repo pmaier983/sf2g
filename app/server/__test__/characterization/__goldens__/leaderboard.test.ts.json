@@ -1,0 +1,6235 @@
+{
+  "fetchCommunityBreakdown > default": {
+    "other_distance_meters": 592645.8,
+    "other_elevation_meters": 4904.1,
+    "other_ride_count": 14,
+    "sf2g_distance_meters": 16255154.400000002,
+    "sf2g_elevation_meters": 171655.9,
+    "sf2g_ride_count": 297,
+    "total_distance_meters": 16847800.200000003,
+    "total_elevation_meters": 176560,
+    "total_ride_count": 311
+  },
+  "fetchCompanyRiderIds > apple": [
+    "00000000-0000-4000-8000-000000000002"
+  ],
+  "fetchCompanyRiderIds > google": [
+    "00000000-0000-4000-8000-000000000001"
+  ],
+  "fetchCompanyRiderIds > unknown company": [],
+  "fetchDailyGrowthData > default": [
+    {
+      "ride_date": "2018-01-25",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2018-01-31",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2018-05-31",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2018-08-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-01-11",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-01-31",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-02-11",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-03-04",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-03-07",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-03-08",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-04-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2019-05-16",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-05-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2019-06-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-09-11",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2019-09-23",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-11-13",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2019-11-21",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-12-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2019-12-20",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-01-24",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-01-26",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-02-03",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-02-05",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-02-17",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-03-24",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-04-09",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-04-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-05-04",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-06-17",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-07-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-07-16",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-07-28",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-07-31",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-08-03",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-08-14",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-09-09",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-09-25",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-09-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-10-08",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-10-26",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-10-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-11-02",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-11-09",
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2020-11-19",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2020-12-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2020-12-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-01-12",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-01-14",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-02-04",
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-02-22",
+      "route_category": "febw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-02-26",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-03-04",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-03-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-03-11",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-03-18",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-03-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-04-15",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-04-23",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-04-28",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-05-14",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2021-05-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-06-07",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-06-15",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-06-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-07-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-08-02",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-08-14",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-08-20",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-08-23",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-08-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-09-08",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-09-29",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2021-09-30",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2021-11-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2021-12-01",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-12-02",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2021-12-05",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2021-12-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2022-02-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2022-02-17",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2022-02-22",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-03-15",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2022-03-30",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-03-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2022-05-04",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-05-16",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2022-05-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-05-26",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-05-31",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-06-24",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-06-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2022-06-30",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-07-12",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-07-15",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2022-07-19",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2022-07-21",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2022-07-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-07-25",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-07-28",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-08-11",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-08-16",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-08-29",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2022-08-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2022-09-07",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-10-17",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2022-12-06",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2022-12-16",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2022-12-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2022-12-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-01-25",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-01-31",
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-02-08",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-02-28",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-03-04",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-03-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2023-03-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-03-25",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-03-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-04-06",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-04-07",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-04-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-04-12",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-04-14",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-04-14",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-04-14",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2023-04-21",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2023-04-25",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-05-09",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-05-11",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-05-17",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-05-25",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-06-01",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-06-09",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-06-12",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-06-20",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-06-26",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-07-17",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-07-24",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-07-25",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-09-07",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-09-10",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2023-10-11",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2023-10-30",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-11-13",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2023-11-23",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2023-11-24",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2023-12-22",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-01-06",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-01-15",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-01-26",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-02-01",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-02-09",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-02-20",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-02-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-03-07",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-03-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-04-04",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-04-16",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-04-19",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-04-23",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-04-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2024-05-02",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2024-05-14",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-05-14",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-05-26",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-05-27",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-05-27",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-05-27",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-05-30",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-05-30",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-06-07",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-06-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-06-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-06-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-06-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-06-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-07-09",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2024-07-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2024-07-23",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-08-09",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-08-13",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-08-19",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-08-20",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-09-03",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-09-07",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-10-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-10-25",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2024-10-25",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-10-30",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-11-01",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2024-11-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2024-11-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "ride_date": "2024-11-29",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-12-01",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-12-11",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2024-12-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2024-12-22",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2024-12-25",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-01-06",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-01-06",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-01-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2025-01-14",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-01-20",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-01-27",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-02-05",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-02-07",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-02-19",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-02-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-02-21",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-03-07",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-03-11",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2025-03-12",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2025-03-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-03-17",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-03-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-03-28",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-03-31",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-04-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2025-04-18",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-04-19",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-04-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-05-01",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-05-18",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2025-06-02",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2025-06-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-06-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-06-15",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2025-06-26",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-07-11",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-07-16",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2025-08-05",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-08-12",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2025-08-27",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2025-08-28",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2025-09-01",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-09-14",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2025-09-27",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2025-10-08",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2025-10-16",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2025-10-16",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2025-11-08",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2025-11-26",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2025-12-03",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2025-12-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2026-01-01",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-01-06",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-01-10",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-01-16",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-01-17",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-01-27",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-01-27",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2026-02-10",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-02-12",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-02-17",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-02-19",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-02-23",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-03-04",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-03-06",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-03-10",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-03-10",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2026-03-18",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-03-24",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-04-03",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-04-05",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-04-13",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-04-26",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-04-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-05-08",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-05-14",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-05-14",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-05-15",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-05-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2026-06-04",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-06-09",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-06-17",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-06-22",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-06-22",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-06-29",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-07-05",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-07-07",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-07-13",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-07-21",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-07-28",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-08-16",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-08-18",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-08-18",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-08-23",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-08-24",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-08-24",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-08-25",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-09-01",
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-09-01",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-09-02",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-09-04",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-09-15",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-09-22",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-09-24",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-09-27",
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-09-28",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-09-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-09-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "ride_date": "2026-09-29",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "ride_date": "2026-10-01",
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "ride_date": "2026-10-03",
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "ride_date": "2026-10-05",
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-10-06",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-10-06",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "ride_date": "2026-10-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "ride_date": "2026-10-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "ride_date": "2026-10-13",
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "fetchFilteredLeaderboard > bayway + royale": [
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.875,
+      "avg_kilojoules": 1451.089285714,
+      "avg_speed_mps": 6.82625,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 203.857142857,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-05",
+      "mebw_count": 0,
+      "median_speed_mps": 6.8625,
+      "median_watts": 209,
+      "other_count": 0,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2713646.300000001,
+      "sf2g_elevation_meters": 10829.9,
+      "sf2g_total": 56,
+      "skyline_count": 0,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 56,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.483870968,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.538967742,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 10,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.51,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 21,
+      "sf2g_distance_meters": 1464261.8,
+      "sf2g_elevation_meters": 8190.5,
+      "sf2g_total": 31,
+      "skyline_count": 0,
+      "total_distance_meters": 1855937.875,
+      "total_elevation_meters": 11036.400390625,
+      "total_rides": 31,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.672578947,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2021-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-02",
+      "mebw_count": 0,
+      "median_speed_mps": 6.707,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 10,
+      "sf2g_distance_meters": 910646.3,
+      "sf2g_elevation_meters": 4657.5,
+      "sf2g_total": 19,
+      "skyline_count": 0,
+      "total_distance_meters": 3574453.5,
+      "total_elevation_meters": 32605.998046875,
+      "total_rides": 19,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.35375,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 15,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-15",
+      "mebw_count": 0,
+      "median_speed_mps": 6.313,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 793174.5,
+      "sf2g_elevation_meters": 2943.8,
+      "sf2g_total": 16,
+      "skyline_count": 0,
+      "total_distance_meters": 1235503.875,
+      "total_elevation_meters": 7478.399414063,
+      "total_rides": 16,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711637.9,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711637.9375,
+      "total_elevation_meters": 3573.299804688,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    }
+  ],
+  "fetchFilteredLeaderboard > company google": [
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.709090909,
+      "avg_kilojoules": 1457.090909091,
+      "avg_speed_mps": 6.836363636,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 203.690909091,
+      "bayway_count": 47,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.952,
+      "median_watts": 209,
+      "other_count": 0,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2682167.300000001,
+      "sf2g_elevation_meters": 12051.8,
+      "sf2g_total": 55,
+      "skyline_count": 2,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 55,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    }
+  ],
+  "fetchFilteredLeaderboard > reverse commutes": [
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.555555556,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.554,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 6,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-22",
+      "mebw_count": 0,
+      "median_speed_mps": 6.515,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 12,
+      "sf2g_distance_meters": 851848.3,
+      "sf2g_elevation_meters": 4682.3,
+      "sf2g_total": 18,
+      "skyline_count": 0,
+      "total_distance_meters": 1855937.875,
+      "total_elevation_meters": 11036.400390625,
+      "total_rides": 18,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.834666667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2023-07-24",
+      "fleaway_count": 0,
+      "hmbw_count": 1,
+      "last_ride_date": "2026-06-04",
+      "mebw_count": 0,
+      "median_speed_mps": 6.843,
+      "median_watts": null,
+      "other_count": 2,
+      "royale_count": 1,
+      "sf2g_distance_meters": 180139.8,
+      "sf2g_elevation_meters": 2273,
+      "sf2g_total": 3,
+      "skyline_count": 1,
+      "total_distance_meters": 3574453.5,
+      "total_elevation_meters": 32605.998046875,
+      "total_rides": 5,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 144.666666667,
+      "avg_kilojoules": 1554.333333333,
+      "avg_speed_mps": 6.601666667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 208.666666667,
+      "bayway_count": 3,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2020-03-24",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-05-14",
+      "mebw_count": 0,
+      "median_speed_mps": 6.722,
+      "median_watts": 213,
+      "other_count": 2,
+      "royale_count": 0,
+      "sf2g_distance_meters": 147658.8,
+      "sf2g_elevation_meters": 536,
+      "sf2g_total": 3,
+      "skyline_count": 0,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 5,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    }
+  ],
+  "fetchFilteredLeaderboard > skyline in 2026, sorted by sf2g_total asc": [
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 137,
+      "avg_kilojoules": 1701,
+      "avg_speed_mps": 6.463,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 192,
+      "bayway_count": 0,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2026-10-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.463,
+      "median_watts": 192,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 57270.7,
+      "sf2g_elevation_meters": 877.3,
+      "sf2g_total": 1,
+      "skyline_count": 1,
+      "total_distance_meters": 617788.375,
+      "total_elevation_meters": 3943.100097656,
+      "total_rides": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.261,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2026-10-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.261,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 58818.9,
+      "sf2g_elevation_meters": 967.1,
+      "sf2g_total": 1,
+      "skyline_count": 1,
+      "total_distance_meters": 507775.15625,
+      "total_elevation_meters": 3829.800292969,
+      "total_rides": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.395,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-06-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.395,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 113924.5,
+      "sf2g_elevation_meters": 1821.6,
+      "sf2g_total": 2,
+      "skyline_count": 2,
+      "total_distance_meters": 416156.5,
+      "total_elevation_meters": 2938,
+      "total_rides": 2,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.04875,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.0965,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 226114.6,
+      "sf2g_elevation_meters": 3599.1,
+      "sf2g_total": 4,
+      "skyline_count": 4,
+      "total_distance_meters": 226114.59375,
+      "total_elevation_meters": 3599.100097656,
+      "total_rides": 4,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 147.307692308,
+      "avg_kilojoules": 1717.538461538,
+      "avg_speed_mps": 7.829076923,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 234.769230769,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.814,
+      "median_watts": 236,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 740174.6,
+      "sf2g_elevation_meters": 11789.4,
+      "sf2g_total": 13,
+      "skyline_count": 13,
+      "total_distance_meters": 1002891.25,
+      "total_elevation_meters": 15533.19921875,
+      "total_rides": 13,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    }
+  ],
+  "fetchFilteredLeaderboard > skyline only": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 148.794520548,
+      "avg_kilojoules": 1708.273972603,
+      "avg_speed_mps": 7.705958904,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 230.671232877,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.725,
+      "median_watts": 233,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 4150286.200000001,
+      "sf2g_elevation_meters": 65341.5,
+      "sf2g_total": 73,
+      "skyline_count": 73,
+      "total_distance_meters": 5245598.5,
+      "total_elevation_meters": 80635.984375,
+      "total_rides": 73,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.1946,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.1015,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513.4,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513.4375,
+      "total_elevation_meters": 8838.000976563,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.613777778,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2020-09-28",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.853,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 523878.5,
+      "sf2g_elevation_meters": 8088.8,
+      "sf2g_total": 9,
+      "skyline_count": 9,
+      "total_distance_meters": 3574453.5,
+      "total_elevation_meters": 32605.998046875,
+      "total_rides": 9,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.525333333,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-11-01",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-06-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.672,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 173381.7,
+      "sf2g_elevation_meters": 2743.5,
+      "sf2g_total": 3,
+      "skyline_count": 3,
+      "total_distance_meters": 1235503.875,
+      "total_elevation_meters": 7478.399414063,
+      "total_rides": 3,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 141,
+      "avg_kilojoules": 1771,
+      "avg_speed_mps": 6.7675,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 206.5,
+      "bayway_count": 0,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2025-06-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.7675,
+      "median_watts": 206.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 116179.8,
+      "sf2g_elevation_meters": 1757.9,
+      "sf2g_total": 2,
+      "skyline_count": 2,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.957,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2024-04-23",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-04-23",
+      "mebw_count": 0,
+      "median_speed_mps": 6.957,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 59371.3,
+      "sf2g_elevation_meters": 933,
+      "sf2g_total": 1,
+      "skyline_count": 1,
+      "total_distance_meters": 1979301.625,
+      "total_elevation_meters": 29098.80078125,
+      "total_rides": 1,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    }
+  ],
+  "fetchFilteredLeaderboard > weekends excluded": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.142857143,
+      "avg_kilojoules": 1772.107142857,
+      "avg_speed_mps": 7.719619048,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 230.845238095,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.7435,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 4960300.4,
+      "sf2g_elevation_meters": 77485.3,
+      "sf2g_total": 84,
+      "skyline_count": 73,
+      "total_distance_meters": 5245598.5,
+      "total_elevation_meters": 80635.984375,
+      "total_rides": 84,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.824224138,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.8625,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829826.100000001,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 65,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.621069767,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-02-03",
+      "fleaway_count": 7,
+      "hmbw_count": 4,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.692,
+      "median_watts": null,
+      "other_count": 6,
+      "royale_count": 10,
+      "sf2g_distance_meters": 2363856.7,
+      "sf2g_elevation_meters": 22051.2,
+      "sf2g_total": 43,
+      "skyline_count": 9,
+      "total_distance_meters": 3574453.5,
+      "total_elevation_meters": 32605.998046875,
+      "total_rides": 49,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.483870968,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.538967742,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 10,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.51,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 21,
+      "sf2g_distance_meters": 1464261.8,
+      "sf2g_elevation_meters": 8190.5,
+      "sf2g_total": 31,
+      "skyline_count": 0,
+      "total_distance_meters": 1855937.875,
+      "total_elevation_meters": 11036.400390625,
+      "total_rides": 31,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.380842105,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 15,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-15",
+      "mebw_count": 0,
+      "median_speed_mps": 6.348,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 966556.2,
+      "sf2g_elevation_meters": 5687.3,
+      "sf2g_total": 19,
+      "skyline_count": 3,
+      "total_distance_meters": 1235503.875,
+      "total_elevation_meters": 7478.399414063,
+      "total_rides": 19,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711637.9,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711637.9375,
+      "total_elevation_meters": 3573.299804688,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.1946,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.1015,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513.4,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513.4375,
+      "total_elevation_meters": 8838.000976563,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.790875,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-06-01",
+      "fleaway_count": 0,
+      "hmbw_count": 7,
+      "last_ride_date": "2026-08-18",
+      "mebw_count": 0,
+      "median_speed_mps": 6.7765,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 562977,
+      "sf2g_elevation_meters": 8603,
+      "sf2g_total": 8,
+      "skyline_count": 1,
+      "total_distance_meters": 1979301.625,
+      "total_elevation_meters": 29098.80078125,
+      "total_rides": 8,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    }
+  ],
+  "fetchFilteredLeaderboard > weekends included": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.069767442,
+      "avg_kilojoules": 1772.88372093,
+      "avg_speed_mps": 7.719476744,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 231.023255814,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.7435,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 5076998.500000001,
+      "sf2g_elevation_meters": 79227.8,
+      "sf2g_total": 86,
+      "skyline_count": 75,
+      "total_distance_meters": 5245598.5,
+      "total_elevation_meters": 80635.984375,
+      "total_rides": 86,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.824224138,
+      "avg_tailwind_ms": 0,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.8625,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829826.100000001,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763079.75,
+      "total_elevation_meters": 20339.599609375,
+      "total_rides": 65,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.618531915,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-01-26",
+      "fleaway_count": 8,
+      "hmbw_count": 5,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.663,
+      "median_watts": null,
+      "other_count": 7,
+      "royale_count": 11,
+      "sf2g_distance_meters": 2589384.6,
+      "sf2g_elevation_meters": 24576.5,
+      "sf2g_total": 47,
+      "skyline_count": 10,
+      "total_distance_meters": 3574453.5,
+      "total_elevation_meters": 32605.998046875,
+      "total_rides": 54,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.088235294,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.520176471,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 11,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.5015,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 23,
+      "sf2g_distance_meters": 1607376.4,
+      "sf2g_elevation_meters": 8965.8,
+      "sf2g_total": 34,
+      "skyline_count": 0,
+      "total_distance_meters": 1855937.875,
+      "total_elevation_meters": 11036.400390625,
+      "total_rides": 34,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.922666667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 21,
+      "last_ride_date": "2026-10-03",
+      "mebw_count": 0,
+      "median_speed_mps": 6.943,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 1853608,
+      "sf2g_elevation_meters": 28002.1,
+      "sf2g_total": 27,
+      "skyline_count": 6,
+      "total_distance_meters": 1979301.625,
+      "total_elevation_meters": 29098.80078125,
+      "total_rides": 27,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.380842105,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 15,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-15",
+      "mebw_count": 0,
+      "median_speed_mps": 6.348,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 966556.2,
+      "sf2g_elevation_meters": 5687.3,
+      "sf2g_total": 19,
+      "skyline_count": 3,
+      "total_distance_meters": 1235503.875,
+      "total_elevation_meters": 7478.399414063,
+      "total_rides": 19,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866667,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711637.9,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711637.9375,
+      "total_elevation_meters": 3573.299804688,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.1946,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.1015,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513.4,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513.4375,
+      "total_elevation_meters": 8838.000976563,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    }
+  ],
+  "fetchLeaderboard > date range 2025, weekends excluded (default)": [
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 148.583333333,
+      "avg_kilojoules": 1741,
+      "avg_speed_mps": 7.775500019,
+      "avg_tailwind_ms": 0.389999998,
+      "avg_watts": 229.083333333,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 1,
+      "last_ride_date": "2025-12-03",
+      "mebw_count": 0,
+      "median_speed_mps": 7.823999882,
+      "median_watts": 227,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 710061.3125,
+      "sf2g_elevation_meters": 10958.400390625,
+      "sf2g_total": 12,
+      "skyline_count": 11,
+      "total_distance_meters": 710061.3125,
+      "total_elevation_meters": 10958.400390625,
+      "total_rides": 12,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 137.166666667,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.632833401,
+      "avg_tailwind_ms": -1.106666684,
+      "avg_watts": null,
+      "bayway_count": 2,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-07-16",
+      "mebw_count": 0,
+      "median_speed_mps": 6.775500059,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 4,
+      "sf2g_distance_meters": 290170.5,
+      "sf2g_elevation_meters": 1622.400024414,
+      "sf2g_total": 6,
+      "skyline_count": 0,
+      "total_distance_meters": 290170.5,
+      "total_elevation_meters": 1622.400024414,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.291833401,
+      "avg_tailwind_ms": 1.236666724,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-12-22",
+      "mebw_count": 0,
+      "median_speed_mps": 7.274500132,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 344398.78125,
+      "sf2g_elevation_meters": 5238.899902344,
+      "sf2g_total": 6,
+      "skyline_count": 6,
+      "total_distance_meters": 344398.78125,
+      "total_elevation_meters": 5238.899902344,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 143.4,
+      "avg_kilojoules": 1455.2,
+      "avg_speed_mps": 6.947399902,
+      "avg_tailwind_ms": 1.465000033,
+      "avg_watts": 201.6,
+      "bayway_count": 4,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2025-02-21",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-08-12",
+      "mebw_count": 0,
+      "median_speed_mps": 7.001999855,
+      "median_watts": 209,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 250838.3125,
+      "sf2g_elevation_meters": 1581.899902344,
+      "sf2g_total": 5,
+      "skyline_count": 1,
+      "total_distance_meters": 291288.5,
+      "total_elevation_meters": 1947.400024414,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.401799965,
+      "avg_tailwind_ms": -0.193333368,
+      "avg_watts": null,
+      "bayway_count": 5,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2025-03-11",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-10-16",
+      "mebw_count": 0,
+      "median_speed_mps": 6.485000134,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 247193.890625,
+      "sf2g_elevation_meters": 928.099975586,
+      "sf2g_total": 5,
+      "skyline_count": 0,
+      "total_distance_meters": 247193.890625,
+      "total_elevation_meters": 928.099975586,
+      "total_rides": 5,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.209500074,
+      "avg_tailwind_ms": 0.49000001,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 1,
+      "last_ride_date": "2025-04-18",
+      "mebw_count": 0,
+      "median_speed_mps": 6.031500101,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 245529.59375,
+      "sf2g_elevation_meters": 3274.5,
+      "sf2g_total": 4,
+      "skyline_count": 2,
+      "total_distance_meters": 379084.53125,
+      "total_elevation_meters": 4274.5,
+      "total_rides": 7,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    }
+  ],
+  "fetchLeaderboard > date range 2025, weekends included": [
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 148.153846154,
+      "avg_kilojoules": 1743.153846154,
+      "avg_speed_mps": 7.814692314,
+      "avg_tailwind_ms": 0.389999998,
+      "avg_watts": 231,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 1,
+      "last_ride_date": "2025-12-03",
+      "mebw_count": 0,
+      "median_speed_mps": 7.922999859,
+      "median_watts": 229,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 767749.0625,
+      "sf2g_elevation_meters": 11770.500976563,
+      "sf2g_total": 13,
+      "skyline_count": 12,
+      "total_distance_meters": 767749.0625,
+      "total_elevation_meters": 11770.500976563,
+      "total_rides": 13,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 137.166666667,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.632833401,
+      "avg_tailwind_ms": -1.106666684,
+      "avg_watts": null,
+      "bayway_count": 2,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-07-16",
+      "mebw_count": 0,
+      "median_speed_mps": 6.775500059,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 4,
+      "sf2g_distance_meters": 290170.53125,
+      "sf2g_elevation_meters": 1622.400024414,
+      "sf2g_total": 6,
+      "skyline_count": 0,
+      "total_distance_meters": 330615.03125,
+      "total_elevation_meters": 1983.600097656,
+      "total_rides": 7,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.291833401,
+      "avg_tailwind_ms": 1.236666724,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-12-22",
+      "mebw_count": 0,
+      "median_speed_mps": 7.274500132,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 344398.78125,
+      "sf2g_elevation_meters": 5238.899902344,
+      "sf2g_total": 6,
+      "skyline_count": 6,
+      "total_distance_meters": 344398.78125,
+      "total_elevation_meters": 5238.899902344,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 143.4,
+      "avg_kilojoules": 1455.2,
+      "avg_speed_mps": 6.947399902,
+      "avg_tailwind_ms": 1.465000033,
+      "avg_watts": 201.6,
+      "bayway_count": 4,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2025-02-21",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-08-12",
+      "mebw_count": 0,
+      "median_speed_mps": 7.001999855,
+      "median_watts": 209,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 250838.3125,
+      "sf2g_elevation_meters": 1581.900024414,
+      "sf2g_total": 5,
+      "skyline_count": 1,
+      "total_distance_meters": 291288.5,
+      "total_elevation_meters": 1947.400024414,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.261200047,
+      "avg_tailwind_ms": -0.076666673,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 1,
+      "last_ride_date": "2025-04-19",
+      "mebw_count": 0,
+      "median_speed_mps": 6.058000088,
+      "median_watts": null,
+      "other_count": 1,
+      "royale_count": 2,
+      "sf2g_distance_meters": 295182.6875,
+      "sf2g_elevation_meters": 3583.5,
+      "sf2g_total": 5,
+      "skyline_count": 2,
+      "total_distance_meters": 471400.78125,
+      "total_elevation_meters": 4903.600585938,
+      "total_rides": 9,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.036999989,
+      "avg_tailwind_ms": 0,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2025-04-13",
+      "fleaway_count": 0,
+      "hmbw_count": 3,
+      "last_ride_date": "2025-11-08",
+      "mebw_count": 0,
+      "median_speed_mps": 6.960000038,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 329685.3125,
+      "sf2g_elevation_meters": 4839,
+      "sf2g_total": 5,
+      "skyline_count": 2,
+      "total_distance_meters": 372868.0625,
+      "total_elevation_meters": 5218.299804688,
+      "total_rides": 6,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.401799965,
+      "avg_tailwind_ms": -0.193333368,
+      "avg_watts": null,
+      "bayway_count": 5,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2025-03-11",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2025-10-16",
+      "mebw_count": 0,
+      "median_speed_mps": 6.485000134,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 247193.890625,
+      "sf2g_elevation_meters": 928.100036621,
+      "sf2g_total": 5,
+      "skyline_count": 0,
+      "total_distance_meters": 247193.890625,
+      "total_elevation_meters": 928.100036621,
+      "total_rides": 5,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    }
+  ],
+  "fetchLeaderboard > invalid date is ignored": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.069767442,
+      "avg_kilojoules": 1772.88372093,
+      "avg_speed_mps": 7.719476744,
+      "avg_tailwind_ms": 0.017499992,
+      "avg_watts": 231.023255814,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.743499994,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 5077000,
+      "sf2g_elevation_meters": 79227.8,
+      "sf2g_total": 86,
+      "skyline_count": 75,
+      "total_distance_meters": 5245600,
+      "total_elevation_meters": 80636,
+      "total_rides": 90,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.82422416,
+      "avg_tailwind_ms": 0.428148148,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.862500191,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829830,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.6,
+      "total_rides": 80,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.618531907,
+      "avg_tailwind_ms": 0.610000006,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-01-26",
+      "fleaway_count": 8,
+      "hmbw_count": 5,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.663000107,
+      "median_watts": null,
+      "other_count": 7,
+      "royale_count": 11,
+      "sf2g_distance_meters": 2589380,
+      "sf2g_elevation_meters": 24576.5,
+      "sf2g_total": 47,
+      "skyline_count": 10,
+      "total_distance_meters": 3574450,
+      "total_elevation_meters": 32606,
+      "total_rides": 70,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.088235294,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.520176467,
+      "avg_tailwind_ms": 0.201666652,
+      "avg_watts": null,
+      "bayway_count": 11,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.50150013,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 23,
+      "sf2g_distance_meters": 1607380,
+      "sf2g_elevation_meters": 8965.8,
+      "sf2g_total": 34,
+      "skyline_count": 0,
+      "total_distance_meters": 1855940,
+      "total_elevation_meters": 11036.4,
+      "total_rides": 40,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.92266662,
+      "avg_tailwind_ms": -0.153571438,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 21,
+      "last_ride_date": "2026-10-03",
+      "mebw_count": 0,
+      "median_speed_mps": 6.94299984,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 1853610,
+      "sf2g_elevation_meters": 28002.1,
+      "sf2g_total": 27,
+      "skyline_count": 6,
+      "total_distance_meters": 1979300,
+      "total_elevation_meters": 29098.8,
+      "total_rides": 30,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.386149979,
+      "avg_tailwind_ms": -0.667000008,
+      "avg_watts": null,
+      "bayway_count": 16,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.375499964,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 1015810,
+      "sf2g_elevation_meters": 5884.6,
+      "sf2g_total": 20,
+      "skyline_count": 3,
+      "total_distance_meters": 1235500,
+      "total_elevation_meters": 7478.4,
+      "total_rides": 25,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866571,
+      "avg_tailwind_ms": 0.591249995,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342000008,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711638,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711638,
+      "total_elevation_meters": 3573.3,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.194600058,
+      "avg_tailwind_ms": 0.231666687,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.101500034,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513,
+      "total_elevation_meters": 8838,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    }
+  ],
+  "fetchLeaderboard > no filters": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.069767442,
+      "avg_kilojoules": 1772.88372093,
+      "avg_speed_mps": 7.719476744,
+      "avg_tailwind_ms": 0.017499992,
+      "avg_watts": 231.023255814,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.743499994,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 5077000,
+      "sf2g_elevation_meters": 79227.8,
+      "sf2g_total": 86,
+      "skyline_count": 75,
+      "total_distance_meters": 5245600,
+      "total_elevation_meters": 80636,
+      "total_rides": 90,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.82422416,
+      "avg_tailwind_ms": 0.428148148,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.862500191,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829830,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.6,
+      "total_rides": 80,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.618531907,
+      "avg_tailwind_ms": 0.610000006,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-01-26",
+      "fleaway_count": 8,
+      "hmbw_count": 5,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.663000107,
+      "median_watts": null,
+      "other_count": 7,
+      "royale_count": 11,
+      "sf2g_distance_meters": 2589380,
+      "sf2g_elevation_meters": 24576.5,
+      "sf2g_total": 47,
+      "skyline_count": 10,
+      "total_distance_meters": 3574450,
+      "total_elevation_meters": 32606,
+      "total_rides": 70,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.088235294,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.520176467,
+      "avg_tailwind_ms": 0.201666652,
+      "avg_watts": null,
+      "bayway_count": 11,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.50150013,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 23,
+      "sf2g_distance_meters": 1607380,
+      "sf2g_elevation_meters": 8965.8,
+      "sf2g_total": 34,
+      "skyline_count": 0,
+      "total_distance_meters": 1855940,
+      "total_elevation_meters": 11036.4,
+      "total_rides": 40,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.92266662,
+      "avg_tailwind_ms": -0.153571438,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 21,
+      "last_ride_date": "2026-10-03",
+      "mebw_count": 0,
+      "median_speed_mps": 6.94299984,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 1853610,
+      "sf2g_elevation_meters": 28002.1,
+      "sf2g_total": 27,
+      "skyline_count": 6,
+      "total_distance_meters": 1979300,
+      "total_elevation_meters": 29098.8,
+      "total_rides": 30,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.386149979,
+      "avg_tailwind_ms": -0.667000008,
+      "avg_watts": null,
+      "bayway_count": 16,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.375499964,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 1015810,
+      "sf2g_elevation_meters": 5884.6,
+      "sf2g_total": 20,
+      "skyline_count": 3,
+      "total_distance_meters": 1235500,
+      "total_elevation_meters": 7478.4,
+      "total_rides": 25,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866571,
+      "avg_tailwind_ms": 0.591249995,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342000008,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711638,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711638,
+      "total_elevation_meters": 3573.3,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.194600058,
+      "avg_tailwind_ms": 0.231666687,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.101500034,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513,
+      "total_elevation_meters": 8838,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    }
+  ],
+  "fetchLeaderboard > only dateFrom": [
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 148.5,
+      "avg_kilojoules": 1790.6875,
+      "avg_speed_mps": 7.826312393,
+      "avg_tailwind_ms": -0.311428585,
+      "avg_watts": 233.125,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-06",
+      "fleaway_count": 0,
+      "hmbw_count": 3,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.811500072,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 958406.9375,
+      "sf2g_elevation_meters": 15160.19921875,
+      "sf2g_total": 16,
+      "skyline_count": 13,
+      "total_distance_meters": 1002891.25,
+      "total_elevation_meters": 15533.19921875,
+      "total_rides": 17,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 141,
+      "avg_kilojoules": 1486.666666667,
+      "avg_speed_mps": 6.808333344,
+      "avg_tailwind_ms": 1.076000023,
+      "avg_watts": 203.555555556,
+      "bayway_count": 7,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-16",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.840000153,
+      "median_watts": 209,
+      "other_count": 3,
+      "royale_count": 1,
+      "sf2g_distance_meters": 446328.34375,
+      "sf2g_elevation_meters": 2516.699951172,
+      "sf2g_total": 9,
+      "skyline_count": 1,
+      "total_distance_meters": 617788.375,
+      "total_elevation_meters": 3943.100097656,
+      "total_rides": 13,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.857142857,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.487999984,
+      "avg_tailwind_ms": 0.169999973,
+      "avg_watts": null,
+      "bayway_count": 2,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2026-02-19",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.440999985,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 5,
+      "sf2g_distance_meters": 326434.6875,
+      "sf2g_elevation_meters": 1882.49987793,
+      "sf2g_total": 7,
+      "skyline_count": 0,
+      "total_distance_meters": 409492.71875,
+      "total_elevation_meters": 2570.199951172,
+      "total_rides": 9,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.370000022,
+      "avg_tailwind_ms": -0.599999994,
+      "avg_watts": null,
+      "bayway_count": 5,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.34800005,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 365567.59375,
+      "sf2g_elevation_meters": 2750.399902344,
+      "sf2g_total": 7,
+      "skyline_count": 2,
+      "total_distance_meters": 416156.5,
+      "total_elevation_meters": 2938,
+      "total_rides": 8,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.584499915,
+      "avg_tailwind_ms": 0.852500021,
+      "avg_watts": null,
+      "bayway_count": 3,
+      "display_name": "Cam Mixed",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-01",
+      "fleaway_count": 1,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.551499844,
+      "median_watts": null,
+      "other_count": 3,
+      "royale_count": 1,
+      "sf2g_distance_meters": 298749.6875,
+      "sf2g_elevation_meters": 2053.300048828,
+      "sf2g_total": 6,
+      "skyline_count": 1,
+      "total_distance_meters": 465331.8125,
+      "total_elevation_meters": 3471.100097656,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.048750043,
+      "avg_tailwind_ms": -0.773333351,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2026-01-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.09649992,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 226114.59375,
+      "sf2g_elevation_meters": 3599.100097656,
+      "sf2g_total": 4,
+      "skyline_count": 4,
+      "total_distance_meters": 226114.59375,
+      "total_elevation_meters": 3599.100097656,
+      "total_rides": 4,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 1,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.604500055,
+      "avg_tailwind_ms": 2.034999967,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2026-05-15",
+      "fleaway_count": 0,
+      "hmbw_count": 2,
+      "last_ride_date": "2026-08-18",
+      "mebw_count": 0,
+      "median_speed_mps": 6.604500055,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 148326.8125,
+      "sf2g_elevation_meters": 2189.5,
+      "sf2g_total": 2,
+      "skyline_count": 0,
+      "total_distance_meters": 190606.90625,
+      "total_elevation_meters": 2558.299804688,
+      "total_rides": 3,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    }
+  ],
+  "fetchLeaderboard > sort avg speed asc": [
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866571,
+      "avg_tailwind_ms": 0.591249995,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342000008,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711638,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711638,
+      "total_elevation_meters": 3573.3,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.386149979,
+      "avg_tailwind_ms": -0.667000008,
+      "avg_watts": null,
+      "bayway_count": 16,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.375499964,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 1015810,
+      "sf2g_elevation_meters": 5884.6,
+      "sf2g_total": 20,
+      "skyline_count": 3,
+      "total_distance_meters": 1235500,
+      "total_elevation_meters": 7478.4,
+      "total_rides": 25,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.088235294,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.520176467,
+      "avg_tailwind_ms": 0.201666652,
+      "avg_watts": null,
+      "bayway_count": 11,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.50150013,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 23,
+      "sf2g_distance_meters": 1607380,
+      "sf2g_elevation_meters": 8965.8,
+      "sf2g_total": 34,
+      "skyline_count": 0,
+      "total_distance_meters": 1855940,
+      "total_elevation_meters": 11036.4,
+      "total_rides": 40,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.618531907,
+      "avg_tailwind_ms": 0.610000006,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-01-26",
+      "fleaway_count": 8,
+      "hmbw_count": 5,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.663000107,
+      "median_watts": null,
+      "other_count": 7,
+      "royale_count": 11,
+      "sf2g_distance_meters": 2589380,
+      "sf2g_elevation_meters": 24576.5,
+      "sf2g_total": 47,
+      "skyline_count": 10,
+      "total_distance_meters": 3574450,
+      "total_elevation_meters": 32606,
+      "total_rides": 70,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.82422416,
+      "avg_tailwind_ms": 0.428148148,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.862500191,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829830,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.6,
+      "total_rides": 80,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.92266662,
+      "avg_tailwind_ms": -0.153571438,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 21,
+      "last_ride_date": "2026-10-03",
+      "mebw_count": 0,
+      "median_speed_mps": 6.94299984,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 1853610,
+      "sf2g_elevation_meters": 28002.1,
+      "sf2g_total": 27,
+      "skyline_count": 6,
+      "total_distance_meters": 1979300,
+      "total_elevation_meters": 29098.8,
+      "total_rides": 30,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.194600058,
+      "avg_tailwind_ms": 0.231666687,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.101500034,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513,
+      "total_elevation_meters": 8838,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.069767442,
+      "avg_kilojoules": 1772.88372093,
+      "avg_speed_mps": 7.719476744,
+      "avg_tailwind_ms": 0.017499992,
+      "avg_watts": 231.023255814,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.743499994,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 5077000,
+      "sf2g_elevation_meters": 79227.8,
+      "sf2g_total": 86,
+      "skyline_count": 75,
+      "total_distance_meters": 5245600,
+      "total_elevation_meters": 80636,
+      "total_rides": 90,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    }
+  ],
+  "fetchLeaderboard > sort median watts desc": [
+    {
+      "active_years": 9,
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_heartrate": 149.069767442,
+      "avg_kilojoules": 1772.88372093,
+      "avg_speed_mps": 7.719476744,
+      "avg_tailwind_ms": 0.017499992,
+      "avg_watts": 231.023255814,
+      "bayway_count": 0,
+      "display_name": "Ben Skyline",
+      "febw_count": 0,
+      "first_ride_date": "2018-01-25",
+      "fleaway_count": 0,
+      "hmbw_count": 11,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 7.743499994,
+      "median_watts": 232.5,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 5077000,
+      "sf2g_elevation_meters": 79227.8,
+      "sf2g_total": 86,
+      "skyline_count": 75,
+      "total_distance_meters": 5245600,
+      "total_elevation_meters": 80636,
+      "total_rides": 90,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "active_years": 8,
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_heartrate": 142.810344828,
+      "avg_kilojoules": 1462.120689655,
+      "avg_speed_mps": 6.82422416,
+      "avg_tailwind_ms": 0.428148148,
+      "avg_watts": 203.948275862,
+      "bayway_count": 50,
+      "display_name": "Ada Bayway",
+      "febw_count": 0,
+      "first_ride_date": "2019-04-30",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 0,
+      "median_speed_mps": 6.862500191,
+      "median_watts": 209,
+      "other_count": 7,
+      "royale_count": 6,
+      "sf2g_distance_meters": 2829830,
+      "sf2g_elevation_meters": 12587.8,
+      "sf2g_total": 58,
+      "skyline_count": 2,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.6,
+      "total_rides": 80,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "active_years": 7,
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.618531907,
+      "avg_tailwind_ms": 0.610000006,
+      "avg_watts": null,
+      "bayway_count": 9,
+      "display_name": "Cam Mixed",
+      "febw_count": 1,
+      "first_ride_date": "2020-01-26",
+      "fleaway_count": 8,
+      "hmbw_count": 5,
+      "last_ride_date": "2026-10-13",
+      "mebw_count": 3,
+      "median_speed_mps": 6.663000107,
+      "median_watts": null,
+      "other_count": 7,
+      "royale_count": 11,
+      "sf2g_distance_meters": 2589380,
+      "sf2g_elevation_meters": 24576.5,
+      "sf2g_total": 47,
+      "skyline_count": 10,
+      "total_distance_meters": 3574450,
+      "total_elevation_meters": 32606,
+      "total_rides": 70,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "active_years": 5,
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_heartrate": 138.088235294,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.520176467,
+      "avg_tailwind_ms": 0.201666652,
+      "avg_watts": null,
+      "bayway_count": 11,
+      "display_name": "Dee Reverse",
+      "febw_count": 0,
+      "first_ride_date": "2022-02-10",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.50150013,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 23,
+      "sf2g_distance_meters": 1607380,
+      "sf2g_elevation_meters": 8965.8,
+      "sf2g_total": 34,
+      "skyline_count": 0,
+      "total_distance_meters": 1855940,
+      "total_elevation_meters": 11036.4,
+      "total_rides": 40,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.92266662,
+      "avg_tailwind_ms": -0.153571438,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Eve Weekend",
+      "febw_count": 0,
+      "first_ride_date": "2023-03-04",
+      "fleaway_count": 0,
+      "hmbw_count": 21,
+      "last_ride_date": "2026-10-03",
+      "mebw_count": 0,
+      "median_speed_mps": 6.94299984,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 1853610,
+      "sf2g_elevation_meters": 28002.1,
+      "sf2g_total": 27,
+      "skyline_count": 6,
+      "total_distance_meters": 1979300,
+      "total_elevation_meters": 29098.8,
+      "total_rides": 30,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "active_years": 3,
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.386149979,
+      "avg_tailwind_ms": -0.667000008,
+      "avg_watts": null,
+      "bayway_count": 16,
+      "display_name": "Fay Hidden",
+      "febw_count": 0,
+      "first_ride_date": "2024-05-27",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-09-29",
+      "mebw_count": 0,
+      "median_speed_mps": 6.375499964,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 1,
+      "sf2g_distance_meters": 1015810,
+      "sf2g_elevation_meters": 5884.6,
+      "sf2g_total": 20,
+      "skyline_count": 3,
+      "total_distance_meters": 1235500,
+      "total_elevation_meters": 7478.4,
+      "total_rides": 25,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "active_years": 4,
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 6.318866571,
+      "avg_tailwind_ms": 0.591249995,
+      "avg_watts": null,
+      "bayway_count": 8,
+      "display_name": "Hal Deauthorized",
+      "febw_count": 0,
+      "first_ride_date": "2021-05-14",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2024-11-21",
+      "mebw_count": 0,
+      "median_speed_mps": 6.342000008,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 7,
+      "sf2g_distance_meters": 711638,
+      "sf2g_elevation_meters": 3573.3,
+      "sf2g_total": 15,
+      "skyline_count": 0,
+      "total_distance_meters": 711638,
+      "total_elevation_meters": 3573.3,
+      "total_rides": 15,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    },
+    {
+      "active_years": 2,
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_heartrate": null,
+      "avg_kilojoules": null,
+      "avg_speed_mps": 7.194600058,
+      "avg_tailwind_ms": 0.231666687,
+      "avg_watts": null,
+      "bayway_count": 0,
+      "display_name": "Ivy NoScope",
+      "febw_count": 0,
+      "first_ride_date": "2025-01-13",
+      "fleaway_count": 0,
+      "hmbw_count": 0,
+      "last_ride_date": "2026-10-06",
+      "mebw_count": 0,
+      "median_speed_mps": 7.101500034,
+      "median_watts": null,
+      "other_count": 0,
+      "royale_count": 0,
+      "sf2g_distance_meters": 570513,
+      "sf2g_elevation_meters": 8838,
+      "sf2g_total": 10,
+      "skyline_count": 10,
+      "total_distance_meters": 570513,
+      "total_elevation_meters": 8838,
+      "total_rides": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    }
+  ],
+  "fetchPprDawnRiderIds > 2026 only": {
+    "rideCounts": {
+      "00000000-0000-4000-8000-000000000001": 6,
+      "00000000-0000-4000-8000-000000000002": 10,
+      "00000000-0000-4000-8000-000000000003": 3,
+      "00000000-0000-4000-8000-000000000004": 2,
+      "00000000-0000-4000-8000-000000000005": 2,
+      "00000000-0000-4000-8000-000000000006": 4,
+      "00000000-0000-4000-8000-000000000009": 2
+    },
+    "rideIds": [
+      "10000000-0000-4000-8000-000000000070",
+      "10000000-0000-4000-8000-000000000177",
+      "10000000-0000-4000-8000-000000000252",
+      "10000000-0000-4000-8000-000000000164",
+      "10000000-0000-4000-8000-000000000047",
+      "10000000-0000-4000-8000-000000000116",
+      "10000000-0000-4000-8000-000000000048",
+      "10000000-0000-4000-8000-000000000232",
+      "10000000-0000-4000-8000-000000000302",
+      "10000000-0000-4000-8000-000000000355",
+      "10000000-0000-4000-8000-000000000143",
+      "10000000-0000-4000-8000-000000000150",
+      "10000000-0000-4000-8000-000000000324",
+      "10000000-0000-4000-8000-000000000326",
+      "10000000-0000-4000-8000-000000000038",
+      "10000000-0000-4000-8000-000000000301",
+      "10000000-0000-4000-8000-000000000151",
+      "10000000-0000-4000-8000-000000000148",
+      "10000000-0000-4000-8000-000000000327",
+      "10000000-0000-4000-8000-000000000129",
+      "10000000-0000-4000-8000-000000000006",
+      "10000000-0000-4000-8000-000000000007",
+      "10000000-0000-4000-8000-000000000008",
+      "10000000-0000-4000-8000-000000000190",
+      "10000000-0000-4000-8000-000000000004",
+      "10000000-0000-4000-8000-000000000005",
+      "10000000-0000-4000-8000-000000000001",
+      "10000000-0000-4000-8000-000000000002",
+      "10000000-0000-4000-8000-000000000003"
+    ],
+    "riderIds": [
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000004",
+      "00000000-0000-4000-8000-000000000003",
+      "00000000-0000-4000-8000-000000000005",
+      "00000000-0000-4000-8000-000000000009",
+      "00000000-0000-4000-8000-000000000006"
+    ]
+  },
+  "fetchPprDawnRiderIds > all time": {
+    "rideCounts": {
+      "00000000-0000-4000-8000-000000000001": 22,
+      "00000000-0000-4000-8000-000000000002": 57,
+      "00000000-0000-4000-8000-000000000003": 14,
+      "00000000-0000-4000-8000-000000000004": 2,
+      "00000000-0000-4000-8000-000000000005": 6,
+      "00000000-0000-4000-8000-000000000006": 6,
+      "00000000-0000-4000-8000-000000000009": 3
+    },
+    "rideIds": [
+      "10000000-0000-4000-8000-000000000172",
+      "10000000-0000-4000-8000-000000000137",
+      "10000000-0000-4000-8000-000000000157",
+      "10000000-0000-4000-8000-000000000158",
+      "10000000-0000-4000-8000-000000000134",
+      "10000000-0000-4000-8000-000000000057",
+      "10000000-0000-4000-8000-000000000041",
+      "10000000-0000-4000-8000-000000000163",
+      "10000000-0000-4000-8000-000000000120",
+      "10000000-0000-4000-8000-000000000100",
+      "10000000-0000-4000-8000-000000000160",
+      "10000000-0000-4000-8000-000000000034",
+      "10000000-0000-4000-8000-000000000106",
+      "10000000-0000-4000-8000-000000000103",
+      "10000000-0000-4000-8000-000000000138",
+      "10000000-0000-4000-8000-000000000082",
+      "10000000-0000-4000-8000-000000000115",
+      "10000000-0000-4000-8000-000000000026",
+      "10000000-0000-4000-8000-000000000180",
+      "10000000-0000-4000-8000-000000000171",
+      "10000000-0000-4000-8000-000000000170",
+      "10000000-0000-4000-8000-000000000231",
+      "10000000-0000-4000-8000-000000000144",
+      "10000000-0000-4000-8000-000000000237",
+      "10000000-0000-4000-8000-000000000084",
+      "10000000-0000-4000-8000-000000000228",
+      "10000000-0000-4000-8000-000000000060",
+      "10000000-0000-4000-8000-000000000056",
+      "10000000-0000-4000-8000-000000000093",
+      "10000000-0000-4000-8000-000000000046",
+      "10000000-0000-4000-8000-000000000199",
+      "10000000-0000-4000-8000-000000000149",
+      "10000000-0000-4000-8000-000000000111",
+      "10000000-0000-4000-8000-000000000063",
+      "10000000-0000-4000-8000-000000000127",
+      "10000000-0000-4000-8000-000000000071",
+      "10000000-0000-4000-8000-000000000119",
+      "10000000-0000-4000-8000-000000000168",
+      "10000000-0000-4000-8000-000000000198",
+      "10000000-0000-4000-8000-000000000208",
+      "10000000-0000-4000-8000-000000000128",
+      "10000000-0000-4000-8000-000000000069",
+      "10000000-0000-4000-8000-000000000131",
+      "10000000-0000-4000-8000-000000000244",
+      "10000000-0000-4000-8000-000000000141",
+      "10000000-0000-4000-8000-000000000121",
+      "10000000-0000-4000-8000-000000000099",
+      "10000000-0000-4000-8000-000000000035",
+      "10000000-0000-4000-8000-000000000154",
+      "10000000-0000-4000-8000-000000000114",
+      "10000000-0000-4000-8000-000000000104",
+      "10000000-0000-4000-8000-000000000112",
+      "10000000-0000-4000-8000-000000000176",
+      "10000000-0000-4000-8000-000000000049",
+      "10000000-0000-4000-8000-000000000118",
+      "10000000-0000-4000-8000-000000000122",
+      "10000000-0000-4000-8000-000000000322",
+      "10000000-0000-4000-8000-000000000110",
+      "10000000-0000-4000-8000-000000000133",
+      "10000000-0000-4000-8000-000000000296",
+      "10000000-0000-4000-8000-000000000078",
+      "10000000-0000-4000-8000-000000000147",
+      "10000000-0000-4000-8000-000000000125",
+      "10000000-0000-4000-8000-000000000139",
+      "10000000-0000-4000-8000-000000000169",
+      "10000000-0000-4000-8000-000000000130",
+      "10000000-0000-4000-8000-000000000175",
+      "10000000-0000-4000-8000-000000000227",
+      "10000000-0000-4000-8000-000000000145",
+      "10000000-0000-4000-8000-000000000284",
+      "10000000-0000-4000-8000-000000000217",
+      "10000000-0000-4000-8000-000000000095",
+      "10000000-0000-4000-8000-000000000011",
+      "10000000-0000-4000-8000-000000000012",
+      "10000000-0000-4000-8000-000000000245",
+      "10000000-0000-4000-8000-000000000136",
+      "10000000-0000-4000-8000-000000000352",
+      "10000000-0000-4000-8000-000000000328",
+      "10000000-0000-4000-8000-000000000173",
+      "10000000-0000-4000-8000-000000000303",
+      "10000000-0000-4000-8000-000000000298",
+      "10000000-0000-4000-8000-000000000070",
+      "10000000-0000-4000-8000-000000000177",
+      "10000000-0000-4000-8000-000000000252",
+      "10000000-0000-4000-8000-000000000164",
+      "10000000-0000-4000-8000-000000000047",
+      "10000000-0000-4000-8000-000000000116",
+      "10000000-0000-4000-8000-000000000048",
+      "10000000-0000-4000-8000-000000000232",
+      "10000000-0000-4000-8000-000000000302",
+      "10000000-0000-4000-8000-000000000355",
+      "10000000-0000-4000-8000-000000000143",
+      "10000000-0000-4000-8000-000000000150",
+      "10000000-0000-4000-8000-000000000324",
+      "10000000-0000-4000-8000-000000000326",
+      "10000000-0000-4000-8000-000000000038",
+      "10000000-0000-4000-8000-000000000301",
+      "10000000-0000-4000-8000-000000000151",
+      "10000000-0000-4000-8000-000000000148",
+      "10000000-0000-4000-8000-000000000327",
+      "10000000-0000-4000-8000-000000000129",
+      "10000000-0000-4000-8000-000000000006",
+      "10000000-0000-4000-8000-000000000007",
+      "10000000-0000-4000-8000-000000000008",
+      "10000000-0000-4000-8000-000000000190",
+      "10000000-0000-4000-8000-000000000004",
+      "10000000-0000-4000-8000-000000000005",
+      "10000000-0000-4000-8000-000000000001",
+      "10000000-0000-4000-8000-000000000002",
+      "10000000-0000-4000-8000-000000000003"
+    ],
+    "riderIds": [
+      "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000003",
+      "00000000-0000-4000-8000-000000000006",
+      "00000000-0000-4000-8000-000000000005",
+      "00000000-0000-4000-8000-000000000009",
+      "00000000-0000-4000-8000-000000000004"
+    ]
+  },
+  "fetchPprDawnRiderIds > skyline only": {
+    "rideCounts": {
+      "00000000-0000-4000-8000-000000000001": 2,
+      "00000000-0000-4000-8000-000000000002": 50,
+      "00000000-0000-4000-8000-000000000003": 3,
+      "00000000-0000-4000-8000-000000000005": 2,
+      "00000000-0000-4000-8000-000000000006": 2,
+      "00000000-0000-4000-8000-000000000009": 3
+    },
+    "rideIds": [
+      "10000000-0000-4000-8000-000000000172",
+      "10000000-0000-4000-8000-000000000157",
+      "10000000-0000-4000-8000-000000000158",
+      "10000000-0000-4000-8000-000000000134",
+      "10000000-0000-4000-8000-000000000163",
+      "10000000-0000-4000-8000-000000000120",
+      "10000000-0000-4000-8000-000000000100",
+      "10000000-0000-4000-8000-000000000106",
+      "10000000-0000-4000-8000-000000000103",
+      "10000000-0000-4000-8000-000000000138",
+      "10000000-0000-4000-8000-000000000115",
+      "10000000-0000-4000-8000-000000000180",
+      "10000000-0000-4000-8000-000000000171",
+      "10000000-0000-4000-8000-000000000170",
+      "10000000-0000-4000-8000-000000000144",
+      "10000000-0000-4000-8000-000000000093",
+      "10000000-0000-4000-8000-000000000149",
+      "10000000-0000-4000-8000-000000000111",
+      "10000000-0000-4000-8000-000000000127",
+      "10000000-0000-4000-8000-000000000119",
+      "10000000-0000-4000-8000-000000000168",
+      "10000000-0000-4000-8000-000000000128",
+      "10000000-0000-4000-8000-000000000131",
+      "10000000-0000-4000-8000-000000000141",
+      "10000000-0000-4000-8000-000000000121",
+      "10000000-0000-4000-8000-000000000154",
+      "10000000-0000-4000-8000-000000000114",
+      "10000000-0000-4000-8000-000000000104",
+      "10000000-0000-4000-8000-000000000112",
+      "10000000-0000-4000-8000-000000000118",
+      "10000000-0000-4000-8000-000000000122",
+      "10000000-0000-4000-8000-000000000322",
+      "10000000-0000-4000-8000-000000000110",
+      "10000000-0000-4000-8000-000000000133",
+      "10000000-0000-4000-8000-000000000147",
+      "10000000-0000-4000-8000-000000000125",
+      "10000000-0000-4000-8000-000000000139",
+      "10000000-0000-4000-8000-000000000169",
+      "10000000-0000-4000-8000-000000000130",
+      "10000000-0000-4000-8000-000000000175",
+      "10000000-0000-4000-8000-000000000227",
+      "10000000-0000-4000-8000-000000000145",
+      "10000000-0000-4000-8000-000000000284",
+      "10000000-0000-4000-8000-000000000095",
+      "10000000-0000-4000-8000-000000000011",
+      "10000000-0000-4000-8000-000000000012",
+      "10000000-0000-4000-8000-000000000352",
+      "10000000-0000-4000-8000-000000000173",
+      "10000000-0000-4000-8000-000000000303",
+      "10000000-0000-4000-8000-000000000177",
+      "10000000-0000-4000-8000-000000000116",
+      "10000000-0000-4000-8000-000000000355",
+      "10000000-0000-4000-8000-000000000143",
+      "10000000-0000-4000-8000-000000000150",
+      "10000000-0000-4000-8000-000000000326",
+      "10000000-0000-4000-8000-000000000151",
+      "10000000-0000-4000-8000-000000000129",
+      "10000000-0000-4000-8000-000000000004",
+      "10000000-0000-4000-8000-000000000005",
+      "10000000-0000-4000-8000-000000000001",
+      "10000000-0000-4000-8000-000000000002",
+      "10000000-0000-4000-8000-000000000003"
+    ],
+    "riderIds": [
+      "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000003",
+      "00000000-0000-4000-8000-000000000006",
+      "00000000-0000-4000-8000-000000000005",
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000009"
+    ]
+  },
+  "fetchRiderGrowthData > default": [
+    {
+      "month": "2018-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2018-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2018-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2018-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-01-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-03-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2019-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2019-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2019-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2019-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2019-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-07-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-08-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2020-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2020-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2020-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "febw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-03-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-04-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2021-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-08-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2021-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2021-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2021-12-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2021-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2021-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2022-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2022-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2022-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2022-05-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2022-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2022-06-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2022-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2022-07-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2022-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2022-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2022-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-08-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2022-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2022-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2022-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2022-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2023-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "mebw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2023-02-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2023-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2023-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2023-04-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2023-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2023-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-06-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2023-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2023-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2023-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2023-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2023-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2023-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2024-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-01-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2024-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2024-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2024-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-06-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2024-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2024-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2024-11-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "month": "2024-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2024-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2024-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-12-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-01-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-01-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2025-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2025-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2025-02-01T00:00:00+00:00",
+      "ride_count": 3,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2025-03-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-03-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2025-03-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2025-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2025-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2025-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2025-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2025-07-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2025-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2025-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2025-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2025-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-10-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2025-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2025-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2025-11-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2025-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2025-12-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-01-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2026-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-02-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-03-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-03-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2026-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-04-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-04-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    },
+    {
+      "month": "2026-06-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-06-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-07-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-07-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-08-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-08-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "other",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2026-09-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 2,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000005"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000009"
+    }
+  ],
+  "fetchRouteSpeedLeaderboard > bayway": [
+    {
+      "avatar_url": "<string len=389 sha1=fd5eb95aa9>",
+      "avg_distance_meters": 48656.90796875,
+      "avg_elevation_meters": 180.202000122,
+      "avg_speed_mps": 6.82814002,
+      "display_name": "Ada Bayway",
+      "last_ride_date": "2026-10-05",
+      "max_speed_mps": 7.379,
+      "median_speed_mps": 6.909000158,
+      "route_category": "bayway",
+      "route_ride_count": 50,
+      "user_id": "00000000-0000-4000-8000-000000000001",
+      "username": "ada"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_distance_meters": 49751.399739583,
+      "avg_elevation_meters": 179.077777439,
+      "avg_speed_mps": 6.823666626,
+      "display_name": "Cam Mixed",
+      "last_ride_date": "2026-07-21",
+      "max_speed_mps": 7.173,
+      "median_speed_mps": 6.849999905,
+      "route_category": "bayway",
+      "route_ride_count": 9,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=184cb41cd1>",
+      "avg_distance_meters": 48159.227627841,
+      "avg_elevation_meters": 179.900000832,
+      "avg_speed_mps": 6.658090938,
+      "display_name": "Dee Reverse",
+      "last_ride_date": "2026-09-29",
+      "max_speed_mps": 6.946,
+      "median_speed_mps": 6.657999992,
+      "route_category": "bayway",
+      "route_ride_count": 11,
+      "user_id": "00000000-0000-4000-8000-000000000004",
+      "username": "dee"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_distance_meters": 49551.331542969,
+      "avg_elevation_meters": 184.524999619,
+      "avg_speed_mps": 6.366812497,
+      "display_name": "Fay Hidden",
+      "last_ride_date": "2026-09-29",
+      "max_speed_mps": 6.779,
+      "median_speed_mps": 6.375499964,
+      "route_category": "bayway",
+      "route_ride_count": 16,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    },
+    {
+      "avatar_url": "<string len=389 sha1=c6da2effc2>",
+      "avg_distance_meters": 48306.750976563,
+      "avg_elevation_meters": 179,
+      "avg_speed_mps": 6.337249935,
+      "display_name": "Hal Deauthorized",
+      "last_ride_date": "2024-11-21",
+      "max_speed_mps": 6.58,
+      "median_speed_mps": 6.402499914,
+      "route_category": "bayway",
+      "route_ride_count": 8,
+      "user_id": "00000000-0000-4000-8000-000000000008",
+      "username": "hal"
+    }
+  ],
+  "fetchRouteSpeedLeaderboard > invalid route": [],
+  "fetchRouteSpeedLeaderboard > skyline": [
+    {
+      "avatar_url": "<string len=389 sha1=cae7c3f906>",
+      "avg_distance_meters": 56893.124114583,
+      "avg_elevation_meters": 894.453334961,
+      "avg_speed_mps": 7.706159992,
+      "display_name": "Ben Skyline",
+      "last_ride_date": "2026-10-13",
+      "max_speed_mps": 8.379,
+      "median_speed_mps": 7.724999905,
+      "route_category": "skyline",
+      "route_ride_count": 75,
+      "user_id": "00000000-0000-4000-8000-000000000002",
+      "username": "ben"
+    },
+    {
+      "avatar_url": "<string len=389 sha1=5210f018b5>",
+      "avg_distance_meters": 57051.340234375,
+      "avg_elevation_meters": 883.8,
+      "avg_speed_mps": 7.194600058,
+      "display_name": "Ivy NoScope",
+      "last_ride_date": "2026-10-06",
+      "max_speed_mps": 7.57,
+      "median_speed_mps": 7.101500034,
+      "route_category": "skyline",
+      "route_ride_count": 10,
+      "user_id": "00000000-0000-4000-8000-000000000009",
+      "username": "ivy"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=0f1c8cd1f9>",
+      "avg_distance_meters": 56059.350260417,
+      "avg_elevation_meters": 867.816670736,
+      "avg_speed_mps": 6.916166544,
+      "display_name": "Eve Weekend",
+      "last_ride_date": "2026-07-05",
+      "max_speed_mps": 7.332,
+      "median_speed_mps": 6.912499905,
+      "route_category": "skyline",
+      "route_ride_count": 6,
+      "user_id": "00000000-0000-4000-8000-000000000005",
+      "username": "eve"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=4d5c423eca>",
+      "avg_distance_meters": 58051.889453125,
+      "avg_elevation_meters": 898.829998779,
+      "avg_speed_mps": 6.614399958,
+      "display_name": "Cam Mixed",
+      "last_ride_date": "2026-10-13",
+      "max_speed_mps": 7.069,
+      "median_speed_mps": 6.736500025,
+      "route_category": "skyline",
+      "route_ride_count": 10,
+      "user_id": "00000000-0000-4000-8000-000000000003",
+      "username": "cam"
+    },
+    {
+      "avatar_url": "<string len=390 sha1=890f077a31>",
+      "avg_distance_meters": 57793.899739583,
+      "avg_elevation_meters": 914.500020345,
+      "avg_speed_mps": 6.525333246,
+      "display_name": "Fay Hidden",
+      "last_ride_date": "2026-06-29",
+      "max_speed_mps": 6.786,
+      "median_speed_mps": 6.671999931,
+      "route_category": "skyline",
+      "route_ride_count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000006",
+      "username": "fay"
+    }
+  ]
+}

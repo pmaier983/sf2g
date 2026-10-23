@@ -30,3 +30,7 @@ Thumbs.db
 
 # TanStack Start build cache
 .tanstack/
+
+# Playwright
+test-results/
+playwright-report/

@@ -323,102 +323,115 @@ function mapSortColumn(sortBy: string): string {
   }
 }
 
-export const fetchGroupRides = createServerFn({ method: "GET" })
-  .inputValidator(
-    (input: {
-      page?: number;
-      sortBy?: string;
-      sortDir?: "asc" | "desc";
-      dateFrom?: string;
-      dateTo?: string;
-      routeCategories?: string[];
-      weekends?: boolean;
-    }) => input,
-  )
-  .handler(async ({ data }): Promise<GroupRidesResponse> => {
-    const supabase = createAnonClient();
-    const page = Math.max(1, data.page ?? 1);
-    const sortBy = data.sortBy ?? "date";
-    const sortDir = data.sortDir ?? "desc";
-    const sortColumn = mapSortColumn(sortBy);
+const fetchGroupRidesInput = (input: {
+  page?: number;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+  dateFrom?: string;
+  dateTo?: string;
+  routeCategories?: string[];
+  weekends?: boolean;
+}) => input;
 
-    // Build query against pre-computed group_rides table
-    let query = supabase
-      .from("group_rides" as never)
-      .select("*, group_ride_members(*)", { count: "exact" })
-      .order(sortColumn, { ascending: sortDir === "asc" });
+export async function fetchGroupRidesImpl(
+  data: ReturnType<typeof fetchGroupRidesInput>,
+): Promise<GroupRidesResponse> {
+  const supabase = createAnonClient();
+  const page = Math.max(1, data.page ?? 1);
+  const sortBy = data.sortBy ?? "date";
+  const sortDir = data.sortDir ?? "desc";
+  const sortColumn = mapSortColumn(sortBy);
 
-    // Apply filters
-    if (data.dateFrom) {
-      query = query.gte("ride_date", data.dateFrom);
+  // Build query against pre-computed group_rides table
+  let query = supabase
+    .from("group_rides" as never)
+    .select("*, group_ride_members(*)", { count: "exact" })
+    .order(sortColumn, { ascending: sortDir === "asc" })
+    .order("id", { ascending: true }); // unique tiebreaker: stable paging
+
+  // Apply filters
+  if (data.dateFrom) {
+    query = query.gte("ride_date", data.dateFrom);
+  }
+  if (data.dateTo) {
+    query = query.lte("ride_date", data.dateTo);
+  }
+  if (data.routeCategories && data.routeCategories.length > 0) {
+    query = query.in("route_category", data.routeCategories);
+  }
+
+  // Weekend filter — exclude Saturday (6) and Sunday (0)
+  // Supabase doesn't support day-of-week filtering in PostgREST,
+  // so we apply it client-side after fetch if needed.
+  // For now, fetch the page and filter if weekends === false.
+
+  // Paginate
+  const offset = (page - 1) * PAGE_SIZE;
+  query = query.range(offset, offset + PAGE_SIZE - 1);
+
+  const { data: rows, error, count } = await query;
+
+  if (error) {
+    throw new Error(`Failed to fetch group rides: ${error.message}`);
+  }
+
+  // Transform database rows to GroupRideSummary format
+  const groupRides: GroupRideSummary[] = [];
+
+  for (const row of (rows ?? []) as Array<Record<string, unknown>>) {
+    const members = (row.group_ride_members ?? []) as Array<{
+      user_id: string;
+      display_name: string | null;
+      avatar_url: string | null;
+    }>;
+
+    const rideDate = row.ride_date as string;
+
+    // Weekend filter (client-side since PostgREST can't filter by day-of-week)
+    if (data.weekends === false) {
+      const dayOfWeek = new Date(rideDate + "T12:00:00Z").getUTCDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
     }
-    if (data.dateTo) {
-      query = query.lte("ride_date", data.dateTo);
-    }
-    if (data.routeCategories && data.routeCategories.length > 0) {
-      query = query.in("route_category", data.routeCategories);
-    }
 
-    // Weekend filter — exclude Saturday (6) and Sunday (0)
-    // Supabase doesn't support day-of-week filtering in PostgREST,
-    // so we apply it client-side after fetch if needed.
-    // For now, fetch the page and filter if weekends === false.
-
-    // Paginate
-    const offset = (page - 1) * PAGE_SIZE;
-    query = query.range(offset, offset + PAGE_SIZE - 1);
-
-    const { data: rows, error, count } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch group rides: ${error.message}`);
-    }
-
-    // Transform database rows to GroupRideSummary format
-    const groupRides: GroupRideSummary[] = [];
-
-    for (const row of (rows ?? []) as Array<Record<string, unknown>>) {
-      const members = (row.group_ride_members ?? []) as Array<{
-        user_id: string;
-        display_name: string | null;
-        avatar_url: string | null;
-      }>;
-
-      const rideDate = row.ride_date as string;
-
-      // Weekend filter (client-side since PostgREST can't filter by day-of-week)
-      if (data.weekends === false) {
-        const dayOfWeek = new Date(rideDate + "T12:00:00Z").getUTCDay();
-        if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-      }
-
-      groupRides.push({
-        id: row.id as string,
-        date: rideDate,
-        routeCategory: row.route_category as RouteCategory,
-        riders: members.map((m) => ({
+    groupRides.push({
+      id: row.id as string,
+      date: rideDate,
+      routeCategory: row.route_category as RouteCategory,
+      // The embedded select has no ORDER BY; sort so avatars don't shuffle
+      // between page loads.
+      riders: members
+        .map((m) => ({
           userId: m.user_id,
           displayName: m.display_name ?? "Rider",
           avatarUrl: m.avatar_url ?? null,
-        })),
-        riderCount: (row.rider_count as number) ?? members.length,
-        avgSpeedMps: (row.avg_speed_mps as number) ?? 0,
-        avgWatts: (row.avg_watts as number | null) ?? null,
-        avgHeartrate: (row.avg_heartrate as number | null) ?? null,
-        maxWatts: (row.max_watts as number | null) ?? null,
-        maxSpeedMps: (row.max_speed_mps as number) ?? 0,
-        totalDistanceMeters: (row.total_distance_meters as number) ?? 0,
-        totalElevationMeters: (row.total_elevation_meters as number) ?? 0,
-      });
-    }
+        }))
+        .sort(
+          (a, b) =>
+            a.displayName.localeCompare(b.displayName) ||
+            a.userId.localeCompare(b.userId),
+        ),
+      riderCount: (row.rider_count as number) ?? members.length,
+      avgSpeedMps: (row.avg_speed_mps as number) ?? 0,
+      avgWatts: (row.avg_watts as number | null) ?? null,
+      avgHeartrate: (row.avg_heartrate as number | null) ?? null,
+      maxWatts: (row.max_watts as number | null) ?? null,
+      maxSpeedMps: (row.max_speed_mps as number) ?? 0,
+      totalDistanceMeters: (row.total_distance_meters as number) ?? 0,
+      totalElevationMeters: (row.total_elevation_meters as number) ?? 0,
+    });
+  }
 
-    return {
-      groupRides,
-      totalCount: count ?? 0,
-      page,
-      pageSize: PAGE_SIZE,
-    };
-  });
+  return {
+    groupRides,
+    totalCount: count ?? 0,
+    page,
+    pageSize: PAGE_SIZE,
+  };
+}
+
+export const fetchGroupRides = createServerFn({ method: "GET" })
+  .inputValidator(fetchGroupRidesInput)
+  .handler(({ data }) => fetchGroupRidesImpl(data));
 
 // ---------------------------------------------------------------------------
 // Cron Function: Compute and store group rides in the database
@@ -449,7 +462,9 @@ export async function computeAndStoreGroupRides(): Promise<void> {
         "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date",
       )
       .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
-      .order("ride_date", { ascending: false });
+      .order("ride_date", { ascending: false })
+      .order("ride1_id", { ascending: true }) // unique tiebreaker: stable paging
+      .order("ride2_id", { ascending: true });
 
     if (pageError) {
       throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
@@ -815,160 +830,164 @@ async function fetchAndCacheStravaStreams(
 // Server Function: Fetch group ride detail with streams
 // ---------------------------------------------------------------------------
 
-export const fetchGroupRideDetail = createServerFn({ method: "GET" })
-  .inputValidator(
-    (input: {
-      id: string;
-      date: string;
-      route: RouteCategory;
-      riderIds: string[];
-    }) => input,
-  )
-  .handler(async ({ data }): Promise<GroupRideDetail> => {
-    const supabase = createAnonClient();
+const fetchGroupRideDetailInput = (input: {
+  id: string;
+  date: string;
+  route: RouteCategory;
+  riderIds: string[];
+}) => input;
 
-    // 1. Verify the deterministic ID matches
-    const expectedId = await generateGroupRideId(
-      data.date,
-      data.route,
-      data.riderIds,
-    );
-    if (expectedId !== data.id) {
-      throw new Error("Group ride ID mismatch — invalid parameters.");
+export async function fetchGroupRideDetailImpl(
+  data: ReturnType<typeof fetchGroupRideDetailInput>,
+): Promise<GroupRideDetail> {
+  const supabase = createAnonClient();
+
+  // 1. Verify the deterministic ID matches
+  const expectedId = await generateGroupRideId(
+    data.date,
+    data.route,
+    data.riderIds,
+  );
+  if (expectedId !== data.id) {
+    throw new Error("Group ride ID mismatch — invalid parameters.");
+  }
+
+  // 2. Fetch all rides for these riders on this date + route
+  const { data: ridesData, error: ridesError } = await supabase
+    .from("rides")
+    .select("*")
+    .in("user_id", data.riderIds)
+    .eq("ride_date", data.date)
+    .eq("route_category", data.route);
+
+  if (ridesError) {
+    throw new Error(`Failed to fetch rides: ${ridesError.message}`);
+  }
+
+  const rides = (ridesData ?? []) as Ride[];
+
+  // 3. Fetch user data
+  const { data: usersData, error: usersError } = await supabase
+    .from("users")
+    .select("id, display_name, avatar_url")
+    .in("id", data.riderIds);
+
+  if (usersError) {
+    throw new Error(`Failed to fetch users: ${usersError.message}`);
+  }
+
+  const userMap = new Map<string, UserRow>();
+  for (const user of (usersData ?? []) as UserRow[]) {
+    userMap.set(user.id, user);
+  }
+
+  // 4. Check for cached streams
+  const rideIds = rides.map((r) => r.id);
+  const { data: cachedStreams } = await supabase
+    .from("ride_streams")
+    .select("*")
+    .in("ride_id", rideIds);
+
+  const cachedStreamMap = new Map<
+    string,
+    {
+      latlng: [number, number][];
+      time: number[];
+      watts?: number[];
+      heartrate?: number[];
+    }
+  >();
+  for (const cached of (cachedStreams ?? []) as unknown as Array<{
+    ride_id: string;
+    latlng_stream: [number, number][];
+    time_stream: number[];
+    watts_stream: number[] | null;
+    heartrate_stream: number[] | null;
+  }>) {
+    cachedStreamMap.set(cached.ride_id, {
+      latlng: cached.latlng_stream,
+      time: cached.time_stream,
+      watts: cached.watts_stream ?? undefined,
+      heartrate: cached.heartrate_stream ?? undefined,
+    });
+  }
+
+  // 5. Fetch missing streams from Strava (sequentially to respect rate limits)
+  const streamErrors: StreamFetchError[] = [];
+  const rideStreamMap = new Map<
+    string,
+    {
+      latlng: [number, number][];
+      time: number[];
+      watts?: number[];
+      heartrate?: number[];
+    } | null
+  >();
+  let hitRateLimit = false;
+
+  for (const ride of rides) {
+    // Use cached stream if available
+    const cached = cachedStreamMap.get(ride.id);
+    if (cached) {
+      rideStreamMap.set(ride.id, cached);
+      continue;
     }
 
-    // 2. Fetch all rides for these riders on this date + route
-    const { data: ridesData, error: ridesError } = await supabase
-      .from("rides")
-      .select("*")
-      .in("user_id", data.riderIds)
-      .eq("ride_date", data.date)
-      .eq("route_category", data.route);
-
-    if (ridesError) {
-      throw new Error(`Failed to fetch rides: ${ridesError.message}`);
-    }
-
-    const rides = (ridesData ?? []) as Ride[];
-
-    // 3. Fetch user data
-    const { data: usersData, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, avatar_url")
-      .in("id", data.riderIds);
-
-    if (usersError) {
-      throw new Error(`Failed to fetch users: ${usersError.message}`);
-    }
-
-    const userMap = new Map<string, UserRow>();
-    for (const user of (usersData ?? []) as UserRow[]) {
-      userMap.set(user.id, user);
-    }
-
-    // 4. Check for cached streams
-    const rideIds = rides.map((r) => r.id);
-    const { data: cachedStreams } = await supabase
-      .from("ride_streams")
-      .select("*")
-      .in("ride_id", rideIds);
-
-    const cachedStreamMap = new Map<
-      string,
-      {
-        latlng: [number, number][];
-        time: number[];
-        watts?: number[];
-        heartrate?: number[];
-      }
-    >();
-    for (const cached of (cachedStreams ?? []) as unknown as Array<{
-      ride_id: string;
-      latlng_stream: [number, number][];
-      time_stream: number[];
-      watts_stream: number[] | null;
-      heartrate_stream: number[] | null;
-    }>) {
-      cachedStreamMap.set(cached.ride_id, {
-        latlng: cached.latlng_stream,
-        time: cached.time_stream,
-        watts: cached.watts_stream ?? undefined,
-        heartrate: cached.heartrate_stream ?? undefined,
-      });
-    }
-
-    // 5. Fetch missing streams from Strava (sequentially to respect rate limits)
-    const streamErrors: StreamFetchError[] = [];
-    const rideStreamMap = new Map<
-      string,
-      {
-        latlng: [number, number][];
-        time: number[];
-        watts?: number[];
-        heartrate?: number[];
-      } | null
-    >();
-    let hitRateLimit = false;
-
-    for (const ride of rides) {
-      // Use cached stream if available
-      const cached = cachedStreamMap.get(ride.id);
-      if (cached) {
-        rideStreamMap.set(ride.id, cached);
-        continue;
-      }
-
-      // Skip further fetches if we already hit a rate limit
-      if (hitRateLimit) {
-        const user = userMap.get(ride.user_id);
-        rideStreamMap.set(ride.id, null);
-        streamErrors.push({
-          userId: ride.user_id,
-          displayName: user?.display_name ?? "Rider",
-          type: "RATE_LIMITED_15MIN",
-          message: "Skipped due to earlier rate limit.",
-        });
-        continue;
-      }
-
+    // Skip further fetches if we already hit a rate limit
+    if (hitRateLimit) {
       const user = userMap.get(ride.user_id);
-      const result = await fetchAndCacheStravaStreams(
-        ride.user_id,
-        ride.id,
-        ride.strava_activity_id,
-        user?.display_name ?? "Rider",
-      );
-
-      rideStreamMap.set(ride.id, result.streams);
-
-      if (result.error) {
-        streamErrors.push(result.error);
-        if (
-          result.error.type === "RATE_LIMITED_15MIN" ||
-          result.error.type === "RATE_LIMITED_DAILY"
-        ) {
-          hitRateLimit = true;
-        }
-      }
-    }
-
-    // 6. Build rider detail array
-    const riderDetails: GroupRideDetailRider[] = rides.map((ride) => {
-      const user = userMap.get(ride.user_id);
-      return {
+      rideStreamMap.set(ride.id, null);
+      streamErrors.push({
         userId: ride.user_id,
         displayName: user?.display_name ?? "Rider",
-        avatarUrl: user?.avatar_url ?? null,
-        ride,
-        streams: rideStreamMap.get(ride.id) ?? null,
-      };
-    });
+        type: "RATE_LIMITED_15MIN",
+        message: "Skipped due to earlier rate limit.",
+      });
+      continue;
+    }
 
+    const user = userMap.get(ride.user_id);
+    const result = await fetchAndCacheStravaStreams(
+      ride.user_id,
+      ride.id,
+      ride.strava_activity_id,
+      user?.display_name ?? "Rider",
+    );
+
+    rideStreamMap.set(ride.id, result.streams);
+
+    if (result.error) {
+      streamErrors.push(result.error);
+      if (
+        result.error.type === "RATE_LIMITED_15MIN" ||
+        result.error.type === "RATE_LIMITED_DAILY"
+      ) {
+        hitRateLimit = true;
+      }
+    }
+  }
+
+  // 6. Build rider detail array
+  const riderDetails: GroupRideDetailRider[] = rides.map((ride) => {
+    const user = userMap.get(ride.user_id);
     return {
-      id: data.id,
-      date: data.date,
-      routeCategory: data.route,
-      riders: riderDetails,
-      streamErrors,
+      userId: ride.user_id,
+      displayName: user?.display_name ?? "Rider",
+      avatarUrl: user?.avatar_url ?? null,
+      ride,
+      streams: rideStreamMap.get(ride.id) ?? null,
     };
   });
+
+  return {
+    id: data.id,
+    date: data.date,
+    routeCategory: data.route,
+    riders: riderDetails,
+    streamErrors,
+  };
+}
+
+export const fetchGroupRideDetail = createServerFn({ method: "GET" })
+  .inputValidator(fetchGroupRideDetailInput)
+  .handler(({ data }) => fetchGroupRideDetailImpl(data));

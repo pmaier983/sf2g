@@ -17,72 +17,77 @@ import type {
 // ---------------------------------------------------------------------------
 // fetchUserRides — filtered, paginated ride query
 // ---------------------------------------------------------------------------
+const fetchUserRidesInput = (input: {
+  userId: string;
+  limit?: number;
+  offset?: number;
+  routeCategory?: RouteCategory;
+  includeAllRides?: boolean;
+  includeHidden?: boolean;
+  search?: string;
+  routeCategories?: string[];
+}) => input;
+
+export async function fetchUserRidesImpl(
+  data: ReturnType<typeof fetchUserRidesInput>,
+): Promise<Ride[]> {
+  const supabase = createAnonClient();
+  console.log(
+    `[rides] Fetching rides for user ${data.userId}, routeCategory: ${data.routeCategory ?? "all"}, includeAll: ${data.includeAllRides ?? false}`,
+  );
+
+  let query = supabase
+    .from("rides")
+    .select("*", { count: "exact" })
+    .eq("user_id", data.userId)
+    .order("ride_date", { ascending: false })
+    .order("id", { ascending: true }); // unique tiebreaker: stable paging
+
+  // Optional route category filter
+  if (data.routeCategory) {
+    query = query.eq("route_category", data.routeCategory);
+  } else if (data.routeCategories && data.routeCategories.length > 0) {
+    query = query.in("route_category", data.routeCategories);
+  } else if (!data.includeAllRides) {
+    // Default: only return SF2G rides (exclude rides with null route_category)
+    query = query.not("route_category", "is", null);
+  }
+
+  // Only filter out hidden rides when includeHidden is not set
+  if (!data.includeHidden) {
+    query = query.or("is_hidden.eq.false,is_hidden.is.null");
+  }
+
+  // Server-side search by ride name
+  if (data.search) {
+    const sanitized = data.search.replace(/[%_\\]/g, "\\$&");
+    query = query.ilike("name", `%${sanitized}%`);
+  }
+
+  // Pagination
+  const limit = data.limit ?? 50;
+  const offset = data.offset ?? 0;
+  query = query.range(offset, offset + limit - 1);
+
+  const { data: rides, error } = await query;
+
+  if (error) {
+    console.error(
+      `[rides] Error fetching rides for user ${data.userId}:`,
+      error.message,
+    );
+    throw new Error(`Failed to fetch rides: ${error.message}`);
+  }
+
+  console.log(
+    `[rides] Found ${rides?.length ?? 0} rides for user ${data.userId}`,
+  );
+  return rides ?? [];
+}
+
 export const fetchUserRides = createServerFn({ method: "GET" })
-  .inputValidator(
-    (input: {
-      userId: string;
-      limit?: number;
-      offset?: number;
-      routeCategory?: RouteCategory;
-      includeAllRides?: boolean;
-      includeHidden?: boolean;
-      search?: string;
-      routeCategories?: string[];
-    }) => input,
-  )
-  .handler(async ({ data }): Promise<Ride[]> => {
-    const supabase = createAnonClient();
-    console.log(
-      `[rides] Fetching rides for user ${data.userId}, routeCategory: ${data.routeCategory ?? "all"}, includeAll: ${data.includeAllRides ?? false}`,
-    );
-
-    let query = supabase
-      .from("rides")
-      .select("*", { count: "exact" })
-      .eq("user_id", data.userId)
-      .order("ride_date", { ascending: false });
-
-    // Optional route category filter
-    if (data.routeCategory) {
-      query = query.eq("route_category", data.routeCategory);
-    } else if (data.routeCategories && data.routeCategories.length > 0) {
-      query = query.in("route_category", data.routeCategories);
-    } else if (!data.includeAllRides) {
-      // Default: only return SF2G rides (exclude rides with null route_category)
-      query = query.not("route_category", "is", null);
-    }
-
-    // Only filter out hidden rides when includeHidden is not set
-    if (!data.includeHidden) {
-      query = query.or("is_hidden.eq.false,is_hidden.is.null");
-    }
-
-    // Server-side search by ride name
-    if (data.search) {
-      const sanitized = data.search.replace(/[%_\\]/g, "\\$&");
-      query = query.ilike("name", `%${sanitized}%`);
-    }
-
-    // Pagination
-    const limit = data.limit ?? 50;
-    const offset = data.offset ?? 0;
-    query = query.range(offset, offset + limit - 1);
-
-    const { data: rides, error } = await query;
-
-    if (error) {
-      console.error(
-        `[rides] Error fetching rides for user ${data.userId}:`,
-        error.message,
-      );
-      throw new Error(`Failed to fetch rides: ${error.message}`);
-    }
-
-    console.log(
-      `[rides] Found ${rides?.length ?? 0} rides for user ${data.userId}`,
-    );
-    return rides ?? [];
-  });
+  .inputValidator(fetchUserRidesInput)
+  .handler(({ data }) => fetchUserRidesImpl(data));
 
 // ---------------------------------------------------------------------------
 // Allowed sort columns (allow-list to prevent arbitrary column access)
@@ -126,38 +131,38 @@ function sanitizeLikePattern(input: string): string {
 // ---------------------------------------------------------------------------
 // fetchRidesLeaderboard — cross-user rides query with filters & pagination
 // ---------------------------------------------------------------------------
-export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator(
-    (input: {
-      userId?: string;
-      routeCategories?: string[];
-      company?: string;
-      search?: string;
-      sortBy?: string;
-      sortDir?: "asc" | "desc";
-      page?: number;
-      pageSize?: number;
-      dateFrom?: string; // ISO date string e.g. '2024-01-01'
-      dateTo?: string; // ISO date string
-      includeOther?: boolean;
-      excludeWeekends?: boolean;
-      pprRideIds?: string[];
-      reverse?: boolean;
-    }) => input,
-  )
-  .handler(async ({ data }): Promise<RidesLeaderboardResponse> => {
-    const supabase = createAnonClient();
+const fetchRidesLeaderboardInput = (input: {
+  userId?: string;
+  routeCategories?: string[];
+  company?: string;
+  search?: string;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+  dateFrom?: string; // ISO date string e.g. '2024-01-01'
+  dateTo?: string; // ISO date string
+  includeOther?: boolean;
+  excludeWeekends?: boolean;
+  pprRideIds?: string[];
+  reverse?: boolean;
+}) => input;
 
-    console.log("[rides-leaderboard] Input params:", JSON.stringify(data));
+export async function fetchRidesLeaderboardImpl(
+  data: ReturnType<typeof fetchRidesLeaderboardInput>,
+): Promise<RidesLeaderboardResponse> {
+  const supabase = createAnonClient();
 
-    const page = Math.max(1, data.page ?? 1);
-    const pageSize = Math.min(500, Math.max(1, data.pageSize ?? 200));
-    const offset = (page - 1) * pageSize;
+  console.log("[rides-leaderboard] Input params:", JSON.stringify(data));
 
-    // Build query — join rides with users for display info
-    // Supabase PostgREST foreign-key join syntax
-    let query = supabase.from("rides").select(
-      `
+  const page = Math.max(1, data.page ?? 1);
+  const pageSize = Math.min(500, Math.max(1, data.pageSize ?? 200));
+  const offset = (page - 1) * pageSize;
+
+  // Build query — join rides with users for display info
+  // Supabase PostgREST foreign-key join syntax
+  let query = supabase.from("rides").select(
+    `
         id,
         user_id,
         strava_activity_id,
@@ -179,172 +184,174 @@ export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
         kilojoules,
         users!inner ( display_name, avatar_url, username )
       `,
-      { count: "exact" },
+    { count: "exact" },
+  );
+
+  // Apply filters
+  if (data.userId) {
+    query = query.eq("user_id", data.userId);
+  }
+
+  if (data.routeCategories && data.routeCategories.length > 0) {
+    // Validate categories against allow-list
+    const validCats = data.routeCategories.filter((c) =>
+      VALID_ROUTE_CATEGORIES.has(c),
     );
-
-    // Apply filters
-    if (data.userId) {
-      query = query.eq("user_id", data.userId);
-    }
-
-    if (data.routeCategories && data.routeCategories.length > 0) {
-      // Validate categories against allow-list
-      const validCats = data.routeCategories.filter((c) =>
-        VALID_ROUTE_CATEGORIES.has(c),
-      );
-      if (validCats.length > 0) {
-        query = query.in("route_category", validCats as RouteCategory[]);
-      } else {
-        // All provided categories were invalid — fall through to default filter
-        query = query.not("route_category", "is", null);
-      }
+    if (validCats.length > 0) {
+      query = query.in("route_category", validCats as RouteCategory[]);
     } else {
-      // Always exclude non-SF2G rides (null route_category)
+      // All provided categories were invalid — fall through to default filter
       query = query.not("route_category", "is", null);
-      // When "Other" toggle is off, also exclude rides classified as 'other'
-      if (!data.includeOther) {
-        query = query.neq("route_category", "other");
-      }
     }
-
-    query = query.or("is_hidden.eq.false,is_hidden.is.null");
-
-    // Strava API compliance: exclude private rides from public views
-    query = query.or("is_private.eq.false,is_private.is.null");
-
-    // PPR filter: only show rides that are PPR-qualifying
-    if (data.pprRideIds && data.pprRideIds.length > 0) {
-      query = query.in("id", data.pprRideIds);
-    } else if (data.pprRideIds && data.pprRideIds.length === 0) {
-      // PPR is active but no qualifying rides — return empty
-      return { rides: [], totalCount: 0, page, pageSize };
+  } else {
+    // Always exclude non-SF2G rides (null route_category)
+    query = query.not("route_category", "is", null);
+    // When "Other" toggle is off, also exclude rides classified as 'other'
+    if (!data.includeOther) {
+      query = query.neq("route_category", "other");
     }
+  }
 
-    if (data.company) {
-      query = query.eq(
-        "destination_company",
-        data.company as DestinationCompany,
-      );
-    }
+  query = query.or("is_hidden.eq.false,is_hidden.is.null");
 
-    if (data.search) {
-      // Sanitize search input to prevent ILIKE pattern injection
-      const sanitized = sanitizeLikePattern(data.search);
-      query = query.ilike("name", `%${sanitized}%`);
-    }
+  // Strava API compliance: exclude private rides from public views
+  query = query.or("is_private.eq.false,is_private.is.null");
 
-    // Date range filters
-    if (data.dateFrom) {
-      query = query.gte("ride_date", data.dateFrom);
-    }
-    if (data.dateTo) {
-      query = query.lte("ride_date", data.dateTo);
-    }
+  // PPR filter: only show rides that are PPR-qualifying
+  if (data.pprRideIds && data.pprRideIds.length > 0) {
+    query = query.in("id", data.pprRideIds);
+  } else if (data.pprRideIds && data.pprRideIds.length === 0) {
+    // PPR is active but no qualifying rides — return empty
+    return { rides: [], totalCount: 0, page, pageSize };
+  }
 
-    // Apply sorting (validate column against allow-list)
-    const sortColumn =
-      data.sortBy && VALID_SORT_COLUMNS.has(data.sortBy)
-        ? data.sortBy
-        : "ride_date";
-    const ascending = (data.sortDir ?? "desc") === "asc";
+  if (data.company) {
+    query = query.eq("destination_company", data.company as DestinationCompany);
+  }
 
-    // display_name lives on the joined users table, not rides
-    if (sortColumn === "display_name") {
-      query = query
-        .order("display_name", {
-          referencedTable: "users",
-          ascending,
-          nullsFirst: false,
-        })
-        .range(offset, offset + pageSize - 1);
-    } else {
-      query = query
-        .order(sortColumn, { ascending, nullsFirst: false })
-        .range(offset, offset + pageSize - 1);
-    }
+  if (data.search) {
+    // Sanitize search input to prevent ILIKE pattern injection
+    const sanitized = sanitizeLikePattern(data.search);
+    query = query.ilike("name", `%${sanitized}%`);
+  }
 
-    const { data: rows, error, count } = await query;
+  // Date range filters
+  if (data.dateFrom) {
+    query = query.gte("ride_date", data.dateFrom);
+  }
+  if (data.dateTo) {
+    query = query.lte("ride_date", data.dateTo);
+  }
 
+  // Apply sorting (validate column against allow-list)
+  const sortColumn =
+    data.sortBy && VALID_SORT_COLUMNS.has(data.sortBy)
+      ? data.sortBy
+      : "ride_date";
+  const ascending = (data.sortDir ?? "desc") === "asc";
+
+  // display_name lives on the joined users table, not rides
+  if (sortColumn === "display_name") {
+    query = query
+      .order("display_name", {
+        referencedTable: "users",
+        ascending,
+        nullsFirst: false,
+      })
+      .range(offset, offset + pageSize - 1);
+  } else {
+    query = query
+      .order(sortColumn, { ascending, nullsFirst: false })
+      .order("id", { ascending: true }) // unique tiebreaker: stable paging
+      .range(offset, offset + pageSize - 1);
+  }
+
+  const { data: rows, error, count } = await query;
+
+  console.log(
+    `[rides-leaderboard] Query returned ${rows?.length ?? 0} rows, total count: ${count ?? "null"}, error: ${error?.message ?? "none"}`,
+  );
+
+  if (error) {
+    console.error("[rides-leaderboard] Supabase error:", error);
+    throw new Error(`Failed to fetch rides leaderboard: ${error.message}`);
+  }
+
+  // Debug: log unique user_ids in the result
+  if (rows && rows.length > 0) {
+    const userIds = new Set(
+      (rows as Record<string, unknown>[]).map((r) => r.user_id as string),
+    );
     console.log(
-      `[rides-leaderboard] Query returned ${rows?.length ?? 0} rows, total count: ${count ?? "null"}, error: ${error?.message ?? "none"}`,
+      `[rides-leaderboard] Rides span ${userIds.size} unique users: ${[...userIds].join(", ")}`,
     );
+  }
 
-    if (error) {
-      console.error("[rides-leaderboard] Supabase error:", error);
-      throw new Error(`Failed to fetch rides leaderboard: ${error.message}`);
-    }
+  // Filter out weekend rides if excludeWeekends is true
+  const excludeWeekends = data.excludeWeekends ?? false;
+  const filteredRows = excludeWeekends
+    ? (rows ?? []).filter((row: Record<string, unknown>) => {
+        const day = new Date(row.ride_date as string).getUTCDay();
+        return day !== 0 && day !== 6;
+      })
+    : (rows ?? []);
 
-    // Debug: log unique user_ids in the result
-    if (rows && rows.length > 0) {
-      const userIds = new Set(
-        (rows as Record<string, unknown>[]).map((r) => r.user_id as string),
-      );
-      console.log(
-        `[rides-leaderboard] Rides span ${userIds.size} unique users: ${[...userIds].join(", ")}`,
-      );
-    }
+  // Filter by commute direction when reverse filter is active
+  const directionFiltered = data.reverse
+    ? filteredRows.filter((row: Record<string, unknown>) => {
+        const startLatLng = row.start_latlng as [number, number] | null;
+        const endLatLng = row.end_latlng as [number, number] | null;
+        return getCommuteDirection(startLatLng, endLatLng) === "g2sf";
+      })
+    : filteredRows;
 
-    // Filter out weekend rides if excludeWeekends is true
-    const excludeWeekends = data.excludeWeekends ?? false;
-    const filteredRows = excludeWeekends
-      ? (rows ?? []).filter((row: Record<string, unknown>) => {
-          const day = new Date(row.ride_date as string).getUTCDay();
-          return day !== 0 && day !== 6;
-        })
-      : (rows ?? []);
+  // Flatten the joined user data into each ride entry
+  const rides: RideLeaderboardEntry[] = directionFiltered.map(
+    (row: Record<string, unknown>) => {
+      const user = row.users as {
+        display_name: string | null;
+        avatar_url: string | null;
+        username: string | null;
+      } | null;
+      return {
+        id: row.id as string,
+        user_id: row.user_id as string,
+        strava_activity_id: row.strava_activity_id as number,
+        display_name: user?.display_name ?? null,
+        avatar_url: user?.avatar_url ?? null,
+        username: user?.username ?? null,
+        name: row.name as string | null,
+        ride_date: row.ride_date as string,
+        route_category: row.route_category as RouteCategory | null,
+        average_speed_mps: row.average_speed_mps as number | null,
+        distance_meters: (row.distance_meters as number) ?? 0,
+        elevation_gain_meters: (row.elevation_gain_meters as number) ?? 0,
+        moving_time_seconds: (row.moving_time_seconds as number) ?? 0,
+        destination_company:
+          row.destination_company as RideLeaderboardEntry["destination_company"],
+        tailwind_component_ms: null,
+        start_latlng: row.start_latlng as [number, number] | null,
+        end_latlng: row.end_latlng as [number, number] | null,
+        average_watts: row.average_watts as number | null,
+        max_watts: row.max_watts as number | null,
+        average_heartrate: row.average_heartrate as number | null,
+        max_heartrate: row.max_heartrate as number | null,
+        kilojoules: row.kilojoules as number | null,
+      };
+    },
+  );
 
-    // Filter by commute direction when reverse filter is active
-    const directionFiltered = data.reverse
-      ? filteredRows.filter((row: Record<string, unknown>) => {
-          const startLatLng = row.start_latlng as [number, number] | null;
-          const endLatLng = row.end_latlng as [number, number] | null;
-          return getCommuteDirection(startLatLng, endLatLng) === "g2sf";
-        })
-      : filteredRows;
+  return {
+    rides,
+    totalCount: excludeWeekends || data.reverse ? rides.length : (count ?? 0),
+    page,
+    pageSize,
+  };
+}
 
-    // Flatten the joined user data into each ride entry
-    const rides: RideLeaderboardEntry[] = directionFiltered.map(
-      (row: Record<string, unknown>) => {
-        const user = row.users as {
-          display_name: string | null;
-          avatar_url: string | null;
-          username: string | null;
-        } | null;
-        return {
-          id: row.id as string,
-          user_id: row.user_id as string,
-          strava_activity_id: row.strava_activity_id as number,
-          display_name: user?.display_name ?? null,
-          avatar_url: user?.avatar_url ?? null,
-          username: user?.username ?? null,
-          name: row.name as string | null,
-          ride_date: row.ride_date as string,
-          route_category: row.route_category as RouteCategory | null,
-          average_speed_mps: row.average_speed_mps as number | null,
-          distance_meters: (row.distance_meters as number) ?? 0,
-          elevation_gain_meters: (row.elevation_gain_meters as number) ?? 0,
-          moving_time_seconds: (row.moving_time_seconds as number) ?? 0,
-          destination_company:
-            row.destination_company as RideLeaderboardEntry["destination_company"],
-          tailwind_component_ms: null,
-          start_latlng: row.start_latlng as [number, number] | null,
-          end_latlng: row.end_latlng as [number, number] | null,
-          average_watts: row.average_watts as number | null,
-          max_watts: row.max_watts as number | null,
-          average_heartrate: row.average_heartrate as number | null,
-          max_heartrate: row.max_heartrate as number | null,
-          kilojoules: row.kilojoules as number | null,
-        };
-      },
-    );
-
-    return {
-      rides,
-      totalCount: excludeWeekends || data.reverse ? rides.length : (count ?? 0),
-      page,
-      pageSize,
-    };
-  });
+export const fetchRidesLeaderboard = createServerFn({ method: "GET" })
+  .inputValidator(fetchRidesLeaderboardInput)
+  .handler(({ data }) => fetchRidesLeaderboardImpl(data));
 
 // ---------------------------------------------------------------------------
 // fetchCommunityStartHours — average start hour per rider for percentile comparison
@@ -355,9 +362,7 @@ export interface CommunityStartHoursResponse {
   averageHours: number[];
 }
 
-export const fetchCommunityStartHours = createServerFn({
-  method: "GET",
-}).handler(async (): Promise<CommunityStartHoursResponse> => {
+export async function fetchCommunityStartHoursImpl(): Promise<CommunityStartHoursResponse> {
   const supabase = createAnonClient();
 
   // Fetch all SF2G rides in batches (Supabase default limit is 1000)
@@ -414,7 +419,11 @@ export const fetchCommunityStartHours = createServerFn({
   }
 
   return { averageHours };
-});
+}
+
+export const fetchCommunityStartHours = createServerFn({
+  method: "GET",
+}).handler(() => fetchCommunityStartHoursImpl());
 
 // ---------------------------------------------------------------------------
 // fetchCommunityStreaks — best weekly streak per rider for percentile comparison
@@ -477,58 +486,60 @@ function computeBestWeekStreak(rideDates: string[]): number {
   return best;
 }
 
+export async function fetchCommunityStreaksImpl(): Promise<CommunityStreaksResponse> {
+  const supabase = createAnonClient();
+
+  // Fetch all SF2G ride dates in batches
+  const PAGE_SIZE = 1000;
+  let allRides: { user_id: string; ride_date: string }[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data: batch, error } = await supabase
+      .from("rides")
+      .select("user_id, ride_date")
+      .not("route_category", "is", null)
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error("[community-streaks] Error:", error.message);
+      throw new Error(`Failed to fetch community streaks: ${error.message}`);
+    }
+
+    if (!batch || batch.length === 0) {
+      hasMore = false;
+    } else {
+      allRides = allRides.concat(batch);
+      offset += PAGE_SIZE;
+      if (batch.length < PAGE_SIZE) hasMore = false;
+    }
+  }
+
+  if (allRides.length === 0) {
+    return { bestStreaks: [] };
+  }
+
+  // Group ride dates by user
+  const userRideDates = new Map<string, string[]>();
+  for (const ride of allRides) {
+    const existing = userRideDates.get(ride.user_id);
+    if (existing) {
+      existing.push(ride.ride_date);
+    } else {
+      userRideDates.set(ride.user_id, [ride.ride_date]);
+    }
+  }
+
+  // Compute best weekly streak for each rider
+  const bestStreaks: number[] = [];
+  for (const dates of userRideDates.values()) {
+    bestStreaks.push(computeBestWeekStreak(dates));
+  }
+
+  return { bestStreaks };
+}
+
 export const fetchCommunityStreaks = createServerFn({ method: "GET" }).handler(
-  async (): Promise<CommunityStreaksResponse> => {
-    const supabase = createAnonClient();
-
-    // Fetch all SF2G ride dates in batches
-    const PAGE_SIZE = 1000;
-    let allRides: { user_id: string; ride_date: string }[] = [];
-    let offset = 0;
-    let hasMore = true;
-
-    while (hasMore) {
-      const { data: batch, error } = await supabase
-        .from("rides")
-        .select("user_id, ride_date")
-        .not("route_category", "is", null)
-        .range(offset, offset + PAGE_SIZE - 1);
-
-      if (error) {
-        console.error("[community-streaks] Error:", error.message);
-        throw new Error(`Failed to fetch community streaks: ${error.message}`);
-      }
-
-      if (!batch || batch.length === 0) {
-        hasMore = false;
-      } else {
-        allRides = allRides.concat(batch);
-        offset += PAGE_SIZE;
-        if (batch.length < PAGE_SIZE) hasMore = false;
-      }
-    }
-
-    if (allRides.length === 0) {
-      return { bestStreaks: [] };
-    }
-
-    // Group ride dates by user
-    const userRideDates = new Map<string, string[]>();
-    for (const ride of allRides) {
-      const existing = userRideDates.get(ride.user_id);
-      if (existing) {
-        existing.push(ride.ride_date);
-      } else {
-        userRideDates.set(ride.user_id, [ride.ride_date]);
-      }
-    }
-
-    // Compute best weekly streak for each rider
-    const bestStreaks: number[] = [];
-    for (const dates of userRideDates.values()) {
-      bestStreaks.push(computeBestWeekStreak(dates));
-    }
-
-    return { bestStreaks };
-  },
+  () => fetchCommunityStreaksImpl(),
 );

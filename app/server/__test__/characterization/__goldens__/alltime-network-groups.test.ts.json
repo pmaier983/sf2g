@@ -1,0 +1,2246 @@
+{
+  "fetchAllTimeLeaderboard > 30-day window in 2025": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2025-02-07",
+        "2025-02-19",
+        "2025-02-21"
+      ],
+      "totalSf2gRides": 13,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2025-02-21",
+      "windowStart": "2025-02-07"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+      "displayName": "Dee Reverse",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-01-06",
+        "2025-01-20"
+      ],
+      "totalSf2gRides": 6,
+      "userId": "00000000-0000-4000-8000-000000000004",
+      "windowEnd": "2025-01-20",
+      "windowStart": "2025-01-06"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-11-26",
+        "2025-12-22"
+      ],
+      "totalSf2gRides": 6,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2025-12-22",
+      "windowStart": "2025-11-26"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-01-27",
+        "2025-02-05"
+      ],
+      "totalSf2gRides": 5,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2025-02-05",
+      "windowStart": "2025-01-27"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-02-21",
+        "2025-03-07"
+      ],
+      "totalSf2gRides": 5,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2025-03-07",
+      "windowStart": "2025-02-21"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-03-11",
+        "2025-03-12"
+      ],
+      "totalSf2gRides": 5,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2025-03-12",
+      "windowStart": "2025-03-11"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-09-14",
+        "2025-09-27"
+      ],
+      "totalSf2gRides": 5,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2025-09-27",
+      "windowStart": "2025-09-14"
+    }
+  ],
+  "fetchAllTimeLeaderboard > 30-day window, weekends excluded": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 5,
+      "rideDatesInWindow": [
+        "2026-08-18",
+        "2026-08-24",
+        "2026-08-25",
+        "2026-09-01",
+        "2026-09-04"
+      ],
+      "totalSf2gRides": 84,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2026-09-04",
+      "windowStart": "2026-08-18"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 4,
+      "rideDatesInWindow": [
+        "2026-09-24",
+        "2026-09-29",
+        "2026-10-05",
+        "2026-10-13"
+      ],
+      "totalSf2gRides": 58,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2026-10-13",
+      "windowStart": "2026-09-24"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+      "displayName": "Dee Reverse",
+      "maxRidesInWindow": 4,
+      "rideDatesInWindow": [
+        "2026-02-19",
+        "2026-02-23",
+        "2026-03-04",
+        "2026-03-06"
+      ],
+      "totalSf2gRides": 31,
+      "userId": "00000000-0000-4000-8000-000000000004",
+      "windowEnd": "2026-03-06",
+      "windowStart": "2026-02-19"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 4,
+      "rideDatesInWindow": [
+        "2024-05-27",
+        "2024-06-10",
+        "2024-06-20",
+        "2024-06-21"
+      ],
+      "totalSf2gRides": 20,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2024-06-21",
+      "windowStart": "2024-05-27"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2021-02-04",
+        "2021-02-22",
+        "2021-03-04"
+      ],
+      "totalSf2gRides": 43,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2021-03-04",
+      "windowStart": "2021-02-04"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2023-06-01",
+        "2023-06-09",
+        "2023-06-20"
+      ],
+      "totalSf2gRides": 8,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2023-06-20",
+      "windowStart": "2023-06-01"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=c6da2effc2>",
+      "displayName": "Hal Deauthorized",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2023-04-14",
+        "2023-04-21"
+      ],
+      "totalSf2gRides": 15,
+      "userId": "00000000-0000-4000-8000-000000000008",
+      "windowEnd": "2023-04-21",
+      "windowStart": "2023-04-14"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-11-26",
+        "2025-12-22"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2025-12-22",
+      "windowStart": "2025-11-26"
+    }
+  ],
+  "fetchAllTimeLeaderboard > 365-day window incl. other": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 17,
+      "rideDatesInWindow": [
+        "2025-12-03",
+        "2026-01-06",
+        "2026-02-12",
+        "2026-03-10",
+        "2026-03-24",
+        "2026-04-03",
+        "2026-04-28",
+        "2026-06-09",
+        "2026-06-22",
+        "2026-08-18",
+        "2026-08-24",
+        "2026-08-25",
+        "2026-09-01",
+        "2026-09-04",
+        "2026-09-28",
+        "2026-10-06",
+        "2026-10-13"
+      ],
+      "totalSf2gRides": 86,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2026-10-13",
+      "windowStart": "2025-12-03"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 13,
+      "rideDatesInWindow": [
+        "2022-05-04",
+        "2022-05-20",
+        "2022-05-26",
+        "2022-07-12",
+        "2022-07-25",
+        "2022-07-28",
+        "2022-08-16",
+        "2022-09-07",
+        "2022-12-21",
+        "2023-02-08",
+        "2023-02-28",
+        "2023-03-20",
+        "2023-04-06"
+      ],
+      "totalSf2gRides": 65,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2023-04-06",
+      "windowStart": "2022-05-04"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 13,
+      "rideDatesInWindow": [
+        "2020-07-28",
+        "2020-07-31",
+        "2020-09-28",
+        "2020-10-28",
+        "2020-11-09",
+        "2020-12-28",
+        "2021-02-04",
+        "2021-02-22",
+        "2021-03-04",
+        "2021-03-18",
+        "2021-04-15",
+        "2021-06-15",
+        "2021-07-27"
+      ],
+      "totalSf2gRides": 54,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2021-07-27",
+      "windowStart": "2020-07-28"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+      "displayName": "Dee Reverse",
+      "maxRidesInWindow": 11,
+      "rideDatesInWindow": [
+        "2024-05-14",
+        "2024-06-07",
+        "2024-08-19",
+        "2024-08-20",
+        "2024-10-20",
+        "2024-10-25",
+        "2024-12-11",
+        "2025-01-06",
+        "2025-01-20",
+        "2025-03-28",
+        "2025-03-31"
+      ],
+      "totalSf2gRides": 34,
+      "userId": "00000000-0000-4000-8000-000000000004",
+      "windowEnd": "2025-03-31",
+      "windowStart": "2024-05-14"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 11,
+      "rideDatesInWindow": [
+        "2025-09-14",
+        "2025-09-27",
+        "2025-11-08",
+        "2026-01-10",
+        "2026-01-17",
+        "2026-04-05",
+        "2026-04-26",
+        "2026-05-15",
+        "2026-07-05",
+        "2026-08-16",
+        "2026-08-18"
+      ],
+      "totalSf2gRides": 27,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2026-08-18",
+      "windowStart": "2025-09-14"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 10,
+      "rideDatesInWindow": [
+        "2024-05-27",
+        "2024-06-10",
+        "2024-06-20",
+        "2024-06-21",
+        "2024-08-09",
+        "2024-08-13",
+        "2024-10-30",
+        "2024-11-01",
+        "2025-03-11",
+        "2025-03-12"
+      ],
+      "totalSf2gRides": 20,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2025-03-12",
+      "windowStart": "2024-05-27"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 8,
+      "rideDatesInWindow": [
+        "2025-06-02",
+        "2025-08-27",
+        "2025-10-16",
+        "2025-11-26",
+        "2025-12-22",
+        "2026-01-27",
+        "2026-03-10",
+        "2026-05-22"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2026-05-22",
+      "windowStart": "2025-06-02"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=c6da2effc2>",
+      "displayName": "Hal Deauthorized",
+      "maxRidesInWindow": 6,
+      "rideDatesInWindow": [
+        "2022-05-16",
+        "2022-07-19",
+        "2022-12-16",
+        "2023-03-10",
+        "2023-04-14",
+        "2023-04-21"
+      ],
+      "totalSf2gRides": 15,
+      "userId": "00000000-0000-4000-8000-000000000008",
+      "windowEnd": "2023-04-21",
+      "windowStart": "2022-05-16"
+    }
+  ],
+  "fetchAllTimeLeaderboard > 365-day window skyline": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 14,
+      "rideDatesInWindow": [
+        "2024-05-27",
+        "2024-07-23",
+        "2024-09-03",
+        "2024-11-29",
+        "2024-12-13",
+        "2025-01-06",
+        "2025-01-14",
+        "2025-02-07",
+        "2025-02-19",
+        "2025-02-21",
+        "2025-03-13",
+        "2025-03-22",
+        "2025-04-22",
+        "2025-05-01"
+      ],
+      "totalSf2gRides": 75,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2025-05-01",
+      "windowStart": "2024-05-27"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 8,
+      "rideDatesInWindow": [
+        "2025-06-02",
+        "2025-08-27",
+        "2025-10-16",
+        "2025-11-26",
+        "2025-12-22",
+        "2026-01-27",
+        "2026-03-10",
+        "2026-05-22"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2026-05-22",
+      "windowStart": "2025-06-02"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 4,
+      "rideDatesInWindow": [
+        "2020-01-26",
+        "2020-09-28",
+        "2020-10-28",
+        "2020-12-28"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2020-12-28",
+      "windowStart": "2020-01-26"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2025-09-14",
+        "2026-04-26",
+        "2026-07-05"
+      ],
+      "totalSf2gRides": 6,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2026-07-05",
+      "windowStart": "2025-09-14"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2026-01-27",
+        "2026-06-29"
+      ],
+      "totalSf2gRides": 3,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2026-06-29",
+      "windowStart": "2026-01-27"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 1,
+      "rideDatesInWindow": [
+        "2025-06-10"
+      ],
+      "totalSf2gRides": 2,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2025-06-10",
+      "windowStart": "2025-06-10"
+    }
+  ],
+  "fetchAllTimeLeaderboard > 7-day window": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2019-03-04",
+        "2019-03-07",
+        "2019-03-08"
+      ],
+      "totalSf2gRides": 86,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2019-03-08",
+      "windowStart": "2019-03-04"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+      "displayName": "Dee Reverse",
+      "maxRidesInWindow": 3,
+      "rideDatesInWindow": [
+        "2026-09-22",
+        "2026-09-27",
+        "2026-09-29"
+      ],
+      "totalSf2gRides": 34,
+      "userId": "00000000-0000-4000-8000-000000000004",
+      "windowEnd": "2026-09-29",
+      "windowStart": "2026-09-22"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2021-04-23",
+        "2021-04-28"
+      ],
+      "totalSf2gRides": 58,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2021-04-28",
+      "windowStart": "2021-04-23"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2023-07-17",
+        "2023-07-24"
+      ],
+      "totalSf2gRides": 47,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2023-07-24",
+      "windowStart": "2023-07-17"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2026-01-10",
+        "2026-01-17"
+      ],
+      "totalSf2gRides": 27,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2026-01-17",
+      "windowStart": "2026-01-10"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2024-06-20",
+        "2024-06-21"
+      ],
+      "totalSf2gRides": 20,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2024-06-21",
+      "windowStart": "2024-06-20"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=c6da2effc2>",
+      "displayName": "Hal Deauthorized",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2023-04-14",
+        "2023-04-21"
+      ],
+      "totalSf2gRides": 15,
+      "userId": "00000000-0000-4000-8000-000000000008",
+      "windowEnd": "2023-04-21",
+      "windowStart": "2023-04-14"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 1,
+      "rideDatesInWindow": [
+        "2025-01-13"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2025-01-13",
+      "windowStart": "2025-01-13"
+    }
+  ],
+  "fetchAllTimeLeaderboard > invalid duration": [
+    {
+      "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+      "displayName": "Ben Skyline",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2019-03-07",
+        "2019-03-08"
+      ],
+      "totalSf2gRides": 86,
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "windowEnd": "2019-03-08",
+      "windowStart": "2019-03-07"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+      "displayName": "Ada Bayway",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2021-12-01",
+        "2021-12-02"
+      ],
+      "totalSf2gRides": 58,
+      "userId": "00000000-0000-4000-8000-000000000001",
+      "windowEnd": "2021-12-02",
+      "windowStart": "2021-12-01"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+      "displayName": "Cam Mixed",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2025-04-18",
+        "2025-04-19"
+      ],
+      "totalSf2gRides": 47,
+      "userId": "00000000-0000-4000-8000-000000000003",
+      "windowEnd": "2025-04-19",
+      "windowStart": "2025-04-18"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+      "displayName": "Dee Reverse",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2024-08-19",
+        "2024-08-20"
+      ],
+      "totalSf2gRides": 34,
+      "userId": "00000000-0000-4000-8000-000000000004",
+      "windowEnd": "2024-08-20",
+      "windowStart": "2024-08-19"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=890f077a31>",
+      "displayName": "Fay Hidden",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2024-06-20",
+        "2024-06-21"
+      ],
+      "totalSf2gRides": 20,
+      "userId": "00000000-0000-4000-8000-000000000006",
+      "windowEnd": "2024-06-21",
+      "windowStart": "2024-06-20"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=c6da2effc2>",
+      "displayName": "Hal Deauthorized",
+      "maxRidesInWindow": 2,
+      "rideDatesInWindow": [
+        "2024-11-20",
+        "2024-11-21"
+      ],
+      "totalSf2gRides": 15,
+      "userId": "00000000-0000-4000-8000-000000000008",
+      "windowEnd": "2024-11-21",
+      "windowStart": "2024-11-20"
+    },
+    {
+      "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+      "displayName": "Eve Weekend",
+      "maxRidesInWindow": 1,
+      "rideDatesInWindow": [
+        "2023-03-04"
+      ],
+      "totalSf2gRides": 27,
+      "userId": "00000000-0000-4000-8000-000000000005",
+      "windowEnd": "2023-03-04",
+      "windowStart": "2023-03-04"
+    },
+    {
+      "avatarUrl": "<string len=389 sha1=5210f018b5>",
+      "displayName": "Ivy NoScope",
+      "maxRidesInWindow": 1,
+      "rideDatesInWindow": [
+        "2025-01-13"
+      ],
+      "totalSf2gRides": 10,
+      "userId": "00000000-0000-4000-8000-000000000009",
+      "windowEnd": "2025-01-13",
+      "windowStart": "2025-01-13"
+    }
+  ],
+  "fetchGroupRideDetail > 2026-09-29 bayway (ada, dee, fay)": {
+    "date": "2026-09-29",
+    "id": "6f8b9d394fda8aaf",
+    "riders": [
+      {
+        "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+        "displayName": "Ada Bayway",
+        "ride": {
+          "average_heartrate": 144,
+          "average_speed_mps": 6.313,
+          "average_watts": 226,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-09-29T19:05:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": "google",
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 50234.7,
+          "elapsed_time_seconds": 8523,
+          "elevation_gain_meters": 195.8,
+          "end_latlng": [
+            37.4419,
+            -122.143
+          ],
+          "has_heartrate": true,
+          "has_power_meter": true,
+          "id": "10000000-0000-4000-8000-000000000006",
+          "is_commute": true,
+          "is_hidden": false,
+          "is_private": false,
+          "kilojoules": 1798,
+          "max_heartrate": 172,
+          "max_speed_mps": 14.062,
+          "max_watts": 828,
+          "moving_time_seconds": 7957,
+          "name": "SF2G bayway",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-09-29",
+          "route_category": "bayway",
+          "start_date": "2026-09-29T13:05:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000006,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=262 sha1=a400693fa0>",
+          "tailwind_component_ms": -2.36,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000001",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      {
+        "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+        "displayName": "Dee Reverse",
+        "ride": {
+          "average_heartrate": 137,
+          "average_speed_mps": 6.335,
+          "average_watts": null,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-09-29T19:05:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": "meta",
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 46976.5,
+          "elapsed_time_seconds": 8295,
+          "elevation_gain_meters": 179.2,
+          "end_latlng": [
+            37.4419,
+            -122.143
+          ],
+          "has_heartrate": true,
+          "has_power_meter": false,
+          "id": "10000000-0000-4000-8000-000000000007",
+          "is_commute": true,
+          "is_hidden": false,
+          "is_private": false,
+          "kilojoules": null,
+          "max_heartrate": 153,
+          "max_speed_mps": 13.362,
+          "max_watts": null,
+          "moving_time_seconds": 7415,
+          "name": "SF2G bayway",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-09-29",
+          "route_category": "bayway",
+          "start_date": "2026-09-29T13:05:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000007,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=262 sha1=a400693fa0>",
+          "tailwind_component_ms": null,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000004",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000004"
+      },
+      {
+        "avatarUrl": "<string len=390 sha1=890f077a31>",
+        "displayName": "Fay Hidden",
+        "ride": {
+          "average_heartrate": null,
+          "average_speed_mps": 6.487,
+          "average_watts": null,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-09-29T19:05:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": "netflix",
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 49253.3,
+          "elapsed_time_seconds": 9381,
+          "elevation_gain_meters": 197.3,
+          "end_latlng": [
+            37.4419,
+            -122.143
+          ],
+          "has_heartrate": false,
+          "has_power_meter": false,
+          "id": "10000000-0000-4000-8000-000000000008",
+          "is_commute": true,
+          "is_hidden": true,
+          "is_private": false,
+          "kilojoules": null,
+          "max_heartrate": null,
+          "max_speed_mps": 13.384,
+          "max_watts": null,
+          "moving_time_seconds": 7593,
+          "name": "SF2G bayway",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-09-29",
+          "route_category": "bayway",
+          "start_date": "2026-09-29T13:05:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000008,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=262 sha1=a400693fa0>",
+          "tailwind_component_ms": -2.23,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000006",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000006"
+      }
+    ],
+    "routeCategory": "bayway",
+    "streamErrors": [
+      {
+        "displayName": "Ada Bayway",
+        "message": "Ada Bayway needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      {
+        "displayName": "Dee Reverse",
+        "message": "Dee Reverse needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000004"
+      },
+      {
+        "displayName": "Fay Hidden",
+        "message": "Fay Hidden needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000006"
+      }
+    ]
+  },
+  "fetchGroupRideDetail > 2026-10-13 skyline (ada, ben, cam)": {
+    "date": "2026-10-13",
+    "id": "cda7cc192567e3d2",
+    "riders": [
+      {
+        "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+        "displayName": "Ada Bayway",
+        "ride": {
+          "average_heartrate": 137,
+          "average_speed_mps": 6.463,
+          "average_watts": 192,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-10-13T19:00:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": "google",
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 57270.7,
+          "elapsed_time_seconds": 10294,
+          "elevation_gain_meters": 877.3,
+          "end_latlng": [
+            37.4419,
+            -122.143
+          ],
+          "has_heartrate": true,
+          "has_power_meter": true,
+          "id": "10000000-0000-4000-8000-000000000001",
+          "is_commute": true,
+          "is_hidden": false,
+          "is_private": false,
+          "kilojoules": 1701,
+          "max_heartrate": 157,
+          "max_speed_mps": 12.573,
+          "max_watts": 789,
+          "moving_time_seconds": 8861,
+          "name": "SF2G skyline",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-10-13",
+          "route_category": "skyline",
+          "start_date": "2026-10-13T13:00:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000001,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=274 sha1=fcdb777992>",
+          "tailwind_component_ms": 1.45,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000001",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      {
+        "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+        "displayName": "Ben Skyline",
+        "ride": {
+          "average_heartrate": 142,
+          "average_speed_mps": 7.814,
+          "average_watts": 214,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-10-13T19:00:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": "apple",
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 56606,
+          "elapsed_time_seconds": 8179,
+          "elevation_gain_meters": 921.5,
+          "end_latlng": [
+            37.422,
+            -122.084
+          ],
+          "has_heartrate": true,
+          "has_power_meter": true,
+          "id": "10000000-0000-4000-8000-000000000002",
+          "is_commute": true,
+          "is_hidden": false,
+          "is_private": false,
+          "kilojoules": 1550,
+          "max_heartrate": 171,
+          "max_speed_mps": 14.364,
+          "max_watts": 718,
+          "moving_time_seconds": 7244,
+          "name": "SF2G skyline",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-10-13",
+          "route_category": "skyline",
+          "start_date": "2026-10-13T13:00:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000002,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=274 sha1=f36b92b439>",
+          "tailwind_component_ms": null,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000002",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000002"
+      },
+      {
+        "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+        "displayName": "Cam Mixed",
+        "ride": {
+          "average_heartrate": null,
+          "average_speed_mps": 6.261,
+          "average_watts": null,
+          "classification_confidence": 0.9,
+          "classification_method": "gateway",
+          "created_at": "2026-10-13T19:00:00+00:00",
+          "crosswind_component_ms": null,
+          "destination_company": null,
+          "destination_distance_meters": null,
+          "destination_office": null,
+          "distance_meters": 58818.9,
+          "elapsed_time_seconds": 11210,
+          "elevation_gain_meters": 967.1,
+          "end_latlng": [
+            37.4419,
+            -122.143
+          ],
+          "has_heartrate": false,
+          "has_power_meter": false,
+          "id": "10000000-0000-4000-8000-000000000003",
+          "is_commute": true,
+          "is_hidden": false,
+          "is_private": false,
+          "kilojoules": null,
+          "max_heartrate": null,
+          "max_speed_mps": 13.917,
+          "max_watts": null,
+          "moving_time_seconds": 9394,
+          "name": "SF2G skyline",
+          "ride_bearing_deg": null,
+          "ride_date": "2026-10-13",
+          "route_category": "skyline",
+          "start_date": "2026-10-13T13:00:00+00:00",
+          "start_latlng": [
+            37.77343,
+            -122.4389
+          ],
+          "strava_activity_id": 9000000003,
+          "strava_raw": null,
+          "suffer_score": null,
+          "summary_polyline": "<string len=274 sha1=fcdb777992>",
+          "tailwind_component_ms": null,
+          "timezone": "(GMT-08:00) America/Los_Angeles",
+          "user_id": "00000000-0000-4000-8000-000000000003",
+          "wind_data_source": null,
+          "wind_direction_deg": null,
+          "wind_gust_ms": null,
+          "wind_speed_ms": null
+        },
+        "streams": null,
+        "userId": "00000000-0000-4000-8000-000000000003"
+      }
+    ],
+    "routeCategory": "skyline",
+    "streamErrors": [
+      {
+        "displayName": "Ada Bayway",
+        "message": "Ada Bayway needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      {
+        "displayName": "Ben Skyline",
+        "message": "Ben Skyline needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000002"
+      },
+      {
+        "displayName": "Cam Mixed",
+        "message": "Cam Mixed needs to re-login to Strava to share ride data.",
+        "type": "REAUTH_REQUIRED",
+        "userId": "00000000-0000-4000-8000-000000000003"
+      }
+    ]
+  },
+  "fetchGroupRides > 2026 only": {
+    "groupRides": [
+      {
+        "avgHeartrate": 139.5,
+        "avgSpeedMps": 6.846,
+        "avgWatts": 203,
+        "date": "2026-10-13",
+        "id": "cda7cc192567e3d2",
+        "maxSpeedMps": 14.364,
+        "maxWatts": 789,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 172695.6,
+        "totalElevationMeters": 2765.9
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 7.275,
+        "avgWatts": 253,
+        "date": "2026-10-06",
+        "id": "3490eed7815d1173",
+        "maxSpeedMps": 17.249,
+        "maxWatts": 894,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 110314.7,
+        "totalElevationMeters": 1726.9
+      },
+      {
+        "avgHeartrate": 140.5,
+        "avgSpeedMps": 6.378333333,
+        "avgWatts": 226,
+        "date": "2026-09-29",
+        "id": "6f8b9d394fda8aaf",
+        "maxSpeedMps": 14.062,
+        "maxWatts": 828,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 146464.5,
+        "totalElevationMeters": 572.3
+      },
+      {
+        "avgHeartrate": 155,
+        "avgSpeedMps": 7.109,
+        "avgWatts": 232,
+        "date": "2026-08-18",
+        "id": "70441783a4d12249",
+        "maxSpeedMps": 16.371,
+        "maxWatts": 976,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+            "displayName": "Eve Weekend",
+            "userId": "00000000-0000-4000-8000-000000000005"
+          }
+        ],
+        "routeCategory": "hmbw",
+        "totalDistanceMeters": 151718.8,
+        "totalElevationMeters": 2171.9
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.7855,
+        "avgWatts": null,
+        "date": "2026-01-27",
+        "id": "d4ee7c8f2d83ed3f",
+        "maxSpeedMps": 15.605,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 116708.1,
+        "totalElevationMeters": 1899.3
+      }
+    ],
+    "page": 1,
+    "pageSize": 25,
+    "totalCount": 5
+  },
+  "fetchGroupRides > default page": {
+    "groupRides": [
+      {
+        "avgHeartrate": 139.5,
+        "avgSpeedMps": 6.846,
+        "avgWatts": 203,
+        "date": "2026-10-13",
+        "id": "cda7cc192567e3d2",
+        "maxSpeedMps": 14.364,
+        "maxWatts": 789,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 172695.6,
+        "totalElevationMeters": 2765.9
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 7.275,
+        "avgWatts": 253,
+        "date": "2026-10-06",
+        "id": "3490eed7815d1173",
+        "maxSpeedMps": 17.249,
+        "maxWatts": 894,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 110314.7,
+        "totalElevationMeters": 1726.9
+      },
+      {
+        "avgHeartrate": 140.5,
+        "avgSpeedMps": 6.378333333,
+        "avgWatts": 226,
+        "date": "2026-09-29",
+        "id": "6f8b9d394fda8aaf",
+        "maxSpeedMps": 14.062,
+        "maxWatts": 828,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 146464.5,
+        "totalElevationMeters": 572.3
+      },
+      {
+        "avgHeartrate": 155,
+        "avgSpeedMps": 7.109,
+        "avgWatts": 232,
+        "date": "2026-08-18",
+        "id": "70441783a4d12249",
+        "maxSpeedMps": 16.371,
+        "maxWatts": 976,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+            "displayName": "Eve Weekend",
+            "userId": "00000000-0000-4000-8000-000000000005"
+          }
+        ],
+        "routeCategory": "hmbw",
+        "totalDistanceMeters": 151718.8,
+        "totalElevationMeters": 2171.9
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.7855,
+        "avgWatts": null,
+        "date": "2026-01-27",
+        "id": "d4ee7c8f2d83ed3f",
+        "maxSpeedMps": 15.605,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 116708.1,
+        "totalElevationMeters": 1899.3
+      },
+      {
+        "avgHeartrate": 148.5,
+        "avgSpeedMps": 7.2385,
+        "avgWatts": 226.5,
+        "date": "2025-06-10",
+        "id": "6fa0382092f488b4",
+        "maxSpeedMps": 16.043,
+        "maxWatts": 810,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 118474.9,
+        "totalElevationMeters": 1739.2
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.638,
+        "avgWatts": null,
+        "date": "2024-06-20",
+        "id": "8b54f429b22ac8e4",
+        "maxSpeedMps": 15.009,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 101321.2,
+        "totalElevationMeters": 354.3
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 6.256,
+        "avgWatts": 172,
+        "date": "2024-06-10",
+        "id": "ec6e4fca36c4c4f6",
+        "maxSpeedMps": 14.47,
+        "maxWatts": 739,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 91681.6,
+        "totalElevationMeters": 354.1
+      },
+      {
+        "avgHeartrate": 146,
+        "avgSpeedMps": 6.6965,
+        "avgWatts": 203,
+        "date": "2024-05-27",
+        "id": "a00f2924f78033e2",
+        "maxSpeedMps": 16.705,
+        "maxWatts": 837,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 97945,
+        "totalElevationMeters": 368.3
+      },
+      {
+        "avgHeartrate": 144,
+        "avgSpeedMps": 6.688,
+        "avgWatts": null,
+        "date": "2024-05-14",
+        "id": "8f34561860fe1fad",
+        "maxSpeedMps": 15.885,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          }
+        ],
+        "routeCategory": "royale",
+        "totalDistanceMeters": 91683.7,
+        "totalElevationMeters": 576.9
+      }
+    ],
+    "page": 1,
+    "pageSize": 25,
+    "totalCount": 10
+  },
+  "fetchGroupRides > skyline only": {
+    "groupRides": [
+      {
+        "avgHeartrate": 139.5,
+        "avgSpeedMps": 6.846,
+        "avgWatts": 203,
+        "date": "2026-10-13",
+        "id": "cda7cc192567e3d2",
+        "maxSpeedMps": 14.364,
+        "maxWatts": 789,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 172695.6,
+        "totalElevationMeters": 2765.9
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 7.275,
+        "avgWatts": 253,
+        "date": "2026-10-06",
+        "id": "3490eed7815d1173",
+        "maxSpeedMps": 17.249,
+        "maxWatts": 894,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 110314.7,
+        "totalElevationMeters": 1726.9
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.7855,
+        "avgWatts": null,
+        "date": "2026-01-27",
+        "id": "d4ee7c8f2d83ed3f",
+        "maxSpeedMps": 15.605,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 116708.1,
+        "totalElevationMeters": 1899.3
+      },
+      {
+        "avgHeartrate": 148.5,
+        "avgSpeedMps": 7.2385,
+        "avgWatts": 226.5,
+        "date": "2025-06-10",
+        "id": "6fa0382092f488b4",
+        "maxSpeedMps": 16.043,
+        "maxWatts": 810,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 118474.9,
+        "totalElevationMeters": 1739.2
+      }
+    ],
+    "page": 1,
+    "pageSize": 25,
+    "totalCount": 4
+  },
+  "fetchGroupRides > sort by riders desc": {
+    "groupRides": [
+      {
+        "avgHeartrate": 139.5,
+        "avgSpeedMps": 6.846,
+        "avgWatts": 203,
+        "date": "2026-10-13",
+        "id": "cda7cc192567e3d2",
+        "maxSpeedMps": 14.364,
+        "maxWatts": 789,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 172695.6,
+        "totalElevationMeters": 2765.9
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 7.275,
+        "avgWatts": 253,
+        "date": "2026-10-06",
+        "id": "3490eed7815d1173",
+        "maxSpeedMps": 17.249,
+        "maxWatts": 894,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 110314.7,
+        "totalElevationMeters": 1726.9
+      },
+      {
+        "avgHeartrate": 140.5,
+        "avgSpeedMps": 6.378333333,
+        "avgWatts": 226,
+        "date": "2026-09-29",
+        "id": "6f8b9d394fda8aaf",
+        "maxSpeedMps": 14.062,
+        "maxWatts": 828,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 146464.5,
+        "totalElevationMeters": 572.3
+      },
+      {
+        "avgHeartrate": 155,
+        "avgSpeedMps": 7.109,
+        "avgWatts": 232,
+        "date": "2026-08-18",
+        "id": "70441783a4d12249",
+        "maxSpeedMps": 16.371,
+        "maxWatts": 976,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+            "displayName": "Eve Weekend",
+            "userId": "00000000-0000-4000-8000-000000000005"
+          }
+        ],
+        "routeCategory": "hmbw",
+        "totalDistanceMeters": 151718.8,
+        "totalElevationMeters": 2171.9
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.7855,
+        "avgWatts": null,
+        "date": "2026-01-27",
+        "id": "d4ee7c8f2d83ed3f",
+        "maxSpeedMps": 15.605,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 116708.1,
+        "totalElevationMeters": 1899.3
+      },
+      {
+        "avgHeartrate": 148.5,
+        "avgSpeedMps": 7.2385,
+        "avgWatts": 226.5,
+        "date": "2025-06-10",
+        "id": "6fa0382092f488b4",
+        "maxSpeedMps": 16.043,
+        "maxWatts": 810,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 118474.9,
+        "totalElevationMeters": 1739.2
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.638,
+        "avgWatts": null,
+        "date": "2024-06-20",
+        "id": "8b54f429b22ac8e4",
+        "maxSpeedMps": 15.009,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 101321.2,
+        "totalElevationMeters": 354.3
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 6.256,
+        "avgWatts": 172,
+        "date": "2024-06-10",
+        "id": "ec6e4fca36c4c4f6",
+        "maxSpeedMps": 14.47,
+        "maxWatts": 739,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 91681.6,
+        "totalElevationMeters": 354.1
+      },
+      {
+        "avgHeartrate": 146,
+        "avgSpeedMps": 6.6965,
+        "avgWatts": 203,
+        "date": "2024-05-27",
+        "id": "a00f2924f78033e2",
+        "maxSpeedMps": 16.705,
+        "maxWatts": 837,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 97945,
+        "totalElevationMeters": 368.3
+      },
+      {
+        "avgHeartrate": 144,
+        "avgSpeedMps": 6.688,
+        "avgWatts": null,
+        "date": "2024-05-14",
+        "id": "8f34561860fe1fad",
+        "maxSpeedMps": 15.885,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          }
+        ],
+        "routeCategory": "royale",
+        "totalDistanceMeters": 91683.7,
+        "totalElevationMeters": 576.9
+      }
+    ],
+    "page": 1,
+    "pageSize": 25,
+    "totalCount": 10
+  },
+  "fetchGroupRides > weekends included": {
+    "groupRides": [
+      {
+        "avgHeartrate": 139.5,
+        "avgSpeedMps": 6.846,
+        "avgWatts": 203,
+        "date": "2026-10-13",
+        "id": "cda7cc192567e3d2",
+        "maxSpeedMps": 14.364,
+        "maxWatts": 789,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 172695.6,
+        "totalElevationMeters": 2765.9
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 7.275,
+        "avgWatts": 253,
+        "date": "2026-10-06",
+        "id": "3490eed7815d1173",
+        "maxSpeedMps": 17.249,
+        "maxWatts": 894,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 110314.7,
+        "totalElevationMeters": 1726.9
+      },
+      {
+        "avgHeartrate": 140.5,
+        "avgSpeedMps": 6.378333333,
+        "avgWatts": 226,
+        "date": "2026-09-29",
+        "id": "6f8b9d394fda8aaf",
+        "maxSpeedMps": 14.062,
+        "maxWatts": 828,
+        "riderCount": 3,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 146464.5,
+        "totalElevationMeters": 572.3
+      },
+      {
+        "avgHeartrate": 155,
+        "avgSpeedMps": 7.109,
+        "avgWatts": 232,
+        "date": "2026-08-18",
+        "id": "70441783a4d12249",
+        "maxSpeedMps": 16.371,
+        "maxWatts": 976,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=0f1c8cd1f9>",
+            "displayName": "Eve Weekend",
+            "userId": "00000000-0000-4000-8000-000000000005"
+          }
+        ],
+        "routeCategory": "hmbw",
+        "totalDistanceMeters": 151718.8,
+        "totalElevationMeters": 2171.9
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.7855,
+        "avgWatts": null,
+        "date": "2026-01-27",
+        "id": "d4ee7c8f2d83ed3f",
+        "maxSpeedMps": 15.605,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=5210f018b5>",
+            "displayName": "Ivy NoScope",
+            "userId": "00000000-0000-4000-8000-000000000009"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 116708.1,
+        "totalElevationMeters": 1899.3
+      },
+      {
+        "avgHeartrate": 148.5,
+        "avgSpeedMps": 7.2385,
+        "avgWatts": 226.5,
+        "date": "2025-06-10",
+        "id": "6fa0382092f488b4",
+        "maxSpeedMps": 16.043,
+        "maxWatts": 810,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=389 sha1=cae7c3f906>",
+            "displayName": "Ben Skyline",
+            "userId": "00000000-0000-4000-8000-000000000002"
+          }
+        ],
+        "routeCategory": "skyline",
+        "totalDistanceMeters": 118474.9,
+        "totalElevationMeters": 1739.2
+      },
+      {
+        "avgHeartrate": null,
+        "avgSpeedMps": 6.638,
+        "avgWatts": null,
+        "date": "2024-06-20",
+        "id": "8b54f429b22ac8e4",
+        "maxSpeedMps": 15.009,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 101321.2,
+        "totalElevationMeters": 354.3
+      },
+      {
+        "avgHeartrate": 145,
+        "avgSpeedMps": 6.256,
+        "avgWatts": 172,
+        "date": "2024-06-10",
+        "id": "ec6e4fca36c4c4f6",
+        "maxSpeedMps": 14.47,
+        "maxWatts": 739,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 91681.6,
+        "totalElevationMeters": 354.1
+      },
+      {
+        "avgHeartrate": 146,
+        "avgSpeedMps": 6.6965,
+        "avgWatts": 203,
+        "date": "2024-05-27",
+        "id": "a00f2924f78033e2",
+        "maxSpeedMps": 16.705,
+        "maxWatts": 837,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=389 sha1=fd5eb95aa9>",
+            "displayName": "Ada Bayway",
+            "userId": "00000000-0000-4000-8000-000000000001"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=890f077a31>",
+            "displayName": "Fay Hidden",
+            "userId": "00000000-0000-4000-8000-000000000006"
+          }
+        ],
+        "routeCategory": "bayway",
+        "totalDistanceMeters": 97945,
+        "totalElevationMeters": 368.3
+      },
+      {
+        "avgHeartrate": 144,
+        "avgSpeedMps": 6.688,
+        "avgWatts": null,
+        "date": "2024-05-14",
+        "id": "8f34561860fe1fad",
+        "maxSpeedMps": 15.885,
+        "maxWatts": null,
+        "riderCount": 2,
+        "riders": [
+          {
+            "avatarUrl": "<string len=390 sha1=4d5c423eca>",
+            "displayName": "Cam Mixed",
+            "userId": "00000000-0000-4000-8000-000000000003"
+          },
+          {
+            "avatarUrl": "<string len=390 sha1=184cb41cd1>",
+            "displayName": "Dee Reverse",
+            "userId": "00000000-0000-4000-8000-000000000004"
+          }
+        ],
+        "routeCategory": "royale",
+        "totalDistanceMeters": 91683.7,
+        "totalElevationMeters": 576.9
+      }
+    ],
+    "page": 1,
+    "pageSize": 25,
+    "totalCount": 10
+  },
+  "fetchRiderNetwork > default": {
+    "edges": [
+      {
+        "routes": {
+          "bayway": 3
+        },
+        "source": "00000000-0000-4000-8000-000000000001",
+        "target": "00000000-0000-4000-8000-000000000006",
+        "weight": 3
+      }
+    ],
+    "nodes": [
+      {
+        "avatar": "<string len=389 sha1=fd5eb95aa9>",
+        "connectionCount": 1,
+        "id": "00000000-0000-4000-8000-000000000001",
+        "name": "Ada Bayway",
+        "primaryRoute": "bayway",
+        "totalRides": 58
+      },
+      {
+        "avatar": "<string len=389 sha1=cae7c3f906>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000002",
+        "name": "Ben Skyline",
+        "primaryRoute": "skyline",
+        "totalRides": 86
+      },
+      {
+        "avatar": "<string len=390 sha1=4d5c423eca>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000003",
+        "name": "Cam Mixed",
+        "primaryRoute": "royale",
+        "totalRides": 47
+      },
+      {
+        "avatar": "<string len=390 sha1=184cb41cd1>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000004",
+        "name": "Dee Reverse",
+        "primaryRoute": "royale",
+        "totalRides": 34
+      },
+      {
+        "avatar": "<string len=390 sha1=0f1c8cd1f9>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000005",
+        "name": "Eve Weekend",
+        "primaryRoute": "hmbw",
+        "totalRides": 27
+      },
+      {
+        "avatar": "<string len=390 sha1=890f077a31>",
+        "connectionCount": 1,
+        "id": "00000000-0000-4000-8000-000000000006",
+        "name": "Fay Hidden",
+        "primaryRoute": "bayway",
+        "totalRides": 20
+      },
+      {
+        "avatar": "<string len=389 sha1=c6da2effc2>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000008",
+        "name": "Hal Deauthorized",
+        "primaryRoute": "bayway",
+        "totalRides": 15
+      },
+      {
+        "avatar": "<string len=389 sha1=5210f018b5>",
+        "connectionCount": 0,
+        "id": "00000000-0000-4000-8000-000000000009",
+        "name": "Ivy NoScope",
+        "primaryRoute": "skyline",
+        "totalRides": 10
+      }
+    ],
+    "stats": {
+      "avgConnectionsPerRider": 1,
+      "communities": 1,
+      "isolatedRiders": 6,
+      "mostConnectedRider": {
+        "connections": 1,
+        "id": "00000000-0000-4000-8000-000000000001",
+        "name": "Ada Bayway"
+      },
+      "networkDensity": 0.036,
+      "strongestBond": {
+        "rider1": "Ada Bayway",
+        "rider1Id": "00000000-0000-4000-8000-000000000001",
+        "rider2": "Fay Hidden",
+        "rider2Id": "00000000-0000-4000-8000-000000000006",
+        "rides": 3
+      },
+      "totalConnections": 1,
+      "totalRiders": 8
+    }
+  }
+}
