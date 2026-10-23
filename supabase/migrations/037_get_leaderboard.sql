@@ -424,15 +424,17 @@ rows AS (
 )
 SELECT r.*, count(*) OVER () AS total_count
 FROM rows r, params p
+-- Numeric sort keys are rounded: sums of float columns (and ratios of them)
+-- differ in the last bits between runs, which would make ties flip order.
 ORDER BY
   CASE WHEN NOT p.asc_order THEN
     CASE p.sort
       WHEN 'display_name' THEN NULL
       WHEN 'last_ride_date' THEN NULL
       WHEN 'first_ride_date' THEN NULL
-      WHEN 'sf2g_dist_pct' THEN r.sf2g_distance_meters / nullif(r.total_distance_meters, 0)
-      WHEN 'sf2g_elev_pct' THEN r.sf2g_elevation_meters / nullif(r.total_elevation_meters, 0)
-      ELSE (to_jsonb(r) ->> p.sort)::double precision
+      WHEN 'sf2g_dist_pct' THEN round((r.sf2g_distance_meters / nullif(r.total_distance_meters, 0))::numeric, 6)
+      WHEN 'sf2g_elev_pct' THEN round((r.sf2g_elevation_meters / nullif(r.total_elevation_meters, 0))::numeric, 6)
+      ELSE round((to_jsonb(r) ->> p.sort)::numeric, 6)
     END
   END DESC NULLS LAST,
   CASE WHEN p.asc_order THEN
@@ -440,9 +442,9 @@ ORDER BY
       WHEN 'display_name' THEN NULL
       WHEN 'last_ride_date' THEN NULL
       WHEN 'first_ride_date' THEN NULL
-      WHEN 'sf2g_dist_pct' THEN r.sf2g_distance_meters / nullif(r.total_distance_meters, 0)
-      WHEN 'sf2g_elev_pct' THEN r.sf2g_elevation_meters / nullif(r.total_elevation_meters, 0)
-      ELSE (to_jsonb(r) ->> p.sort)::double precision
+      WHEN 'sf2g_dist_pct' THEN round((r.sf2g_distance_meters / nullif(r.total_distance_meters, 0))::numeric, 6)
+      WHEN 'sf2g_elev_pct' THEN round((r.sf2g_elevation_meters / nullif(r.total_elevation_meters, 0))::numeric, 6)
+      ELSE round((to_jsonb(r) ->> p.sort)::numeric, 6)
     END
   END ASC NULLS LAST,
   CASE WHEN NOT p.asc_order AND p.sort IN ('display_name','last_ride_date','first_ride_date')

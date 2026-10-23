@@ -186,7 +186,8 @@ export async function fetchRiderGrowthDataImpl(): Promise<MonthlyRideStat[]> {
       .not("route_category", "is", null)
       .range(offset, offset + PAGE_SIZE - 1)
       .order("month", { ascending: true })
-      .order("user_id", { ascending: true }); // unique tiebreaker: stable paging
+      .order("user_id", { ascending: true }) // unique tiebreaker: stable paging
+      .order("route_category", { ascending: true });
     if (pageError) {
       console.error("[leaderboard] Failed to fetch growth data:", pageError);
       throw new Error(`Failed to fetch growth data: ${pageError.message}`);
