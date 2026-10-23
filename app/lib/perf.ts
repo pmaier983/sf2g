@@ -62,3 +62,20 @@ export function logPerf(
     `[perf] ${name} subreq=${subrequests} ms=${Math.round(Date.now() - startedAt)}`,
   );
 }
+
+/**
+ * Wrap a server-function body so every call logs
+ * `[perf] <name> subreq=<n> ms=<n>`. A function that needs more than a
+ * handful of subrequests is a bug (see CLAUDE.md).
+ */
+export function withPerf<A extends unknown[], R>(
+  name: string,
+  fn: (...args: A) => Promise<R>,
+): (...args: A) => Promise<R> {
+  return async (...args: A) => {
+    const startedAt = Date.now();
+    const { result, subrequests } = await trackSubrequests(() => fn(...args));
+    logPerf(name, subrequests, startedAt);
+    return result;
+  };
+}

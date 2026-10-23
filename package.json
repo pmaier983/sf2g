@@ -14,8 +14,8 @@
     "db:start": "supabase start -x studio,imgproxy,inbucket,storage-api,edge-runtime,logflare,vector,supavisor,realtime",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:types:prod": "supabase gen types typescript --linked > app/lib/database.types.ts",
-    "db:types": "supabase gen types typescript --local > app/lib/database.types.ts",
+    "db:types:prod": "supabase gen types typescript --linked > app/lib/database.generated.ts",
+    "db:types": "supabase gen types typescript --local > app/lib/database.generated.ts",
     "test:db": "vitest run --project db",
     "fixtures": "node scripts/gen-fixtures.ts",
     "e2e": "playwright test"
@@ -37,7 +37,8 @@
     "react-force-graph-2d": "^1.29.1",
     "recharts": "^2.15.0",
     "sonner": "^2.0.7",
-    "vite": "^8.0.14"
+    "vite": "^8.0.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.29.0",

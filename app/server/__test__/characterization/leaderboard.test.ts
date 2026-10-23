@@ -1,9 +1,7 @@
 import { characterize, freezeFixtureClock } from "../../../test/characterize";
 import {
   fetchCommunityBreakdownImpl,
-  fetchCompanyRiderIdsImpl,
   fetchDailyGrowthDataImpl,
-  fetchFilteredLeaderboardImpl,
   fetchLeaderboardImpl,
   fetchPprDawnRiderIdsImpl,
   fetchRiderGrowthDataImpl,
@@ -12,14 +10,17 @@ import {
 
 freezeFixtureClock();
 
+// One SQL function (get_leaderboard) answers every filter combination.
+// The fetchFilteredLeaderboard (JS path) goldens it replaced were reproduced
+// exactly before they were removed — see the phase 03a PR.
 characterize("fetchLeaderboard", fetchLeaderboardImpl, {
-  "no filters": {},
-  "sort avg speed asc": { sortBy: "avg_speed_mps", sortDir: "asc" },
-  "sort median watts desc": { sortBy: "median_watts", sortDir: "desc" },
-  "date range 2025, weekends excluded (default)": {
-    dateFrom: "2025-01-01",
-    dateTo: "2025-12-31",
-  },
+  "no filters (weekends excluded by default)": {},
+  "weekends included": { excludeWeekends: false },
+  "sort avg speed asc": { sort: "avg_speed_mps", dir: "asc" },
+  "sort median watts desc": { sort: "median_watts", dir: "desc" },
+  "sort % distance desc": { sort: "sf2g_dist_pct", dir: "desc" },
+  "sort display name asc": { sort: "display_name", dir: "asc" },
+  "date range 2025": { dateFrom: "2025-01-01", dateTo: "2025-12-31" },
   "date range 2025, weekends included": {
     dateFrom: "2025-01-01",
     dateTo: "2025-12-31",
@@ -27,22 +28,33 @@ characterize("fetchLeaderboard", fetchLeaderboardImpl, {
   },
   "only dateFrom": { dateFrom: "2026-01-01" },
   "invalid date is ignored": { dateFrom: "not-a-date" },
-});
-
-characterize("fetchFilteredLeaderboard", fetchFilteredLeaderboardImpl, {
-  "skyline only": { routeCategories: ["skyline"] },
-  "bayway + royale": { routeCategories: ["bayway", "royale"] },
+  "skyline only": { routes: ["skyline"] },
+  "bayway + royale": { routes: ["bayway", "royale"] },
+  "other only": { routes: ["other"] },
+  "include other": { includeOther: true },
   "company google": { company: "google" },
   "reverse commutes": { reverse: true },
-  "weekends excluded": { excludeWeekends: true },
-  "weekends included": { excludeWeekends: false },
-  "skyline in 2026, sorted by sf2g_total asc": {
-    routeCategories: ["skyline"],
+  "PPR at dawn": { ppr: true },
+  "PPR at dawn, skyline, 2026": {
+    ppr: true,
+    routes: ["skyline"],
     dateFrom: "2026-01-01",
     dateTo: "2026-12-31",
-    sortBy: "sf2g_total",
-    sortDir: "asc",
   },
+  "search 'ada'": { search: "ada" },
+  "skyline in 2026, sorted by sf2g_total asc": {
+    routes: ["skyline"],
+    dateFrom: "2026-01-01",
+    dateTo: "2026-12-31",
+    sort: "sf2g_total",
+    dir: "asc",
+  },
+  "garbage input falls back to defaults": {
+    routes: ["nope"],
+    sort: "drop table",
+    dir: "sideways",
+    company: "acme",
+  } as never,
 });
 
 characterize("fetchPprDawnRiderIds", fetchPprDawnRiderIdsImpl, {
@@ -55,12 +67,6 @@ characterize("fetchRouteSpeedLeaderboard", fetchRouteSpeedLeaderboardImpl, {
   skyline: { routeCategory: "skyline" },
   bayway: { routeCategory: "bayway" },
   "invalid route": { routeCategory: "nope" as "skyline" },
-});
-
-characterize("fetchCompanyRiderIds", fetchCompanyRiderIdsImpl, {
-  google: { company: "google" },
-  apple: { company: "apple" },
-  "unknown company": { company: "nope" },
 });
 
 characterize("fetchRiderGrowthData", () => fetchRiderGrowthDataImpl(), {

@@ -10,10 +10,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  fetchFilteredLeaderboardImpl,
-  fetchLeaderboardImpl,
-} from "../../leaderboard";
+import { fetchLeaderboardImpl } from "../../leaderboard";
 import { fetchRidesLeaderboardImpl, fetchUserRidesImpl } from "../../rides";
 import { freezeFixtureClock, RIDER } from "../../../test/characterize";
 
@@ -53,49 +50,32 @@ function expectTotals(
   expect(got).toEqual(want);
 }
 
-describe("riders view — default (no route/company/reverse filter)", () => {
-  // UI: leaderboardQueryOptions({ sortBy, sortDir, dateFrom, dateTo }) — the
-  // "Exclude Weekends" chip (on by default) is never passed through.
-  it.fails(
-    "D1: 'Exclude Weekends' (default) excludes weekend rides when no date range is set",
-    async () => {
-      const rows = await fetchLeaderboardImpl({
-        sortBy: "sf2g_total",
-        sortDir: "desc",
-      });
-      expectTotals(rows, "sf2gVisibleWeekdays");
-    },
-  );
-
-  it.fails(
-    "D2: turning weekends on with a date range includes weekend rides",
-    async () => {
-      // weekends=true in the URL; the UI still sends only the dates.
-      const rows = await fetchLeaderboardImpl({
-        sortBy: "sf2g_total",
-        sortDir: "desc",
-        dateFrom: "2000-01-01",
-        dateTo: "2026-12-31",
-      });
-      expectTotals(rows, "sf2gVisible");
-    },
-  );
-
-  it.fails("D3: hidden rides are not counted", async () => {
-    const rows = await fetchLeaderboardImpl({});
-    expect(totalsById(rows)[RIDER.fay]).toBe(EXPECTED[RIDER.fay].sf2gVisible);
-  });
-});
-
-describe("riders view — compound filters (JS aggregation path)", () => {
-  it("excluding weekends matches the visible weekday totals", async () => {
-    const rows = await fetchFilteredLeaderboardImpl({ excludeWeekends: true });
+describe("riders view", () => {
+  // Called exactly as the page calls it: every chip goes to get_leaderboard.
+  it("D1: 'Exclude Weekends' (default) excludes weekend rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: true });
     expectTotals(rows, "sf2gVisibleWeekdays");
   });
 
-  it("including weekends matches the visible totals", async () => {
-    const rows = await fetchFilteredLeaderboardImpl({ excludeWeekends: false });
+  it("D2: including weekends with a date range includes weekend rides", async () => {
+    const rows = await fetchLeaderboardImpl({
+      dateFrom: "2000-01-01",
+      dateTo: "2026-12-31",
+      excludeWeekends: false,
+    });
     expectTotals(rows, "sf2gVisible");
+  });
+
+  it("D3: hidden rides are not counted", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    expect(totalsById(rows)[RIDER.fay]).toBe(EXPECTED[RIDER.fay].sf2gVisible);
+  });
+
+  it("route filter and no filter agree for a single-route rider set", async () => {
+    // Ivy only rides Skyline, so a Skyline filter must not change her row.
+    const all = totalsById(await fetchLeaderboardImpl({}));
+    const sky = totalsById(await fetchLeaderboardImpl({ routes: ["skyline"] }));
+    expect(sky[RIDER.ivy]).toBe(all[RIDER.ivy]);
   });
 });
 
@@ -111,17 +91,14 @@ describe("rides view and profile", () => {
     expect(rides.some((r) => r.is_hidden)).toBe(false);
   });
 
-  it.fails(
-    "D4: the default leaderboard and the rider's own ride list agree on SF2G rides",
-    async () => {
-      const rows = await fetchLeaderboardImpl({});
-      const rides = await fetchUserRidesImpl({ userId: RIDER.fay });
-      const sf2g = rides.filter(
-        (r) => r.route_category && r.route_category !== "other",
-      ).length;
-      expect(totalsById(rows)[RIDER.fay]).toBe(sf2g);
-    },
-  );
+  it("D4: the leaderboard and the rider's own ride list agree on SF2G rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    const rides = await fetchUserRidesImpl({ userId: RIDER.fay });
+    const sf2g = rides.filter(
+      (r) => r.route_category && r.route_category !== "other",
+    ).length;
+    expect(totalsById(rows)[RIDER.fay]).toBe(sf2g);
+  });
 });
 
 describe("group rides", () => {
@@ -134,5 +111,63 @@ describe("group rides", () => {
         expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
       }
     }
+  });
+});
+
+describe("leaderboard regressions (were source-text tests before 03a)", () => {
+  it("Bug 4: the years badge shows career years, unaffected by filters", async () => {
+    const all = await fetchLeaderboardImpl({ excludeWeekends: false });
+    const narrowed = await fetchLeaderboardImpl({
+      routes: ["skyline"],
+      dateFrom: "2026-01-01",
+      dateTo: "2026-12-31",
+    });
+    const years = (rows: typeof all) =>
+      Object.fromEntries(rows.map((r) => [r.user_id, r.active_years]));
+    const career = years(all);
+    for (const [id, y] of Object.entries(years(narrowed))) {
+      expect([id, y]).toEqual([id, career[id]]);
+    }
+  });
+
+  it("Bug 5: filtering by Other keeps riders whose only matches are Other", async () => {
+    const rows = await fetchLeaderboardImpl({
+      routes: ["other"],
+      excludeWeekends: false,
+    });
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.sf2g_total).toBe(0);
+      expect(r.other_count).toBeGreaterThan(0);
+    }
+  });
+
+  it("% distance denominator counts every ride in the date range", async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const { LOCAL_SUPABASE } = await import("../../../test/local-supabase");
+    const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
+    const { data } = await db
+      .from("rides")
+      .select("distance_meters")
+      .eq("user_id", RIDER.ada)
+      .gte("ride_date", "2025-01-01")
+      .lte("ride_date", "2025-12-31");
+    const expected = (data ?? []).reduce(
+      (s, r) => s + (r.distance_meters ?? 0),
+      0,
+    );
+    const rows = await fetchLeaderboardImpl({
+      dateFrom: "2025-01-01",
+      dateTo: "2025-12-31",
+      routes: ["skyline"],
+    });
+    const ada = rows.find((r) => r.user_id === RIDER.ada);
+    expect(ada?.total_distance_meters).toBeCloseTo(expected, 0);
+  });
+
+  it("returns one row per rider and never a rider without matching rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    expect(new Set(rows.map((r) => r.user_id)).size).toBe(rows.length);
+    expect(rows.find((r) => r.user_id === RIDER.gus)).toBeUndefined();
   });
 });

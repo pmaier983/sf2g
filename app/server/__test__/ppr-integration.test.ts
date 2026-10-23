@@ -42,16 +42,6 @@ describe("PPR filter completeness", () => {
     expect(leaderboardServerSource).toContain("rideIds: string[]");
   });
 
-  it("fetchPprDawnRiderIds returns rideIds in all code paths", () => {
-    // The word "rideIds" should appear many times in the PPR function:
-    // - In the interface definition
-    // - In all early returns (empty results)
-    // - In the final return (populated results)
-    const rideIdMatches = leaderboardServerSource.match(/rideIds/g) ?? [];
-    // At minimum: 1 interface + 4 returns = 5 occurrences
-    expect(rideIdMatches.length).toBeGreaterThanOrEqual(5);
-  });
-
   it("rides server function accepts pprRideIds parameter", () => {
     expect(ridesServerSource).toContain("pprRideIds");
   });

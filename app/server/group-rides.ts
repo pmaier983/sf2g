@@ -858,7 +858,10 @@ export async function fetchGroupRideDetailImpl(
     .select("*")
     .in("user_id", data.riderIds)
     .eq("ride_date", data.date)
-    .eq("route_category", data.route);
+    .eq("route_category", data.route)
+    // Stable order: rider colors on the detail page are assigned by position.
+    .order("start_date", { ascending: true })
+    .order("id", { ascending: true });
 
   if (ridesError) {
     throw new Error(`Failed to fetch rides: ${ridesError.message}`);
