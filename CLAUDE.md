@@ -33,7 +33,7 @@ pnpm db:types      # regenerate app/lib/database.types.ts from the local DB
 
 1. **Local database only.** `.env.local` must point at `http://127.0.0.1:54321`. Never use the production project (`dgoqjrfjrzewplwayhhz`) from local dev, tests or scripts that write.
 2. **Migrations reach prod only via Phillip** (`supabase db push --linked`) after review. Note any required deploy order in the migration header.
-3. **Never return secrets to the browser.** No `select("*")` on `users` with the anon client; use `PUBLIC_USER_COLUMNS`.
+3. **Never return secrets to the browser.** No `select("*")` on `users` with the anon client; use `PUBLIC_USER_COLUMNS`. Admin/maintenance server functions start with `await assertAdmin()` (`app/lib/admin.ts`); sessions are HMAC-signed (`app/lib/session.ts`).
 4. **No data-proportional work in request handlers.** Aggregate in SQL; a server function making more than 3 Supabase requests is a bug.
 5. **Tests first.** Write the failing test, then the fix. Changing a golden number needs a sentence in the PR explaining why the new number is right.
 6. Never commit `.env*.local`. Keep PRs to one phase/sub-phase.
