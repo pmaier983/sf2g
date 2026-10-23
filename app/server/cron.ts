@@ -19,6 +19,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
+import { assertAdmin } from "../lib/admin";
 import { CRON_SYNC_BUDGET } from "../lib/constants";
 import { performReclassification, type ReclassifyResult } from "./reclassify";
 import { performSync, type SyncResult } from "./sync";
@@ -262,6 +263,7 @@ async function syncAllUsers(): Promise<SyncAllUsersResult> {
  */
 export const triggerCronJobs = createServerFn({ method: "POST" }).handler(
   async (): Promise<CronResult> => {
+    await assertAdmin();
     return runCronJobs();
   },
 );

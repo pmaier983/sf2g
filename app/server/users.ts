@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createAnonClient } from "../lib/supabase";
 import { PUBLIC_USER_COLUMNS, type PublicUser } from "../lib/public-user";
+import { assertAdmin } from "../lib/admin";
 
 // ---------------------------------------------------------------------------
 // fetchUserProfile — fetches a user's public profile
@@ -41,6 +42,7 @@ export const fetchAllConnectedUsers = createServerFn({ method: "GET" }).handler(
       created_at: string;
     }>
   > => {
+    await assertAdmin();
     const supabase = createAnonClient();
 
     // Paginate to work around Supabase max_rows (1000) truncation
