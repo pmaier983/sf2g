@@ -42,35 +42,31 @@ A competitive cycling commute tracker for the [SF2G](https://sf2g.com/) communit
 | Styling | Vanilla CSS (custom properties, glassmorphism) |
 | Testing | [Vitest](https://vitest.dev/) |
 | Bundler | [Vite](https://vite.dev/) |
-| Deploy | [Cloudflare Pages](https://pages.cloudflare.com/) |
+| Deploy | [Cloudflare Workers](https://developers.cloudflare.com/workers/) (Free plan) |
 | Package Manager | [pnpm](https://pnpm.io/) |
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20+)
-- [pnpm](https://pnpm.io/installation) (v9+)
-- A [Strava API application](https://www.strava.com/settings/api)
-- A [Supabase](https://supabase.com/) project
+- [Node.js](https://nodejs.org/) (v22+) and [pnpm](https://pnpm.io/installation) (v12, pinned via `packageManager`)
+- Docker (Docker Desktop, or `brew install colima docker && colima start`)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (`brew install supabase/tap/supabase`)
+- A [Strava API application](https://www.strava.com/settings/api) with `localhost` in its Authorization Callback Domain (only needed to log in locally)
 
 ### Setup
 
 ```bash
-# Clone and install
 git clone https://github.com/pmaier983/sf2g.git
 cd sf2g
 pnpm install
 
-# Configure environment
-cp .env.example .env.local
-# Edit .env.local with your Supabase and Strava credentials
+# Local database (never point local dev at production)
+pnpm db:start        # starts Postgres + PostgREST in Docker
+pnpm db:reset        # applies supabase/migrations/* and supabase/seed/*
 
-# Run database migrations
-# (Apply supabase/migrations/*.sql via Supabase Dashboard or CLI)
-
-# Start dev server
-pnpm dev
+cp .env.example .env.local   # local Supabase defaults are pre-filled
+pnpm dev                     # http://localhost:5173
 ```
 
 ### Scripts
@@ -80,11 +76,13 @@ pnpm dev
 | `pnpm dev` | Start Vite dev server (localhost:5173) |
 | `pnpm build` | Production build for Cloudflare |
 | `pnpm preview` | Preview production build locally |
-| `pnpm deploy` | Build and deploy to Cloudflare Pages |
+| `pnpm deploy` | Build and deploy to Cloudflare Workers |
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm test` | Run tests once |
 | `pnpm test:watch` | Run tests in watch mode |
-| `pnpm db:types` | Regenerate Supabase types |
+| `pnpm db:start` / `db:stop` | Start / stop the local Supabase stack |
+| `pnpm db:reset` | Re-apply all migrations and seed data locally |
+| `pnpm db:types` | Regenerate `app/lib/database.types.ts` from the local DB |
 
 ## Project Structure
 
