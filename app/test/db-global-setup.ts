@@ -9,10 +9,11 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { LOCAL_SUPABASE } from "./local-supabase";
 
-const ROOT = resolve(__dirname, "../..");
+const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 
 async function fixtureLoaded(): Promise<boolean> {
   const expected = JSON.parse(
