@@ -63,7 +63,7 @@ function findUserRideTotalsMigration(): string {
 
   for (let i = files.length - 1; i >= 0; i--) {
     const content = readFileSync(resolve(migrationsDir, files[i]), "utf-8");
-    if (content.includes("get_user_ride_totals")) {
+    if (content.includes("CREATE OR REPLACE FUNCTION get_user_ride_totals")) {
       return content;
     }
   }

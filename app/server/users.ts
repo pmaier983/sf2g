@@ -5,19 +5,19 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createAnonClient } from "../lib/supabase";
-import type { User } from "../lib/database.types";
+import { PUBLIC_USER_COLUMNS, type PublicUser } from "../lib/public-user";
 
 // ---------------------------------------------------------------------------
 // fetchUserProfile — fetches a user's public profile
 // ---------------------------------------------------------------------------
 export const fetchUserProfile = createServerFn({ method: "GET" })
   .inputValidator((input: { userId: string }) => input)
-  .handler(async ({ data }): Promise<User> => {
+  .handler(async ({ data }): Promise<PublicUser> => {
     const supabase = createAnonClient();
 
     const { data: user, error } = await supabase
       .from("users")
-      .select("*")
+      .select(PUBLIC_USER_COLUMNS)
       .eq("id", data.userId)
       .single();
 
