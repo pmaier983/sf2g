@@ -1,9 +1,8 @@
 /**
  * Leaderboard server functions.
  *
- * - `fetchLeaderboard` — queries the leaderboard_view materialized view
- *   (or falls back to date-filtered RPC when dateFrom/dateTo are provided)
- * - `fetchPprDawnRiderIds` — riders passing through PPR within 10 min of 6 AM
+ * - `fetchLeaderboard` — Riders table via get_leaderboard (one SQL call)
+ * - `fetchPprDawnRiderIds` — riders with PPR-at-dawn rides (rides.is_ppr_dawn)
  * - `fetchRiderGrowthData` — monthly ride counts per rider (for growth chart)
  * - `fetchRouteSpeedLeaderboard` — speed rankings per route category
  * - `fetchCommunityBreakdown` — aggregate SF2G vs other distance/elevation
@@ -11,18 +10,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createAnonClient } from "../lib/supabase";
 import type {
+  Json,
   LeaderboardEntry,
   MonthlyRideStat,
   RouteCategory,
   RouteSpeedEntry,
-  PprDawnRide,
-  DestinationCompany,
 } from "../lib/database.types";
-import { decodePolyline } from "../lib/polyline";
-import { getCachedPolyline } from "../lib/polyline-overlap";
-import { PPR_INTERCEPTS } from "../lib/constants";
-import type { PprIntercept } from "../lib/constants";
-import { getCommuteDirection } from "../lib/route-classifier";
+import { withPerf } from "../lib/perf";
+import {
+  parseLeaderboardQuery,
+  toLeaderboardSqlParams,
+  type LeaderboardQueryInput,
+} from "../lib/leaderboard-query";
 
 // ---------------------------------------------------------------------------
 // Route-category allow-list (mirrors rides.ts)
@@ -37,18 +36,6 @@ const VALID_ROUTE_CATEGORIES = new Set([
   "febw",
   "other",
 ]);
-
-// ---------------------------------------------------------------------------
-// Median helper (50th percentile)
-// ---------------------------------------------------------------------------
-function computeMedian(values: number[]): number | null {
-  if (values.length === 0) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
-}
 
 // ---------------------------------------------------------------------------
 // Column allow-list for sort validation
@@ -86,585 +73,37 @@ function isValidDateString(str: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// fetchLeaderboard — reads from the materialized view (fast path) or
-// queries the rides table via RPC when date filters are active.
+// fetchLeaderboard — the Riders table, computed by get_leaderboard (migration
+// 037). Every filter is applied in SQL to one set of eligible rides; the
+// Worker makes exactly one request and does no aggregation.
 // ---------------------------------------------------------------------------
-const fetchLeaderboardInput = (input: {
-  sortBy?: string;
-  sortDir?: "asc" | "desc";
-  dateFrom?: string; // ISO date string e.g. '2024-01-01'
-  dateTo?: string; // ISO date string
-  excludeWeekends?: boolean;
-}) => input;
-
 export async function fetchLeaderboardImpl(
-  data: ReturnType<typeof fetchLeaderboardInput>,
+  input: LeaderboardQueryInput,
 ): Promise<LeaderboardEntry[]> {
+  const q = parseLeaderboardQuery(input);
   const supabase = createAnonClient();
-
-  // Validated sort params (shared by both paths)
-  const sortColumn =
-    data.sortBy && VALID_LEADERBOARD_SORT_COLUMNS.has(data.sortBy)
-      ? data.sortBy
-      : "sf2g_total";
-  const ascending = (data.sortDir ?? "desc") === "asc";
-
-  // Validate date params if provided
-  const dateFrom =
-    data.dateFrom && isValidDateString(data.dateFrom) ? data.dateFrom : null;
-  const dateTo =
-    data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
-
-  // ----- Date-filtered path: query rides table via RPC -----
-  if (dateFrom || dateTo) {
-    const { data: rows, error } = await supabase.rpc(
-      "get_leaderboard_by_date_range",
-      {
-        p_date_from: dateFrom ?? undefined,
-        p_date_to: dateTo ?? undefined,
-        p_exclude_weekends: data.excludeWeekends ?? true,
-      },
-    );
-
-    if (error) {
-      console.error(
-        "[leaderboard] Failed to fetch date-filtered leaderboard:",
-        error,
-      );
-      throw new Error(
-        `Failed to fetch date-filtered leaderboard: ${error.message}`,
-      );
-    }
-
-    // Sort in JS — simple, type-safe, avoids dynamic ORDER BY in SQL
-    const sorted = [...(rows ?? [])].sort((a, b) => {
-      const aVal = (a as Record<string, unknown>)[sortColumn];
-      const bVal = (b as Record<string, unknown>)[sortColumn];
-      // Push null/undefined to the end regardless of sort direction
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      if (aVal < bVal) return ascending ? -1 : 1;
-      if (aVal > bVal) return ascending ? 1 : -1;
-      return 0;
-    });
-
-    return sorted as LeaderboardEntry[];
+  const { data, error } = await supabase.rpc("get_leaderboard", {
+    q: toLeaderboardSqlParams(q) as Json,
+  });
+  if (error) {
+    console.error("[leaderboard] get_leaderboard failed:", error);
+    throw new Error(`Failed to fetch leaderboard: ${error.message}`);
   }
-
-  // ----- Fast path: materialized view -----
-  // Paginate to work around Supabase's default max_rows limit (1000)
-  // which silently truncates results when no .range() is specified.
-  const VIEW_PAGE_SIZE = 1000;
-  const allViewRows: LeaderboardEntry[] = [];
-  let viewOffset = 0;
-  let viewHasMore = true;
-
-  while (viewHasMore) {
-    const { data: page, error: pageError } = await supabase
-      .from("leaderboard_view")
-      .select("*")
-      .gt("total_rides", 0)
-      .order(sortColumn, { ascending, nullsFirst: false })
-      .order("user_id", { ascending: true }) // unique tiebreaker: stable paging
-      .range(viewOffset, viewOffset + VIEW_PAGE_SIZE - 1);
-
-    if (pageError) {
-      console.error("[leaderboard] Failed to fetch leaderboard:", pageError);
-      throw new Error(`Failed to fetch leaderboard: ${pageError.message}`);
-    }
-
-    if (!page || page.length === 0) {
-      viewHasMore = false;
-    } else {
-      allViewRows.push(...(page as LeaderboardEntry[]));
-      viewOffset += page.length;
-      if (page.length < VIEW_PAGE_SIZE) {
-        viewHasMore = false;
-      }
-    }
-  }
-
-  console.log(
-    `[leaderboard] Materialized view: ${allViewRows.length} users fetched in ${Math.ceil(viewOffset / VIEW_PAGE_SIZE)} page(s)`,
-  );
-
-  const entries = allViewRows;
-  return entries;
+  return (data ?? []).map(({ total_count: _total, ...row }) => row);
 }
 
 export const fetchLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator(fetchLeaderboardInput)
-  .handler(({ data }) => fetchLeaderboardImpl(data));
-
-// ---------------------------------------------------------------------------
-// fetchFilteredLeaderboard — computes aggregated leaderboard from individual
-// rides when compound filters (route + company + date) are active.
-// ---------------------------------------------------------------------------
-const fetchFilteredLeaderboardInput = (input: {
-  sortBy?: string;
-  sortDir?: "asc" | "desc";
-  dateFrom?: string;
-  dateTo?: string;
-  routeCategories?: string[];
-  company?: string;
-  excludeWeekends?: boolean;
-  reverse?: boolean;
-}) => input;
-
-export async function fetchFilteredLeaderboardImpl(
-  data: ReturnType<typeof fetchFilteredLeaderboardInput>,
-): Promise<LeaderboardEntry[]> {
-  const supabase = createAnonClient();
-
-  // Build rides query with all filters applied
-  // TODO: The leaderboard_view materialized view SQL (migration 008) should also
-  // add WHERE (is_private = false OR is_private IS NULL) AND (is_hidden = false OR is_hidden IS NULL)
-  // to exclude private/hidden rides from pre-computed rankings.
-  let query = supabase
-    .from("rides")
-    .select(
-      "user_id, route_category, destination_company, distance_meters, elevation_gain_meters, average_speed_mps, average_watts, average_heartrate, kilojoules, ride_date, start_latlng, end_latlng",
-    )
-    .not("route_category", "is", null);
-
-  // Strava API compliance: exclude hidden and private rides from public views
-  query = query.or("is_hidden.eq.false,is_hidden.is.null");
-  query = query.or("is_private.eq.false,is_private.is.null");
-
-  // Route filter
-  if (data.routeCategories && data.routeCategories.length > 0) {
-    const validCats = data.routeCategories.filter((c) =>
-      VALID_ROUTE_CATEGORIES.has(c),
-    );
-    if (validCats.length > 0) {
-      query = query.in("route_category", validCats as RouteCategory[]);
-    }
-  }
-
-  // Company filter
-  if (data.company && VALID_COMPANIES.has(data.company)) {
-    query = query.eq("destination_company", data.company as DestinationCompany);
-  }
-
-  // Date range filters
-  const dateFrom =
-    data.dateFrom && isValidDateString(data.dateFrom) ? data.dateFrom : null;
-  const dateTo =
-    data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
-  if (dateFrom) query = query.gte("ride_date", dateFrom);
-  if (dateTo) query = query.lte("ride_date", dateTo);
-
-  // Paginate through ALL rides to work around Supabase's max_rows limit
-  // (default 1000) which silently truncates .limit() calls.
-  type FilteredRide = {
-    user_id: string;
-    route_category: string | null;
-    destination_company: string | null;
-    distance_meters: number | null;
-    elevation_gain_meters: number | null;
-    average_speed_mps: number | null;
-
-    average_watts: number | null;
-    average_heartrate: number | null;
-    kilojoules: number | null;
-    ride_date: string;
-    start_latlng: [number, number] | null;
-    end_latlng: [number, number] | null;
-  };
-  const PAGE_SIZE = 1000;
-  const allRides: FilteredRide[] = [];
-  let offset = 0;
-  let hasMore = true;
-
-  while (hasMore) {
-    const { data: page, error: pageError } = await query
-      .range(offset, offset + PAGE_SIZE - 1)
-      .order("ride_date", { ascending: false })
-      .order("id", { ascending: true }); // unique tiebreaker: stable paging
-
-    if (pageError) {
-      console.error("[leaderboard] Failed to fetch filtered rides:", pageError);
-      throw new Error(`Failed to fetch filtered rides: ${pageError.message}`);
-    }
-
-    if (!page || page.length === 0) {
-      hasMore = false;
-    } else {
-      allRides.push(...(page as FilteredRide[]));
-      offset += page.length;
-      // If we got fewer than PAGE_SIZE, we've reached the end
-      if (page.length < PAGE_SIZE) {
-        hasMore = false;
-      }
-    }
-  }
-
-  console.log(
-    `[leaderboard] Paginated fetch: ${allRides.length} total rides in ${Math.ceil(offset / PAGE_SIZE)} pages`,
+  .inputValidator((input: LeaderboardQueryInput) =>
+    parseLeaderboardQuery(input),
+  )
+  .handler(
+    withPerf("fetchLeaderboard", ({ data }) => fetchLeaderboardImpl(data)),
   );
 
-  const rides = allRides;
-
-  if (!rides || rides.length === 0) return [];
-
-  // Filter out weekend rides if excludeWeekends is true (default)
-  const excludeWeekends = data.excludeWeekends ?? true;
-  const filteredRides = excludeWeekends
-    ? rides.filter((r) => {
-        const day = new Date(r.ride_date).getUTCDay();
-        return day !== 0 && day !== 6; // exclude Sun(0) and Sat(6)
-      })
-    : rides;
-
-  if (filteredRides.length === 0) return [];
-
-  // Filter by commute direction when reverse filter is active (G2SF = Peninsula → SF)
-  const directionFiltered = data.reverse
-    ? filteredRides.filter((r) => {
-        const startLatLng = r.start_latlng as [number, number] | null;
-        const endLatLng = r.end_latlng as [number, number] | null;
-        return getCommuteDirection(startLatLng, endLatLng) === "g2sf";
-      })
-    : filteredRides;
-
-  if (directionFiltered.length === 0) return [];
-
-  // Fetch per-user total distance/elevation from ALL rides via RPC.
-  // IMPORTANT: We use an RPC function instead of fetching raw rides because
-  // the Supabase REST API enforces a max_rows limit (default 1000) that
-  // silently truncates .limit() calls. The RPC aggregates on the DB side,
-  // bypassing this limit entirely.
-  const { data: userTotalsRows, error: totalsError } = await supabase.rpc(
-    "get_user_ride_totals",
-    {
-      p_date_from: dateFrom ?? undefined,
-      p_date_to: dateTo ?? undefined,
-    },
-  );
-
-  if (totalsError) {
-    console.error(
-      "[leaderboard] Failed to fetch user ride totals:",
-      totalsError,
-    );
-    // Non-fatal: fall back to classified-only totals below
-  }
-
-  // Build per-user total distance/elevation map.
-  // These totals include ALL rides (weekday + weekend, SF2G + non-SF2G)
-  // so the percentage shows what share of total cycling is SF2G commuting.
-  const userTotals = new Map<string, { distance: number; elevation: number }>();
-  if (userTotalsRows) {
-    for (const row of userTotalsRows) {
-      userTotals.set(row.user_id, {
-        distance: row.total_distance ?? 0,
-        elevation: row.total_elevation ?? 0,
-      });
-    }
-  }
-
-  // Aggregate per user
-  type UserAgg = {
-    sf2g_total: number;
-    total_rides: number;
-    bayway_count: number;
-    skyline_count: number;
-    hmbw_count: number;
-    royale_count: number;
-    fleaway_count: number;
-    mebw_count: number;
-    febw_count: number;
-    other_count: number;
-    sf2g_distance: number;
-    sf2g_elevation: number;
-    total_distance: number;
-    total_elevation: number;
-    speedSum: number;
-    speedCount: number;
-    speeds: number[];
-
-    wattsSum: number;
-    wattsCount: number;
-    wattValues: number[];
-    hrSum: number;
-    hrCount: number;
-    kjSum: number;
-    kjCount: number;
-    years: Set<number>;
-    /** Per-year totals so we can filter to active SF2G years */
-    yearDistance: Map<number, number>;
-    yearElevation: Map<number, number>;
-    lastRideDate: string | null;
-    firstRideDate: string | null;
-  };
-
-  const userMap = new Map<string, UserAgg>();
-
-  for (const ride of directionFiltered) {
-    let agg = userMap.get(ride.user_id);
-    if (!agg) {
-      agg = {
-        sf2g_total: 0,
-        total_rides: 0,
-        bayway_count: 0,
-        skyline_count: 0,
-        hmbw_count: 0,
-        royale_count: 0,
-        fleaway_count: 0,
-        mebw_count: 0,
-        febw_count: 0,
-        other_count: 0,
-        sf2g_distance: 0,
-        sf2g_elevation: 0,
-        total_distance: 0,
-        total_elevation: 0,
-        speedSum: 0,
-        speedCount: 0,
-        speeds: [],
-
-        wattsSum: 0,
-        wattsCount: 0,
-        wattValues: [],
-        hrSum: 0,
-        hrCount: 0,
-        kjSum: 0,
-        kjCount: 0,
-        years: new Set<number>(),
-        yearDistance: new Map<number, number>(),
-        yearElevation: new Map<number, number>(),
-        lastRideDate: null,
-        firstRideDate: null,
-      };
-      userMap.set(ride.user_id, agg);
-    }
-
-    const cat = ride.route_category as string | null;
-    agg.total_rides++;
-    agg.total_distance += ride.distance_meters ?? 0;
-    agg.total_elevation += ride.elevation_gain_meters ?? 0;
-
-    // Track per-year distance/elevation for active-year filtering
-    if (ride.ride_date) {
-      const year = new Date(ride.ride_date).getFullYear();
-      if (!isNaN(year)) {
-        agg.yearDistance.set(
-          year,
-          (agg.yearDistance.get(year) ?? 0) + (ride.distance_meters ?? 0),
-        );
-        agg.yearElevation.set(
-          year,
-          (agg.yearElevation.get(year) ?? 0) +
-            (ride.elevation_gain_meters ?? 0),
-        );
-      }
-    }
-
-    if (cat && cat !== "other") {
-      agg.sf2g_total++;
-      agg.sf2g_distance += ride.distance_meters ?? 0;
-      agg.sf2g_elevation += ride.elevation_gain_meters ?? 0;
-
-      // Count per route
-      const countKey = `${cat}_count` as keyof UserAgg;
-      if (countKey in agg && typeof agg[countKey] === "number") {
-        (agg as unknown as Record<string, number>)[countKey]++;
-      }
-
-      // Speed
-      if (ride.average_speed_mps != null) {
-        agg.speedSum += ride.average_speed_mps;
-        agg.speedCount++;
-        agg.speeds.push(ride.average_speed_mps);
-      }
-
-      // Watts
-      if (ride.average_watts != null) {
-        agg.wattsSum += ride.average_watts;
-        agg.wattsCount++;
-        agg.wattValues.push(ride.average_watts);
-      }
-
-      // Heart rate
-      if (ride.average_heartrate != null) {
-        agg.hrSum += ride.average_heartrate;
-        agg.hrCount++;
-      }
-
-      // Kilojoules (calories)
-      if ((ride as Record<string, unknown>).kilojoules != null) {
-        agg.kjSum += (ride as Record<string, unknown>).kilojoules as number;
-        agg.kjCount++;
-      }
-
-      // Active years
-      if (ride.ride_date) {
-        const year = new Date(ride.ride_date).getFullYear();
-        if (!isNaN(year)) agg.years.add(year);
-      }
-    } else if (cat === "other") {
-      agg.other_count++;
-    }
-
-    // Track first/last ride dates
-    if (ride.ride_date) {
-      if (!agg.lastRideDate || ride.ride_date > agg.lastRideDate) {
-        agg.lastRideDate = ride.ride_date;
-      }
-      if (!agg.firstRideDate || ride.ride_date < agg.firstRideDate) {
-        agg.firstRideDate = ride.ride_date;
-      }
-    }
-  }
-
-  // Get user display info
-  const userIds = [...userMap.keys()];
-  const { data: users } = await supabase
-    .from("users")
-    .select("id, display_name, avatar_url, username")
-    .in("id", userIds);
-
-  const userInfo = new Map((users ?? []).map((u) => [u.id, u]));
-
-  // Fetch unfiltered active_years from the materialized view
-  // so the years badge always shows total career years, not filtered years
-  const { data: unfilteredYears } = await supabase
-    .from("leaderboard_view")
-    .select("user_id, active_years")
-    .in("user_id", userIds);
-
-  const unfilteredYearsMap = new Map(
-    (unfilteredYears ?? [])
-      .filter(
-        (u): u is { user_id: string; active_years: number } =>
-          u.user_id != null && u.active_years != null,
-      )
-      .map((u) => [u.user_id, u.active_years] as [string, number]),
-  );
-
-  // Build LeaderboardEntry array
-  const entries: LeaderboardEntry[] = [];
-  for (const [userId, agg] of userMap) {
-    const user = userInfo.get(userId);
-    // Use ALL-rides totals for % dist/elev (includes unclassified rides);
-    // fall back to classified-only totals if the second query failed
-    const allTotals = userTotals.get(userId);
-    entries.push({
-      user_id: userId,
-      display_name: user?.display_name ?? null,
-      avatar_url: user?.avatar_url ?? null,
-      username: user?.username ?? null,
-      sf2g_total: agg.sf2g_total,
-      total_rides: agg.total_rides,
-      bayway_count: agg.bayway_count,
-      skyline_count: agg.skyline_count,
-      hmbw_count: agg.hmbw_count,
-      royale_count: agg.royale_count,
-      fleaway_count: agg.fleaway_count,
-      mebw_count: agg.mebw_count,
-      febw_count: agg.febw_count,
-      other_count: agg.other_count,
-      avg_speed_mps: agg.speedCount > 0 ? agg.speedSum / agg.speedCount : 0,
-      median_speed_mps: computeMedian(agg.speeds),
-      sf2g_distance_meters: agg.sf2g_distance,
-      sf2g_elevation_meters: agg.sf2g_elevation,
-      // Use totals from ALL rides (including unclassified) for accurate % dist/elev
-      total_distance_meters: allTotals?.distance ?? agg.total_distance,
-      total_elevation_meters: allTotals?.elevation ?? agg.total_elevation,
-      active_years: unfilteredYearsMap.get(userId) ?? agg.years.size,
-      last_ride_date: agg.lastRideDate,
-      first_ride_date: agg.firstRideDate,
-      avg_tailwind_ms: 0,
-      avg_watts: agg.wattsCount > 0 ? agg.wattsSum / agg.wattsCount : null,
-      median_watts: computeMedian(agg.wattValues),
-      avg_heartrate: agg.hrCount > 0 ? agg.hrSum / agg.hrCount : null,
-      avg_kilojoules: agg.kjCount > 0 ? agg.kjSum / agg.kjCount : null,
-    });
-  }
-
-  // Sort
-  const sortColumn =
-    data.sortBy && VALID_LEADERBOARD_SORT_COLUMNS.has(data.sortBy)
-      ? data.sortBy
-      : "sf2g_total";
-  const ascending = (data.sortDir ?? "desc") === "asc";
-
-  entries.sort((a, b) => {
-    const aVal = (a as Record<string, unknown>)[sortColumn];
-    const bVal = (b as Record<string, unknown>)[sortColumn];
-    // Push null/undefined to the end regardless of sort direction
-    if (aVal == null && bVal == null) return 0;
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-    if (aVal < bVal) return ascending ? -1 : 1;
-    if (aVal > bVal) return ascending ? 1 : -1;
-    return 0;
-  });
-
-  return entries;
-}
-
-export const fetchFilteredLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator(fetchFilteredLeaderboardInput)
-  .handler(({ data }) => fetchFilteredLeaderboardImpl(data));
-
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const EARTH_RADIUS_METERS = 6_371_000;
-
-function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-  return EARTH_RADIUS_METERS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-const PPR_RADIUS_METERS = 500;
-
-/**
- * Estimate when a ride passes through a specific intercept point.
- * Uses linear interpolation along decoded points with fast Euclidean pre-filter.
- */
-function estimateInterceptArrivalFromPoints(
-  points: [number, number][],
-  ride: PprDawnRide,
-  intercept: PprIntercept,
-): Date | null {
-  if (points.length === 0) return null;
-
-  for (let i = 0; i < points.length; i++) {
-    const [lat, lng] = points[i];
-    const dLat = lat - intercept.lat;
-    const dLng = lng - intercept.lng;
-    // 500m radius ~ 0.0045 deg -> 2.5e-5 deg^2
-    if (dLat * dLat + dLng * dLng > 2.5e-5) continue;
-
-    const dist = haversineDistance(lat, lng, intercept.lat, intercept.lng);
-    if (dist <= PPR_RADIUS_METERS) {
-      const fraction = points.length > 1 ? i / (points.length - 1) : 0;
-      const movingTimeMs = (ride.moving_time_seconds ?? 0) * 1000;
-      const startTime = new Date(ride.start_date ?? "").getTime();
-      return new Date(startTime + fraction * movingTimeMs);
-    }
-  }
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// fetchPprDawnRiderIds — riders who pass through any PPR intercept at the expected time
+// fetchPprDawnRiderIds — PPR-at-dawn rides per rider, from rides.is_ppr_dawn
+// (computed in SQL by migration 037). Still used by the Rides and All-Time
+// views until they move to SQL in phase 03b.
 // ---------------------------------------------------------------------------
 export interface PprDawnResult {
   /** User IDs of riders who qualify */
@@ -685,168 +124,51 @@ export async function fetchPprDawnRiderIdsImpl(
   data: ReturnType<typeof fetchPprDawnRiderIdsInput>,
 ): Promise<PprDawnResult> {
   const supabase = createAnonClient();
-
-  // Validate date params if provided
   const dateFrom =
     data.dateFrom && isValidDateString(data.dateFrom) ? data.dateFrom : null;
   const dateTo =
     data.dateTo && isValidDateString(data.dateTo) ? data.dateTo : null;
-
-  // Validate route categories if provided
   const routeCategories =
     data.routeCategories?.filter((c) => VALID_ROUTE_CATEGORIES.has(c)) ?? [];
 
-  const PAGE_SIZE = 1000;
-  const allRides: PprDawnRide[] = [];
-  let offset = 0;
-  let hasMore = true;
-  while (hasMore) {
-    let query = supabase
-      .from("ppr_dawn_rides")
-      .select("*")
-      .range(offset, offset + PAGE_SIZE - 1);
-
-    if (dateFrom) {
-      query = query.gte("start_date", `${dateFrom}T00:00:00Z`);
-    }
-    if (dateTo) {
-      query = query.lte("start_date", `${dateTo}T23:59:59Z`);
-    }
-
-    const { data: page, error: pageError } = await query;
-    if (pageError) {
-      console.error("[leaderboard] Failed to fetch PPR dawn rides:", pageError);
-      throw new Error(`Failed to fetch PPR dawn rides: ${pageError.message}`);
-    }
-    if (!page || page.length === 0) {
-      hasMore = false;
-    } else {
-      allRides.push(...page);
-      offset += page.length;
-      if (page.length < PAGE_SIZE) hasMore = false;
-    }
-  }
-  if (allRides.length === 0)
-    return { riderIds: [], rideCounts: {}, rideIds: [] };
-
-  // Filter by date range in JS using the ride's local date.
-  // start_date is a UTC timestamptz — we convert to the ride's local timezone
-  // to get the correct YYYY-MM-DD date for comparison.
-  let filteredByDate = allRides;
-  if (dateFrom || dateTo) {
-    filteredByDate = allRides.filter((ride) => {
-      const tz = extractTimezone(ride.timezone);
-      // en-CA locale gives YYYY-MM-DD format
-      const localDate = new Date(ride.start_date ?? "").toLocaleDateString(
-        "en-CA",
-        { timeZone: tz },
-      );
-      if (dateFrom && localDate < dateFrom) return false;
-      if (dateTo && localDate > dateTo) return false;
-      return true;
-    });
-  }
-  if (filteredByDate.length === 0)
-    return { riderIds: [], rideCounts: {}, rideIds: [] };
-
-  // First pass: find all qualifying PPR rides by intercept timing
-  const qualifyingRideIds: string[] = [];
-  const qualifyingRideMap = new Map<string, string>(); // ride_id → user_id
-
-  for (const ride of filteredByDate) {
-    if (!ride.summary_polyline) continue;
-    const cached = getCachedPolyline(ride.summary_polyline);
-    if (!cached || cached.points.length === 0) continue;
-    const points = cached.points;
-
-    const tz = extractTimezone(ride.timezone);
-
-    for (const intercept of PPR_INTERCEPTS) {
-      const arrivalTime = estimateInterceptArrivalFromPoints(
-        points,
-        ride as PprDawnRide,
-        intercept,
-      );
-      if (!arrivalTime) continue;
-
-      const localTimeStr = arrivalTime.toLocaleString("en-US", {
-        timeZone: tz,
-        hour12: false,
-      });
-      const timeParts = localTimeStr.split(", ")[1]?.split(":") ?? [];
-      const localHour = parseInt(timeParts[0] ?? "0", 10);
-      const localMin = parseInt(timeParts[1] ?? "0", 10);
-      const localMinutes = localHour * 60 + localMin;
-
-      if (
-        localMinutes >= intercept.targetMinutes - 10 &&
-        localMinutes <= intercept.targetMinutes + 10
-      ) {
-        qualifyingRideIds.push(ride.ride_id ?? "");
-        qualifyingRideMap.set(ride.ride_id ?? "", ride.user_id ?? "");
-        break;
-      }
-    }
-  }
-
-  if (qualifyingRideIds.length === 0)
-    return { riderIds: [], rideCounts: {}, rideIds: [] };
-
-  // Second pass: if route filters are active, look up route_category for
-  // qualifying rides from the rides table and exclude non-matching rides
-  let filteredRideIds = qualifyingRideIds;
+  let query = supabase
+    .from("rides")
+    .select("id, user_id")
+    .eq("is_ppr_dawn", true)
+    .not("route_category", "is", null)
+    .or("is_hidden.eq.false,is_hidden.is.null")
+    .or("is_private.eq.false,is_private.is.null")
+    .order("id", { ascending: true });
+  if (dateFrom) query = query.gte("ride_date", dateFrom);
+  if (dateTo) query = query.lte("ride_date", dateTo);
   if (routeCategories.length > 0) {
-    const { data: rideRoutes, error: routeError } = await supabase
-      .from("rides")
-      .select("id, route_category")
-      .in("id", qualifyingRideIds);
+    query = query.in("route_category", routeCategories as RouteCategory[]);
+  }
 
-    if (routeError) {
-      console.error(
-        "[leaderboard] Failed to fetch route categories for PPR rides:",
-        routeError,
-      );
-      // Fall back to unfiltered results rather than failing
-    } else if (rideRoutes) {
-      const routeSet = new Set(routeCategories);
-      const matchingIds = new Set(
-        rideRoutes
-          .filter((r) => r.route_category && routeSet.has(r.route_category))
-          .map((r) => r.id),
-      );
-      filteredRideIds = qualifyingRideIds.filter((id) => matchingIds.has(id));
+  // ids only — cheap even when paged
+  const rows: Array<{ id: string; user_id: string }> = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data: page, error } = await query.range(offset, offset + 999);
+    if (error) {
+      throw new Error(`Failed to fetch PPR dawn rides: ${error.message}`);
     }
+    rows.push(...(page ?? []));
+    if (!page || page.length < 1000) break;
   }
 
-  // Build final results from filtered ride IDs
-  const qualifyingUserIds = new Set<string>();
   const rideCounts: Record<string, number> = {};
-
-  for (const rideId of filteredRideIds) {
-    const userId = qualifyingRideMap.get(rideId);
-    if (!userId) continue;
-    qualifyingUserIds.add(userId);
-    rideCounts[userId] = (rideCounts[userId] ?? 0) + 1;
-  }
-
+  for (const r of rows)
+    rideCounts[r.user_id] = (rideCounts[r.user_id] ?? 0) + 1;
   return {
-    riderIds: Array.from(qualifyingUserIds),
+    riderIds: Object.keys(rideCounts),
     rideCounts,
-    rideIds: filteredRideIds,
+    rideIds: rows.map((r) => r.id),
   };
 }
 
 export const fetchPprDawnRiderIds = createServerFn({ method: "GET" })
   .inputValidator(fetchPprDawnRiderIdsInput)
   .handler(({ data }) => fetchPprDawnRiderIdsImpl(data));
-
-/** Extract IANA timezone from Strava's format "(GMT-08:00) America/Los_Angeles" */
-function extractTimezone(tz: string | null | undefined): string {
-  if (!tz) return "America/Los_Angeles";
-  // Strava format: "(GMT-08:00) America/Los_Angeles"
-  const match = tz.match(/\)\s*(.+)$/);
-  return match?.[1]?.trim() || "America/Los_Angeles";
-}
 
 // ---------------------------------------------------------------------------
 // fetchRiderGrowthData — monthly ride counts per rider for growth chart
@@ -864,7 +186,8 @@ export async function fetchRiderGrowthDataImpl(): Promise<MonthlyRideStat[]> {
       .not("route_category", "is", null)
       .range(offset, offset + PAGE_SIZE - 1)
       .order("month", { ascending: true })
-      .order("user_id", { ascending: true }); // unique tiebreaker: stable paging
+      .order("user_id", { ascending: true }) // unique tiebreaker: stable paging
+      .order("route_category", { ascending: true });
     if (pageError) {
       console.error("[leaderboard] Failed to fetch growth data:", pageError);
       throw new Error(`Failed to fetch growth data: ${pageError.message}`);
@@ -1126,79 +449,3 @@ export async function fetchCommunityBreakdownImpl(): Promise<CommunityBreakdown>
 export const fetchCommunityBreakdown = createServerFn({
   method: "GET",
 }).handler(() => fetchCommunityBreakdownImpl());
-
-// ---------------------------------------------------------------------------
-// fetchCompanyRiderIds — rider IDs who have rides ending at a specific company
-// ---------------------------------------------------------------------------
-const VALID_COMPANIES = new Set([
-  "netflix",
-  "google",
-  "apple",
-  "meta",
-  "nvidia",
-  "stanford",
-  "tesla",
-]);
-
-const fetchCompanyRiderIdsInput = (input: { company: string }) => {
-  if (!VALID_COMPANIES.has(input.company)) {
-    throw new Error(`Invalid company: ${input.company}`);
-  }
-  return input;
-};
-
-export async function fetchCompanyRiderIdsImpl(
-  data: ReturnType<typeof fetchCompanyRiderIdsInput>,
-): Promise<string[]> {
-  const supabase = createAnonClient();
-
-  // Query rides table directly for distinct user_ids with this destination_company
-  // Paginate to work around Supabase max_rows (1000) truncation
-  const PAGE_SIZE = 1000;
-  const allCompanyRows: { user_id: string }[] = [];
-  let offset = 0;
-  let hasMore = true;
-
-  while (hasMore) {
-    const { data: page, error: pageError } = await supabase
-      .from("rides")
-      .select("user_id")
-      .eq("destination_company", data.company as DestinationCompany)
-      .not("route_category", "is", null)
-      .range(offset, offset + PAGE_SIZE - 1)
-      .order("user_id", { ascending: true })
-      .order("id", { ascending: true }); // unique tiebreaker: stable paging
-
-    if (pageError) {
-      console.error(
-        "[leaderboard] Failed to fetch company rider IDs:",
-        pageError,
-      );
-      throw new Error(
-        `Failed to fetch company rider IDs: ${pageError.message}`,
-      );
-    }
-
-    if (!page || page.length === 0) {
-      hasMore = false;
-    } else {
-      allCompanyRows.push(...(page as { user_id: string }[]));
-      offset += page.length;
-      if (page.length < PAGE_SIZE) {
-        hasMore = false;
-      }
-    }
-  }
-  console.log(
-    `[leaderboard] Paginated fetch (companyRiderIds): ${allCompanyRows.length} total rows`,
-  );
-  const rows = allCompanyRows;
-
-  // Deduplicate user IDs
-  const uniqueIds = new Set(rows.map((r: { user_id: string }) => r.user_id));
-  return Array.from(uniqueIds);
-}
-
-export const fetchCompanyRiderIds = createServerFn({ method: "GET" })
-  .inputValidator(fetchCompanyRiderIdsInput)
-  .handler(({ data }) => fetchCompanyRiderIdsImpl(data));

@@ -16,11 +16,9 @@ import { MobileBottomBar } from "../components/MobileBottomBar";
 import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
   leaderboardQueryOptions,
-  filteredLeaderboardQueryOptions,
   pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
   dailyGrowthQueryOptions,
-  companyRiderIdsQueryOptions,
 } from "../queries/leaderboard";
 import { ridesLeaderboardQueryOptions } from "../queries/rides";
 import { allTimeQueryOptions } from "../queries/alltime";
@@ -41,6 +39,7 @@ import { SyncStatus } from "../components/SyncStatus";
 import { RIDER_COLORS } from "../lib/constants";
 import { groupRidesQueryOptions } from "../queries/group-rides";
 import type { RouteCategory, DestinationCompany } from "../lib/database.types";
+import type { LeaderboardQueryInput } from "../lib/leaderboard-query";
 import "../styles/leaderboard.css";
 
 // ---------------------------------------------------------------------------
@@ -309,27 +308,21 @@ function LeaderboardPage() {
 
   // ---- Data queries ----
   const excludeWeekends = !weekends;
-  const isCustomFiltered = routes.length > 0 || !!company || !!reverse;
 
-  // Use the fast pre-computed leaderboard_view (or date-range RPC) when
-  // compound route/company/reverse filters are not active.
-  const leaderboardOptions = isCustomFiltered
-    ? filteredLeaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-        routeCategories: routes.length > 0 ? routes : undefined,
-        company: company || undefined,
-        excludeWeekends,
-        reverse: reverse || undefined,
-      })
-    : leaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-      });
+  // One server query for every filter combination (get_leaderboard in SQL).
+  // Search stays client-side so typing doesn't refetch.
+  const leaderboardOptions = leaderboardQueryOptions({
+    routes,
+    includeOther,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+    excludeWeekends,
+    ppr,
+    reverse,
+    company: (company || undefined) as LeaderboardQueryInput["company"],
+    sort: sort as LeaderboardQueryInput["sort"],
+    dir,
+  });
   const {
     data: leaderboardData,
     isLoading,
@@ -338,20 +331,17 @@ function LeaderboardPage() {
     ...leaderboardOptions,
     enabled: view === "riders",
   });
+  // PPR rider/ride ids are still needed by the Rides and All-Time views
+  // until they move to SQL (phase 03b); the Riders view filters in SQL.
   const { data: pprDawnData } = useQuery({
     ...pprDawnRiderIdsQueryOptions({
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
     }),
-    enabled: ppr,
+    enabled: ppr && view !== "riders",
   });
   const pprDawnRiderIds = pprDawnData?.riderIds;
-  const pprRideCounts = pprDawnData?.rideCounts;
   const pprRideIds = pprDawnData?.rideIds;
-  const { data: companyRiderIds } = useQuery({
-    ...companyRiderIdsQueryOptions(company),
-    enabled: !!company && view === "riders",
-  });
   const isChartActive = (chartOpen || mobileGraphOpen) && view === "riders";
   const { data: growthData } = useQuery({
     ...riderGrowthQueryOptions(),
@@ -412,38 +402,8 @@ function LeaderboardPage() {
   // ---- Client-side filtering for the Users table ----
   const filteredData = useMemo(() => {
     if (!leaderboardData) return [];
+    // Every filter except search is applied in SQL (get_leaderboard).
     let data = leaderboardData;
-    // Track whether we've mutated values that require a client-side re-sort
-    let needsResort = false;
-
-    if (!isCustomFiltered) {
-      if (routes.length > 0) {
-        data = data.filter((entry) =>
-          routes.some(
-            (r) => (entry[`${r}_count` as keyof typeof entry] as number) > 0,
-          ),
-        );
-      }
-      if (company && companyRiderIds) {
-        const companySet = new Set(companyRiderIds);
-        data = data.filter((entry) => companySet.has(entry.user_id ?? ""));
-      }
-    }
-
-    if (ppr && pprDawnRiderIds) {
-      const pprSet = new Set(pprDawnRiderIds);
-      data = data.filter((entry) => pprSet.has(entry.user_id ?? ""));
-      // Override sf2g_total with PPR ride count so the count column reflects
-      // only PPR-qualifying rides when the PPR filter is active
-      if (pprRideCounts) {
-        data = data.map((entry) => ({
-          ...entry,
-          sf2g_total: pprRideCounts[entry.user_id ?? ""] ?? 0,
-        }));
-        needsResort = true;
-      }
-    }
-
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(
@@ -452,44 +412,8 @@ function LeaderboardPage() {
           entry.username?.toLowerCase().includes(q),
       );
     }
-
-    // Re-sort client-side when values have been mutated (e.g. PPR count override)
-    // so the displayed order reflects the current sort column and direction.
-    if (needsResort && sort) {
-      const multiplier = dir === "asc" ? 1 : -1;
-      data = [...data].sort((a, b) => {
-        const aVal = (a as Record<string, unknown>)[sort];
-        const bVal = (b as Record<string, unknown>)[sort];
-        const aNum = typeof aVal === "number" ? aVal : 0;
-        const bNum = typeof bVal === "number" ? bVal : 0;
-        return (aNum - bNum) * multiplier;
-      });
-    }
-
-    // Exclude riders with zero matching rides
-    data = data.filter((entry) => {
-      const total =
-        includeOther || routes.includes("other" as RouteCategory)
-          ? (entry.sf2g_total ?? 0) + (entry.other_count ?? 0)
-          : (entry.sf2g_total ?? 0);
-      return total > 0;
-    });
-
     return data;
-  }, [
-    leaderboardData,
-    routes,
-    includeOther,
-    ppr,
-    pprDawnRiderIds,
-    pprRideCounts,
-    company,
-    companyRiderIds,
-    search,
-    isCustomFiltered,
-    sort,
-    dir,
-  ]);
+  }, [leaderboardData, search]);
 
   // ---- Default selection: top 10 by sf2g_total ----
   useEffect(() => {
