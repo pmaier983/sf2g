@@ -92,7 +92,8 @@ export const triggerSync = createServerFn({ method: "POST" }).handler(
         errors: [
           `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
         ],
-        skippedExisting: 0,
+        hasMore: false,
+        rateLimited: false,
       };
     }
   },
@@ -120,7 +121,8 @@ export const triggerFullResync = createServerFn({ method: "POST" }).handler(
         errors: [
           `Re-sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
         ],
-        skippedExisting: 0,
+        hasMore: false,
+        rateLimited: false,
       };
     }
   },

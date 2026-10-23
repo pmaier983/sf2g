@@ -1,265 +1,343 @@
 /**
- * Cron job server function.
+ * Cron jobs.
  *
- * Runs periodic maintenance tasks:
- * 1. **Sync all users** — fetch new rides from Strava for every registered user
- * 2. Reclassify all rides (fixes stale classifications)
- * 3. Refresh materialized views and pre-compute group rides
+ * Three independent tasks, each sized to fit one Cloudflare Workers Free
+ * invocation (50 subrequests, 10 ms CPU):
  *
- * Rate limit budgets:
- * - Strava: Uses ~50% of the 15-min window (85 of 170 effective requests),
- *   leaving the other half for manual user syncs.
+ * 1. `syncUserBatch` — sync the next few riders who haven't been synced in
+ *    RESYNC_AFTER_MS, stopping before the subrequest budget runs out. Callers
+ *    repeat until `remaining` is 0.
+ * 2. `runMaintenance` — refresh the materialized views once after a sync pass.
+ * 3. `runGroupRides` — recompute group rides from the co-occurrence view.
  *
- * Protected by CRON_SECRET — must match the secret set in environment variables.
- * Can be triggered via:
- * - The DevTools panel "Run Cron Jobs" button
- * - An external cron service hitting the /api/cron route with the correct secret
+ * Full reclassification is NOT part of cron: it loads every ride into the
+ * Worker. New rides are classified on insert; DevTools has a manual button.
  *
- * TODO(security): Rate-limit this endpoint to prevent abuse.
+ * Triggered by:
+ * - POST /api/cron?task=sync|maintenance|groups (Bearer CRON_SECRET), called by
+ *   .github/workflows/cron.yml
+ * - The DevTools "Run Cron Jobs" button (admin-gated `triggerCronJobs`)
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
 import { assertAdmin } from "../lib/admin";
 import { CRON_SYNC_BUDGET } from "../lib/constants";
-import { performReclassification, type ReclassifyResult } from "./reclassify";
-import { performSync, type SyncResult } from "./sync";
+import { trackSubrequests } from "../lib/perf";
+import { performSync, type SyncOptions, type SyncResult } from "./sync";
 import { computeAndStoreGroupRides } from "./group-rides";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+export type UserSyncOutcome = "synced" | "partial" | "failed" | "needs_reauth";
+
 export interface UserSyncResult {
   userId: string;
   displayName: string | null;
-  result: SyncResult | null;
+  outcome: UserSyncOutcome;
+  newRides: number;
   error: string | null;
-  skipped: boolean;
 }
 
-export interface SyncAllUsersResult {
-  totalUsers: number;
+export type BatchStopReason =
+  | "done"
+  | "subrequest_budget"
+  | "user_cap"
+  | "time_budget"
+  | "rate_limited";
+
+export interface SyncBatchResult {
+  /** Riders due for a sync when the batch started. */
+  eligible: number;
+  /** Riders still due after this batch (includes partially caught-up ones). */
+  remaining: number;
   synced: number;
-  skipped: number;
+  partial: number;
   failed: number;
+  needsReauth: number;
+  rateLimited: boolean;
+  stopReason: BatchStopReason;
   results: UserSyncResult[];
   durationMs: number;
 }
 
+export interface MaintenanceResult {
+  refreshed: string[];
+  errors: string[];
+  durationMs: number;
+}
+
+export interface GroupRidesResult {
+  ok: boolean;
+  error: string | null;
+  durationMs: number;
+}
+
 export interface CronResult {
-  syncAll: SyncAllUsersResult;
-  reclassify: ReclassifyResult;
+  sync: SyncBatchResult;
+  maintenance: MaintenanceResult;
+  groups: GroupRidesResult;
   totalDurationMs: number;
 }
 
 // ---------------------------------------------------------------------------
-// Sync All Users
+// Sync batch
 // ---------------------------------------------------------------------------
 
-/**
- * Sync rides for all users with valid Strava tokens.
- *
- * Iterates through all registered users, refreshing tokens as needed and
- * fetching new activities from Strava. Respects rate limits by:
- * - Adding a delay between each user sync
- * - Tracking total API calls and stopping early if budget is exhausted
- * - Enforcing a max total duration to prevent runaway execution
- *
- * Errors are isolated per-user — one user's expired token won't stop others.
- */
-async function syncAllUsers(): Promise<SyncAllUsersResult> {
-  const startTime = Date.now();
-  const supabase = createServiceClient();
-  const results: UserSyncResult[] = [];
+/** Options every cron-mode sync uses: one page, no per-user side work. */
+export const CRON_SYNC_OPTIONS: SyncOptions = {
+  skipLeaderboardRefresh: true,
+  skipGroupRides: true,
+  skipSameDayRecheck: true,
+  maxPages: 1,
+  perPage: CRON_SYNC_BUDGET.PER_PAGE,
+  clearSessionOnReauth: false,
+};
 
-  // Fetch all users with valid Strava refresh tokens
-  const { data: users, error: fetchError } = await supabase
+type ServiceClient = ReturnType<typeof createServiceClient>;
+
+export interface SyncBatchDeps {
+  supabase: ServiceClient;
+  sync: (userId: string, options: SyncOptions) => Promise<SyncResult>;
+  /** Subrequests used so far in this invocation. */
+  subrequests: () => number;
+  now: () => number;
+}
+
+interface DueUser {
+  id: string;
+  display_name: string | null;
+  consecutive_sync_failures: number;
+  last_sync_error: string | null;
+}
+
+/** How many riders to look at per batch (more than any batch can process). */
+const DUE_USER_LOOKAHEAD = 20;
+
+function isReauthError(message: string): boolean {
+  return (
+    message.includes("REAUTH_REQUIRED") ||
+    message.includes("token refresh failed") ||
+    message.includes("Authorization Error")
+  );
+}
+
+export async function syncUserBatch(
+  deps: SyncBatchDeps,
+): Promise<SyncBatchResult> {
+  const { supabase, sync, subrequests, now } = deps;
+  const startedAt = now();
+  const cutoff = new Date(startedAt - CRON_SYNC_BUDGET.RESYNC_AFTER_MS);
+
+  // Riders with a working connection who are due: never synced, synced before
+  // the cutoff, or mid-catch-up (performSync leaves last_sync_at untouched
+  // while more pages remain). Least recently synced first.
+  const {
+    data: due,
+    count,
+    error,
+  } = await supabase
     .from("users")
-    .select("id, display_name, strava_refresh_token, last_sync_at")
+    .select("id, display_name, consecutive_sync_failures, last_sync_error", {
+      count: "exact",
+    })
     .neq("strava_refresh_token", "")
-    .order("last_sync_at", { ascending: true, nullsFirst: true }); // Sync least-recently-synced first
+    .ilike("strava_scopes", "%activity:read_all%")
+    .is("deauthorized_at", null)
+    .or(`last_sync_at.is.null,last_sync_at.lt.${cutoff.toISOString()}`)
+    .order("last_sync_at", { ascending: true, nullsFirst: true })
+    .limit(DUE_USER_LOOKAHEAD);
 
-  if (fetchError || !users) {
-    console.error("[cron-sync] Failed to fetch users:", fetchError?.message);
-    return {
-      totalUsers: 0,
-      synced: 0,
-      skipped: 0,
-      failed: 0,
-      results: [],
-      durationMs: Date.now() - startTime,
-    };
+  if (error) {
+    throw new Error(`Failed to load due users: ${error.message}`);
   }
 
-  console.log(
-    `[cron-sync] Found ${users.length} users with valid Strava tokens`,
-  );
-
-  let synced = 0;
-  let skipped = 0;
-  let failed = 0;
-  let estimatedApiCalls = 0;
+  const users = (due ?? []) as DueUser[];
+  const eligible = count ?? users.length;
+  const results: UserSyncResult[] = [];
+  let stopReason: BatchStopReason = "done";
+  let rateLimited = false;
 
   for (const user of users) {
-    // Check user-per-run budget (Cloudflare subrequest limit protection)
-    // Users are ordered by last_sync_at, so least-recently-synced get priority.
-    // Remaining users will be picked up in the next cron run.
-    if (synced + failed >= CRON_SYNC_BUDGET.MAX_USERS_PER_RUN) {
-      console.warn(
-        `[cron-sync] User budget exhausted (${synced + failed}/${CRON_SYNC_BUDGET.MAX_USERS_PER_RUN} users processed), stopping with ${users.length - results.length} users remaining`,
-      );
-      for (let i = results.length; i < users.length; i++) {
-        results.push({
-          userId: users[i].id,
-          displayName: users[i].display_name,
-          result: null,
-          error: null,
-          skipped: true,
-        });
-        skipped++;
-      }
+    if (results.length >= CRON_SYNC_BUDGET.MAX_USERS_PER_RUN) {
+      stopReason = "user_cap";
+      break;
+    }
+    if (
+      subrequests() + CRON_SYNC_BUDGET.WORST_CASE_SUBREQUESTS_PER_USER >
+      CRON_SYNC_BUDGET.SUBREQUEST_BUDGET
+    ) {
+      stopReason = "subrequest_budget";
+      break;
+    }
+    if (now() - startedAt >= CRON_SYNC_BUDGET.MAX_TOTAL_DURATION_MS) {
+      stopReason = "time_budget";
       break;
     }
 
-    // Check time budget
-    const elapsed = Date.now() - startTime;
-    if (elapsed >= CRON_SYNC_BUDGET.MAX_TOTAL_DURATION_MS) {
-      console.warn(
-        `[cron-sync] Time budget exhausted (${Math.round(elapsed / 1000)}s), stopping with ${users.length - results.length} users remaining`,
-      );
-      // Mark remaining users as skipped
-      for (let i = results.length; i < users.length; i++) {
-        results.push({
-          userId: users[i].id,
-          displayName: users[i].display_name,
-          result: null,
-          error: null,
-          skipped: true,
-        });
-        skipped++;
-      }
-      break;
-    }
-
-    // Check Strava API budget (each sync uses ~1-3 API calls for incremental sync)
-    if (estimatedApiCalls >= CRON_SYNC_BUDGET.MAX_STRAVA_REQUESTS) {
-      console.warn(
-        `[cron-sync] Strava API budget exhausted (${estimatedApiCalls}/${CRON_SYNC_BUDGET.MAX_STRAVA_REQUESTS} calls), stopping with ${users.length - results.length} users remaining`,
-      );
-      for (let i = results.length; i < users.length; i++) {
-        results.push({
-          userId: users[i].id,
-          displayName: users[i].display_name,
-          result: null,
-          error: null,
-          skipped: true,
-        });
-        skipped++;
-      }
-      break;
-    }
-
-    // Add delay between users to spread load
-    if (results.length > 0) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, CRON_SYNC_BUDGET.DELAY_BETWEEN_USERS_MS),
-      );
-    }
-
-    console.log(
-      `[cron-sync] Syncing user ${user.display_name ?? user.id} (${results.length + 1}/${users.length})`,
-    );
-
+    const name = user.display_name ?? user.id;
     try {
-      const syncResult = await performSync(user.id, {
-        // Skip per-user leaderboard refresh in cron mode.
-        // The reclassify step handles it in batch, which is more
-        // efficient and avoids blowing through Cloudflare's subrequest limit.
-        skipLeaderboardRefresh: true,
-      });
-
+      const res = await sync(user.id, CRON_SYNC_OPTIONS);
+      const outcome: UserSyncOutcome = res.hasMore ? "partial" : "synced";
       results.push({
         userId: user.id,
         displayName: user.display_name,
-        result: syncResult,
+        outcome,
+        newRides: res.newRides,
         error: null,
-        skipped: false,
       });
 
-      synced++;
-      // Estimate API calls: 1 base + 1 per page (most incremental syncs are 1 page)
-      estimatedApiCalls += Math.max(
-        1,
-        Math.ceil(syncResult.totalProcessed / 200),
-      );
+      if (user.consecutive_sync_failures > 0 || user.last_sync_error) {
+        await supabase
+          .from("users")
+          .update({ consecutive_sync_failures: 0, last_sync_error: null })
+          .eq("id", user.id);
+      }
 
       console.log(
-        `[cron-sync] ✅ ${user.display_name ?? user.id}: ${syncResult.newRides} new rides (${syncResult.totalProcessed} processed)`,
+        `[cron-sync] ${outcome === "partial" ? "⏩" : "✅"} ${name}: ${res.newRides} rides upserted`,
       );
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
 
+      if (res.rateLimited) {
+        rateLimited = true;
+        stopReason = "rate_limited";
+        break;
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const reauth = isReauthError(message);
       results.push({
         userId: user.id,
         displayName: user.display_name,
-        result: null,
-        error: errorMsg,
-        skipped: false,
+        outcome: reauth ? "needs_reauth" : "failed",
+        newRides: 0,
+        error: message,
       });
 
-      failed++;
-      // Even failed syncs cost API calls (at least the token refresh attempt)
-      estimatedApiCalls += 1;
-
-      // Update last_sync_at even on failure so this user doesn't permanently
-      // block the front of the queue. They'll rotate back naturally.
+      // Record the failure and move the rider to the back of the queue so
+      // one broken account can't block everyone else.
       try {
         await supabase
           .from("users")
-          .update({ last_sync_at: new Date().toISOString() })
+          .update({
+            last_sync_at: new Date(now()).toISOString(),
+            last_sync_error: message.slice(0, 500),
+            consecutive_sync_failures: user.consecutive_sync_failures + 1,
+          })
           .eq("id", user.id);
       } catch {
-        // Best-effort — don't fail the whole cron if this update fails
+        // Best-effort — the batch result still reports the failure
       }
 
-      // Don't log full stack for expected errors (expired tokens, etc.)
-      if (
-        errorMsg.includes("REAUTH_REQUIRED") ||
-        errorMsg.includes("token refresh failed")
-      ) {
-        console.warn(
-          `[cron-sync] ⚠️ ${user.display_name ?? user.id}: Needs re-auth (skipping)`,
-        );
-      } else {
-        console.error(
-          `[cron-sync] ❌ ${user.display_name ?? user.id}: ${errorMsg}`,
-        );
+      console[reauth ? "warn" : "error"](
+        `[cron-sync] ${reauth ? "⚠️ needs re-auth" : "❌"} ${name}: ${message}`,
+      );
+
+      if (message.includes("RATE_LIMITED")) {
+        rateLimited = true;
+        stopReason = "rate_limited";
+        break;
       }
     }
   }
 
-  const durationMs = Date.now() - startTime;
-  console.log(
-    `[cron-sync] Complete: ${synced} synced, ${failed} failed, ${skipped} skipped in ${Math.round(durationMs / 1000)}s (est. ${estimatedApiCalls} Strava API calls)`,
-  );
+  const tally = (o: UserSyncOutcome) =>
+    results.filter((r) => r.outcome === o).length;
+  const synced = tally("synced");
+  const partial = tally("partial");
+  const failed = tally("failed");
+  const needsReauth = tally("needs_reauth");
+
+  // Fully synced and failed riders leave the due set; partial ones stay.
+  const remaining = Math.max(0, eligible - synced - failed - needsReauth);
 
   return {
-    totalUsers: users.length,
+    eligible,
+    remaining,
     synced,
-    skipped,
+    partial,
     failed,
+    needsReauth,
+    rateLimited,
+    stopReason,
     results,
-    durationMs,
+    durationMs: now() - startedAt,
   };
 }
 
 // ---------------------------------------------------------------------------
-// Server Function (auth-gated, for DevTools panel)
+// Maintenance: materialized view refreshes
 // ---------------------------------------------------------------------------
 
+/** Every materialized view the app reads, refreshed once per sync pass. */
+export const MATERIALIZED_VIEW_REFRESHES = [
+  "refresh_leaderboard",
+  "refresh_company_leaderboard",
+  "refresh_route_speed_leaderboard",
+  "refresh_ppr_dawn_rides",
+  "refresh_ride_co_occurrences",
+] as const;
+
+export async function runMaintenance(
+  supabase: ServiceClient = createServiceClient(),
+): Promise<MaintenanceResult> {
+  const startedAt = Date.now();
+  const refreshed: string[] = [];
+  const errors: string[] = [];
+
+  for (const fn of MATERIALIZED_VIEW_REFRESHES) {
+    const { error } = await supabase.rpc(fn as never);
+    if (error) {
+      errors.push(`${fn}: ${error.message}`);
+      console.error(`[cron-maintenance] ${fn} failed: ${error.message}`);
+    } else {
+      refreshed.push(fn);
+    }
+  }
+
+  return { refreshed, errors, durationMs: Date.now() - startedAt };
+}
+
+// ---------------------------------------------------------------------------
+// Group rides
+// ---------------------------------------------------------------------------
+
+export async function runGroupRides(): Promise<GroupRidesResult> {
+  const startedAt = Date.now();
+  try {
+    await computeAndStoreGroupRides();
+    return { ok: true, error: null, durationMs: Date.now() - startedAt };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[cron-groups] failed: ${message}`);
+    return { ok: false, error: message, durationMs: Date.now() - startedAt };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// All tasks (DevTools)
+// ---------------------------------------------------------------------------
+
+/** One sync batch, then maintenance, then group rides. */
+export async function runCronJobs(): Promise<CronResult> {
+  const startedAt = Date.now();
+  const supabase = createServiceClient();
+  const { result: sync } = await trackSubrequests((subrequests) =>
+    syncUserBatch({ supabase, sync: performSync, subrequests, now: Date.now }),
+  );
+  const maintenance = await runMaintenance(supabase);
+  const groups = await runGroupRides();
+  return {
+    sync,
+    maintenance,
+    groups,
+    totalDurationMs: Date.now() - startedAt,
+  };
+}
+
 /**
- * Trigger all cron jobs manually from the DevTools panel.
- * Requires an authenticated session (same as other DevTools actions).
+ * Trigger all cron tasks from the DevTools panel. Admin only.
  */
 export const triggerCronJobs = createServerFn({ method: "POST" }).handler(
   async (): Promise<CronResult> => {
@@ -267,103 +345,3 @@ export const triggerCronJobs = createServerFn({ method: "POST" }).handler(
     return runCronJobs();
   },
 );
-
-// ---------------------------------------------------------------------------
-// Core Logic (exported for the API route)
-// ---------------------------------------------------------------------------
-
-/**
- * Run all cron maintenance tasks sequentially.
- *
- * Order matters:
- * 1. Sync all users (produces new rides)
- * 2. Reclassify rides (fixes classifications on new + old rides)
- */
-export async function runCronJobs(): Promise<CronResult> {
-  const startTime = Date.now();
-
-  console.log("[cron] Starting cron jobs...");
-
-  // 1. Sync all users (fetch new rides from Strava)
-  console.log("[cron] Running sync for all users...");
-  const syncAllResult = await syncAllUsers();
-  console.log(
-    `[cron] Sync complete: ${syncAllResult.synced} users synced, ${syncAllResult.failed} failed in ${Math.round(syncAllResult.durationMs / 1000)}s`,
-  );
-
-  // 2. Reclassify all rides (may fail on free plan if subrequests exhausted)
-  let reclassifyResult: ReclassifyResult;
-  try {
-    console.log("[cron] Running reclassification...");
-    reclassifyResult = await performReclassification();
-    console.log(
-      `[cron] Reclassification complete: ${reclassifyResult.updated} updated in ${reclassifyResult.durationMs}ms`,
-    );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(
-      `[cron] Reclassification failed (may be subrequest limit): ${msg}`,
-    );
-    reclassifyResult = {
-      totalRides: 0,
-      updated: 0,
-      routeChanges: 0,
-      destinationChanges: 0,
-      skippedOverrides: 0,
-      errors: [`Skipped: ${msg}`],
-      breakdown: {},
-      durationMs: 0,
-    };
-  }
-
-  // 3. Refresh ride co-occurrences MV for the rider network
-  //    Runs after sync + reclassify so new rides are included.
-  //    Non-concurrent refresh (no unique index), but fast for small rider pools.
-  try {
-    console.log("[cron] Refreshing ride co-occurrences MV...");
-    const coOccStart = Date.now();
-    const supabase = createServiceClient();
-    await supabase.rpc("refresh_ride_co_occurrences" as never);
-    console.log(
-      `[cron] Ride co-occurrences refresh complete in ${Date.now() - coOccStart}ms`,
-    );
-
-    // Pre-compute group rides from the refreshed MV
-    console.log("[cron] Computing and storing group rides...");
-    const groupStart = Date.now();
-    await computeAndStoreGroupRides();
-    console.log(
-      `[cron] Group rides computation complete in ${Date.now() - groupStart}ms`,
-    );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(
-      `[cron] Ride co-occurrences / group rides failed (non-critical): ${msg}`,
-    );
-  }
-
-  // 4. Refresh PPR dawn rides MV so the PPR @ 6am filter includes new rides
-  try {
-    console.log("[cron] Refreshing PPR dawn rides MV...");
-    const pprStart = Date.now();
-    const supabase = createServiceClient();
-    await supabase.rpc("refresh_ppr_dawn_rides" as never);
-    console.log(
-      `[cron] PPR dawn rides refresh complete in ${Date.now() - pprStart}ms`,
-    );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[cron] PPR dawn rides refresh failed (non-critical): ${msg}`);
-  }
-
-  const totalDurationMs = Date.now() - startTime;
-  console.log(
-    `[cron] All cron jobs complete in ${Math.round(totalDurationMs / 1000)}s`,
-  );
-
-  return {
-    syncAll: syncAllResult,
-    reclassify: reclassifyResult,
-    totalDurationMs,
-  };
-}
