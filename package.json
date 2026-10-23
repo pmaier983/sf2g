@@ -53,7 +53,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
     "prettier": "^3.8.4",
-    "supabase": "^1.200.0",
+    "supabase": "2.121.0",
     "typescript": "^5.7.0",
     "vitest": "^4.1.7",
     "wrangler": "^4.74.0"
