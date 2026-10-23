@@ -12,7 +12,11 @@ import {
   fetchLeaderboardImpl,
   fetchRouteSpeedLeaderboardImpl,
 } from "../../leaderboard";
-import { fetchRidesLeaderboardImpl, fetchUserRidesImpl } from "../../rides";
+import {
+  fetchProfileRidesImpl,
+  fetchRidesLeaderboardImpl,
+  fetchUserRidesImpl,
+} from "../../rides";
 import { fetchAllTimeLeaderboardImpl } from "../../alltime";
 import {
   fetchGroupRidesImpl,
@@ -45,6 +49,7 @@ it("ui-fixtures.json matches the fixture database", async () => {
     groupRides: groups,
     groupRideDetail: detail,
     userRides: await fetchUserRidesImpl({ userId: RIDER.ada, limit: 15 }),
+    profileRides: await fetchProfileRidesImpl({ userId: RIDER.cam }),
   };
   const json = JSON.stringify(fixtures, null, 2) + "\n";
 

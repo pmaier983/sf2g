@@ -4,6 +4,7 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import {
   fetchUserRides,
+  fetchProfileRides,
   fetchRidesLeaderboard,
   fetchCommunityStartHours,
   fetchCommunityStreaks,
@@ -19,7 +20,7 @@ import type { RouteCategory } from "../lib/database.types";
 export function userRidesQueryOptions(userId: string) {
   return queryOptions({
     queryKey: ["rides", userId] as const,
-    queryFn: () => fetchUserRides({ data: { userId, limit: 10000 } }),
+    queryFn: () => fetchProfileRides({ data: { userId } }),
     staleTime: 120_000, // 2 minutes
   });
 }

@@ -6,6 +6,7 @@ import {
 import {
   fetchCommunityStartHoursImpl,
   fetchCommunityStreaksImpl,
+  fetchProfileRidesImpl,
   fetchRidesLeaderboardImpl,
   fetchUserRidesImpl,
 } from "../../rides";
@@ -47,4 +48,11 @@ characterize("fetchCommunityStreaks", () => fetchCommunityStreaksImpl(), {
 characterize("fetchUserProfile", fetchUserProfileImpl, {
   ada: { userId: RIDER.ada },
   "missing user": { userId: "00000000-0000-4000-8000-0000000000ff" },
+});
+
+characterize("fetchProfileRides", fetchProfileRidesImpl, {
+  "fay (hidden + overridden rides)": { userId: RIDER.fay },
+  "cam (has Other rides)": { userId: RIDER.cam },
+  "gus (no rides)": { userId: RIDER.gus },
+  "not a uuid": { userId: "nope" },
 });
