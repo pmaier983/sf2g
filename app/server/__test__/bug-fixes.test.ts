@@ -157,11 +157,6 @@ describe("Bug 6: All-Time view respects company filter end-to-end", () => {
     expect(allTimeParamsSource).toContain("company?: string");
   });
 
-  it("alltime server function applies company filter", () => {
-    expect(allTimeServerSource).toContain("destination_company");
-    expect(allTimeServerSource).toContain("data.company");
-  });
-
   it("leaderboard page passes company to allTimeQueryOptions", () => {
     expect(leaderboardPageSource).toContain("company:");
     expect(leaderboardPageSource).toContain("allTimeQueryOptions");
@@ -171,28 +166,3 @@ describe("Bug 6: All-Time view respects company filter end-to-end", () => {
 // ---------------------------------------------------------------------------
 // Bug 7: PPR + route filter no longer double-filters
 // ---------------------------------------------------------------------------
-
-describe("Bug 7: PPR query does not filter by route categories", () => {
-  const leaderboardPageSource = readFileSync(
-    resolve(__dirname, "../../routes/leaderboard.tsx"),
-    "utf-8",
-  );
-
-  it("pprDawnRiderIdsQueryOptions call does NOT include routeCategories", () => {
-    // Find the pprDawnRiderIdsQueryOptions call and verify no routeCategories param
-    const pprCallMatch = leaderboardPageSource.match(
-      /pprDawnRiderIdsQueryOptions\(\{[\s\S]*?\}\)/,
-    );
-    expect(pprCallMatch).not.toBeNull();
-    expect(pprCallMatch![0]).not.toContain("routeCategories");
-  });
-
-  it("PPR query only passes dateFrom and dateTo", () => {
-    const pprCallMatch = leaderboardPageSource.match(
-      /pprDawnRiderIdsQueryOptions\(\{[\s\S]*?\}\)/,
-    );
-    expect(pprCallMatch).not.toBeNull();
-    expect(pprCallMatch![0]).toContain("dateFrom");
-    expect(pprCallMatch![0]).toContain("dateTo");
-  });
-});

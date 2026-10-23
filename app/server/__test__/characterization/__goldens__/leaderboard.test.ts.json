@@ -1,14 +1,14 @@
 {
   "fetchCommunityBreakdown > default": {
-    "other_distance_meters": 592645.8,
-    "other_elevation_meters": 4904.1,
+    "other_distance_meters": 592645.75,
+    "other_elevation_meters": 4904.100097656,
     "other_ride_count": 14,
-    "sf2g_distance_meters": 16255154.400000002,
-    "sf2g_elevation_meters": 171655.9,
-    "sf2g_ride_count": 297,
-    "total_distance_meters": 16847800.200000003,
-    "total_elevation_meters": 176560,
-    "total_ride_count": 311
+    "sf2g_distance_meters": 16205895,
+    "sf2g_elevation_meters": 171458.546875,
+    "sf2g_ride_count": 296,
+    "total_distance_meters": 16798540.75,
+    "total_elevation_meters": 176362.646972656,
+    "total_ride_count": 310
   },
   "fetchDailyGrowthData > default": [
     {
@@ -1589,11 +1589,11 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 3296870,
-      "sf2g_elevation_meters": 51730.40625,
+      "sf2g_elevation_meters": 51730.40234375,
       "sf2g_total": 56,
       "skyline_count": 49,
-      "total_distance_meters": 5245598.5,
-      "total_elevation_meters": 80636,
+      "total_distance_meters": 5245599,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 56,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -1618,12 +1618,12 @@
       "median_watts": 210,
       "other_count": 2,
       "royale_count": 1,
-      "sf2g_distance_meters": 940625.8125,
-      "sf2g_elevation_meters": 4913.599609375,
+      "sf2g_distance_meters": 940626,
+      "sf2g_elevation_meters": 4913.600097656,
       "sf2g_total": 19,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.5,
-      "total_elevation_meters": 20339.603515625,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.599609375,
       "total_rides": 21,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -1648,12 +1648,12 @@
       "median_watts": null,
       "other_count": 1,
       "royale_count": 3,
-      "sf2g_distance_meters": 550408.5,
+      "sf2g_distance_meters": 550408.4375,
       "sf2g_elevation_meters": 5886.299804688,
       "sf2g_total": 10,
       "skyline_count": 3,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 11,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -1679,11 +1679,11 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 268572.90625,
-      "sf2g_elevation_meters": 2320.899902344,
+      "sf2g_elevation_meters": 2320.900146484,
       "sf2g_total": 5,
       "skyline_count": 2,
       "total_distance_meters": 1235504,
-      "total_elevation_meters": 7478.400390625,
+      "total_elevation_meters": 7478.399414063,
       "total_rides": 5,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -1742,8 +1742,8 @@
       "sf2g_elevation_meters": 491.799987793,
       "sf2g_total": 2,
       "skyline_count": 0,
-      "total_distance_meters": 1855938.125,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 2,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -1773,7 +1773,7 @@
       "sf2g_total": 1,
       "skyline_count": 0,
       "total_distance_meters": 1979301.375,
-      "total_elevation_meters": 29098.80078125,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -1800,12 +1800,12 @@
       "median_watts": 236,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 453477.875,
-      "sf2g_elevation_meters": 7238.599609375,
+      "sf2g_distance_meters": 453477.90625,
+      "sf2g_elevation_meters": 7238.600097656,
       "sf2g_total": 8,
       "skyline_count": 8,
       "total_distance_meters": 1002891.25,
-      "total_elevation_meters": 15533.19921875,
+      "total_elevation_meters": 15533.200195313,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -1865,7 +1865,7 @@
       "sf2g_total": 1,
       "skyline_count": 1,
       "total_distance_meters": 617788.375,
-      "total_elevation_meters": 3943.100097656,
+      "total_elevation_meters": 3943.099853516,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -1895,7 +1895,7 @@
       "sf2g_total": 1,
       "skyline_count": 1,
       "total_distance_meters": 507775.125,
-      "total_elevation_meters": 3829.799804688,
+      "total_elevation_meters": 3829.800048828,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -1924,8 +1924,8 @@
       "sf2g_elevation_meters": 864.400024414,
       "sf2g_total": 1,
       "skyline_count": 1,
-      "total_distance_meters": 416156.53125,
-      "total_elevation_meters": 2938,
+      "total_distance_meters": 416156.5,
+      "total_elevation_meters": 2937.999755859,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -1952,12 +1952,12 @@
       "median_watts": 209,
       "other_count": 0,
       "royale_count": 6,
-      "sf2g_distance_meters": 2713646.5,
-      "sf2g_elevation_meters": 10829.897460938,
+      "sf2g_distance_meters": 2713646.25,
+      "sf2g_elevation_meters": 10829.8984375,
       "sf2g_total": 56,
       "skyline_count": 0,
-      "total_distance_meters": 3763079.5,
-      "total_elevation_meters": 20339.603515625,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.599609375,
       "total_rides": 56,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -1986,8 +1986,8 @@
       "sf2g_elevation_meters": 8190.500488281,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938.125,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -2016,8 +2016,8 @@
       "sf2g_elevation_meters": 4657.5,
       "sf2g_total": 19,
       "skyline_count": 0,
-      "total_distance_meters": 3574453.25,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -2042,12 +2042,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 1,
-      "sf2g_distance_meters": 793174.5,
-      "sf2g_elevation_meters": 2943.799804688,
+      "sf2g_distance_meters": 793174.5625,
+      "sf2g_elevation_meters": 2943.800292969,
       "sf2g_total": 16,
       "skyline_count": 0,
-      "total_distance_meters": 1235503.875,
-      "total_elevation_meters": 7478.399902344,
+      "total_distance_meters": 1235504,
+      "total_elevation_meters": 7478.399414063,
       "total_rides": 16,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -2072,12 +2072,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 7,
-      "sf2g_distance_meters": 711638,
-      "sf2g_elevation_meters": 3573.300048828,
+      "sf2g_distance_meters": 711637.875,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
       "total_distance_meters": 711637.9375,
-      "total_elevation_meters": 3573.299804688,
+      "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
       "username": "hal"
@@ -2104,11 +2104,11 @@
       "median_watts": 209,
       "other_count": 0,
       "royale_count": 6,
-      "sf2g_distance_meters": 2682167.5,
-      "sf2g_elevation_meters": 12051.797851563,
+      "sf2g_distance_meters": 2682167,
+      "sf2g_elevation_meters": 12051.798828125,
       "sf2g_total": 55,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 55,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -2136,12 +2136,12 @@
       "median_watts": 227,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 710061.3125,
-      "sf2g_elevation_meters": 10958.399414063,
+      "sf2g_distance_meters": 710061.25,
+      "sf2g_elevation_meters": 10958.400390625,
       "sf2g_total": 12,
       "skyline_count": 11,
-      "total_distance_meters": 767749.125,
-      "total_elevation_meters": 11770.5,
+      "total_distance_meters": 767749.0625,
+      "total_elevation_meters": 11770.500976563,
       "total_rides": 12,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -2170,8 +2170,8 @@
       "sf2g_elevation_meters": 1622.400024414,
       "sf2g_total": 6,
       "skyline_count": 0,
-      "total_distance_meters": 330615,
-      "total_elevation_meters": 1983.599975586,
+      "total_distance_meters": 330615.03125,
+      "total_elevation_meters": 1983.600097656,
       "total_rides": 6,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -2196,8 +2196,8 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 344398.78125,
-      "sf2g_elevation_meters": 5238.899902344,
+      "sf2g_distance_meters": 344398.8125,
+      "sf2g_elevation_meters": 5238.900390625,
       "sf2g_total": 6,
       "skyline_count": 6,
       "total_distance_meters": 344398.8125,
@@ -2226,11 +2226,11 @@
       "median_watts": 209,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 250838.3125,
+      "sf2g_distance_meters": 250838.296875,
       "sf2g_elevation_meters": 1581.900024414,
       "sf2g_total": 5,
       "skyline_count": 1,
-      "total_distance_meters": 291288.5,
+      "total_distance_meters": 291288.46875,
       "total_elevation_meters": 1947.400024414,
       "total_rides": 5,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -2287,10 +2287,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 245529.609375,
-      "sf2g_elevation_meters": 3274.5,
+      "sf2g_elevation_meters": 3274.500244141,
       "sf2g_total": 4,
       "skyline_count": 2,
-      "total_distance_meters": 471400.78125,
+      "total_distance_meters": 471400.8125,
       "total_elevation_meters": 4903.600097656,
       "total_rides": 4,
       "user_id": "00000000-0000-4000-8000-000000000003",
@@ -2318,12 +2318,12 @@
       "median_watts": 229,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 767749.125,
+      "sf2g_distance_meters": 767749.0625,
       "sf2g_elevation_meters": 11770.5,
       "sf2g_total": 13,
       "skyline_count": 12,
       "total_distance_meters": 767749.0625,
-      "total_elevation_meters": 11770.5,
+      "total_elevation_meters": 11770.500976563,
       "total_rides": 13,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -2352,7 +2352,7 @@
       "sf2g_elevation_meters": 1622.400024414,
       "sf2g_total": 6,
       "skyline_count": 0,
-      "total_distance_meters": 330615,
+      "total_distance_meters": 330615.03125,
       "total_elevation_meters": 1983.600097656,
       "total_rides": 6,
       "user_id": "00000000-0000-4000-8000-000000000004",
@@ -2379,10 +2379,10 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 344398.78125,
-      "sf2g_elevation_meters": 5238.899902344,
+      "sf2g_elevation_meters": 5238.900390625,
       "sf2g_total": 6,
       "skyline_count": 6,
-      "total_distance_meters": 344398.78125,
+      "total_distance_meters": 344398.8125,
       "total_elevation_meters": 5238.899902344,
       "total_rides": 6,
       "user_id": "00000000-0000-4000-8000-000000000009",
@@ -2408,7 +2408,7 @@
       "median_watts": 209,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 250838.28125,
+      "sf2g_distance_meters": 250838.296875,
       "sf2g_elevation_meters": 1581.900024414,
       "sf2g_total": 5,
       "skyline_count": 1,
@@ -2442,8 +2442,8 @@
       "sf2g_elevation_meters": 3583.5,
       "sf2g_total": 5,
       "skyline_count": 2,
-      "total_distance_meters": 471400.78125,
-      "total_elevation_meters": 4903.600585938,
+      "total_distance_meters": 471400.8125,
+      "total_elevation_meters": 4903.600097656,
       "total_rides": 6,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -2498,12 +2498,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 247193.90625,
-      "sf2g_elevation_meters": 928.099975586,
+      "sf2g_distance_meters": 247193.890625,
+      "sf2g_elevation_meters": 928.100097656,
       "sf2g_total": 5,
       "skyline_count": 0,
-      "total_distance_meters": 247193.90625,
-      "total_elevation_meters": 928.099975586,
+      "total_distance_meters": 247193.890625,
+      "total_elevation_meters": 928.100036621,
       "total_rides": 5,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -2530,12 +2530,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -2560,11 +2560,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -2590,12 +2590,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -2620,12 +2620,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -2651,10 +2651,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -2681,10 +2681,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -2715,7 +2715,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -2744,8 +2744,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -2772,12 +2772,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -2802,11 +2802,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -2832,12 +2832,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -2862,12 +2862,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -2893,10 +2893,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -2923,10 +2923,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -2957,7 +2957,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -2986,8 +2986,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -3014,12 +3014,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -3044,11 +3044,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -3074,12 +3074,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3104,12 +3104,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -3135,10 +3135,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -3165,10 +3165,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -3199,7 +3199,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -3228,8 +3228,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -3256,12 +3256,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -3286,11 +3286,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -3316,12 +3316,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3346,12 +3346,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -3377,10 +3377,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -3407,10 +3407,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -3441,7 +3441,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -3470,8 +3470,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -3498,12 +3498,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 958406.875,
-      "sf2g_elevation_meters": 15160.19921875,
+      "sf2g_distance_meters": 958406.9375,
+      "sf2g_elevation_meters": 15160.198242188,
       "sf2g_total": 16,
       "skyline_count": 13,
       "total_distance_meters": 1002891.25,
-      "total_elevation_meters": 15533.19921875,
+      "total_elevation_meters": 15533.200195313,
       "total_rides": 16,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -3529,11 +3529,11 @@
       "other_count": 3,
       "royale_count": 1,
       "sf2g_distance_meters": 446328.40625,
-      "sf2g_elevation_meters": 2516.700195313,
+      "sf2g_elevation_meters": 2516.699951172,
       "sf2g_total": 9,
       "skyline_count": 1,
       "total_distance_meters": 617788.375,
-      "total_elevation_meters": 3943.100097656,
+      "total_elevation_meters": 3943.099853516,
       "total_rides": 12,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -3559,7 +3559,7 @@
       "other_count": 0,
       "royale_count": 5,
       "sf2g_distance_meters": 326434.71875,
-      "sf2g_elevation_meters": 1882.49987793,
+      "sf2g_elevation_meters": 1882.5,
       "sf2g_total": 7,
       "skyline_count": 0,
       "total_distance_meters": 504907.78125,
@@ -3588,12 +3588,12 @@
       "median_watts": null,
       "other_count": 3,
       "royale_count": 1,
-      "sf2g_distance_meters": 298749.71875,
+      "sf2g_distance_meters": 298749.6875,
       "sf2g_elevation_meters": 2053.299804688,
       "sf2g_total": 6,
       "skyline_count": 1,
-      "total_distance_meters": 507775.09375,
-      "total_elevation_meters": 3829.800292969,
+      "total_distance_meters": 507775.125,
+      "total_elevation_meters": 3829.800048828,
       "total_rides": 9,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3618,7 +3618,7 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 316314.28125,
+      "sf2g_distance_meters": 316314.3125,
       "sf2g_elevation_meters": 2553.100097656,
       "sf2g_total": 6,
       "skyline_count": 2,
@@ -3649,11 +3649,11 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 226114.59375,
-      "sf2g_elevation_meters": 3599.099853516,
+      "sf2g_elevation_meters": 3599.100097656,
       "sf2g_total": 4,
       "skyline_count": 4,
       "total_distance_meters": 226114.59375,
-      "total_elevation_meters": 3599.100097656,
+      "total_elevation_meters": 3599.099853516,
       "total_rides": 4,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -3714,7 +3714,7 @@
       "sf2g_elevation_meters": 0,
       "sf2g_total": 0,
       "skyline_count": 0,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 7,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -3744,8 +3744,8 @@
       "sf2g_elevation_meters": 0,
       "sf2g_total": 0,
       "skyline_count": 0,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 6,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3776,8 +3776,8 @@
       "sf2g_elevation_meters": 4682.300292969,
       "sf2g_total": 18,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.3984375,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 18,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -3806,8 +3806,8 @@
       "sf2g_elevation_meters": 536,
       "sf2g_total": 3,
       "skyline_count": 0,
-      "total_distance_meters": 3763079.75,
-      "total_elevation_meters": 20339.603515625,
+      "total_distance_meters": 3763080,
+      "total_elevation_meters": 20339.599609375,
       "total_rides": 5,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -3836,8 +3836,8 @@
       "sf2g_elevation_meters": 2273,
       "sf2g_total": 3,
       "skyline_count": 1,
-      "total_distance_meters": 3574453.25,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 5,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3864,11 +3864,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -3901,7 +3901,7 @@
       "sf2g_total": 1,
       "skyline_count": 1,
       "total_distance_meters": 617788.375,
-      "total_elevation_meters": 3943.100097656,
+      "total_elevation_meters": 3943.099853516,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000001",
       "username": "ada"
@@ -3931,7 +3931,7 @@
       "sf2g_total": 1,
       "skyline_count": 1,
       "total_distance_meters": 507775.125,
-      "total_elevation_meters": 3829.799804688,
+      "total_elevation_meters": 3829.800048828,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -3960,8 +3960,8 @@
       "sf2g_elevation_meters": 1821.600097656,
       "sf2g_total": 2,
       "skyline_count": 2,
-      "total_distance_meters": 416156.53125,
-      "total_elevation_meters": 2938,
+      "total_distance_meters": 416156.5,
+      "total_elevation_meters": 2937.999755859,
       "total_rides": 2,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -3987,7 +3987,7 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 226114.59375,
-      "sf2g_elevation_meters": 3599.100097656,
+      "sf2g_elevation_meters": 3599.099853516,
       "sf2g_total": 4,
       "skyline_count": 4,
       "total_distance_meters": 226114.59375,
@@ -4021,7 +4021,7 @@
       "sf2g_total": 13,
       "skyline_count": 13,
       "total_distance_meters": 1002891.25,
-      "total_elevation_meters": 15533.19921875,
+      "total_elevation_meters": 15533.200195313,
       "total_rides": 13,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -4048,11 +4048,11 @@
       "median_watts": 233,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4150285.75,
+      "sf2g_distance_meters": 4150286,
       "sf2g_elevation_meters": 65341.49609375,
       "sf2g_total": 73,
       "skyline_count": 73,
-      "total_distance_meters": 5245598.5,
+      "total_distance_meters": 5245599,
       "total_elevation_meters": 80635.9921875,
       "total_rides": 73,
       "user_id": "00000000-0000-4000-8000-000000000002",
@@ -4078,12 +4078,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 570513.375,
+      "sf2g_distance_meters": 570513.4375,
       "sf2g_elevation_meters": 8838,
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -4109,11 +4109,11 @@
       "other_count": 0,
       "royale_count": 0,
       "sf2g_distance_meters": 523878.5,
-      "sf2g_elevation_meters": 8088.799804688,
+      "sf2g_elevation_meters": 8088.80078125,
       "sf2g_total": 9,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.25,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 9,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -4143,7 +4143,7 @@
       "sf2g_total": 3,
       "skyline_count": 3,
       "total_distance_meters": 1235504,
-      "total_elevation_meters": 7478.399902344,
+      "total_elevation_meters": 7478.399414063,
       "total_rides": 3,
       "user_id": "00000000-0000-4000-8000-000000000006",
       "username": "fay"
@@ -4172,7 +4172,7 @@
       "sf2g_elevation_meters": 1757.899902344,
       "sf2g_total": 2,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 2,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -4202,8 +4202,8 @@
       "sf2g_elevation_meters": 933,
       "sf2g_total": 1,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 1,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -4231,10 +4231,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -4265,7 +4265,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -4290,12 +4290,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -4320,12 +4320,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -4351,10 +4351,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -4380,11 +4380,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -4410,12 +4410,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -4444,8 +4444,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -4473,10 +4473,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -4503,10 +4503,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -4532,12 +4532,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -4562,12 +4562,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -4596,8 +4596,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -4622,11 +4622,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -4657,7 +4657,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -4682,12 +4682,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -4714,11 +4714,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -4744,12 +4744,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -4774,12 +4774,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -4804,12 +4804,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -4838,8 +4838,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -4865,10 +4865,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -4895,10 +4895,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -4929,7 +4929,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -4956,12 +4956,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 4960300.5,
-      "sf2g_elevation_meters": 77485.28125,
+      "sf2g_distance_meters": 4960299,
+      "sf2g_elevation_meters": 77485.2890625,
       "sf2g_total": 84,
       "skyline_count": 73,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 84,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -4986,11 +4986,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.799804688,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -5016,12 +5016,12 @@
       "median_watts": null,
       "other_count": 6,
       "royale_count": 10,
-      "sf2g_distance_meters": 2363856.25,
-      "sf2g_elevation_meters": 22051.19921875,
+      "sf2g_distance_meters": 2363856.75,
+      "sf2g_elevation_meters": 22051.197265625,
       "sf2g_total": 43,
       "skyline_count": 9,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 49,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -5046,12 +5046,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 21,
-      "sf2g_distance_meters": 1464261.875,
-      "sf2g_elevation_meters": 8190.500976563,
+      "sf2g_distance_meters": 1464261.625,
+      "sf2g_elevation_meters": 8190.5,
       "sf2g_total": 31,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 31,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -5080,8 +5080,8 @@
       "sf2g_elevation_meters": 8603,
       "sf2g_total": 8,
       "skyline_count": 1,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 8,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -5107,10 +5107,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -5137,10 +5137,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.299560547,
+      "sf2g_elevation_meters": 3573.299804688,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -5171,7 +5171,7 @@
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -5198,12 +5198,12 @@
       "median_watts": 232.5,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 5076998.5,
+      "sf2g_distance_meters": 5076999,
       "sf2g_elevation_meters": 79227.7890625,
       "sf2g_total": 86,
       "skyline_count": 75,
       "total_distance_meters": 5245599,
-      "total_elevation_meters": 80636.0078125,
+      "total_elevation_meters": 80635.9921875,
       "total_rides": 86,
       "user_id": "00000000-0000-4000-8000-000000000002",
       "username": "ben"
@@ -5228,11 +5228,11 @@
       "median_watts": 209,
       "other_count": 7,
       "royale_count": 6,
-      "sf2g_distance_meters": 2829825.5,
-      "sf2g_elevation_meters": 12587.798828125,
+      "sf2g_distance_meters": 2829826.5,
+      "sf2g_elevation_meters": 12587.80078125,
       "sf2g_total": 58,
       "skyline_count": 2,
-      "total_distance_meters": 3763079.75,
+      "total_distance_meters": 3763080,
       "total_elevation_meters": 20339.599609375,
       "total_rides": 65,
       "user_id": "00000000-0000-4000-8000-000000000001",
@@ -5258,12 +5258,12 @@
       "median_watts": null,
       "other_count": 7,
       "royale_count": 11,
-      "sf2g_distance_meters": 2589384.75,
-      "sf2g_elevation_meters": 24576.501953125,
+      "sf2g_distance_meters": 2589384,
+      "sf2g_elevation_meters": 24576.50390625,
       "sf2g_total": 47,
       "skyline_count": 10,
-      "total_distance_meters": 3574453.5,
-      "total_elevation_meters": 32605.998046875,
+      "total_distance_meters": 3574452.5,
+      "total_elevation_meters": 32606.001953125,
       "total_rides": 54,
       "user_id": "00000000-0000-4000-8000-000000000003",
       "username": "cam"
@@ -5288,12 +5288,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 23,
-      "sf2g_distance_meters": 1607376.625,
+      "sf2g_distance_meters": 1607376.5,
       "sf2g_elevation_meters": 8965.799804688,
       "sf2g_total": 34,
       "skyline_count": 0,
-      "total_distance_meters": 1855938,
-      "total_elevation_meters": 11036.399414063,
+      "total_distance_meters": 1855937.75,
+      "total_elevation_meters": 11036.400390625,
       "total_rides": 34,
       "user_id": "00000000-0000-4000-8000-000000000004",
       "username": "dee"
@@ -5318,12 +5318,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 1853607.75,
-      "sf2g_elevation_meters": 28002.1015625,
+      "sf2g_distance_meters": 1853608,
+      "sf2g_elevation_meters": 28002.09765625,
       "sf2g_total": 27,
       "skyline_count": 6,
-      "total_distance_meters": 1979301.625,
-      "total_elevation_meters": 29098.80078125,
+      "total_distance_meters": 1979301.375,
+      "total_elevation_meters": 29098.798828125,
       "total_rides": 27,
       "user_id": "00000000-0000-4000-8000-000000000005",
       "username": "eve"
@@ -5349,10 +5349,10 @@
       "other_count": 0,
       "royale_count": 1,
       "sf2g_distance_meters": 966556.25,
-      "sf2g_elevation_meters": 5687.299804688,
+      "sf2g_elevation_meters": 5687.300292969,
       "sf2g_total": 19,
       "skyline_count": 3,
-      "total_distance_meters": 1235503.75,
+      "total_distance_meters": 1235504,
       "total_elevation_meters": 7478.399414063,
       "total_rides": 19,
       "user_id": "00000000-0000-4000-8000-000000000006",
@@ -5379,10 +5379,10 @@
       "other_count": 0,
       "royale_count": 7,
       "sf2g_distance_meters": 711637.9375,
-      "sf2g_elevation_meters": 3573.300048828,
+      "sf2g_elevation_meters": 3573.300292969,
       "sf2g_total": 15,
       "skyline_count": 0,
-      "total_distance_meters": 711638,
+      "total_distance_meters": 711637.9375,
       "total_elevation_meters": 3573.300048828,
       "total_rides": 15,
       "user_id": "00000000-0000-4000-8000-000000000008",
@@ -5408,12 +5408,12 @@
       "median_watts": null,
       "other_count": 0,
       "royale_count": 0,
-      "sf2g_distance_meters": 570513.375,
-      "sf2g_elevation_meters": 8838,
+      "sf2g_distance_meters": 570513.4375,
+      "sf2g_elevation_meters": 8838.000976563,
       "sf2g_total": 10,
       "skyline_count": 10,
       "total_distance_meters": 570513.375,
-      "total_elevation_meters": 8838,
+      "total_elevation_meters": 8838.000976563,
       "total_rides": 10,
       "user_id": "00000000-0000-4000-8000-000000000009",
       "username": "ivy"
@@ -5680,17 +5680,925 @@
       "00000000-0000-4000-8000-000000000006"
     ]
   },
+  "fetchRiderGrowth > bad rider id ignored": [],
+  "fetchRiderGrowth > daily, last 60 days, skyline": [
+    {
+      "bucket": "2026-08-24",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-08-25",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-09-04",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-09-28",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-06",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-13",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-10-13",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-13",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "fetchRiderGrowth > monthly, all time": [
+    {
+      "bucket": "2018-01-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2018-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2018-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-01-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-03-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2019-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2019-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2019-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2019-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2019-12-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2020-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-07-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2020-08-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2020-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2020-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2020-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2020-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2020-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-02-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-03-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-03-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-04-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-08-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2021-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2021-12-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2021-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2022-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2022-05-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2022-06-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2022-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2022-07-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2022-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2022-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-08-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2022-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2022-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-02-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2023-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2023-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2023-04-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2023-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-07-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2023-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2023-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2023-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-05-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-05-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-10-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2024-11-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2024-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2024-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-01-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2025-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2025-02-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2025-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2025-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2025-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-04-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2025-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-06-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2025-06-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2025-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2025-12-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-01-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-02-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-03-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-03-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-04-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-05-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-06-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-07-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-07-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-08-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-08-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-09-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-09-01",
+      "count": 3,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-09-01",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-10-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-10-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-01",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "fetchRiderGrowth > no riders": [],
+  "fetchRiderGrowth > weekly, 2026": [
+    {
+      "bucket": "2025-12-29",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-01-05",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-01-12",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-02-09",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-03-09",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-03-16",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-03-23",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-03-30",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-04-27",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-05-11",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-06-08",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-06-22",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-07-06",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-07-13",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-07-20",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-08-17",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-08-24",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-08-24",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-08-31",
+      "count": 2,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-08-31",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-09-21",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-09-28",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-09-28",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-09-28",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "bucket": "2026-10-05",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-10-05",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-12",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "bucket": "2026-10-12",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "bucket": "2026-10-12",
+      "count": 1,
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
   "fetchRiderGrowthData > default": [
     {
       "month": "2018-01-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "hmbw",
+      "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
       "month": "2018-01-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "skyline",
+      "route_category": "hmbw",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
@@ -5852,13 +6760,13 @@
     {
       "month": "2020-07-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "fleaway",
+      "route_category": "other",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
       "month": "2020-07-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "other",
+      "route_category": "fleaway",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
@@ -5954,13 +6862,13 @@
     {
       "month": "2021-02-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "febw",
+      "route_category": "mebw",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
       "month": "2021-02-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "mebw",
+      "route_category": "febw",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
@@ -6464,13 +7372,13 @@
     {
       "month": "2024-02-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "fleaway",
+      "route_category": "other",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
       "month": "2024-02-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "other",
+      "route_category": "fleaway",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
@@ -6530,25 +7438,25 @@
     {
       "month": "2024-05-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "hmbw",
-      "user_id": "00000000-0000-4000-8000-000000000002"
-    },
-    {
-      "month": "2024-05-01T00:00:00+00:00",
-      "ride_count": 1,
       "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
       "month": "2024-05-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "fleaway",
-      "user_id": "00000000-0000-4000-8000-000000000003"
+      "route_category": "hmbw",
+      "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
       "month": "2024-05-01T00:00:00+00:00",
       "ride_count": 2,
       "route_category": "royale",
+      "user_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "month": "2024-05-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "fleaway",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
@@ -6614,12 +7522,6 @@
     {
       "month": "2024-08-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "bayway",
-      "user_id": "00000000-0000-4000-8000-000000000004"
-    },
-    {
-      "month": "2024-08-01T00:00:00+00:00",
-      "ride_count": 1,
       "route_category": "royale",
       "user_id": "00000000-0000-4000-8000-000000000004"
     },
@@ -6627,12 +7529,18 @@
       "month": "2024-08-01T00:00:00+00:00",
       "ride_count": 1,
       "route_category": "bayway",
+      "user_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "month": "2024-08-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "royale",
       "user_id": "00000000-0000-4000-8000-000000000006"
     },
     {
       "month": "2024-08-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "royale",
+      "route_category": "bayway",
       "user_id": "00000000-0000-4000-8000-000000000006"
     },
     {
@@ -6824,13 +7732,13 @@
     {
       "month": "2025-06-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "bayway",
+      "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000001"
     },
     {
       "month": "2025-06-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "skyline",
+      "route_category": "bayway",
       "user_id": "00000000-0000-4000-8000-000000000001"
     },
     {
@@ -7010,13 +7918,13 @@
     {
       "month": "2026-03-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "hmbw",
+      "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
       "month": "2026-03-01T00:00:00+00:00",
       "ride_count": 1,
-      "route_category": "skyline",
+      "route_category": "hmbw",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
@@ -7147,14 +8055,14 @@
     },
     {
       "month": "2026-08-01T00:00:00+00:00",
-      "ride_count": 1,
-      "route_category": "hmbw",
+      "ride_count": 2,
+      "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
       "month": "2026-08-01T00:00:00+00:00",
-      "ride_count": 2,
-      "route_category": "skyline",
+      "ride_count": 1,
+      "route_category": "hmbw",
       "user_id": "00000000-0000-4000-8000-000000000002"
     },
     {
@@ -7201,14 +8109,14 @@
     },
     {
       "month": "2026-09-01T00:00:00+00:00",
-      "ride_count": 1,
-      "route_category": "bayway",
+      "ride_count": 2,
+      "route_category": "royale",
       "user_id": "00000000-0000-4000-8000-000000000004"
     },
     {
       "month": "2026-09-01T00:00:00+00:00",
-      "ride_count": 2,
-      "route_category": "royale",
+      "ride_count": 1,
+      "route_category": "bayway",
       "user_id": "00000000-0000-4000-8000-000000000004"
     },
     {
@@ -7234,17 +8142,17 @@
       "ride_count": 2,
       "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "month": "2026-10-01T00:00:00+00:00",
+      "ride_count": 1,
+      "route_category": "skyline",
+      "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {
       "month": "2026-10-01T00:00:00+00:00",
       "ride_count": 1,
       "route_category": "fleaway",
-      "user_id": "00000000-0000-4000-8000-000000000003"
-    },
-    {
-      "month": "2026-10-01T00:00:00+00:00",
-      "ride_count": 1,
-      "route_category": "skyline",
       "user_id": "00000000-0000-4000-8000-000000000003"
     },
     {

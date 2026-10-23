@@ -1,10 +1,8 @@
 import { characterize, freezeFixtureClock } from "../../../test/characterize";
 import {
   fetchCommunityBreakdownImpl,
-  fetchDailyGrowthDataImpl,
   fetchLeaderboardImpl,
-  fetchPprDawnRiderIdsImpl,
-  fetchRiderGrowthDataImpl,
+  fetchRiderGrowthImpl,
   fetchRouteSpeedLeaderboardImpl,
 } from "../../leaderboard";
 
@@ -57,24 +55,36 @@ characterize("fetchLeaderboard", fetchLeaderboardImpl, {
   } as never,
 });
 
-characterize("fetchPprDawnRiderIds", fetchPprDawnRiderIdsImpl, {
-  "all time": {},
-  "2026 only": { dateFrom: "2026-01-01", dateTo: "2026-12-31" },
-  "skyline only": { routeCategories: ["skyline"] },
-});
-
 characterize("fetchRouteSpeedLeaderboard", fetchRouteSpeedLeaderboardImpl, {
   skyline: { routeCategory: "skyline" },
   bayway: { routeCategory: "bayway" },
   "invalid route": { routeCategory: "nope" as "skyline" },
 });
 
-characterize("fetchRiderGrowthData", () => fetchRiderGrowthDataImpl(), {
-  default: undefined,
-});
-characterize("fetchDailyGrowthData", () => fetchDailyGrowthDataImpl(), {
-  default: undefined,
-});
 characterize("fetchCommunityBreakdown", () => fetchCommunityBreakdownImpl(), {
   default: undefined,
+});
+
+const CHART_RIDERS = [
+  "00000000-0000-4000-8000-000000000001",
+  "00000000-0000-4000-8000-000000000002",
+  "00000000-0000-4000-8000-000000000003",
+];
+characterize("fetchRiderGrowth", fetchRiderGrowthImpl, {
+  "monthly, all time": { riderIds: CHART_RIDERS, granularity: "monthly" },
+  "weekly, 2026": {
+    riderIds: CHART_RIDERS,
+    granularity: "weekly",
+    dateFrom: "2026-01-01",
+    dateTo: "2026-10-16",
+  },
+  "daily, last 60 days, skyline": {
+    riderIds: CHART_RIDERS,
+    granularity: "daily",
+    dateFrom: "2026-08-17",
+    dateTo: "2026-10-16",
+    routes: ["skyline"],
+  },
+  "no riders": { riderIds: [], granularity: "monthly" },
+  "bad rider id ignored": { riderIds: ["not-a-uuid"], granularity: "monthly" },
 });

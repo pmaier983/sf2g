@@ -17,6 +17,8 @@ export interface AllTimeParams {
   includeOther?: boolean;
   company?: string;
   reverse?: boolean;
+  /** Only PPR-at-dawn rides */
+  ppr?: boolean;
 }
 
 /**

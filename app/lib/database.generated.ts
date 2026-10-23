@@ -439,6 +439,18 @@ isOneToOne: false
 "extract_iana_timezone":
 { Args: { "tz": string }; Returns: string
                            },
+"get_alltime_leaderboard":
+{ Args: { "q"?: Json }; Returns: Json
+                           },
+"get_community_breakdown":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_community_start_hours":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_community_streaks":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_leaderboard":
 { Args: { "q"?: Json }; Returns: {
               "active_years": number,"avatar_url": string,"avg_heartrate": number,"avg_kilojoules": number,"avg_speed_mps": number,"avg_tailwind_ms": number,"avg_watts": number,"bayway_count": number,"display_name": string,"febw_count": number,"first_ride_date": string,"fleaway_count": number,"hmbw_count": number,"last_ride_date": string,"mebw_count": number,"median_speed_mps": number,"median_watts": number,"other_count": number,"royale_count": number,"sf2g_distance_meters": number,"sf2g_elevation_meters": number,"sf2g_total": number,"skyline_count": number,"total_count": number,"total_distance_meters": number,"total_elevation_meters": number,"total_rides": number,"user_id": string,"username": string
@@ -447,6 +459,14 @@ isOneToOne: false
 "get_leaderboard_by_date_range":
 { Args: { "p_date_from"?: string,"p_date_to"?: string,"p_exclude_weekends"?: boolean }; Returns: {
               "active_years": number,"avatar_url": string,"avg_heartrate": number,"avg_kilojoules": number,"avg_speed_mps": number,"avg_tailwind_ms": number,"avg_watts": number,"bayway_count": number,"display_name": string,"febw_count": number,"first_ride_date": string,"fleaway_count": number,"hmbw_count": number,"last_ride_date": string,"mebw_count": number,"median_speed_mps": number,"median_watts": number,"other_count": number,"royale_count": number,"sf2g_distance_meters": number,"sf2g_elevation_meters": number,"sf2g_total": number,"skyline_count": number,"total_distance_meters": number,"total_elevation_meters": number,"total_rides": number,"user_id": string,"username": string
+            }[]
+                           },
+"get_rider_growth":
+{ Args: { "granularity": string,"q": Json,"rider_ids": (string)[] }; Returns: Json
+                           },
+"get_rides":
+{ Args: { "q"?: Json }; Returns: {
+              "avatar_url": string,"average_heartrate": number,"average_speed_mps": number,"average_watts": number,"destination_company": string,"display_name": string,"distance_meters": number,"elevation_gain_meters": number,"end_latlng": Json,"id": string,"kilojoules": number,"max_heartrate": number,"max_watts": number,"moving_time_seconds": number,"name": string,"ride_date": string,"route_category": string,"start_latlng": Json,"strava_activity_id": number,"total_count": number,"user_id": string,"username": string
             }[]
                            },
 "get_user_ride_totals":
@@ -472,11 +492,67 @@ isOneToOne: false
 "sf2g_commute_direction":
 { Args: { "end_latlng": Json,"start_latlng": Json }; Returns: string
                            },
+"sf2g_counts_other":
+{ Args: { "q": Json }; Returns: boolean
+                           },
 "sf2g_decode_polyline":
 { Args: { "encoded": string }; Returns: {
               "idx": number,"lat": number,"lng": number
             }[]
                            },
+"sf2g_filtered_rides":
+{ Args: { "q": Json }; Returns: {
+              "average_heartrate": number | null,
+"average_speed_mps": number | null,
+"average_watts": number | null,
+"classification_confidence": number | null,
+"classification_method": string | null,
+"commute_direction": string | null,
+"created_at": string,
+"crosswind_component_ms": number | null,
+"destination_company": string | null,
+"destination_distance_meters": number | null,
+"destination_office": string | null,
+"distance_meters": number | null,
+"elapsed_time_seconds": number | null,
+"elevation_gain_meters": number | null,
+"end_latlng": Json | null,
+"has_heartrate": boolean | null,
+"has_power_meter": boolean | null,
+"id": string,
+"is_commute": boolean | null,
+"is_hidden": boolean | null,
+"is_ppr_dawn": boolean,
+"is_private": boolean | null,
+"kilojoules": number | null,
+"max_heartrate": number | null,
+"max_speed_mps": number | null,
+"max_watts": number | null,
+"moving_time_seconds": number | null,
+"name": string | null,
+"ride_bearing_deg": number | null,
+"ride_date": string,
+"route_category": string | null,
+"start_date": string,
+"start_latlng": Json | null,
+"strava_activity_id": number,
+"strava_raw": Json | null,
+"suffer_score": number | null,
+"summary_polyline": string | null,
+"tailwind_component_ms": number | null,
+"timezone": string | null,
+"user_id": string,
+"wind_data_source": string | null,
+"wind_direction_deg": number | null,
+"wind_gust_ms": number | null,
+"wind_speed_ms": number | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "rides"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "sf2g_is_ppr_dawn":
 { Args: { "moving_time_seconds": number,"polyline": string,"start_date": string,"tz": string }; Returns: boolean
                            },
@@ -485,6 +561,9 @@ isOneToOne: false
                            },
 "sf2g_point_in_sf":
 { Args: { "lat": number,"lng": number }; Returns: boolean
+                           },
+"sf2g_week_key":
+{ Args: { "d": string }; Returns: string
                            }
           }
           Enums: {
