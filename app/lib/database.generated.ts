@@ -94,6 +94,18 @@ isOneToOne: false
       referencedRelation: "rides"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "ride_override_audit_log_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride1_id"]
+    },{
+      foreignKeyName: "ride_override_audit_log_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride2_id"]
+    },{
       foreignKeyName: "ride_override_audit_log_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
@@ -162,6 +174,18 @@ isOneToOne: false
       referencedRelation: "rides"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "ride_overrides_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride1_id"]
+    },{
+      foreignKeyName: "ride_overrides_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride2_id"]
+    },{
       foreignKeyName: "ride_overrides_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
@@ -192,6 +216,20 @@ isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     }
+                  ]
+                },"ride_pair_overlap": {
+                  Row: {
+                    "overlap": number,"ride1_id": string,"ride2_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "overlap": number,"ride1_id": string,"ride2_id": string
+                  }
+                  Update: {
+                    "overlap"?: number,"ride1_id"?: string,"ride2_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"ride_streams": {
                   Row: {
@@ -229,6 +267,18 @@ isOneToOne: true
 isOneToOne: true
       referencedRelation: "rides"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ride_streams_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride1_id"]
+    },{
+      foreignKeyName: "ride_streams_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride2_id"]
     }
                   ]
                 },"rides": {
@@ -430,6 +480,74 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"visible_ride_pairs": {
+                  Row: {
+                    "overlap": number | null,"ride_date": string | null,"ride1_id": string | null,"ride2_id": string | null,"rider1_id": string | null,"rider2_id": string | null,"route_category": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
+      referencedRelation: "company_leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "company_leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
+      referencedRelation: "leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
+      referencedRelation: "monthly_ride_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "monthly_ride_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
+      referencedRelation: "route_speed_leaderboard"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "route_speed_leaderboard"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -467,6 +585,9 @@ isOneToOne: false
 "get_rider_growth":
 { Args: { "granularity": string,"q": Json,"rider_ids": (string)[] }; Returns: Json
                            },
+"get_rider_network":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_rides":
 { Args: { "q"?: Json }; Returns: {
               "avatar_url": string,"average_heartrate": number,"average_speed_mps": number,"average_watts": number,"destination_company": string,"display_name": string,"distance_meters": number,"elevation_gain_meters": number,"end_latlng": Json,"id": string,"kilojoules": number,"max_heartrate": number,"max_watts": number,"moving_time_seconds": number,"name": string,"ride_date": string,"route_category": string,"start_latlng": Json,"strava_activity_id": number,"total_count": number,"user_id": string,"username": string
@@ -476,6 +597,9 @@ isOneToOne: false
 { Args: { "p_date_from"?: string,"p_date_to"?: string }; Returns: {
               "total_distance": number,"total_elevation": number,"user_id": string
             }[]
+                           },
+"recompute_group_rides":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "refresh_company_leaderboard":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -564,6 +688,9 @@ isOneToOne: false
                            },
 "sf2g_point_in_sf":
 { Args: { "lat": number,"lng": number }; Returns: boolean
+                           },
+"sf2g_polyline_overlap":
+{ Args: { "p1": string,"p2": string }; Returns: number
                            },
 "sf2g_week_key":
 { Args: { "d": string }; Returns: string

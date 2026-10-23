@@ -911,13 +911,13 @@
           }
         ],
         "riderCount": 3,
-        "avgSpeedMps": 6.846,
+        "avgSpeedMps": 6.84600003560384,
         "avgWatts": 203,
         "avgHeartrate": 139.5,
         "maxWatts": 789,
-        "maxSpeedMps": 14.364,
-        "totalDistanceMeters": 172695.6,
-        "totalElevationMeters": 2765.9
+        "maxSpeedMps": 14.3640003204346,
+        "totalDistanceMeters": 172695.59375,
+        "totalElevationMeters": 2765.89990234375
       },
       {
         "id": "3490eed7815d1173",
@@ -936,16 +936,16 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 7.275,
+        "avgSpeedMps": 7.27499985694885,
         "avgWatts": 253,
         "avgHeartrate": 145,
         "maxWatts": 894,
-        "maxSpeedMps": 17.249,
-        "totalDistanceMeters": 110314.7,
-        "totalElevationMeters": 1726.9
+        "maxSpeedMps": 17.2490005493164,
+        "totalDistanceMeters": 110314.703125,
+        "totalElevationMeters": 1726.89990234375
       },
       {
-        "id": "6f8b9d394fda8aaf",
+        "id": "114dd45c3ae8e56f",
         "date": "2026-09-29",
         "routeCategory": "bayway",
         "riders": [
@@ -958,21 +958,16 @@
             "userId": "00000000-0000-4000-8000-000000000004",
             "displayName": "Dee Reverse",
             "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E"
-          },
-          {
-            "userId": "00000000-0000-4000-8000-000000000006",
-            "displayName": "Fay Hidden",
-            "avatarUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(282%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EFH%3C%2Ftext%3E%3C%2Fsvg%3E"
           }
         ],
-        "riderCount": 3,
-        "avgSpeedMps": 6.37833333333333,
+        "riderCount": 2,
+        "avgSpeedMps": 6.32400012016296,
         "avgWatts": 226,
         "avgHeartrate": 140.5,
         "maxWatts": 828,
-        "maxSpeedMps": 14.062,
-        "totalDistanceMeters": 146464.5,
-        "totalElevationMeters": 572.3
+        "maxSpeedMps": 14.0620002746582,
+        "totalDistanceMeters": 97211.203125,
+        "totalElevationMeters": 375
       },
       {
         "id": "70441783a4d12249",
@@ -991,13 +986,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 7.109,
+        "avgSpeedMps": 7.10899996757507,
         "avgWatts": 232,
         "avgHeartrate": 155,
         "maxWatts": 976,
-        "maxSpeedMps": 16.371,
-        "totalDistanceMeters": 151718.8,
-        "totalElevationMeters": 2171.9
+        "maxSpeedMps": 16.371000289917,
+        "totalDistanceMeters": 151718.8125,
+        "totalElevationMeters": 2171.89990234375
       },
       {
         "id": "d4ee7c8f2d83ed3f",
@@ -1016,13 +1011,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 6.7855,
+        "avgSpeedMps": 6.78550004959106,
         "avgWatts": null,
         "avgHeartrate": null,
         "maxWatts": null,
-        "maxSpeedMps": 15.605,
-        "totalDistanceMeters": 116708.1,
-        "totalElevationMeters": 1899.3
+        "maxSpeedMps": 15.6049995422363,
+        "totalDistanceMeters": 116708.09375,
+        "totalElevationMeters": 1899.30004882812
       },
       {
         "id": "6fa0382092f488b4",
@@ -1041,13 +1036,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 7.2385,
+        "avgSpeedMps": 7.23850011825562,
         "avgWatts": 226.5,
         "avgHeartrate": 148.5,
         "maxWatts": 810,
-        "maxSpeedMps": 16.043,
-        "totalDistanceMeters": 118474.9,
-        "totalElevationMeters": 1739.2
+        "maxSpeedMps": 16.0429992675781,
+        "totalDistanceMeters": 118474.90625,
+        "totalElevationMeters": 1739.19995117188
       },
       {
         "id": "8b54f429b22ac8e4",
@@ -1066,13 +1061,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 6.638,
+        "avgSpeedMps": 6.63800001144409,
         "avgWatts": null,
         "avgHeartrate": null,
         "maxWatts": null,
-        "maxSpeedMps": 15.009,
-        "totalDistanceMeters": 101321.2,
-        "totalElevationMeters": 354.3
+        "maxSpeedMps": 15.0089998245239,
+        "totalDistanceMeters": 101321.203125,
+        "totalElevationMeters": 354.299987792969
       },
       {
         "id": "ec6e4fca36c4c4f6",
@@ -1091,13 +1086,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 6.256,
+        "avgSpeedMps": 6.25600004196167,
         "avgWatts": 172,
         "avgHeartrate": 145,
         "maxWatts": 739,
-        "maxSpeedMps": 14.47,
-        "totalDistanceMeters": 91681.6,
-        "totalElevationMeters": 354.1
+        "maxSpeedMps": 14.4700002670288,
+        "totalDistanceMeters": 91681.6015625,
+        "totalElevationMeters": 354.099975585938
       },
       {
         "id": "a00f2924f78033e2",
@@ -1116,13 +1111,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 6.6965,
+        "avgSpeedMps": 6.69649982452393,
         "avgWatts": 203,
         "avgHeartrate": 146,
         "maxWatts": 837,
-        "maxSpeedMps": 16.705,
+        "maxSpeedMps": 16.7049999237061,
         "totalDistanceMeters": 97945,
-        "totalElevationMeters": 368.3
+        "totalElevationMeters": 368.299987792969
       },
       {
         "id": "8f34561860fe1fad",
@@ -1141,13 +1136,13 @@
           }
         ],
         "riderCount": 2,
-        "avgSpeedMps": 6.688,
+        "avgSpeedMps": 6.68800020217896,
         "avgWatts": null,
         "avgHeartrate": 144,
         "maxWatts": null,
-        "maxSpeedMps": 15.885,
-        "totalDistanceMeters": 91683.7,
-        "totalElevationMeters": 576.9
+        "maxSpeedMps": 15.8850002288818,
+        "totalDistanceMeters": 91683.703125,
+        "totalElevationMeters": 576.900024414062
       }
     ],
     "totalCount": 10,

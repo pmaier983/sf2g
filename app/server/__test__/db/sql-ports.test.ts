@@ -157,3 +157,45 @@ describe("is_ppr_dawn (trigger) = pre-037 TypeScript rule", () => {
     expect(data?.is_ppr_dawn).toBe(true);
   });
 });
+
+describe("sf2g_polyline_overlap = computePolylineOverlap()", () => {
+  it("agrees on co-ride pairs and on 150 arbitrary ride pairs", async () => {
+    const { computePolylineOverlap } =
+      await import("../../../lib/polyline-overlap");
+    const rides = (await allRides()).filter((r) => r.summary_polyline);
+    // Deterministic pseudo-random pairs across different routes/starts.
+    const pairs: Array<[string, string]> = [];
+    let seed = 7;
+    const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648);
+    for (let k = 0; k < 150; k++) {
+      const a = rides[next() % rides.length].summary_polyline!;
+      const b = rides[next() % rides.length].summary_polyline!;
+      pairs.push([a, b]);
+    }
+    const { data: co } = await db
+      .from("ride_co_occurrences" as never)
+      .select("polyline1, polyline2");
+    for (const c of (co ?? []) as Array<{
+      polyline1: string;
+      polyline2: string;
+    }>) {
+      pairs.push([c.polyline1, c.polyline2]);
+    }
+
+    let partial = 0;
+    for (const [a, b] of pairs) {
+      const { data, error } = await db.rpc(
+        "sf2g_polyline_overlap" as never,
+        {
+          p1: a,
+          p2: b,
+        } as never,
+      );
+      expect(error).toBeNull();
+      const ts = computePolylineOverlap(a, b);
+      expect(data as number).toBeCloseTo(ts, 5);
+      if (ts > 0 && ts < 1) partial++;
+    }
+    expect(partial).toBeGreaterThan(10); // the comparison exercised real partial overlaps
+  });
+});
