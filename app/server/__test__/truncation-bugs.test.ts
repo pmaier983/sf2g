@@ -153,23 +153,22 @@ describe("Group ride co-occurrences — refresh after sync", () => {
     expect(syncSource).toContain("refresh_ride_co_occurrences");
   });
 
-  it("co-occurrences refresh is NOT inside skipLeaderboardRefresh guard", () => {
-    // The co-occurrences refresh must be called unconditionally.
-    // Find the refresh call and verify it's NOT nested inside the
-    // skipLeaderboardRefresh conditional block.
+  it("co-occurrences refresh is gated by skipGroupRides, not skipLeaderboardRefresh", () => {
+    // Regression: cron skipped the leaderboard refresh and, with it, the
+    // co-occurrence refresh, so group rides went stale. Now the per-user
+    // refresh has its own flag and cron runs it once in maintenance.
+    const refreshIdx = syncSource.indexOf("refresh_ride_co_occurrences");
+    const guardIdx = syncSource.lastIndexOf("if (", refreshIdx);
+    const guard = syncSource.slice(guardIdx, syncSource.indexOf("{", guardIdx));
+    expect(guard).toContain("skipGroupRides");
+    expect(guard).not.toContain("skipLeaderboardRefresh");
+  });
 
-    // Strategy: split the source at the closing brace of the skipLeaderboardRefresh block
-    // and verify the co-occurrences refresh appears AFTER it
-    const skipGuardIndex = syncSource.indexOf("skipLeaderboardRefresh");
-    const coOccRefreshIndex = syncSource.indexOf("refresh_ride_co_occurrences");
-
-    // Both should exist
-    expect(skipGuardIndex).toBeGreaterThan(-1);
-    expect(coOccRefreshIndex).toBeGreaterThan(-1);
-
-    // Find the closing brace of the skipLeaderboardRefresh block
-    // The co-occurrences refresh comment should reference "must NOT be gated"
-    expect(syncSource).toContain("must NOT be gated by skipLeaderboardRefresh");
+  it("cron maintenance refreshes ride_co_occurrences every run", async () => {
+    const { MATERIALIZED_VIEW_REFRESHES } = await import("../cron");
+    expect(MATERIALIZED_VIEW_REFRESHES).toContain(
+      "refresh_ride_co_occurrences",
+    );
   });
 
   it("co-occurrences refresh is wrapped in try/catch for resilience", () => {

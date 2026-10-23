@@ -27,3 +27,6 @@ Thumbs.db
 # Supabase
 .supabase/
 
+
+# TanStack Start build cache
+.tanstack/

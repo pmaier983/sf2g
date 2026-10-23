@@ -1,78 +1,100 @@
 /**
- * /api/cron — Server-only API route for triggering cron jobs.
+ * POST /api/cron?task=sync|maintenance|groups — cron entry point.
  *
- * This route is called by:
- * - GitHub Actions on a schedule (every hour)
- * - Manual triggers via workflow_dispatch
+ * Called by .github/workflows/cron.yml with `Authorization: Bearer CRON_SECRET`.
+ * The work is AWAITED: on Cloudflare Workers a promise left running after the
+ * response is returned is cancelled, which is why the previous fire-and-forget
+ * version never synced anyone.
  *
- * Authentication: Requires a Bearer token matching the CRON_SECRET env var.
- * This prevents unauthorized users from triggering expensive sync operations.
- *
- * The handler responds with 202 Accepted immediately and runs cron jobs
- * in the background via an unawaited promise. Cloudflare Workers keep the
- * isolate alive while I/O (Supabase, Strava API calls) is in-flight, so
- * the background work completes even though the response was already sent.
+ * Response (always JSON):
+ * - 200 `{ ok, task, subrequests, ... }` — `ok: false` means the task ran but
+ *   something failed; the workflow treats that as a failure.
+ * - 400 unknown task, 401 bad secret, 500 not configured / crashed.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { runCronJobs } from "../../server/cron";
+import {
+  runGroupRides,
+  runMaintenance,
+  syncUserBatch,
+} from "../../server/cron";
+import { performSync } from "../../server/sync";
+import { createServiceClient } from "../../lib/supabase";
+import { logPerf, trackSubrequests } from "../../lib/perf";
+
+const TASKS = ["sync", "maintenance", "groups"] as const;
+type CronTask = (typeof TASKS)[number];
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+async function runTask(task: CronTask): Promise<Record<string, unknown>> {
+  switch (task) {
+    case "sync": {
+      const supabase = createServiceClient();
+      const { result, subrequests } = await trackSubrequests((count) =>
+        syncUserBatch({
+          supabase,
+          sync: performSync,
+          subrequests: count,
+          now: Date.now,
+        }),
+      );
+      return { ok: result.failed === 0, subrequests, ...result };
+    }
+    case "maintenance": {
+      const { result, subrequests } = await trackSubrequests(() =>
+        runMaintenance(),
+      );
+      return { ok: result.errors.length === 0, subrequests, ...result };
+    }
+    case "groups": {
+      const { result, subrequests } = await trackSubrequests(() =>
+        runGroupRides(),
+      );
+      return { ...result, subrequests };
+    }
+  }
+}
+
+export async function handleCronRequest(request: Request): Promise<Response> {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("[api/cron] CRON_SECRET not configured");
+    return json({ ok: false, error: "Cron endpoint not configured" }, 500);
+  }
+
+  const token = request.headers.get("Authorization")?.replace("Bearer ", "");
+  if (token !== cronSecret) {
+    console.warn("[api/cron] Unauthorized cron attempt");
+    return json({ ok: false, error: "Unauthorized" }, 401);
+  }
+
+  const task = (new URL(request.url).searchParams.get("task") ??
+    "sync") as CronTask;
+  if (!TASKS.includes(task)) {
+    return json({ ok: false, error: `Unknown task: ${task}` }, 400);
+  }
+
+  const startedAt = Date.now();
+  try {
+    const body = await runTask(task);
+    logPerf(`cron:${task}`, Number(body.subrequests ?? 0), startedAt);
+    return json({ task, ...body });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[api/cron] ${task} crashed: ${message}`);
+    return json({ ok: false, task, error: message }, 500);
+  }
+}
 
 export const Route = createFileRoute("/api/cron")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
-        // Validate CRON_SECRET
-        const cronSecret = process.env.CRON_SECRET;
-        if (!cronSecret) {
-          console.error("[api/cron] CRON_SECRET not configured");
-          return new Response(
-            JSON.stringify({ error: "Cron endpoint not configured" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const authHeader = request.headers.get("Authorization");
-        const token = authHeader?.replace("Bearer ", "");
-
-        if (token !== cronSecret) {
-          console.warn("[api/cron] Unauthorized cron attempt");
-          return new Response(JSON.stringify({ error: "Unauthorized" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
-        console.log(
-          "[api/cron] Cron triggered via API — starting background execution",
-        );
-
-        // Fire-and-forget: start cron jobs without awaiting.
-        // Cloudflare Workers keep the isolate alive while I/O is in-flight,
-        // so this will continue executing after the response is sent.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        runCronJobs()
-          .then((result) => {
-            console.log(
-              `[api/cron] Background cron complete: ${result.syncAll.synced} synced, ` +
-                `${result.syncAll.failed} failed in ${Math.round(result.totalDurationMs / 1000)}s`,
-            );
-          })
-          .catch((err) => {
-            const message = err instanceof Error ? err.message : String(err);
-            console.error("[api/cron] Background cron failed:", message);
-          });
-
-        // Respond immediately — cron work continues in background
-        return new Response(
-          JSON.stringify({
-            status: "accepted",
-            message: "Cron jobs started in background",
-          }),
-          {
-            status: 202,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      },
+      POST: ({ request }) => handleCronRequest(request),
     },
   },
 });
