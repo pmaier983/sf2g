@@ -54,11 +54,6 @@ describe("Supabase max_rows truncation prevention", () => {
     expect(groupRidesSource).toContain("PAGE_SIZE");
     expect(groupRidesSource).toContain(".range(");
   });
-
-  it("fetchRiderNetwork paginates to avoid max_rows truncation", () => {
-    expect(networkSource).toContain("PAGE_SIZE");
-    expect(networkSource).toContain(".range(");
-  });
 });
 
 // ---------------------------------------------------------------------------

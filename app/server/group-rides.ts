@@ -106,27 +106,6 @@ const IN_BATCH_SIZE = 300;
 // ---------------------------------------------------------------------------
 
 /**
- * Generate a deterministic group ride ID from date + route + sorted rider IDs.
- * Uses SHA-256 truncated to 16 hex chars for URL-friendly IDs.
- */
-async function generateGroupRideId(
-  date: string,
-  routeCategory: RouteCategory,
-  riderIds: string[],
-): Promise<string> {
-  const sorted = [...riderIds].sort();
-  const input = `${date}:${routeCategory}:${sorted.join(",")}`;
-  const encoder = new TextEncoder();
-  const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return hashHex.substring(0, 16);
-}
-
-/**
  * Parse Strava rate limit headers to determine if it's a 15-min or daily limit.
  */
 function parseRateLimitType(
@@ -181,112 +160,6 @@ interface UserRow {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
-}
-
-/**
- * Cluster co-ride pairs into connected components.
- * Each component represents a group ride.
- */
-function clusterIntoGroups(
-  pairs: Array<{
-    rider1Id: string;
-    rider2Id: string;
-    ride1Id: string;
-    ride2Id: string;
-    date: string;
-    route: RouteCategory;
-  }>,
-): Array<{
-  riderIds: Set<string>;
-  rideIds: Set<string>;
-  date: string;
-  route: RouteCategory;
-}> {
-  if (pairs.length === 0) return [];
-
-  // Group pairs by date + route first
-  const byDateRoute = new Map<string, typeof pairs>();
-  for (const pair of pairs) {
-    const key = `${pair.date}::${pair.route}`;
-    const group = byDateRoute.get(key);
-    if (group) {
-      group.push(pair);
-    } else {
-      byDateRoute.set(key, [pair]);
-    }
-  }
-
-  const groups: Array<{
-    riderIds: Set<string>;
-    rideIds: Set<string>;
-    date: string;
-    route: RouteCategory;
-  }> = [];
-
-  for (const [, datePairs] of byDateRoute) {
-    // Union-Find for connected components
-    const parent = new Map<string, string>();
-
-    function find(x: string): string {
-      if (!parent.has(x)) parent.set(x, x);
-      const px = parent.get(x)!;
-      if (px !== x) {
-        const root = find(px);
-        parent.set(x, root);
-        return root;
-      }
-      return x;
-    }
-
-    function union(a: string, b: string): void {
-      const ra = find(a);
-      const rb = find(b);
-      if (ra !== rb) parent.set(ra, rb);
-    }
-
-    // Track which ride IDs belong to which rider
-    const riderRides = new Map<string, Set<string>>();
-
-    for (const pair of datePairs) {
-      union(pair.rider1Id, pair.rider2Id);
-
-      if (!riderRides.has(pair.rider1Id))
-        riderRides.set(pair.rider1Id, new Set());
-      if (!riderRides.has(pair.rider2Id))
-        riderRides.set(pair.rider2Id, new Set());
-      riderRides.get(pair.rider1Id)!.add(pair.ride1Id);
-      riderRides.get(pair.rider2Id)!.add(pair.ride2Id);
-    }
-
-    // Collect components
-    const components = new Map<string, Set<string>>();
-    for (const riderId of parent.keys()) {
-      const root = find(riderId);
-      if (!components.has(root)) components.set(root, new Set());
-      components.get(root)!.add(riderId);
-    }
-
-    for (const [, riderSet] of components) {
-      if (riderSet.size < 2) continue; // Solo ride, not a group
-
-      const rideIds = new Set<string>();
-      for (const riderId of riderSet) {
-        const rides = riderRides.get(riderId);
-        if (rides) {
-          for (const rideId of rides) rideIds.add(rideId);
-        }
-      }
-
-      groups.push({
-        riderIds: riderSet,
-        rideIds,
-        date: datePairs[0].date,
-        route: datePairs[0].route,
-      });
-    }
-  }
-
-  return groups;
 }
 
 // ---------------------------------------------------------------------------
@@ -438,232 +311,19 @@ export const fetchGroupRides = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 
 /**
- * Compute group rides from the ride_co_occurrences materialized view
- * and store the results in the group_rides + group_ride_members tables.
- *
- * Called from cron.ts and sync.ts after refreshing the MV.
- * Runs with service client to bypass RLS for writes.
+ * Recompute and store all group rides (SQL: recompute_group_rides, migration
+ * 040). Clusters co-riding riders per date + route into connected components
+ * with the same ids as before, so /group-rides/<id> links keep working.
+ * Requires the service role.
  */
-export async function computeAndStoreGroupRides(): Promise<void> {
+export async function computeAndStoreGroupRides(): Promise<number> {
   const supabase = createServiceClient();
-
-  console.log("[group-rides] Computing and storing group rides...");
-
-  // 1. Fetch all co-ride pairs from materialized view
-  const CO_RIDE_PAGE_SIZE = 1000;
-  const allCoRides: CoRideRow[] = [];
-  let coRideOffset = 0;
-  let hasMoreCoRides = true;
-
-  while (hasMoreCoRides) {
-    const { data: page, error: pageError } = await supabase
-      .from("ride_co_occurrences" as never)
-      .select(
-        "ride1_id, rider1_id, ride2_id, rider2_id, route_category, ride_date",
-      )
-      .range(coRideOffset, coRideOffset + CO_RIDE_PAGE_SIZE - 1)
-      .order("ride_date", { ascending: false })
-      .order("ride1_id", { ascending: true }) // unique tiebreaker: stable paging
-      .order("ride2_id", { ascending: true });
-
-    if (pageError) {
-      throw new Error(`Failed to fetch co-ride data: ${pageError.message}`);
-    }
-
-    if (!page || page.length === 0) {
-      hasMoreCoRides = false;
-    } else {
-      allCoRides.push(...(page as CoRideRow[]));
-      coRideOffset += page.length;
-      if (page.length < CO_RIDE_PAGE_SIZE) {
-        hasMoreCoRides = false;
-      }
-    }
+  const { data, error } = await supabase.rpc("recompute_group_rides");
+  if (error) {
+    throw new Error(`Failed to recompute group rides: ${error.message}`);
   }
-
-  console.log(
-    `[group-rides] Fetched ${allCoRides.length} co-ride rows from MV`,
-  );
-
-  // 2. Build pairs for clustering
-  const validPairs = allCoRides.map((row) => ({
-    rider1Id: row.rider1_id,
-    rider2Id: row.rider2_id,
-    ride1Id: row.ride1_id,
-    ride2Id: row.ride2_id,
-    date: row.ride_date,
-    route: row.route_category,
-  }));
-
-  // 3. Cluster into connected components (group rides)
-  const groups = clusterIntoGroups(validPairs);
-
-  console.log(`[group-rides] Clustered into ${groups.length} groups`);
-
-  // 4. Fetch ride data for stats (batched)
-  const allRideIds = new Set<string>();
-  for (const group of groups) {
-    for (const rideId of group.rideIds) allRideIds.add(rideId);
-  }
-
-  const rideIdArr = Array.from(allRideIds);
-  const rideMap = new Map<string, RideRow>();
-
-  for (let i = 0; i < rideIdArr.length; i += IN_BATCH_SIZE) {
-    const batch = rideIdArr.slice(i, i + IN_BATCH_SIZE);
-    const { data: ridesData, error: ridesError } = await supabase
-      .from("rides")
-      .select(
-        "id, user_id, ride_date, route_category, average_speed_mps, max_speed_mps, distance_meters, elevation_gain_meters, average_watts, max_watts, average_heartrate, max_heartrate, moving_time_seconds",
-      )
-      .in("id", batch);
-
-    if (ridesError) {
-      throw new Error(`Failed to fetch rides: ${ridesError.message}`);
-    }
-
-    for (const ride of (ridesData ?? []) as RideRow[]) {
-      rideMap.set(ride.id, ride);
-    }
-  }
-
-  // 5. Fetch user data (batched)
-  const allUserIds = new Set<string>();
-  for (const group of groups) {
-    for (const riderId of group.riderIds) allUserIds.add(riderId);
-  }
-
-  const userIdArr = Array.from(allUserIds);
-  const userMap = new Map<string, UserRow>();
-
-  for (let i = 0; i < userIdArr.length; i += IN_BATCH_SIZE) {
-    const batch = userIdArr.slice(i, i + IN_BATCH_SIZE);
-    const { data: usersData, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, avatar_url")
-      .in("id", batch);
-
-    if (usersError) {
-      throw new Error(`Failed to fetch users: ${usersError.message}`);
-    }
-
-    for (const user of (usersData ?? []) as UserRow[]) {
-      userMap.set(user.id, user);
-    }
-  }
-
-  // 6. Build group ride records + member records
-  const groupRideRows: Array<Record<string, unknown>> = [];
-  const memberRows: Array<Record<string, unknown>> = [];
-
-  const avg = (arr: number[]) =>
-    arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
-  const max = (arr: number[]) => (arr.length > 0 ? Math.max(...arr) : 0);
-  const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
-
-  for (const group of groups) {
-    const groupRides: RideRow[] = [];
-    for (const rideId of group.rideIds) {
-      const ride = rideMap.get(rideId);
-      if (ride) groupRides.push(ride);
-    }
-
-    if (groupRides.length === 0) continue;
-
-    const speeds = groupRides
-      .map((r) => r.average_speed_mps)
-      .filter((v): v is number => v != null);
-    const maxSpeeds = groupRides
-      .map((r) => r.max_speed_mps)
-      .filter((v): v is number => v != null);
-    const watts = groupRides
-      .map((r) => r.average_watts)
-      .filter((v): v is number => v != null);
-    const maxWattsArr = groupRides
-      .map((r) => r.max_watts)
-      .filter((v): v is number => v != null);
-    const heartrates = groupRides
-      .map((r) => r.average_heartrate)
-      .filter((v): v is number => v != null);
-    const distances = groupRides
-      .map((r) => r.distance_meters)
-      .filter((v): v is number => v != null);
-    const elevations = groupRides
-      .map((r) => r.elevation_gain_meters)
-      .filter((v): v is number => v != null);
-
-    const riderIds = Array.from(group.riderIds);
-    const id = await generateGroupRideId(group.date, group.route, riderIds);
-
-    groupRideRows.push({
-      id,
-      ride_date: group.date,
-      route_category: group.route,
-      rider_count: riderIds.length,
-      avg_speed_mps: avg(speeds),
-      max_speed_mps: max(maxSpeeds),
-      avg_watts: watts.length > 0 ? avg(watts) : null,
-      max_watts: maxWattsArr.length > 0 ? max(maxWattsArr) : null,
-      avg_heartrate: heartrates.length > 0 ? avg(heartrates) : null,
-      total_distance_meters: sum(distances),
-      total_elevation_meters: sum(elevations),
-      computed_at: new Date().toISOString(),
-    });
-
-    for (const riderId of riderIds) {
-      const user = userMap.get(riderId);
-      memberRows.push({
-        group_ride_id: id,
-        user_id: riderId,
-        display_name: user?.display_name ?? null,
-        avatar_url: user?.avatar_url ?? null,
-      });
-    }
-  }
-
-  console.log(
-    `[group-rides] Storing ${groupRideRows.length} groups with ${memberRows.length} members`,
-  );
-
-  // 7. Replace all data (delete old + insert new) in a transaction-like approach
-  // Delete all existing data first
-  const { error: deleteError } = await supabase
-    .from("group_rides" as never)
-    .delete()
-    .neq("id", ""); // delete all rows
-
-  if (deleteError) {
-    throw new Error(`Failed to clear group_rides: ${deleteError.message}`);
-  }
-
-  // Insert group rides in batches
-  const UPSERT_BATCH = 200;
-  for (let i = 0; i < groupRideRows.length; i += UPSERT_BATCH) {
-    const batch = groupRideRows.slice(i, i + UPSERT_BATCH);
-    const { error: insertError } = await supabase
-      .from("group_rides" as never)
-      .insert(batch as never);
-
-    if (insertError) {
-      throw new Error(`Failed to insert group_rides: ${insertError.message}`);
-    }
-  }
-
-  // Insert members in batches (CASCADE delete already removed old ones)
-  for (let i = 0; i < memberRows.length; i += UPSERT_BATCH) {
-    const batch = memberRows.slice(i, i + UPSERT_BATCH);
-    const { error: insertError } = await supabase
-      .from("group_ride_members" as never)
-      .insert(batch as never);
-
-    if (insertError) {
-      throw new Error(
-        `Failed to insert group_ride_members: ${insertError.message}`,
-      );
-    }
-  }
-
-  console.log("[group-rides] Successfully stored all group rides");
+  console.log(`[group-rides] Stored ${data} group rides`);
+  return data ?? 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -829,6 +489,28 @@ async function fetchAndCacheStravaStreams(
 // ---------------------------------------------------------------------------
 // Server Function: Fetch group ride detail with streams
 // ---------------------------------------------------------------------------
+
+/**
+ * Deterministic group-ride id: first 16 hex chars of
+ * SHA-256("date:route:sorted rider ids"). recompute_group_rides (SQL) uses the
+ * same formula; the detail page re-derives it to validate its URL params.
+ */
+async function generateGroupRideId(
+  date: string,
+  routeCategory: RouteCategory,
+  riderIds: string[],
+): Promise<string> {
+  const sorted = [...riderIds].sort();
+  const input = `${date}:${routeCategory}:${sorted.join(",")}`;
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(input),
+  );
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .substring(0, 16);
+}
 
 const fetchGroupRideDetailInput = (input: {
   id: string;

@@ -87,8 +87,6 @@ jobs:
 
       - name: Recompute group rides
         if: always()
-        # Group-ride recompute pulls the co-occurrence view into the Worker and
-        # can exceed the Free plan's CPU limit until phase 03d moves it into SQL.
-        continue-on-error: true
+        # One SQL call (recompute_group_rides, migration 040).
         run: |
           "$RUNNER_TEMP/call.sh" groups | jq -c '{ok, error, subrequests, durationMs}'
