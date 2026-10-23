@@ -1,0 +1,266 @@
+{
+  "generatedFrom": "scripts/gen-fixtures.ts",
+  "fixtureNow": "2026-10-16T12:00:00Z",
+  "totals": {
+    "riders": 9,
+    "rides": 360,
+    "sf2gRides": 297
+  },
+  "perRider": {
+    "00000000-0000-4000-8000-000000000001": {
+      "name": "Ada Bayway",
+      "totalRides": 80,
+      "sf2gTotal": 58,
+      "sf2gWeekdays": 58,
+      "sf2gVisible": 58,
+      "sf2gVisibleWeekdays": 58,
+      "commutesVisible": 65,
+      "sf2gReverse": 3,
+      "pprDawnRides": 19,
+      "hiddenRides": 0,
+      "byRoute": {
+        "none": 15,
+        "bayway": 50,
+        "other": 7,
+        "royale": 6,
+        "skyline": 2
+      },
+      "sf2gDistanceMeters": 2829826.1,
+      "activeYears": 8,
+      "lastRideDate": "2026-10-13",
+      "firstRideDate": "2019-04-30"
+    },
+    "00000000-0000-4000-8000-000000000002": {
+      "name": "Ben Skyline",
+      "totalRides": 90,
+      "sf2gTotal": 86,
+      "sf2gWeekdays": 84,
+      "sf2gVisible": 86,
+      "sf2gVisibleWeekdays": 84,
+      "commutesVisible": 86,
+      "sf2gReverse": 0,
+      "pprDawnRides": 51,
+      "hiddenRides": 0,
+      "byRoute": {
+        "none": 4,
+        "skyline": 75,
+        "hmbw": 11
+      },
+      "sf2gDistanceMeters": 5076998.5,
+      "activeYears": 9,
+      "lastRideDate": "2026-10-13",
+      "firstRideDate": "2018-01-25"
+    },
+    "00000000-0000-4000-8000-000000000003": {
+      "name": "Cam Mixed",
+      "totalRides": 70,
+      "sf2gTotal": 47,
+      "sf2gWeekdays": 43,
+      "sf2gVisible": 47,
+      "sf2gVisibleWeekdays": 43,
+      "commutesVisible": 54,
+      "sf2gReverse": 3,
+      "pprDawnRides": 12,
+      "hiddenRides": 0,
+      "byRoute": {
+        "skyline": 10,
+        "fleaway": 8,
+        "other": 7,
+        "mebw": 3,
+        "none": 16,
+        "febw": 1,
+        "royale": 11,
+        "bayway": 9,
+        "hmbw": 5
+      },
+      "sf2gDistanceMeters": 2589384.6,
+      "activeYears": 7,
+      "lastRideDate": "2026-10-13",
+      "firstRideDate": "2020-01-26"
+    },
+    "00000000-0000-4000-8000-000000000004": {
+      "name": "Dee Reverse",
+      "totalRides": 40,
+      "sf2gTotal": 34,
+      "sf2gWeekdays": 31,
+      "sf2gVisible": 34,
+      "sf2gVisibleWeekdays": 31,
+      "commutesVisible": 34,
+      "sf2gReverse": 19,
+      "pprDawnRides": 0,
+      "hiddenRides": 0,
+      "byRoute": {
+        "bayway": 11,
+        "royale": 23,
+        "none": 6
+      },
+      "sf2gDistanceMeters": 1607376.4,
+      "activeYears": 5,
+      "lastRideDate": "2026-09-29",
+      "firstRideDate": "2022-02-10"
+    },
+    "00000000-0000-4000-8000-000000000005": {
+      "name": "Eve Weekend",
+      "totalRides": 30,
+      "sf2gTotal": 27,
+      "sf2gWeekdays": 8,
+      "sf2gVisible": 27,
+      "sf2gVisibleWeekdays": 8,
+      "commutesVisible": 27,
+      "sf2gReverse": 0,
+      "pprDawnRides": 3,
+      "hiddenRides": 0,
+      "byRoute": {
+        "hmbw": 21,
+        "skyline": 6,
+        "none": 3
+      },
+      "sf2gDistanceMeters": 1853608,
+      "activeYears": 4,
+      "lastRideDate": "2026-10-03",
+      "firstRideDate": "2023-03-04"
+    },
+    "00000000-0000-4000-8000-000000000006": {
+      "name": "Fay Hidden",
+      "totalRides": 25,
+      "sf2gTotal": 20,
+      "sf2gWeekdays": 20,
+      "sf2gVisible": 19,
+      "sf2gVisibleWeekdays": 19,
+      "commutesVisible": 19,
+      "sf2gReverse": 0,
+      "pprDawnRides": 3,
+      "hiddenRides": 1,
+      "byRoute": {
+        "none": 5,
+        "bayway": 16,
+        "royale": 1,
+        "skyline": 3
+      },
+      "sf2gDistanceMeters": 1015809.5,
+      "activeYears": 3,
+      "lastRideDate": "2026-09-29",
+      "firstRideDate": "2024-05-27"
+    },
+    "00000000-0000-4000-8000-000000000007": {
+      "name": "Gus NoRides",
+      "totalRides": 0,
+      "sf2gTotal": 0,
+      "sf2gWeekdays": 0,
+      "sf2gVisible": 0,
+      "sf2gVisibleWeekdays": 0,
+      "commutesVisible": 0,
+      "sf2gReverse": 0,
+      "pprDawnRides": 0,
+      "hiddenRides": 0,
+      "byRoute": {},
+      "sf2gDistanceMeters": 0,
+      "activeYears": 0,
+      "lastRideDate": null,
+      "firstRideDate": null
+    },
+    "00000000-0000-4000-8000-000000000008": {
+      "name": "Hal Deauthorized",
+      "totalRides": 15,
+      "sf2gTotal": 15,
+      "sf2gWeekdays": 15,
+      "sf2gVisible": 15,
+      "sf2gVisibleWeekdays": 15,
+      "commutesVisible": 15,
+      "sf2gReverse": 0,
+      "pprDawnRides": 0,
+      "hiddenRides": 0,
+      "byRoute": {
+        "royale": 7,
+        "bayway": 8
+      },
+      "sf2gDistanceMeters": 711637.9,
+      "activeYears": 4,
+      "lastRideDate": "2024-11-21",
+      "firstRideDate": "2021-05-14"
+    },
+    "00000000-0000-4000-8000-000000000009": {
+      "name": "Ivy NoScope",
+      "totalRides": 10,
+      "sf2gTotal": 10,
+      "sf2gWeekdays": 10,
+      "sf2gVisible": 10,
+      "sf2gVisibleWeekdays": 10,
+      "commutesVisible": 10,
+      "sf2gReverse": 0,
+      "pprDawnRides": 3,
+      "hiddenRides": 0,
+      "byRoute": {
+        "skyline": 10
+      },
+      "sf2gDistanceMeters": 570513.4,
+      "activeYears": 2,
+      "lastRideDate": "2026-10-06",
+      "firstRideDate": "2025-01-13"
+    }
+  },
+  "groupDays": [
+    {
+      "date": "2026-10-13",
+      "route": "skyline",
+      "riders": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003"
+      ],
+      "hh": 6,
+      "mm": 0
+    },
+    {
+      "date": "2026-10-06",
+      "route": "skyline",
+      "riders": [
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000009"
+      ],
+      "hh": 6,
+      "mm": 0
+    },
+    {
+      "date": "2026-09-29",
+      "route": "bayway",
+      "riders": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000006"
+      ],
+      "hh": 6,
+      "mm": 5
+    },
+    {
+      "date": "2026-08-18",
+      "route": "hmbw",
+      "riders": [
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000005"
+      ],
+      "hh": 6,
+      "mm": 30
+    },
+    {
+      "date": "2025-06-10",
+      "route": "skyline",
+      "riders": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002"
+      ],
+      "hh": 6,
+      "mm": 0
+    },
+    {
+      "date": "2024-05-14",
+      "route": "royale",
+      "riders": [
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004"
+      ],
+      "hh": 7,
+      "mm": 10
+    }
+  ]
+}

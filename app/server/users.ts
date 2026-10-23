@@ -11,23 +11,29 @@ import { assertAdmin } from "../lib/admin";
 // ---------------------------------------------------------------------------
 // fetchUserProfile — fetches a user's public profile
 // ---------------------------------------------------------------------------
+const fetchUserProfileInput = (input: { userId: string }) => input;
+
+export async function fetchUserProfileImpl(
+  data: ReturnType<typeof fetchUserProfileInput>,
+): Promise<PublicUser> {
+  const supabase = createAnonClient();
+
+  const { data: user, error } = await supabase
+    .from("users")
+    .select(PUBLIC_USER_COLUMNS)
+    .eq("id", data.userId)
+    .single();
+
+  if (error || !user) {
+    throw new Error(`User not found: ${data.userId}`);
+  }
+
+  return user;
+}
+
 export const fetchUserProfile = createServerFn({ method: "GET" })
-  .inputValidator((input: { userId: string }) => input)
-  .handler(async ({ data }): Promise<PublicUser> => {
-    const supabase = createAnonClient();
-
-    const { data: user, error } = await supabase
-      .from("users")
-      .select(PUBLIC_USER_COLUMNS)
-      .eq("id", data.userId)
-      .single();
-
-    if (error || !user) {
-      throw new Error(`User not found: ${data.userId}`);
-    }
-
-    return user;
-  });
+  .inputValidator(fetchUserProfileInput)
+  .handler(({ data }) => fetchUserProfileImpl(data));
 
 // ---------------------------------------------------------------------------
 // fetchAllConnectedUsers — all users with a Strava connection (debug tool)

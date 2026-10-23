@@ -16,7 +16,10 @@ pnpm db:start      # local Supabase in Docker (Colima works: `colima start`)
 pnpm db:reset      # re-apply all migrations + seed
 pnpm dev           # http://localhost:5173 against the local DB
 pnpm typecheck
-pnpm test          # unit tests (Vitest)
+pnpm test          # unit + component tests (Vitest)
+pnpm test:db       # characterization + consistency tests against the local fixture DB
+pnpm e2e           # Playwright smoke tests (reuses a running `pnpm dev`)
+pnpm fixtures      # regenerate supabase/seed from scripts/gen-fixtures.ts
 pnpm build
 pnpm db:types      # regenerate app/lib/database.types.ts from the local DB
 ```
@@ -35,5 +38,6 @@ pnpm db:types      # regenerate app/lib/database.types.ts from the local DB
 2. **Migrations reach prod only via Phillip** (`supabase db push --linked`) after review. Note any required deploy order in the migration header.
 3. **Never return secrets to the browser.** No `select("*")` on `users` with the anon client; use `PUBLIC_USER_COLUMNS`. Admin/maintenance server functions start with `await assertAdmin()` (`app/lib/admin.ts`); sessions are HMAC-signed (`app/lib/session.ts`).
 4. **No data-proportional work in request handlers.** Aggregate in SQL; a server function making more than 3 Supabase requests is a bug.
-5. **Tests first.** Write the failing test, then the fix. Changing a golden number needs a sentence in the PR explaining why the new number is right.
+5. **Tests first.** Write the failing test, then the fix. Changing a golden number (characterization snapshot) needs a sentence in the PR explaining why the new number is right. Known bugs are `it.fails` tests listed in `docs/rework/KNOWN_DISCREPANCIES.md`; a fix removes the `.fails`.
+   Server functions are thin wrappers around exported `…Impl` functions so tests can call the logic directly.
 6. Never commit `.env*.local`. Keep PRs to one phase/sub-phase.
