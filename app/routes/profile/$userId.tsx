@@ -6,7 +6,7 @@ import { fetchUserProfile } from "../../server/users";
 import { disconnectStrava } from "../../server/auth";
 import { currentUserQueryOptions } from "../../queries/user";
 import { ProfileRidesTable } from "../../components/ProfileRidesTable";
-import type { User } from "../../lib/database.types";
+import type { PublicUser } from "../../lib/public-user";
 const RideFrequencyChart = lazy(() =>
   import("../../components/RideFrequencyChart").then((m) => ({
     default: m.RideFrequencyChart,
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/profile/$userId")({
 function ProfilePage() {
   const { userId } = Route.useParams();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<PublicUser | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);

@@ -13,6 +13,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
+import { assertAdmin } from "../lib/admin";
 import type { Json } from "../lib/database.types";
 import { classifyRoute } from "../lib/route-classifier";
 import { classifyDestination } from "../lib/destination-classifier";
@@ -459,6 +460,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
  */
 export const triggerReclassify = createServerFn({ method: "POST" }).handler(
   async (): Promise<ReclassifyResult> => {
+    await assertAdmin();
     return performReclassification();
   },
 );

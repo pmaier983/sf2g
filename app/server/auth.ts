@@ -20,7 +20,7 @@ import {
   clearSessionData,
 } from "../lib/session";
 import { getMissingScopes } from "../lib/constants";
-import type { User } from "../lib/database.types";
+import { PUBLIC_USER_COLUMNS, type PublicUser } from "../lib/public-user";
 
 // ---------------------------------------------------------------------------
 // getStravaAuthUrl — returns the Strava OAuth authorize URL
@@ -130,14 +130,14 @@ export const handleStravaCallback = createServerFn({ method: "POST" })
 // getCurrentUser — reads session cookie and returns the user from DB
 // ---------------------------------------------------------------------------
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(
-  async (): Promise<User | null> => {
+  async (): Promise<PublicUser | null> => {
     const session = await getSessionData();
     if (!session) return null;
 
     const supabase = createAnonClient();
     const { data: user, error } = await supabase
       .from("users")
-      .select("*")
+      .select(PUBLIC_USER_COLUMNS)
       .eq("id", session.userId)
       .single();
 
