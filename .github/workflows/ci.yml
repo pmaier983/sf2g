@@ -38,7 +38,7 @@ jobs:
           cache: pnpm
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.121.0
       - run: pnpm install --frozen-lockfile
       - name: Start local Supabase (applies migrations + fixtures)
         run: pnpm db:start
@@ -61,7 +61,7 @@ jobs:
           cache: pnpm
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.121.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:start
       - name: Local env
