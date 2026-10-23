@@ -8,9 +8,12 @@
  * - Streaks & day-of-week heatmap
  * - Fun comparisons (distance equivalents, time on bike)
  */
-import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { communityStartHoursQueryOptions, communityStreaksQueryOptions } from '../queries/rides'
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  communityStartHoursQueryOptions,
+  communityStreaksQueryOptions,
+} from "../queries/rides";
 import {
   AreaChart,
   Area,
@@ -20,76 +23,76 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   type TooltipProps,
-} from 'recharts'
-import type { Ride } from '../lib/database.types'
-import { useUnit } from '../lib/useUnit'
+} from "recharts";
+import type { ProfileRide } from "../lib/database.types";
+import { useUnit } from "../lib/useUnit";
 import {
   formatDistance,
   formatElevation,
   formatSpeed,
   formatMovingTime,
-} from '../lib/leaderboard-utils'
+} from "../lib/leaderboard-utils";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const EVEREST_HEIGHT_METERS = 8_849
-const EARTH_CIRCUMFERENCE_KM = 40_075
-const SF_TO_LA_KM = 616
-const METERS_PER_KM = 1_000
+const EVEREST_HEIGHT_METERS = 8_849;
+const EARTH_CIRCUMFERENCE_KM = 40_075;
+const SF_TO_LA_KM = 616;
+const METERS_PER_KM = 1_000;
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface ProfileFunStatsProps {
-  rides: Ride[]
+  rides: ProfileRide[];
   /** Total number of ALL rides (including non-SF2G) for SF2G% calculation */
-  totalAllRides?: number
+  totalAllRides?: number;
 }
 
 interface MonthlyTrendPoint {
-  month: string
-  label: string
-  cumulativeSf2g: number
-  monthlyCount: number
+  month: string;
+  label: string;
+  cumulativeSf2g: number;
+  monthlyCount: number;
 }
 
 interface PersonalRecord {
-  label: string
-  value: string
-  rideName: string | null
-  rideDate: string
-  stravaId: number
+  label: string;
+  value: string;
+  rideName: string | null;
+  rideDate: string;
+  stravaId: number;
 }
 
 interface SpeedImprovement {
   firstRide: {
-    name: string | null
-    date: string
-    speedMps: number
-    stravaId: number
-  }
+    name: string | null;
+    date: string;
+    speedMps: number;
+    stravaId: number;
+  };
   fastestRide: {
-    name: string | null
-    date: string
-    speedMps: number
-    stravaId: number
-  }
-  improvementPct: number
-  timeSavedSeconds: number
-  isSameRide: boolean
+    name: string | null;
+    date: string;
+    speedMps: number;
+    stravaId: number;
+  };
+  improvementPct: number;
+  timeSavedSeconds: number;
+  isSameRide: boolean;
 }
 
 interface AvgSpeedImprovement {
-  firstRideSpeed: number
-  currentAvgSpeed: number
-  improvementPct: number
-  timeSavedSeconds: number
-  avgDistance: number
+  firstRideSpeed: number;
+  currentAvgSpeed: number;
+  improvementPct: number;
+  timeSavedSeconds: number;
+  avgDistance: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,104 +100,112 @@ interface AvgSpeedImprovement {
 // ---------------------------------------------------------------------------
 
 function formatMonthLabel(monthStr: string): string {
-  const [year, month] = monthStr.split('-')
-  const date = new Date(Number(year), Number(month) - 1)
-  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+  const [year, month] = monthStr.split("-");
+  const date = new Date(Number(year), Number(month) - 1);
+  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
 /**
  * Get the best streak of consecutive weeks with at least one SF2G ride.
  */
-function computeWeekStreak(rides: Ride[]): { current: number; best: number } {
-  if (rides.length === 0) return { current: 0, best: 0 }
+function computeWeekStreak(rides: ProfileRide[]): {
+  current: number;
+  best: number;
+} {
+  if (rides.length === 0) return { current: 0, best: 0 };
 
   // Map each ride to its ISO week key (YYYY-WW)
-  const rideWeeks = new Set<string>()
+  const rideWeeks = new Set<string>();
   for (const ride of rides) {
-    const date = new Date(ride.ride_date)
+    const date = new Date(ride.ride_date);
     // Use UTC methods since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight
-    const jan1 = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
-    const dayOfYear = Math.floor((date.getTime() - jan1.getTime()) / 86400000)
-    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
-    rideWeeks.add(`${date.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`)
+    const jan1 = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    const dayOfYear = Math.floor((date.getTime() - jan1.getTime()) / 86400000);
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7);
+    rideWeeks.add(
+      `${date.getUTCFullYear()}-${String(weekNum).padStart(2, "0")}`,
+    );
   }
 
   // Generate all weeks from first to last ride
   const sortedDates = rides
     .map((r) => new Date(r.ride_date))
-    .sort((a, b) => a.getTime() - b.getTime())
-  const firstDate = sortedDates[0]
-  const lastDate = sortedDates[sortedDates.length - 1]
+    .sort((a, b) => a.getTime() - b.getTime());
+  const firstDate = sortedDates[0];
+  const lastDate = sortedDates[sortedDates.length - 1];
 
-  let best = 0
-  let current = 0
-  const cursor = new Date(firstDate)
+  let best = 0;
+  let current = 0;
+  const cursor = new Date(firstDate);
   // Align to Monday (use UTC methods for date-only strings)
-  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7))
+  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7));
 
   while (cursor <= lastDate) {
-    const jan1 = new Date(Date.UTC(cursor.getUTCFullYear(), 0, 1))
-    const dayOfYear = Math.floor((cursor.getTime() - jan1.getTime()) / 86400000)
-    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7)
-    const key = `${cursor.getUTCFullYear()}-${String(weekNum).padStart(2, '0')}`
+    const jan1 = new Date(Date.UTC(cursor.getUTCFullYear(), 0, 1));
+    const dayOfYear = Math.floor(
+      (cursor.getTime() - jan1.getTime()) / 86400000,
+    );
+    const weekNum = Math.ceil((dayOfYear + jan1.getUTCDay() + 1) / 7);
+    const key = `${cursor.getUTCFullYear()}-${String(weekNum).padStart(2, "0")}`;
 
     if (rideWeeks.has(key)) {
-      current++
-      best = Math.max(best, current)
+      current++;
+      best = Math.max(best, current);
     } else {
-      current = 0
+      current = 0;
     }
-    cursor.setUTCDate(cursor.getUTCDate() + 7)
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
   }
 
-  return { current, best }
+  return { current, best };
 }
 
 /**
  * Compute the day-of-week distribution (0=Mon, 6=Sun).
  */
-function computeDayDistribution(rides: Ride[]): number[] {
-  const counts = new Array(7).fill(0) as number[]
+function computeDayDistribution(rides: ProfileRide[]): number[] {
+  const counts = new Array(7).fill(0) as number[];
   for (const ride of rides) {
-    const date = new Date(ride.ride_date)
+    const date = new Date(ride.ride_date);
     // Use getUTCDay since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight;
     // getDay() would return the local-time day, which is off-by-one for US timezones.
-    const dayIdx = (date.getUTCDay() + 6) % 7
-    counts[dayIdx]++
+    const dayIdx = (date.getUTCDay() + 6) % 7;
+    counts[dayIdx]++;
   }
-  return counts
+  return counts;
 }
 
 // ---------------------------------------------------------------------------
 // Custom Tooltip
 // ---------------------------------------------------------------------------
 
-function TrendTooltip({ active, payload, label }: TooltipProps<number, string>) {
-  if (!active || !payload?.length) return null
+function TrendTooltip({
+  active,
+  payload,
+  label,
+}: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
   return (
     <div
       style={{
-        background: 'var(--color-surface-elevated)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-md)',
-        fontSize: 'var(--text-sm)',
-        color: 'var(--color-text)',
-        padding: '8px 12px',
+        background: "var(--color-surface-elevated)",
+        border: "1px solid var(--color-border)",
+        borderRadius: "var(--radius-md)",
+        fontSize: "var(--text-sm)",
+        color: "var(--color-text)",
+        padding: "8px 12px",
       }}
     >
       <p style={{ fontWeight: 600, marginBottom: 4 }}>{label}</p>
       {payload.map((entry) => (
-        <p
-          key={entry.dataKey}
-          style={{ color: entry.color, margin: '2px 0' }}
-        >
-          {entry.dataKey === 'cumulativeSf2g'
+        <p key={entry.dataKey} style={{ color: entry.color, margin: "2px 0" }}>
+          {entry.dataKey === "cumulativeSf2g"
             ? `Total SF2G: ${entry.value}`
             : `This month: ${entry.value}`}
         </p>
       ))}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -202,176 +213,195 @@ function TrendTooltip({ active, payload, label }: TooltipProps<number, string>) 
 // ---------------------------------------------------------------------------
 
 export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
-  const unit = useUnit()
-  const { data: communityData } = useQuery(communityStartHoursQueryOptions())
-  const { data: communityStreakData } = useQuery(communityStreaksQueryOptions())
+  const unit = useUnit();
+  const { data: communityData } = useQuery(communityStartHoursQueryOptions());
+  const { data: communityStreakData } = useQuery(
+    communityStreaksQueryOptions(),
+  );
 
   // Compute what percentage of community riders start later than this user
   const earlierThanPct = useMemo(() => {
-    if (!communityData?.averageHours.length) return null
+    if (!communityData?.averageHours.length) return null;
     // stats.avgStartUtcHour is set during the useMemo below — compute inline here
-    if (rides.length === 0) return null
-    let totalUtc = 0
+    if (rides.length === 0) return null;
+    let totalUtc = 0;
     for (const ride of rides) {
-      const d = new Date(ride.start_date)
-      totalUtc += d.getUTCHours() + d.getUTCMinutes() / 60
+      const d = new Date(ride.start_date);
+      totalUtc += d.getUTCHours() + d.getUTCMinutes() / 60;
     }
-    const userAvgUtc = totalUtc / rides.length
+    const userAvgUtc = totalUtc / rides.length;
     // Count how many community riders have a LATER (higher) average start hour
-    const laterCount = communityData.averageHours.filter((h) => h > userAvgUtc).length
-    return Math.round((laterCount / communityData.averageHours.length) * 100)
-  }, [communityData, rides])
+    const laterCount = communityData.averageHours.filter(
+      (h) => h > userAvgUtc,
+    ).length;
+    return Math.round((laterCount / communityData.averageHours.length) * 100);
+  }, [communityData, rides]);
 
   const stats = useMemo(() => {
-    if (rides.length === 0) return null
+    if (rides.length === 0) return null;
 
     const sortedRides = [...rides].sort(
-      (a, b) => new Date(a.ride_date).getTime() - new Date(b.ride_date).getTime(),
-    )
+      (a, b) =>
+        new Date(a.ride_date).getTime() - new Date(b.ride_date).getTime(),
+    );
 
     // ── Monthly trend (cumulative SF2G rides) ──
-    const monthlyMap = new Map<string, number>()
+    const monthlyMap = new Map<string, number>();
     for (const ride of sortedRides) {
-      const month = ride.ride_date.slice(0, 7) // YYYY-MM
-      monthlyMap.set(month, (monthlyMap.get(month) ?? 0) + 1)
+      const month = ride.ride_date.slice(0, 7); // YYYY-MM
+      monthlyMap.set(month, (monthlyMap.get(month) ?? 0) + 1);
     }
 
-    const sortedMonths = Array.from(monthlyMap.keys()).sort()
-    let cumulative = 0
+    const sortedMonths = Array.from(monthlyMap.keys()).sort();
+    let cumulative = 0;
     const trendData: MonthlyTrendPoint[] = sortedMonths.map((month) => {
-      const count = monthlyMap.get(month) ?? 0
-      cumulative += count
+      const count = monthlyMap.get(month) ?? 0;
+      cumulative += count;
       return {
         month,
         label: formatMonthLabel(month),
         cumulativeSf2g: cumulative,
         monthlyCount: count,
-      }
-    })
+      };
+    });
 
     // ── Elevation: Everest counter ──
     const totalElevation = rides.reduce(
       (sum, r) => sum + (r.elevation_gain_meters ?? 0),
       0,
-    )
-    const everests = totalElevation / EVEREST_HEIGHT_METERS
+    );
+    const everests = totalElevation / EVEREST_HEIGHT_METERS;
 
     // ── Distance equivalents ──
     const totalDistance = rides.reduce(
       (sum, r) => sum + (r.distance_meters ?? 0),
       0,
-    )
-    const totalDistanceKm = totalDistance / METERS_PER_KM
-    const sfToLaTrips = totalDistanceKm / SF_TO_LA_KM
-    const earthLaps = totalDistanceKm / EARTH_CIRCUMFERENCE_KM
+    );
+    const totalDistanceKm = totalDistance / METERS_PER_KM;
+    const sfToLaTrips = totalDistanceKm / SF_TO_LA_KM;
+    const earthLaps = totalDistanceKm / EARTH_CIRCUMFERENCE_KM;
 
     // ── Time on bike ──
     const totalMovingSeconds = rides.reduce(
       (sum, r) => sum + (r.moving_time_seconds ?? 0),
       0,
-    )
-    const totalHours = totalMovingSeconds / 3600
+    );
+    const totalHours = totalMovingSeconds / 3600;
 
     // ── Personal records ──
-    const prs: PersonalRecord[] = []
+    const prs: PersonalRecord[] = [];
 
     // Fastest ride
-    const fastestRide = rides.reduce<Ride | null>((best, r) => {
-      if (r.average_speed_mps == null) return best
-      if (!best || (r.average_speed_mps > (best.average_speed_mps ?? 0))) return r
-      return best
-    }, null)
+    const fastestRide = rides.reduce<ProfileRide | null>((best, r) => {
+      if (r.average_speed_mps == null) return best;
+      if (!best || r.average_speed_mps > (best.average_speed_mps ?? 0))
+        return r;
+      return best;
+    }, null);
     if (fastestRide) {
       prs.push({
-        label: '⚡ Fastest Ride',
+        label: "⚡ Fastest Ride",
         value: formatSpeed(fastestRide.average_speed_mps ?? 0, unit),
         rideName: fastestRide.name,
         rideDate: fastestRide.ride_date,
         stravaId: fastestRide.strava_activity_id,
-      })
+      });
     }
 
     // Longest ride
-    const longestRide = rides.reduce<Ride | null>((best, r) => {
-      if (r.distance_meters == null) return best
-      if (!best || (r.distance_meters > (best.distance_meters ?? 0))) return r
-      return best
-    }, null)
+    const longestRide = rides.reduce<ProfileRide | null>((best, r) => {
+      if (r.distance_meters == null) return best;
+      if (!best || r.distance_meters > (best.distance_meters ?? 0)) return r;
+      return best;
+    }, null);
     if (longestRide) {
       prs.push({
-        label: '📏 Longest Ride',
+        label: "📏 Longest Ride",
         value: formatDistance(longestRide.distance_meters ?? 0, unit),
         rideName: longestRide.name,
         rideDate: longestRide.ride_date,
         stravaId: longestRide.strava_activity_id,
-      })
+      });
     }
 
     // Most climbing
-    const climbiest = rides.reduce<Ride | null>((best, r) => {
-      if (r.elevation_gain_meters == null) return best
-      if (!best || (r.elevation_gain_meters > (best.elevation_gain_meters ?? 0))) return r
-      return best
-    }, null)
+    const climbiest = rides.reduce<ProfileRide | null>((best, r) => {
+      if (r.elevation_gain_meters == null) return best;
+      if (!best || r.elevation_gain_meters > (best.elevation_gain_meters ?? 0))
+        return r;
+      return best;
+    }, null);
     if (climbiest) {
       prs.push({
-        label: '🏔️ Most Climbing',
+        label: "🏔️ Most Climbing",
         value: formatElevation(climbiest.elevation_gain_meters ?? 0, unit),
         rideName: climbiest.name,
         rideDate: climbiest.ride_date,
         stravaId: climbiest.strava_activity_id,
-      })
+      });
     }
 
     // Longest ride (time)
-    const longestTime = rides.reduce<Ride | null>((best, r) => {
-      if (r.moving_time_seconds == null) return best
-      if (!best || (r.moving_time_seconds > (best.moving_time_seconds ?? 0))) return r
-      return best
-    }, null)
+    const longestTime = rides.reduce<ProfileRide | null>((best, r) => {
+      if (r.moving_time_seconds == null) return best;
+      if (!best || r.moving_time_seconds > (best.moving_time_seconds ?? 0))
+        return r;
+      return best;
+    }, null);
     if (longestTime) {
       prs.push({
-        label: '⏱️ Longest Time',
+        label: "⏱️ Longest Time",
         value: formatMovingTime(longestTime.moving_time_seconds),
         rideName: longestTime.name,
         rideDate: longestTime.ride_date,
         stravaId: longestTime.strava_activity_id,
-      })
+      });
     }
 
     // ── Speed Improvement ──
     // Filter to SF2G rides only (route_category is not null and not 'other')
     const sf2gRides = rides.filter(
-      (r) => r.route_category != null && r.route_category !== 'other' && r.average_speed_mps != null,
-    )
+      (r) =>
+        r.route_category != null &&
+        r.route_category !== "other" &&
+        r.average_speed_mps != null,
+    );
 
-    let speedImprovement: SpeedImprovement | null = null
-    let avgSpeedImprovement: AvgSpeedImprovement | null = null
+    let speedImprovement: SpeedImprovement | null = null;
+    let avgSpeedImprovement: AvgSpeedImprovement | null = null;
     if (sf2gRides.length >= 10) {
       // First SF2G ride (earliest by ride_date)
       const sortedSf2g = [...sf2gRides].sort(
-        (a, b) => new Date(a.ride_date).getTime() - new Date(b.ride_date).getTime(),
-      )
-      const firstSf2g = sortedSf2g[0]
+        (a, b) =>
+          new Date(a.ride_date).getTime() - new Date(b.ride_date).getTime(),
+      );
+      const firstSf2g = sortedSf2g[0];
 
       // Fastest SF2G ride (highest average_speed_mps)
-      const fastestSf2g = sf2gRides.reduce<Ride | null>((best, r) => {
-        if (!best || (r.average_speed_mps ?? 0) > (best.average_speed_mps ?? 0)) return r
-        return best
-      }, null)
+      const fastestSf2g = sf2gRides.reduce<ProfileRide | null>((best, r) => {
+        if (!best || (r.average_speed_mps ?? 0) > (best.average_speed_mps ?? 0))
+          return r;
+        return best;
+      }, null);
 
-      if (firstSf2g && fastestSf2g && firstSf2g.average_speed_mps && firstSf2g.average_speed_mps > 0) {
-        const firstSpeed = firstSf2g.average_speed_mps
-        const fastestSpeed = fastestSf2g.average_speed_mps ?? 0
-        const improvementPct = ((fastestSpeed - firstSpeed) / firstSpeed) * 100
+      if (
+        firstSf2g &&
+        fastestSf2g &&
+        firstSf2g.average_speed_mps &&
+        firstSf2g.average_speed_mps > 0
+      ) {
+        const firstSpeed = firstSf2g.average_speed_mps;
+        const fastestSpeed = fastestSf2g.average_speed_mps ?? 0;
+        const improvementPct = ((fastestSpeed - firstSpeed) / firstSpeed) * 100;
 
         // Estimate time saved using average SF2G distance
-        const avgSf2gDistance = sf2gRides.reduce(
-          (sum, r) => sum + (r.distance_meters ?? 0), 0,
-        ) / sf2gRides.length
-        const timeAtFirstSpeed = avgSf2gDistance / firstSpeed
-        const timeAtFastestSpeed = fastestSpeed > 0 ? avgSf2gDistance / fastestSpeed : timeAtFirstSpeed
-        const timeSavedSeconds = timeAtFirstSpeed - timeAtFastestSpeed
+        const avgSf2gDistance =
+          sf2gRides.reduce((sum, r) => sum + (r.distance_meters ?? 0), 0) /
+          sf2gRides.length;
+        const timeAtFirstSpeed = avgSf2gDistance / firstSpeed;
+        const timeAtFastestSpeed =
+          fastestSpeed > 0 ? avgSf2gDistance / fastestSpeed : timeAtFirstSpeed;
+        const timeSavedSeconds = timeAtFirstSpeed - timeAtFastestSpeed;
 
         speedImprovement = {
           firstRide: {
@@ -388,19 +418,29 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
           },
           improvementPct,
           timeSavedSeconds,
-          isSameRide: firstSf2g.strava_activity_id === fastestSf2g.strava_activity_id,
-        }
+          isSameRide:
+            firstSf2g.strava_activity_id === fastestSf2g.strava_activity_id,
+        };
 
         // ── Average Speed Improvement ──
         // Compare current average SF2G speed vs first ride speed
-        const speedSum = sf2gRides.reduce((sum, r) => sum + (r.average_speed_mps ?? 0), 0)
-        const speedCount = sf2gRides.filter((r) => r.average_speed_mps != null).length
-        const currentAvgSpeed = speedCount > 0 ? speedSum / speedCount : 0
+        const speedSum = sf2gRides.reduce(
+          (sum, r) => sum + (r.average_speed_mps ?? 0),
+          0,
+        );
+        const speedCount = sf2gRides.filter(
+          (r) => r.average_speed_mps != null,
+        ).length;
+        const currentAvgSpeed = speedCount > 0 ? speedSum / speedCount : 0;
 
         if (currentAvgSpeed > firstSpeed) {
-          const avgImprovementPct = ((currentAvgSpeed - firstSpeed) / firstSpeed) * 100
-          const timeAtAvgSpeed = currentAvgSpeed > 0 ? avgSf2gDistance / currentAvgSpeed : timeAtFirstSpeed
-          const avgTimeSaved = timeAtFirstSpeed - timeAtAvgSpeed
+          const avgImprovementPct =
+            ((currentAvgSpeed - firstSpeed) / firstSpeed) * 100;
+          const timeAtAvgSpeed =
+            currentAvgSpeed > 0
+              ? avgSf2gDistance / currentAvgSpeed
+              : timeAtFirstSpeed;
+          const avgTimeSaved = timeAtFirstSpeed - timeAtAvgSpeed;
 
           avgSpeedImprovement = {
             firstRideSpeed: firstSpeed,
@@ -408,33 +448,34 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             improvementPct: avgImprovementPct,
             timeSavedSeconds: avgTimeSaved,
             avgDistance: avgSf2gDistance,
-          }
+          };
         }
       }
     }
 
     // ── Streaks ──
-    const streaks = computeWeekStreak(sortedRides)
+    const streaks = computeWeekStreak(sortedRides);
 
     // ── Day distribution ──
-    const dayDistribution = computeDayDistribution(sortedRides)
-    const maxDayCount = Math.max(...dayDistribution)
-    const favoriteDayIdx = dayDistribution.indexOf(maxDayCount)
-    const favoriteDay = DAY_LABELS[favoriteDayIdx]
+    const dayDistribution = computeDayDistribution(sortedRides);
+    const maxDayCount = Math.max(...dayDistribution);
+    const favoriteDayIdx = dayDistribution.indexOf(maxDayCount);
+    const favoriteDay = DAY_LABELS[favoriteDayIdx];
 
     // ── Average start time ──
-    let totalMinutes = 0
-    let startTimeCount = 0
+    let totalMinutes = 0;
+    let startTimeCount = 0;
     for (const ride of rides) {
-      const date = new Date(ride.start_date)
-      const hours = date.getHours()
-      const minutes = date.getMinutes()
-      totalMinutes += hours * 60 + minutes
-      startTimeCount++
+      const date = new Date(ride.start_date);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      totalMinutes += hours * 60 + minutes;
+      startTimeCount++;
     }
-    const avgStartMinutes = startTimeCount > 0 ? totalMinutes / startTimeCount : 0
-    const avgStartHour = Math.floor(avgStartMinutes / 60)
-    const avgStartMinute = Math.round(avgStartMinutes % 60)
+    const avgStartMinutes =
+      startTimeCount > 0 ? totalMinutes / startTimeCount : 0;
+    const avgStartHour = Math.floor(avgStartMinutes / 60);
+    const avgStartMinute = Math.round(avgStartMinutes % 60);
 
     return {
       trendData,
@@ -456,10 +497,10 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
       rideCount: rides.length,
       speedImprovement,
       avgSpeedImprovement,
-    }
-  }, [rides, unit])
+    };
+  }, [rides, unit]);
 
-  if (!stats) return null
+  if (!stats) return null;
 
   return (
     <div className="fun-stats">
@@ -474,8 +515,16 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             >
               <defs>
                 <linearGradient id="sf2gGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-sf2g-orange)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="var(--color-sf2g-orange)" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-sf2g-orange)"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-sf2g-orange)"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -485,13 +534,13 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
               />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }}
-                axisLine={{ stroke: 'var(--color-border)' }}
+                tick={{ fontSize: 10, fill: "var(--color-text-muted)" }}
+                axisLine={{ stroke: "var(--color-border)" }}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
+                tick={{ fontSize: 12, fill: "var(--color-text-muted)" }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
@@ -519,9 +568,7 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             <div className="fun-stats__comparison-value">
               {stats.everests.toFixed(1)}×
             </div>
-            <div className="fun-stats__comparison-label">
-              Everests climbed
-            </div>
+            <div className="fun-stats__comparison-label">Everests climbed</div>
             <div className="fun-stats__comparison-detail">
               {formatElevation(stats.totalElevation, unit)} total
             </div>
@@ -533,9 +580,7 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             <div className="fun-stats__comparison-value">
               {stats.sfToLaTrips.toFixed(1)}×
             </div>
-            <div className="fun-stats__comparison-label">
-              SF→LA trips
-            </div>
+            <div className="fun-stats__comparison-label">SF→LA trips</div>
             <div className="fun-stats__comparison-detail">
               {formatDistance(stats.totalDistance, unit)} total
             </div>
@@ -547,9 +592,7 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             <div className="fun-stats__comparison-value">
               {Math.round(stats.totalHours)}h
             </div>
-            <div className="fun-stats__comparison-label">
-              on the bike
-            </div>
+            <div className="fun-stats__comparison-label">on the bike</div>
             <div className="fun-stats__comparison-detail">
               {(stats.totalHours / 24).toFixed(1)} full days
             </div>
@@ -565,11 +608,9 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                   : `${(stats.earthLaps * 100).toFixed(0)}%`}
               </div>
               <div className="fun-stats__comparison-label">
-                {stats.earthLaps >= 1 ? 'around Earth' : 'of Earth'}
+                {stats.earthLaps >= 1 ? "around Earth" : "of Earth"}
               </div>
-              <div className="fun-stats__comparison-detail">
-                circumference
-              </div>
+              <div className="fun-stats__comparison-detail">circumference</div>
             </div>
           )}
         </div>
@@ -591,12 +632,12 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                 <div className="fun-stats__pr-label">{pr.label}</div>
                 <div className="fun-stats__pr-value">{pr.value}</div>
                 <div className="fun-stats__pr-ride">
-                  {pr.rideName ?? 'Untitled'} ·{' '}
-                  {new Date(pr.rideDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: '2-digit',
-                    timeZone: 'UTC',
+                  {pr.rideName ?? "Untitled"} ·{" "}
+                  {new Date(pr.rideDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "2-digit",
+                    timeZone: "UTC",
                   })}
                 </div>
               </a>
@@ -613,7 +654,9 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
           {/* Fastest ride improvement */}
           {stats.speedImprovement && (
             <div className="fun-stats__speed-improvement">
-              <div className="fun-stats__speed-subsection-label">Fastest Ride vs. First Ride</div>
+              <div className="fun-stats__speed-subsection-label">
+                Fastest Ride vs. First Ride
+              </div>
               {stats.speedImprovement.isSameRide ? (
                 <div className="fun-stats__speed-message">
                   <div className="fun-stats__speed-message-icon">🔥</div>
@@ -630,20 +673,27 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                       rel="noopener noreferrer"
                       className="fun-stats__speed-ride-card"
                     >
-                      <div className="fun-stats__speed-ride-label">First SF2G</div>
+                      <div className="fun-stats__speed-ride-label">
+                        First SF2G
+                      </div>
                       <div className="fun-stats__speed-ride-date">
-                        {new Date(stats.speedImprovement.firstRide.date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          timeZone: 'UTC',
+                        {new Date(
+                          stats.speedImprovement.firstRide.date,
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          timeZone: "UTC",
                         })}
                       </div>
                       <div className="fun-stats__speed-ride-speed">
-                        {formatSpeed(stats.speedImprovement.firstRide.speedMps, unit)}
+                        {formatSpeed(
+                          stats.speedImprovement.firstRide.speedMps,
+                          unit,
+                        )}
                       </div>
                       <div className="fun-stats__speed-ride-name">
-                        {stats.speedImprovement.firstRide.name ?? 'Untitled'}
+                        {stats.speedImprovement.firstRide.name ?? "Untitled"}
                       </div>
                     </a>
 
@@ -655,20 +705,27 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                       rel="noopener noreferrer"
                       className="fun-stats__speed-ride-card"
                     >
-                      <div className="fun-stats__speed-ride-label">Fastest SF2G</div>
+                      <div className="fun-stats__speed-ride-label">
+                        Fastest SF2G
+                      </div>
                       <div className="fun-stats__speed-ride-date">
-                        {new Date(stats.speedImprovement.fastestRide.date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          timeZone: 'UTC',
+                        {new Date(
+                          stats.speedImprovement.fastestRide.date,
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          timeZone: "UTC",
                         })}
                       </div>
                       <div className="fun-stats__speed-ride-speed">
-                        {formatSpeed(stats.speedImprovement.fastestRide.speedMps, unit)}
+                        {formatSpeed(
+                          stats.speedImprovement.fastestRide.speedMps,
+                          unit,
+                        )}
                       </div>
                       <div className="fun-stats__speed-ride-name">
-                        {stats.speedImprovement.fastestRide.name ?? 'Untitled'}
+                        {stats.speedImprovement.fastestRide.name ?? "Untitled"}
                       </div>
                     </a>
                   </div>
@@ -676,7 +733,8 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                   <div className="fun-stats__speed-summary">
                     {stats.speedImprovement.improvementPct > 0 ? (
                       <span className="fun-stats__speed-improvement-positive">
-                        ▲ {stats.speedImprovement.improvementPct.toFixed(0)}% faster
+                        ▲ {stats.speedImprovement.improvementPct.toFixed(0)}%
+                        faster
                       </span>
                     ) : (
                       <span className="fun-stats__speed-improvement-negative">
@@ -685,7 +743,11 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                     )}
                     {stats.speedImprovement.timeSavedSeconds > 0 && (
                       <span className="fun-stats__speed-time-saved">
-                        {' · ~'}{Math.round(stats.speedImprovement.timeSavedSeconds / 60)} min faster per ride
+                        {" · ~"}
+                        {Math.round(
+                          stats.speedImprovement.timeSavedSeconds / 60,
+                        )}{" "}
+                        min faster per ride
                       </span>
                     )}
                   </div>
@@ -697,11 +759,16 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
           {/* Average speed improvement */}
           {stats.avgSpeedImprovement && (
             <div className="fun-stats__speed-improvement fun-stats__avg-speed-improvement">
-              <div className="fun-stats__speed-subsection-label">Average Speed vs. First Ride</div>
+              <div className="fun-stats__speed-subsection-label">
+                Average Speed vs. First Ride
+              </div>
               <div className="fun-stats__avg-speed-content">
                 <div className="fun-stats__avg-speed-stat">
                   <div className="fun-stats__avg-speed-value">
-                    {formatSpeed(stats.avgSpeedImprovement.firstRideSpeed, unit)}
+                    {formatSpeed(
+                      stats.avgSpeedImprovement.firstRideSpeed,
+                      unit,
+                    )}
                   </div>
                   <div className="fun-stats__avg-speed-label">First ride</div>
                 </div>
@@ -710,18 +777,27 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
 
                 <div className="fun-stats__avg-speed-stat">
                   <div className="fun-stats__avg-speed-value fun-stats__avg-speed-value--highlight">
-                    {formatSpeed(stats.avgSpeedImprovement.currentAvgSpeed, unit)}
+                    {formatSpeed(
+                      stats.avgSpeedImprovement.currentAvgSpeed,
+                      unit,
+                    )}
                   </div>
                   <div className="fun-stats__avg-speed-label">Current avg</div>
                 </div>
               </div>
               <div className="fun-stats__speed-summary">
                 <span className="fun-stats__speed-improvement-positive">
-                  ▲ Your average ride speed is {stats.avgSpeedImprovement.improvementPct.toFixed(0)}% faster than your first ride!
+                  ▲ Your average ride speed is{" "}
+                  {stats.avgSpeedImprovement.improvementPct.toFixed(0)}% faster
+                  than your first ride!
                 </span>
                 {stats.avgSpeedImprovement.timeSavedSeconds > 0 && (
                   <span className="fun-stats__speed-time-saved">
-                    {' · ~'}{Math.round(stats.avgSpeedImprovement.timeSavedSeconds / 60)} min faster on average
+                    {" · ~"}
+                    {Math.round(
+                      stats.avgSpeedImprovement.timeSavedSeconds / 60,
+                    )}{" "}
+                    min faster on average
                   </span>
                 )}
               </div>
@@ -745,24 +821,29 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             <div className="fun-stats__pattern-label">Best weekly streak</div>
             {stats.streaks.current > 0 && (
               <div className="fun-stats__pattern-detail">
-                🔥 {stats.streaks.current} week{stats.streaks.current !== 1 ? 's' : ''} active now
+                🔥 {stats.streaks.current} week
+                {stats.streaks.current !== 1 ? "s" : ""} active now
               </div>
             )}
-            {communityStreakData?.bestStreaks && communityStreakData.bestStreaks.length > 0 && (() => {
-              const longerThan = communityStreakData.bestStreaks.filter(
-                (s) => s < stats.streaks.best
-              ).length
-              const pct = Math.round((longerThan / communityStreakData.bestStreaks.length) * 100)
-              return (
-                <div className="fun-stats__pattern-detail">
-                  {pct >= 50
-                    ? `💪 Longer than ${pct}% of SF2G'ers`
-                    : pct > 0
-                      ? `📈 Longer than ${pct}% of SF2G'ers`
-                      : `🎯 Keep riding to build your streak!`}
-                </div>
-              )
-            })()}
+            {communityStreakData?.bestStreaks &&
+              communityStreakData.bestStreaks.length > 0 &&
+              (() => {
+                const longerThan = communityStreakData.bestStreaks.filter(
+                  (s) => s < stats.streaks.best,
+                ).length;
+                const pct = Math.round(
+                  (longerThan / communityStreakData.bestStreaks.length) * 100,
+                );
+                return (
+                  <div className="fun-stats__pattern-detail">
+                    {pct >= 50
+                      ? `💪 Longer than ${pct}% of SF2G'ers`
+                      : pct > 0
+                        ? `📈 Longer than ${pct}% of SF2G'ers`
+                        : `🎯 Keep riding to build your streak!`}
+                  </div>
+                );
+              })()}
           </div>
 
           {/* Favorite day */}
@@ -782,12 +863,12 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
             <div className="fun-stats__pattern-stat">
               <span className="fun-stats__pattern-value">
                 {stats.avgStartHour >= 13
-                  ? `${stats.avgStartHour - 12}:${String(stats.avgStartMinute).padStart(2, '0')} PM`
+                  ? `${stats.avgStartHour - 12}:${String(stats.avgStartMinute).padStart(2, "0")} PM`
                   : stats.avgStartHour === 12
-                    ? `12:${String(stats.avgStartMinute).padStart(2, '0')} PM`
+                    ? `12:${String(stats.avgStartMinute).padStart(2, "0")} PM`
                     : stats.avgStartHour === 0
-                      ? `12:${String(stats.avgStartMinute).padStart(2, '0')} AM`
-                      : `${stats.avgStartHour}:${String(stats.avgStartMinute).padStart(2, '0')} AM`}
+                      ? `12:${String(stats.avgStartMinute).padStart(2, "0")} AM`
+                      : `${stats.avgStartHour}:${String(stats.avgStartMinute).padStart(2, "0")} AM`}
               </span>
             </div>
             <div className="fun-stats__pattern-label">
@@ -809,7 +890,7 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
         <div className="fun-stats__day-heatmap">
           {stats.dayDistribution.map((count, idx) => {
             const intensity =
-              stats.maxDayCount > 0 ? count / stats.maxDayCount : 0
+              stats.maxDayCount > 0 ? count / stats.maxDayCount : 0;
             return (
               <div key={DAY_LABELS[idx]} className="fun-stats__day-cell">
                 <div
@@ -819,15 +900,13 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
                     opacity: Math.max(0.2, intensity),
                   }}
                 />
-                <span className="fun-stats__day-label">
-                  {DAY_LABELS[idx]}
-                </span>
+                <span className="fun-stats__day-label">{DAY_LABELS[idx]}</span>
                 <span className="fun-stats__day-count">{count}</span>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
+  );
 }

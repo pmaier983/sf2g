@@ -50,6 +50,21 @@ export type Ride = _Tables["rides"]["Row"];
 export type RideInsert = _Tables["rides"]["Insert"];
 export type RideUpdate = _Tables["rides"]["Update"];
 
+/** The fields the profile statistics use (get_profile_rides, migration 039). */
+export type ProfileRide = Pick<
+  Ride,
+  | "id"
+  | "strava_activity_id"
+  | "name"
+  | "ride_date"
+  | "start_date"
+  | "route_category"
+  | "distance_meters"
+  | "elevation_gain_meters"
+  | "moving_time_seconds"
+  | "average_speed_mps"
+>;
+
 export type RideStream = _Tables["ride_streams"]["Row"];
 export type RideStreamInsert = _Tables["ride_streams"]["Insert"];
 

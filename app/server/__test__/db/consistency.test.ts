@@ -262,3 +262,45 @@ describe("Strava privacy: private rides never appear", () => {
     }
   });
 });
+
+describe("profile (phase 03c)", () => {
+  it("a rider's profile list holds exactly their visible commutes", async () => {
+    const { fetchProfileRidesImpl } = await import("../../rides");
+    const rows = totalsById(
+      await fetchLeaderboardImpl({
+        excludeWeekends: false,
+        includeOther: true,
+      }),
+    );
+    for (const [id, e] of RIDERS_WITH_RIDES) {
+      const rides = await fetchProfileRidesImpl({ userId: id });
+      const sf2g = rides.filter((r) => r.route_category !== "other").length;
+      expect([e.name, sf2g]).toEqual([e.name, e.sf2gVisible]);
+      expect([e.name, sf2g]).toEqual([e.name, rows[id]]);
+    }
+  });
+
+  it("is not capped at PostgREST's 1000-row limit", async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const { LOCAL_SUPABASE } = await import("../../../test/local-supabase");
+    const { fetchProfileRidesImpl } = await import("../../rides");
+    const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
+    const extra = Array.from({ length: 1100 }, (_, i) => ({
+      user_id: RIDER.gus,
+      strava_activity_id: 1_900_000_000 + i,
+      name: `bulk ${i}`,
+      ride_date: "2020-01-06",
+      start_date: "2020-01-06T15:00:00Z",
+      route_category: "bayway",
+    }));
+    const { error } = await db.from("rides").insert(extra);
+    expect(error).toBeNull();
+    try {
+      expect(await fetchProfileRidesImpl({ userId: RIDER.gus })).toHaveLength(
+        1100,
+      );
+    } finally {
+      await db.from("rides").delete().eq("user_id", RIDER.gus);
+    }
+  });
+});

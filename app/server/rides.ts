@@ -5,8 +5,10 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createAnonClient } from "../lib/supabase";
+import { withPerf } from "../lib/perf";
 import type {
   Json,
+  ProfileRide,
   Ride,
   RouteCategory,
   DestinationCompany,
@@ -127,6 +129,35 @@ const VALID_ROUTE_CATEGORIES = new Set([
 function sanitizeLikePattern(input: string): string {
   return input.replace(/[%_\\]/g, "\\$&");
 }
+
+// ---------------------------------------------------------------------------
+// fetchProfileRides — a rider's visible classified rides, lean fields only,
+// as one jsonb value (get_profile_rides, migration 039). Replaces
+// fetchUserRides({ limit: 10000 }), which PostgREST capped at 1000 rows and
+// which carried every polyline through the Worker.
+// ---------------------------------------------------------------------------
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function fetchProfileRidesImpl(data: {
+  userId: string;
+}): Promise<ProfileRide[]> {
+  if (!UUID_RE.test(data.userId)) return [];
+  const supabase = createAnonClient();
+  const { data: rides, error } = await supabase.rpc("get_profile_rides", {
+    p_user_id: data.userId,
+  });
+  if (error) {
+    throw new Error(`Failed to fetch profile rides: ${error.message}`);
+  }
+  return (rides ?? []) as unknown as ProfileRide[];
+}
+
+export const fetchProfileRides = createServerFn({ method: "GET" })
+  .inputValidator((input: { userId: string }) => input)
+  .handler(
+    withPerf("fetchProfileRides", ({ data }) => fetchProfileRidesImpl(data)),
+  );
 
 // ---------------------------------------------------------------------------
 // fetchRidesLeaderboard — cross-user rides query with filters & pagination
