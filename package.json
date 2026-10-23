@@ -10,8 +10,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:types": "npx supabase gen types typescript --linked > app/lib/database.types.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:start": "supabase start -x studio,imgproxy,inbucket,storage-api,edge-runtime,logflare,vector,supavisor,realtime",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:types:prod": "supabase gen types typescript --linked > app/lib/database.types.ts",
+    "db:types": "supabase gen types typescript --local > app/lib/database.types.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
@@ -50,5 +54,6 @@
     "*.{ts,tsx}": [
       "prettier --write"
     ]
-  }
+  },
+  "packageManager": "pnpm@12.15.0"
 }
