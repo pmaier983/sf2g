@@ -20,6 +20,7 @@ import {
   LEADERBOARD_SORT_COLUMNS,
   ROUTE_CATEGORY_VALUES,
 } from "./leaderboard-query";
+import { addDays, addMonths, localDate, SF2G_TIME_ZONE } from "./dates";
 
 export const VIEWS = ["riders", "rides", "alltime", "groups"] as const;
 export type TableView = (typeof VIEWS)[number];
@@ -282,35 +283,6 @@ export function hasActiveFilters(q: TableQuery): boolean {
 // ---------------------------------------------------------------------------
 // Dates
 // ---------------------------------------------------------------------------
-
-export const SF2G_TIME_ZONE = "America/Los_Angeles";
-
-/** YYYY-MM-DD of `now` in `timeZone`. */
-export function localDate(now: Date, timeZone = SF2G_TIME_ZONE): string {
-  // en-CA formats as YYYY-MM-DD
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-}
-
-function addDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function addMonths(iso: string, months: number): string {
-  const [y, m, day] = iso.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + months, 1, 12));
-  const last = new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0, 12),
-  ).getUTCDate();
-  d.setUTCDate(Math.min(day, last));
-  return d.toISOString().slice(0, 10);
-}
 
 /** Inclusive date range for a preset, as calendar dates in `timeZone`. */
 export function resolveDateRange(

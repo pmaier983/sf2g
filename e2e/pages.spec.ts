@@ -32,25 +32,11 @@ function watchConsole(page: Page): string[] {
   return errors;
 }
 
-/** True when the browser's calendar date differs from the server's (UTC). */
-function clientDateDiffersFromUtc(timezoneId: string | undefined): boolean {
-  const now = new Date();
-  const local = now.toLocaleDateString("en-CA", { timeZone: timezoneId });
-  return local !== now.toISOString().slice(0, 10);
-}
-
 interface PageCase {
   path: string;
   /** Something that proves the page rendered real content. */
   landmark: (page: Page) => Promise<void>;
-  /** Known bug tracked in docs/rework — expected to fail under this condition. */
-  knownBug?: (timezoneId: string | undefined) => string | null;
 }
-
-const hydrationBug = (tz: string | undefined) =>
-  clientDateDiffersFromUtc(tz)
-    ? "Known: day pills computed in UTC on the server (phase 06 date audit)"
-    : null;
 
 const PAGES: PageCase[] = [
   {
@@ -100,14 +86,12 @@ const PAGES: PageCase[] = [
     landmark: async (p) => {
       await expect(p.getByText(/should i sf2g/i).first()).toBeVisible();
     },
-    knownBug: hydrationBug,
   },
   {
     path: "/2sf2g",
     landmark: async (p) => {
       await expect(p.getByText(/should i sf2g/i).first()).toBeVisible();
     },
-    knownBug: hydrationBug,
   },
   {
     path: "/privacy",
@@ -120,10 +104,7 @@ const PAGES: PageCase[] = [
 ];
 
 for (const c of PAGES) {
-  test(`${c.path} renders without errors`, async ({ page }, info) => {
-    const bug = c.knownBug?.(info.project.use.timezoneId);
-    test.fail(!!bug, bug ?? undefined);
-
+  test(`${c.path} renders without errors`, async ({ page }) => {
     const errors = watchConsole(page);
     const res = await page.goto(c.path);
     expect(res?.status(), "HTTP status").toBeLessThan(400);
@@ -167,4 +148,24 @@ test("route filter chip narrows the riders table and updates the URL", async ({
   await page.reload();
   await expect(page.getByText("Ben Skyline").first()).toBeVisible();
   await expect(page.getByText("Dee Reverse")).toHaveCount(0);
+});
+
+test("/routes map tiles load (no 'API KEY REQUIRED' provider)", async ({
+  page,
+}) => {
+  const tiles: { url: string; status: number }[] = [];
+  page.on("response", (res) => {
+    if (/\/\d+\/\d+\/\d+(@2x)?\.png/.test(res.url()))
+      tiles.push({ url: res.url(), status: res.status() });
+  });
+  await page.goto("/routes");
+  await page.locator(".leaflet-container").first().scrollIntoViewIfNeeded();
+  await expect
+    .poll(() => page.locator("img.leaflet-tile-loaded").count(), {
+      timeout: 15_000,
+    })
+    .toBeGreaterThan(0);
+  expect(tiles.length).toBeGreaterThan(0);
+  expect(tiles.filter((t) => t.status >= 400)).toEqual([]);
+  expect(tiles.some((t) => t.url.includes("cartocdn"))).toBe(false);
 });

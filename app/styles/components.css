@@ -2268,3 +2268,9 @@ th:hover > .column-resizer {
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
+
+/* Dark map tiles: OpenStreetMap has no dark style, so invert the light one
+   (app/lib/map-tiles.ts). Hue-rotate keeps water blue and parks green. */
+.map-tiles--dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}

@@ -7,7 +7,7 @@
  * NO module-level mutable state. Each function call is self-contained.
  */
 
-import { STRAVA_RATE_LIMIT } from "./constants";
+import { STRAVA_RATE_LIMIT, OUTBOUND_FETCH_TIMEOUT_MS } from "./constants";
 
 const {
   LIMIT_15MIN,
@@ -261,6 +261,7 @@ export async function fetchWithRateLimit(
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const res = await fetch(url, {
+      signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 

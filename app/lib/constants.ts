@@ -473,3 +473,10 @@ export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
     { lat: 37.45, lng: -122.18, mile: 28, label: "Palo Alto / Mountain View" },
   ],
 };
+
+/**
+ * Every outbound request (Strava, Open-Meteo, PostHog) gives up after this.
+ * Without it one stalled connection hangs the request indefinitely (seen as
+ * a 16-minute stuck e2e run).
+ */
+export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;

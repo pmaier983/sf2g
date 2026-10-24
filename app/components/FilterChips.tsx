@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { todayInLA } from "../lib/dates";
+import type { DatePreset } from "../lib/table-query";
 import type { RouteCategory, DestinationCompany } from "../lib/database.types";
 import { ROUTE_LABELS, ROUTE_COLORS } from "../lib/constants";
 import { Tooltip } from "./Tooltip";
@@ -33,94 +34,20 @@ const COMPANIES: { value: DestinationCompany; label: string }[] = [
 // Date preset definitions
 // ---------------------------------------------------------------------------
 interface DatePresetDef {
-  key: string;
+  key: DatePreset | "all-time";
   label: string;
-  getRange: () => { from: string; to: string };
 }
 
-function toISODate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
+// Presets are stored by name and resolved in LA time (resolveDateRange).
 const DATE_PRESETS: DatePresetDef[] = [
-  {
-    key: "today",
-    label: "Today",
-    getRange: () => {
-      const today = toISODate(new Date());
-      return { from: today, to: today };
-    },
-  },
-  {
-    key: "this-week",
-    label: "This Week",
-    getRange: () => {
-      const now = new Date();
-      const day = now.getDay();
-      // Monday = start of week (getDay(): 0=Sun,1=Mon,...)
-      const diffToMonday = day === 0 ? 6 : day - 1;
-      const monday = new Date(now);
-      monday.setDate(monday.getDate() - diffToMonday);
-      const sunday = new Date(monday);
-      sunday.setDate(sunday.getDate() + 6);
-      return { from: toISODate(monday), to: toISODate(sunday) };
-    },
-  },
-  {
-    key: "last-30-days",
-    label: "Last 30 Days",
-    getRange: () => {
-      const now = new Date();
-      const from = new Date(now);
-      from.setDate(from.getDate() - 30);
-      return { from: toISODate(from), to: toISODate(now) };
-    },
-  },
-  {
-    key: "this-month",
-    label: "This Month",
-    getRange: () => {
-      const now = new Date();
-      const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-      return { from, to: toISODate(now) };
-    },
-  },
-  {
-    key: "last-6-months",
-    label: "Last 6 Months",
-    getRange: () => {
-      const now = new Date();
-      const from = new Date(now);
-      from.setMonth(from.getMonth() - 6);
-      return { from: toISODate(from), to: toISODate(now) };
-    },
-  },
-  {
-    key: "last-365-days",
-    label: "Last 365 Days",
-    getRange: () => {
-      const now = new Date();
-      const from = new Date(now);
-      from.setDate(from.getDate() - 365);
-      return { from: toISODate(from), to: toISODate(now) };
-    },
-  },
-  {
-    key: "this-year",
-    label: "This Year",
-    getRange: () => {
-      const now = new Date();
-      return { from: `${now.getFullYear()}-01-01`, to: toISODate(now) };
-    },
-  },
-  {
-    key: "all-time",
-    label: "All Time",
-    getRange: () => ({ from: "", to: "" }),
-  },
+  { key: "today", label: "Today" },
+  { key: "this-week", label: "This Week" },
+  { key: "last-30-days", label: "Last 30 Days" },
+  { key: "this-month", label: "This Month" },
+  { key: "last-6-months", label: "Last 6 Months" },
+  { key: "last-365-days", label: "Last 365 Days" },
+  { key: "this-year", label: "This Year" },
+  { key: "all-time", label: "All Time" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -216,8 +143,7 @@ export function FilterChips({
       // Clear date filters
       onDateChange(undefined, undefined, undefined);
     } else {
-      const range = preset.getRange();
-      onDateChange(range.from || undefined, range.to || undefined, preset.key);
+      onDateChange(undefined, undefined, preset.key);
     }
   };
 
@@ -230,8 +156,8 @@ export function FilterChips({
     onDateChange(dateFrom, value || undefined, undefined);
   };
 
-  // Memoize max date for inputs
-  const maxDate = useMemo(() => toISODate(new Date()), []);
+  // Latest selectable date: today in LA (same on server and client)
+  const maxDate = todayInLA();
 
   const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === "Enter" || e.key === " ") {

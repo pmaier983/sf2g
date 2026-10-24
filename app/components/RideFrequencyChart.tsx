@@ -1,3 +1,4 @@
+import { yearInLA } from "../lib/dates";
 import {
   BarChart,
   Bar,
@@ -108,43 +109,47 @@ export function RideFrequencyChart({ rides }: { rides: ProfileRide[] }) {
   );
 }
 
+const emptyYear = (year: string): YearlyData => ({
+  year,
+  bayway: 0,
+  skyline: 0,
+  hmbw: 0,
+  royale: 0,
+  fleaway: 0,
+  mebw: 0,
+  febw: 0,
+  other: 0,
+});
+
 /**
- * Aggregate rides by year and route category.
+ * Aggregate rides by year and route category. Every year from the first
+ * ride through `currentYear` gets a bar (zero for years without rides), so
+ * the axis is continuous instead of skipping gap years.
  */
-function aggregateByYear(rides: ProfileRide[]): YearlyData[] {
-  const map = new Map<string, YearlyData>();
-
+export function aggregateByYear(
+  rides: ProfileRide[],
+  currentYear: number = yearInLA(),
+): YearlyData[] {
+  if (rides.length === 0) return [];
+  const map = new Map<number, YearlyData>();
   for (const ride of rides) {
-    const date = new Date(ride.ride_date);
-    // Use getUTCFullYear since date-only strings ("YYYY-MM-DD") are parsed as UTC midnight
-    const key = String(date.getUTCFullYear());
-
-    let entry = map.get(key);
+    const year = Number(ride.ride_date.slice(0, 4));
+    let entry = map.get(year);
     if (!entry) {
-      entry = {
-        year: key,
-        bayway: 0,
-        skyline: 0,
-        hmbw: 0,
-        royale: 0,
-        fleaway: 0,
-        mebw: 0,
-        febw: 0,
-        other: 0,
-      };
-      map.set(key, entry);
+      entry = emptyYear(String(year));
+      map.set(year, entry);
     }
-
     const cat = ride.route_category;
     // Skip non-SF2G rides (null route_category)
-    if (!cat) continue;
-    if (cat in entry) {
+    if (cat && cat in entry) {
       entry[cat as keyof Omit<YearlyData, "year">]++;
     }
   }
-
-  // Sort by year ascending
-  return Array.from(map.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, v]) => v);
+  const years = [...map.keys()];
+  const first = Math.min(...years);
+  const last = Math.max(currentYear, ...years);
+  return Array.from(
+    { length: last - first + 1 },
+    (_, i) => map.get(first + i) ?? emptyYear(String(first + i)),
+  );
 }

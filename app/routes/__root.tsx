@@ -63,7 +63,7 @@ export const Route = createRootRoute({
           // Fonts from Google Fonts CDN
           "font-src 'self' https://fonts.gstatic.com",
           // Images: self + Strava CDN + Google avatars + Gravatar + Carto tiles + data URIs
-          "img-src 'self' data: blob: https://*.strava.com https://*.cloudfront.net https://*.googleusercontent.com https://*.gravatar.com https://*.basemaps.cartocdn.com",
+          "img-src 'self' data: blob: https://*.strava.com https://*.cloudfront.net https://*.googleusercontent.com https://*.gravatar.com https://tile.openstreetmap.org",
           // API connections: self + Supabase + Strava + PostHog + Cloudflare Analytics
           "connect-src 'self' https://*.supabase.co https://www.strava.com https://us.i.posthog.com https://cloudflareinsights.com",
           // Workers for map tiles

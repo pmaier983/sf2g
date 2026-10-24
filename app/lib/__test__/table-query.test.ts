@@ -3,13 +3,13 @@ import {
   DEFAULT_TABLE_QUERY,
   effectiveDateRange,
   hasActiveFilters,
-  localDate,
   parseSearch,
   patchQuery,
   resolveDateRange,
   serializeSearch,
   type TableQuery,
 } from "../table-query";
+import { localDate } from "../dates";
 
 const UUID = "00000000-0000-4000-8000-000000000001";
 

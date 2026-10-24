@@ -10,6 +10,7 @@
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { minutesOfDayInLA, todayInLA } from "../lib/dates";
 import {
   communityStartHoursQueryOptions,
   communityStreaksQueryOptions,
@@ -98,6 +99,23 @@ interface AvgSpeedImprovement {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** "YYYY-MM" keys from `first` through `last` inclusive. */
+export function monthRange(first: string, last: string): string[] {
+  const out: string[] = [];
+  let [y, m] = first.split("-").map(Number);
+  const [ly, lm] = last.split("-").map(Number);
+  const end = Math.max(ly * 12 + lm, y * 12 + m);
+  while (y * 12 + m <= end) {
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
 
 function formatMonthLabel(monthStr: string): string {
   const [year, month] = monthStr.split("-");
@@ -252,7 +270,12 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
       monthlyMap.set(month, (monthlyMap.get(month) ?? 0) + 1);
     }
 
-    const sortedMonths = Array.from(monthlyMap.keys()).sort();
+    // Every month from the first ride to this month (LA), so quiet months
+    // show as flat stretches instead of being squeezed out of the axis.
+    const sortedMonths = monthRange(
+      Array.from(monthlyMap.keys()).sort()[0],
+      todayInLA().slice(0, 7),
+    );
     let cumulative = 0;
     const trendData: MonthlyTrendPoint[] = sortedMonths.map((month) => {
       const count = monthlyMap.get(month) ?? 0;
@@ -465,11 +488,9 @@ export function ProfileFunStats({ rides }: ProfileFunStatsProps) {
     // ── Average start time ──
     let totalMinutes = 0;
     let startTimeCount = 0;
+    // LA wall-clock time: the same for every viewer and for the server render.
     for (const ride of rides) {
-      const date = new Date(ride.start_date);
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      totalMinutes += hours * 60 + minutes;
+      totalMinutes += minutesOfDayInLA(ride.start_date);
       startTimeCount++;
     }
     const avgStartMinutes =

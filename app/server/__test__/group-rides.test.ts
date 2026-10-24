@@ -6,7 +6,7 @@
  * 2. Query factory includes filter params for cache invalidation
  * 3. Leaderboard page passes filters through to group rides query
  * 4. GroupRidesTable uses correct scrollable container + circular avatars
- * 5. GroupRideMap uses Leaflet (not Mapbox) with CartoDB tiles
+ * 5. GroupRideMap uses Leaflet (not Mapbox) with the shared tile provider
  * 6. CSS consistency with leaderboard table styling
  *
  * Strategy: Static analysis of source files to verify structural invariants.
@@ -183,8 +183,9 @@ describe("GroupRideMap component", () => {
     expect(mapSource).not.toContain("VITE_MAPBOX_TOKEN");
   });
 
-  it("uses CartoDB tile URLs", () => {
-    expect(mapSource).toContain("cartocdn.com");
+  it("uses the shared tile provider (app/lib/map-tiles.ts)", () => {
+    expect(mapSource).toContain("../lib/map-tiles");
+    expect(mapSource).not.toContain("cartocdn.com");
   });
 
   it("uses useTheme hook for dark/light mode", () => {

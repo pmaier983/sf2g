@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo } from "react";
 import {
   PieChart,
   Pie,
@@ -6,60 +6,53 @@ import {
   ResponsiveContainer,
   Tooltip,
   type TooltipProps,
-} from 'recharts'
-import type { CommunityBreakdown } from '../server/leaderboard'
-import { useUnit } from '../lib/useUnit'
-import { formatDistance, formatElevation } from '../lib/leaderboard-utils'
+} from "recharts";
+import type { CommunityBreakdown } from "../server/leaderboard";
+import { useUnit } from "../lib/useUnit";
+import { formatDistance, formatElevation } from "../lib/leaderboard-utils";
 
 interface CommunityPieChartsProps {
-  breakdown: CommunityBreakdown
+  breakdown: CommunityBreakdown;
 }
 
-const SF2G_COLOR = 'var(--color-strava)'
-const SF2G_COLOR_HEX = '#FC4C02'
-const OTHER_COLOR = 'var(--color-text-muted)'
-const OTHER_COLOR_HEX = '#6B7280'
+const SF2G_COLOR = "var(--color-strava)";
+const SF2G_COLOR_HEX = "#FC4C02";
+const OTHER_COLOR = "var(--color-text-muted)";
+const OTHER_COLOR_HEX = "#6B7280";
 
 interface PieSlice {
-  name: string
-  value: number
-  color: string
-  colorHex: string
-  pct: number
-  displayValue: string
+  name: string;
+  value: number;
+  color: string;
+  colorHex: string;
+  pct: number;
+  displayValue: string;
 }
-
-
 
 /**
  * Custom tooltip for the pie charts
  */
-function PieTooltip({
-  active,
-  payload,
-}: TooltipProps<number, string>) {
-  if (!active || !payload?.length) return null
-  const data = payload[0].payload as PieSlice
+function PieTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  const data = payload[0].payload as PieSlice;
 
   return (
     <div
       style={{
-        background: 'var(--color-surface-elevated)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-md)',
-        fontSize: 'var(--text-sm)',
-        color: 'var(--color-text)',
-        padding: '8px 12px',
+        background: "var(--color-surface-elevated)",
+        border: "1px solid var(--color-border)",
+        borderRadius: "var(--radius-md)",
+        fontSize: "var(--text-sm)",
+        color: "var(--color-text)",
+        padding: "8px 12px",
       }}
     >
-      <p style={{ fontWeight: 600, marginBottom: 2 }}>
-        {data.name}
-      </p>
-      <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
+      <p style={{ fontWeight: 600, marginBottom: 2 }}>{data.name}</p>
+      <p style={{ color: "var(--color-text-secondary)", margin: 0 }}>
         {data.displayValue} ({data.pct.toFixed(1)}%)
       </p>
     </div>
-  )
+  );
 }
 
 /**
@@ -71,10 +64,10 @@ function CenterLabel({
   pct,
   label,
 }: {
-  cx: number
-  cy: number
-  pct: number
-  label: string
+  cx: number;
+  cy: number;
+  pct: number;
+  label: string;
 }) {
   return (
     <g>
@@ -84,10 +77,10 @@ function CenterLabel({
         textAnchor="middle"
         dominantBaseline="central"
         style={{
-          fill: 'var(--color-text)',
-          fontSize: '1.5rem',
+          fill: "var(--color-text)",
+          fontSize: "1.5rem",
           fontWeight: 700,
-          fontVariantNumeric: 'tabular-nums',
+          fontVariantNumeric: "tabular-nums",
         }}
       >
         {pct.toFixed(0)}%
@@ -98,17 +91,17 @@ function CenterLabel({
         textAnchor="middle"
         dominantBaseline="central"
         style={{
-          fill: 'var(--color-text-muted)',
-          fontSize: '0.65rem',
+          fill: "var(--color-text-muted)",
+          fontSize: "0.65rem",
           fontWeight: 500,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
         }}
       >
         {label}
       </text>
     </g>
-  )
+  );
 }
 
 /**
@@ -116,14 +109,14 @@ function CenterLabel({
  * ride distance and elevation is SF2G commuting.
  */
 export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
-  const unit = useUnit()
+  const unit = useUnit();
   const distanceData = useMemo((): PieSlice[] => {
-    const total = breakdown.total_distance_meters
-    if (total === 0) return []
-    const sf2gPct = (breakdown.sf2g_distance_meters / total) * 100
+    const total = breakdown.total_distance_meters;
+    if (total === 0) return [];
+    const sf2gPct = (breakdown.sf2g_distance_meters / total) * 100;
     return [
       {
-        name: 'SF2G Commutes',
+        name: "SF2G Commutes",
         value: breakdown.sf2g_distance_meters,
         color: SF2G_COLOR,
         colorHex: SF2G_COLOR_HEX,
@@ -131,23 +124,23 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
         displayValue: formatDistance(breakdown.sf2g_distance_meters, unit),
       },
       {
-        name: 'Other Rides',
+        name: "Other Rides",
         value: breakdown.other_distance_meters,
         color: OTHER_COLOR,
         colorHex: OTHER_COLOR_HEX,
         pct: 100 - sf2gPct,
         displayValue: formatDistance(breakdown.other_distance_meters, unit),
       },
-    ]
-  }, [breakdown, unit])
+    ];
+  }, [breakdown, unit]);
 
   const elevationData = useMemo((): PieSlice[] => {
-    const total = breakdown.total_elevation_meters
-    if (total === 0) return []
-    const sf2gPct = (breakdown.sf2g_elevation_meters / total) * 100
+    const total = breakdown.total_elevation_meters;
+    if (total === 0) return [];
+    const sf2gPct = (breakdown.sf2g_elevation_meters / total) * 100;
     return [
       {
-        name: 'SF2G Commutes',
+        name: "SF2G Commutes",
         value: breakdown.sf2g_elevation_meters,
         color: SF2G_COLOR,
         colorHex: SF2G_COLOR_HEX,
@@ -155,24 +148,27 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
         displayValue: formatElevation(breakdown.sf2g_elevation_meters, unit),
       },
       {
-        name: 'Other Rides',
+        name: "Other Rides",
         value: breakdown.other_elevation_meters,
         color: OTHER_COLOR,
         colorHex: OTHER_COLOR_HEX,
         pct: 100 - sf2gPct,
         displayValue: formatElevation(breakdown.other_elevation_meters, unit),
       },
-    ]
-  }, [breakdown, unit])
+    ];
+  }, [breakdown, unit]);
 
-  const sf2gDistancePct = breakdown.total_distance_meters > 0
-    ? (breakdown.sf2g_distance_meters / breakdown.total_distance_meters) * 100
-    : 0
-  const sf2gElevationPct = breakdown.total_elevation_meters > 0
-    ? (breakdown.sf2g_elevation_meters / breakdown.total_elevation_meters) * 100
-    : 0
+  const sf2gDistancePct =
+    breakdown.total_distance_meters > 0
+      ? (breakdown.sf2g_distance_meters / breakdown.total_distance_meters) * 100
+      : 0;
+  const sf2gElevationPct =
+    breakdown.total_elevation_meters > 0
+      ? (breakdown.sf2g_elevation_meters / breakdown.total_elevation_meters) *
+        100
+      : 0;
 
-  if (distanceData.length === 0 && elevationData.length === 0) return null
+  if (distanceData.length === 0 && elevationData.length === 0) return null;
 
   return (
     <div className="community-pies">
@@ -205,10 +201,10 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 style={{
-                  fill: 'var(--color-text)',
-                  fontSize: '1.4rem',
+                  fill: "var(--color-text)",
+                  fontSize: "1.4rem",
                   fontWeight: 700,
-                  fontVariantNumeric: 'tabular-nums',
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
                 {sf2gDistancePct.toFixed(0)}%
@@ -219,10 +215,10 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 style={{
-                  fill: 'var(--color-text-muted)',
-                  fontSize: '0.6rem',
+                  fill: "var(--color-text-muted)",
+                  fontSize: "0.6rem",
                   fontWeight: 500,
-                  letterSpacing: '0.05em',
+                  letterSpacing: "0.05em",
                 }}
               >
                 DISTANCE
@@ -265,10 +261,10 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 style={{
-                  fill: 'var(--color-text)',
-                  fontSize: '1.4rem',
+                  fill: "var(--color-text)",
+                  fontSize: "1.4rem",
                   fontWeight: 700,
-                  fontVariantNumeric: 'tabular-nums',
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
                 {sf2gElevationPct.toFixed(0)}%
@@ -279,10 +275,10 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 style={{
-                  fill: 'var(--color-text-muted)',
-                  fontSize: '0.6rem',
+                  fill: "var(--color-text-muted)",
+                  fontSize: "0.6rem",
                   fontWeight: 500,
-                  letterSpacing: '0.05em',
+                  letterSpacing: "0.05em",
                 }}
               >
                 ELEVATION
@@ -303,14 +299,22 @@ export function CommunityPieCharts({ breakdown }: CommunityPieChartsProps) {
       {/* Legend */}
       <div className="community-pies__legend">
         <span className="community-pies__legend-item">
-          <span className="community-pies__legend-dot" style={{ background: SF2G_COLOR_HEX }} />
-          SF2G Commutes ({breakdown.sf2g_ride_count.toLocaleString()} rides)
+          <span
+            className="community-pies__legend-dot"
+            style={{ background: SF2G_COLOR_HEX }}
+          />
+          SF2G Commutes ({breakdown.sf2g_ride_count.toLocaleString("en-US")}{" "}
+          rides)
         </span>
         <span className="community-pies__legend-item">
-          <span className="community-pies__legend-dot" style={{ background: OTHER_COLOR_HEX }} />
-          Other Rides ({breakdown.other_ride_count.toLocaleString()} rides)
+          <span
+            className="community-pies__legend-dot"
+            style={{ background: OTHER_COLOR_HEX }}
+          />
+          Other Rides ({breakdown.other_ride_count.toLocaleString("en-US")}{" "}
+          rides)
         </span>
       </div>
     </div>
-  )
+  );
 }
