@@ -15,8 +15,10 @@ import { fetchWithRateLimit, type RateLimitedResponse } from "./rate-limiter";
 
 /** Parameters for fetching athlete activities */
 export interface FetchActivitiesParams {
-  /** Epoch timestamp — return only activities after this time */
+  /** Epoch timestamp — return only activities after this time (oldest first) */
   after?: number;
+  /** Epoch timestamp — return only activities before this time (newest first) */
+  before?: number;
   /** Number of activities per page (max 200) */
   perPage?: number;
   /** Page number (1-indexed) */
@@ -88,6 +90,9 @@ export async function fetchAthleteActivities(
 
   if (params.after !== undefined) {
     url.searchParams.set("after", String(params.after));
+  }
+  if (params.before !== undefined) {
+    url.searchParams.set("before", String(params.before));
   }
 
   url.searchParams.set("per_page", String(params.perPage ?? 200));

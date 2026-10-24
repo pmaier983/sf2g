@@ -1,27 +1,24 @@
 /**
- * POST /api/cron?task=sync|maintenance|groups — cron entry point.
+ * POST /api/cron?task=drain|maintenance|groups — admin entry point
+ * (`Authorization: Bearer CRON_SECRET`).
  *
- * Called by .github/workflows/cron.yml with `Authorization: Bearer CRON_SECRET`.
- * The work is AWAITED: on Cloudflare Workers a promise left running after the
+ * Scheduled syncing runs from the Cloudflare Cron Trigger (app/ssr.tsx); this
+ * endpoint runs the same tick on demand. `sync` is kept as an alias of
+ * `drain` for old callers. The work is AWAITED: on Cloudflare Workers a promise left running after the
  * response is returned is cancelled, which is why the previous fire-and-forget
  * version never synced anyone.
  *
  * Response (always JSON):
- * - 200 `{ ok, task, subrequests, ... }` — `ok: false` means the task ran but
- *   something failed; the workflow treats that as a failure.
+ * - 200 `{ ok, task, ... }` — `ok: false` means the task ran but something
+ *   failed.
  * - 400 unknown task, 401 bad secret, 500 not configured / crashed.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  runGroupRides,
-  runMaintenance,
-  syncUserBatch,
-} from "../../server/cron";
-import { performSync } from "../../server/sync";
-import { createServiceClient } from "../../lib/supabase";
+import { runGroupRides, runMaintenance } from "../../server/cron";
+import { runScheduledTick } from "../../server/scheduled";
 import { logPerf, trackSubrequests } from "../../lib/perf";
 
-const TASKS = ["sync", "maintenance", "groups"] as const;
+const TASKS = ["sync", "maintenance", "groups", "drain"] as const;
 type CronTask = (typeof TASKS)[number];
 
 function json(body: unknown, status = 200): Response {
@@ -33,23 +30,18 @@ function json(body: unknown, status = 200): Response {
 
 async function runTask(task: CronTask): Promise<Record<string, unknown>> {
   switch (task) {
-    case "sync": {
-      const supabase = createServiceClient();
-      const { result, subrequests } = await trackSubrequests((count) =>
-        syncUserBatch({
-          supabase,
-          sync: performSync,
-          subrequests: count,
-          now: Date.now,
-        }),
-      );
-      return { ok: result.failed === 0, subrequests, ...result };
-    }
     case "maintenance": {
       const { result, subrequests } = await trackSubrequests(() =>
         runMaintenance(),
       );
       return { ok: result.errors.length === 0, subrequests, ...result };
+    }
+    case "sync":
+    case "drain": {
+      // Same as one Cron Trigger tick (useful by hand and in local dev).
+      const startedAt = Date.now();
+      const result = await runScheduledTick("api");
+      return { ok: result.failed === 0, ms: Date.now() - startedAt, ...result };
     }
     case "groups": {
       const { result, subrequests } = await trackSubrequests(() =>
@@ -74,7 +66,7 @@ export async function handleCronRequest(request: Request): Promise<Response> {
   }
 
   const task = (new URL(request.url).searchParams.get("task") ??
-    "sync") as CronTask;
+    "drain") as CronTask;
   if (!TASKS.includes(task)) {
     return json({ ok: false, error: `Unknown task: ${task}` }, 400);
   }

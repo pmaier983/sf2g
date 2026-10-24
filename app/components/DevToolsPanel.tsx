@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
+import type { SyncHealth } from "../server/users";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -19,6 +20,10 @@ export function DevToolsPanel() {
   const [cronResult, setCronResult] = useState<CronResult | null>(null);
   const [cronError, setCronError] = useState<string | null>(null);
 
+  // Sync health state
+  const [health, setHealth] = useState<SyncHealth | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
   const handleReclassify = async () => {
     setIsRunning(true);
     setResult(null);
@@ -31,6 +36,18 @@ export function DevToolsPanel() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  const handleSyncHealth = async () => {
+    setHealthLoading(true);
+    try {
+      const { fetchSyncHealth } = await import("../server/users");
+      setHealth(await fetchSyncHealth());
+    } catch (err) {
+      setCronError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setHealthLoading(false);
     }
   };
 
@@ -273,13 +290,12 @@ export function DevToolsPanel() {
               }}
             />
 
-            {/* Cron Jobs Section */}
+            {/* Sync Queue Section */}
             <div className="dev-tools__section">
-              <h4 className="dev-tools__section-title">🕐 Cron Jobs</h4>
+              <h4 className="dev-tools__section-title">🕐 Sync Queue</h4>
               <p className="dev-tools__section-desc">
-                Run one sync batch (riders not synced in the last 4 hours),
-                refresh materialized views, and recompute group rides — the same
-                tasks the scheduled workflow runs.
+                Run one Cron Trigger tick now: queue riders not synced in 12
+                hours, then drain the queue within one invocation&apos;s budget.
               </p>
               <button
                 className="dev-tools__action-btn"
@@ -290,116 +306,119 @@ export function DevToolsPanel() {
                 {cronIsRunning ? (
                   <>
                     <span className="dev-tools__spinner" />
-                    Running cron jobs…
+                    Running tick…
                   </>
                 ) : (
-                  "⚡ Run All Cron Jobs"
+                  "⚡ Run Queue Tick"
                 )}
               </button>
             </div>
 
-            {/* Cron Error Display */}
             {cronError && (
               <div className="dev-tools__error">
                 <strong>Error:</strong> {cronError}
               </div>
             )}
 
-            {/* Cron Result Display */}
             {cronResult && (
               <div className="dev-tools__result">
                 <div className="dev-tools__result-header">
-                  ✅ Cron Jobs Complete
-                  <span className="dev-tools__duration">
-                    {cronResult.totalDurationMs < 1000
-                      ? `${cronResult.totalDurationMs}ms`
-                      : `${(cronResult.totalDurationMs / 1000).toFixed(1)}s`}
-                  </span>
+                  ✅ Tick complete ({cronResult.durationMs}ms · stopped:{" "}
+                  {cronResult.stopReason})
                 </div>
-
-                <div className="dev-tools__stats-grid">
+                <div className="dev-tools__result-stats">
                   <div className="dev-tools__stat">
                     <span className="dev-tools__stat-value">
-                      {cronResult.sync.synced + cronResult.sync.partial}
+                      {cronResult.done}
                     </span>
-                    <span className="dev-tools__stat-label">Users Synced</span>
+                    <span className="dev-tools__stat-label">Done</span>
                   </div>
                   <div className="dev-tools__stat">
                     <span className="dev-tools__stat-value">
-                      {cronResult.sync.failed + cronResult.sync.needsReauth}
+                      {cronResult.requeued}
                     </span>
-                    <span className="dev-tools__stat-label">Sync Failures</span>
+                    <span className="dev-tools__stat-label">Requeued</span>
                   </div>
                   <div className="dev-tools__stat">
                     <span className="dev-tools__stat-value">
-                      {cronResult.sync.remaining}
+                      {cronResult.failed}
                     </span>
-                    <span className="dev-tools__stat-label">Still Due</span>
+                    <span className="dev-tools__stat-label">Failed</span>
                   </div>
                 </div>
-
-                {/* Sync details */}
-                {cronResult.sync.results.length > 0 && (
-                  <div className="dev-tools__breakdown">
-                    <h5 className="dev-tools__breakdown-title">
-                      User Sync Details ({cronResult.sync.results.length}/
-                      {cronResult.sync.eligible} due · stopped:{" "}
-                      {cronResult.sync.stopReason})
-                    </h5>
-                    {cronResult.sync.results.map((r) => (
-                      <div key={r.userId} className="dev-tools__breakdown-row">
-                        <code>{r.displayName ?? r.userId.slice(0, 8)}</code>
-                        <span className="dev-tools__breakdown-count">
-                          {r.outcome === "failed"
-                            ? "❌"
-                            : r.outcome === "needs_reauth"
-                              ? "⚠️ re-auth"
-                              : `${r.newRides} rides${r.outcome === "partial" ? " (more)" : ""}`}
-                        </span>
-                      </div>
+                {cronResult.jobs.length > 0 && (
+                  <ul className="dev-tools__job-list">
+                    {cronResult.jobs.map((j) => (
+                      <li key={j.id}>
+                        #{j.id} {j.kind}: {j.status} — {j.detail}
+                      </li>
                     ))}
-                  </div>
-                )}
-
-                {/* Maintenance */}
-                <div className="dev-tools__breakdown">
-                  <h5 className="dev-tools__breakdown-title">
-                    Views refreshed ({cronResult.maintenance.refreshed.length})
-                    · group rides {cronResult.groups.ok ? "✅" : "❌"}
-                  </h5>
-                </div>
-
-                {/* Combined errors */}
-                {(cronResult.maintenance.errors.length > 0 ||
-                  !cronResult.groups.ok ||
-                  cronResult.sync.results.some((r) => r.error)) && (
-                  <div className="dev-tools__warnings">
-                    <h5 className="dev-tools__breakdown-title">⚠️ Warnings</h5>
-                    {cronResult.sync.results
-                      .filter((r) => r.error)
-                      .map((r, i) => (
-                        <div
-                          key={`sync-${i}`}
-                          className="dev-tools__warning-item"
-                        >
-                          [sync] {r.displayName ?? r.userId.slice(0, 8)}:{" "}
-                          {r.error}
-                        </div>
-                      ))}
-                    {cronResult.maintenance.errors.map((err, i) => (
-                      <div key={i} className="dev-tools__warning-item">
-                        [views] {err}
-                      </div>
-                    ))}
-                    {cronResult.groups.error && (
-                      <div className="dev-tools__warning-item">
-                        [groups] {cronResult.groups.error}
-                      </div>
-                    )}
-                  </div>
+                  </ul>
                 )}
               </div>
             )}
+
+            {/* Sync Health Section */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">🩺 Sync Health</h4>
+              <p className="dev-tools__section-desc">
+                Every connected rider, least recently synced first.
+              </p>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSyncHealth}
+                disabled={healthLoading}
+                id="dev-tools-sync-health-btn"
+              >
+                {healthLoading ? "Loading…" : "🩺 Load Sync Health"}
+              </button>
+              {health && (
+                <>
+                  <p className="dev-tools__section-desc">
+                    Queue: {health.queue.queued ?? 0} queued ·{" "}
+                    {health.queue.running ?? 0} running ·{" "}
+                    {health.queue.failed ?? 0} failed
+                  </p>
+                  <div className="dev-tools__health-wrap">
+                    <table className="dev-tools__health">
+                      <thead>
+                        <tr>
+                          <th>Rider</th>
+                          <th>Last success</th>
+                          <th>Jobs</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {health.riders.map((r) => (
+                          <tr key={r.userId}>
+                            <td>{r.displayName ?? r.userId.slice(0, 8)}</td>
+                            <td>
+                              {r.lastSyncSuccessAt
+                                ? new Date(r.lastSyncSuccessAt).toLocaleString()
+                                : "never"}
+                            </td>
+                            <td>
+                              {r.openJobs}
+                              {r.failedJobs > 0
+                                ? ` (${r.failedJobs} failed)`
+                                : ""}
+                            </td>
+                            <td title={r.lastSyncError ?? undefined}>
+                              {r.needsReauth
+                                ? "⚠️ reconnect"
+                                : r.lastSyncError
+                                  ? "❌ error"
+                                  : "✅"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Divider */}
             <hr
@@ -460,6 +479,27 @@ export function DevToolsPanel() {
       )}
 
       <style>{`
+        .dev-tools__job-list {
+          margin: var(--space-2) 0 0;
+          padding-left: var(--space-4);
+          font-size: 12px;
+        }
+        .dev-tools__health-wrap {
+          max-height: 260px;
+          overflow: auto;
+        }
+        .dev-tools__health {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+        }
+        .dev-tools__health th,
+        .dev-tools__health td {
+          padding: 2px 6px;
+          text-align: left;
+          border-bottom: 1px solid var(--color-border);
+          white-space: nowrap;
+        }
         .dev-tools__toggle {
           position: fixed;
           bottom: 20px;

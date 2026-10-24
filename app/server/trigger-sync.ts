@@ -15,7 +15,34 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getSessionData } from "../lib/session";
 import { createAnonClient, createServiceClient } from "../lib/supabase";
-import { performSync } from "./sync";
+import { backfillStep, performSync, type SyncOptions } from "./sync";
+
+/**
+ * Manual syncs do one Strava page inline (enough for any rider who rides
+ * less than 100 times between syncs) and queue the rest for the sync queue
+ * drain, so a request never exceeds the Worker's subrequest limit. Group
+ * rides are recomputed by the queued view refresh, not per request.
+ */
+const MANUAL_SYNC_OPTIONS: SyncOptions = {
+  maxPages: 1,
+  perPage: 100,
+  skipGroupRides: true,
+  skipSameDayRecheck: true,
+};
+
+async function enqueue(
+  kind: string,
+  userId?: string,
+  cursor?: { before: number },
+) {
+  const { error } = await createServiceClient().rpc("enqueue_sync_job", {
+    p_kind: kind,
+    ...(userId ? { p_user_id: userId } : {}),
+    ...(cursor ? { p_cursor: cursor } : {}),
+  });
+  if (error)
+    console.error(`[trigger-sync] enqueue ${kind} failed: ${error.message}`);
+}
 
 /** Maximum number of simultaneous syncs allowed globally. */
 const MAX_CONCURRENT_SYNCS = 5;
@@ -83,7 +110,10 @@ export const triggerSync = createServerFn({ method: "POST" }).handler(
   async () => {
     const userId = await validateSyncPrereqs();
     try {
-      return await performSync(userId);
+      const result = await performSync(userId, MANUAL_SYNC_OPTIONS);
+      if (result.hasMore) await enqueue("incremental", userId);
+      if (result.newRides > 0) await enqueue("refresh_views");
+      return result;
     } catch (error) {
       console.error("[trigger-sync] performSync crashed:", error);
       return {
@@ -112,7 +142,23 @@ export const triggerFullResync = createServerFn({ method: "POST" }).handler(
   async () => {
     const userId = await validateSyncPrereqs();
     try {
-      return await performSync(userId, { fullResync: true });
+      // Re-fetch the newest page now; the queue pages back through the rest.
+      const step = await backfillStep(
+        userId,
+        Math.floor(Date.now() / 1000),
+        100,
+      );
+      if (step.nextBefore !== null) {
+        await enqueue("backfill", userId, { before: step.nextBefore });
+      }
+      await enqueue("refresh_views");
+      return {
+        newRides: step.upserted,
+        totalProcessed: step.upserted,
+        errors: [],
+        hasMore: step.nextBefore !== null,
+        rateLimited: false,
+      };
     } catch (error) {
       console.error("[trigger-sync] performSync (full resync) crashed:", error);
       return {

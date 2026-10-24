@@ -7,6 +7,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { NavBar } from "../components/NavBar";
+import { ReconnectBanner } from "../components/ReconnectBanner";
 import { Footer } from "../components/Footer";
 const LazyDevToolsPanel = lazy(() =>
   import("../components/DevToolsPanel").then((m) => ({
@@ -150,6 +151,7 @@ function RootComponent() {
           <SyncPromptDialog />
           <div className="page-layout">
             <NavBar />
+            <ReconnectBanner />
             <main className="page-content">
               <ErrorBoundary>
                 <Outlet />
