@@ -257,6 +257,7 @@ function HeaderCell<T>({
 
   return (
     <th
+      data-column-id={column.id}
       className={
         [meta?.className, sorted ? "th--sorted" : ""]
           .filter(Boolean)

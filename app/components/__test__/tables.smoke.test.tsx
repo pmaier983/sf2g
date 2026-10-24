@@ -69,7 +69,6 @@ describe("table smoke tests", () => {
     renderWithProviders(
       <RidesLeaderboardTable
         rides={page.rides}
-        totalCount={page.totalCount}
         isLoading={false}
         sortBy="ride_date"
         sortDir="desc"
@@ -88,6 +87,9 @@ describe("table smoke tests", () => {
       <AllTimeTable
         data={rows}
         isLoading={false}
+        sortBy="maxRidesInWindow"
+        sortDir="desc"
+        onSortChange={noop}
         searchFilter=""
         durationLabel="30 days"
       />,
