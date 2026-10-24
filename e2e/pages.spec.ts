@@ -155,12 +155,7 @@ test("route filter chip narrows the riders table and updates the URL", async ({
 }) => {
   await page.goto("/leaderboard");
   await expect(page.getByText("Ada Bayway").first()).toBeVisible();
-  // A hidden mobile copy of every chip is also in the DOM.
-  await page
-    .getByRole("checkbox", { name: "Skyline" })
-    .filter({ visible: true })
-    .first()
-    .click();
+  await page.getByRole("checkbox", { name: "Skyline" }).click();
   await expect
     .poll(() => new URL(page.url()).searchParams.get("routes"))
     .toContain("skyline");

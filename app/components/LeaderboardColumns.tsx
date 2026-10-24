@@ -151,6 +151,7 @@ export const leaderboardColumns = [
     enableSorting: false,
   }),
   columnHelper.accessor("display_name", {
+    meta: { defaultDir: "asc" },
     header: () => (
       <HeaderWithTooltip
         label="Rider"
