@@ -592,8 +592,8 @@ function LeaderboardPage() {
           ) : view === "rides" ? (
             <RidesLeaderboardTable
               rides={ridesQuery.data?.pages.flatMap((p) => p.rides) ?? []}
-              totalCount={ridesQuery.data?.pages[0]?.totalCount ?? 0}
               isLoading={ridesQuery.isLoading}
+              error={ridesQuery.error}
               sortBy={sort}
               sortDir={dir}
               onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
@@ -604,48 +604,39 @@ function LeaderboardPage() {
               onClearUser={() => updateSearch({ user: undefined })}
             />
           ) : view === "groups" ? (
-            groupRidesQuery.isError ? (
-              <div className="group-rides-table__empty">
-                <p>⚠️ Error loading group rides</p>
-                <p
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "var(--color-text-secondary)",
-                  }}
-                >
-                  {groupRidesQuery.error?.message ?? "Unknown error"}
-                </p>
-              </div>
-            ) : (
-              <GroupRidesTable
-                data={
-                  groupRidesQuery.data?.pages.flatMap((p) => p.groupRides) ?? []
-                }
-                isLoading={groupRidesQuery.isLoading}
-                hasNextPage={groupRidesQuery.hasNextPage}
-                fetchNextPage={groupRidesQuery.fetchNextPage}
-                isFetchingNextPage={groupRidesQuery.isFetchingNextPage}
-                onGroupRideClick={(gr) => {
-                  navigate({
-                    to: "/group-rides/$groupRideId",
-                    params: { groupRideId: gr.id },
-                    search: {
-                      date: gr.date,
-                      route: gr.routeCategory,
-                      riders: gr.riders.map((r) => r.userId).join(","),
-                    },
-                  });
-                }}
-                sortBy={sort}
-                sortDir={dir}
-                onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
-              />
-            )
+            <GroupRidesTable
+              data={
+                groupRidesQuery.data?.pages.flatMap((p) => p.groupRides) ?? []
+              }
+              isLoading={groupRidesQuery.isLoading}
+              error={groupRidesQuery.error}
+              hasNextPage={groupRidesQuery.hasNextPage}
+              fetchNextPage={groupRidesQuery.fetchNextPage}
+              isFetchingNextPage={groupRidesQuery.isFetchingNextPage}
+              onGroupRideClick={(gr) => {
+                navigate({
+                  to: "/group-rides/$groupRideId",
+                  params: { groupRideId: gr.id },
+                  search: {
+                    date: gr.date,
+                    route: gr.routeCategory,
+                    riders: gr.riders.map((r) => r.userId).join(","),
+                  },
+                });
+              }}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
+            />
           ) : (
             <AllTimeTable
               data={allTimeQuery.data}
               isLoading={allTimeQuery.isLoading}
+              error={allTimeQuery.error}
               searchFilter={search}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
               durationLabel={getDurationLabel(duration)}
               onViewRides={(userId, dateFrom, dateTo) =>
                 updateSearch({

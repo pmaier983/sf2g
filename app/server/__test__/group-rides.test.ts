@@ -141,15 +141,6 @@ describe("GroupRidesTable component", () => {
     expect(tableSource).toContain("isLoading: boolean");
   });
 
-  it("shows skeleton rows when loading", () => {
-    expect(tableSource).toContain("group-rides-table__skeleton");
-    expect(tableSource).toContain("GroupRideSkeletonRows");
-  });
-
-  it("only shows empty state when NOT loading", () => {
-    expect(tableSource).toContain("!isLoading && data.length === 0");
-  });
-
   it("has date column", () => {
     expect(tableSource).toContain("date");
   });

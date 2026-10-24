@@ -1,8 +1,11 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { AllTimeEntry } from "../server/alltime";
 import { formatRideDate } from "../lib/leaderboard-utils";
-import { useColumnResize } from "../lib/useColumnResize";
+import { DataTable } from "./table/DataTable";
+import { TableEmpty } from "./table/TableStates";
+import { useDataTable, type SortDir } from "./table/useDataTable";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -10,193 +13,42 @@ import { useColumnResize } from "../lib/useColumnResize";
 export interface AllTimeTableProps {
   data: AllTimeEntry[] | undefined;
   isLoading: boolean;
+  error?: Error | null;
   searchFilter: string;
   durationLabel: string;
+  /** Sort lives in the URL (TableQuery); the table sorts client-side. */
+  sortBy: string;
+  sortDir: SortDir;
+  onSortChange: (column: string, direction: SortDir) => void;
   onViewRides?: (userId: string, dateFrom: string, dateTo: string) => void;
 }
 
 // ---------------------------------------------------------------------------
-// Column definitions
+// Columns
 // ---------------------------------------------------------------------------
-interface ColumnDef {
-  key: string;
-  label: string;
-  sortable: boolean;
-  tooltip: string;
-  className?: string;
-}
-
-const COLUMNS: ColumnDef[] = [
-  {
-    key: "rank",
-    label: "#",
-    sortable: false,
-    tooltip: "Rank by max rides in window",
-    className: "alltime-table__rank",
-  },
-  {
-    key: "displayName",
-    label: "Rider",
-    sortable: true,
-    tooltip: "Rider name — click to sort by name or view their profile",
-  },
-  {
-    key: "maxRidesInWindow",
-    label: "Max Rides",
-    sortable: true,
-    tooltip:
-      "Maximum number of SF2G rides completed within the rolling window — click to view rides",
-  },
-  {
-    key: "windowStart",
-    label: "Window Start",
-    sortable: true,
-    tooltip: "Start date of the best rolling window",
-  },
-  {
-    key: "windowEnd",
-    label: "Window End",
-    sortable: true,
-    tooltip: "End date of the best rolling window",
-  },
-];
-
-const SKELETON_ROWS = 8;
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-export function AllTimeTable({
-  data,
-  isLoading,
-  searchFilter,
-  durationLabel,
-  onViewRides,
-}: AllTimeTableProps) {
-  const tableRef = useColumnResize<HTMLTableElement>();
-  const [sortKey, setSortKey] = useState("maxRidesInWindow");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-
-  // Client-side search (PPR and every other filter are applied in SQL)
-  const filteredData = useMemo(() => {
-    if (!data) return [];
-    const result = data;
-    if (!searchFilter) return result;
-    const q = searchFilter.toLowerCase();
-    return result.filter((entry) =>
-      entry.displayName.toLowerCase().includes(q),
-    );
-  }, [data, searchFilter]);
-
-  // Client-side sorting
-  const sortedData = useMemo(() => {
-    const sorted = [...filteredData];
-    sorted.sort((a, b) => {
-      const aVal = a[sortKey as keyof AllTimeEntry] ?? 0;
-      const bVal = b[sortKey as keyof AllTimeEntry] ?? 0;
-      if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-    return sorted;
-  }, [filteredData, sortKey, sortDir]);
-
-  const handleSort = (col: ColumnDef) => {
-    if (!col.sortable) return;
-    if (sortKey === col.key) {
-      setSortDir((prev) => (prev === "desc" ? "asc" : "desc"));
-    } else {
-      setSortKey(col.key);
-      setSortDir("desc");
-    }
-  };
-
-  const ariaSortValue = (
-    col: ColumnDef,
-  ): "ascending" | "descending" | "none" => {
-    if (sortKey !== col.key) return "none";
-    return sortDir === "asc" ? "ascending" : "descending";
-  };
-
-  return (
-    <div className="alltime-table">
-      <div className="alltime-table__wrapper">
-        <table
-          ref={tableRef}
-          role="grid"
-          aria-label="All-time rolling window leaderboard"
-        >
-          <thead>
-            <tr>
-              {COLUMNS.map((col) => (
-                <th
-                  key={col.key}
-                  className={col.className}
-                  aria-sort={col.sortable ? ariaSortValue(col) : undefined}
-                  onClick={() => handleSort(col)}
-                  title={col.tooltip}
-                  style={
-                    col.sortable ? { cursor: "pointer" } : { cursor: "help" }
-                  }
-                >
-                  {col.label}
-                  {col.sortable && (
-                    <span
-                      className={`sort-indicator${sortKey === col.key ? "" : " sort-indicator--placeholder"}`}
-                    >
-                      {sortDir === "asc" ? "▲" : "▼"}
-                    </span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {isLoading ? (
-              <SkeletonRows />
-            ) : sortedData.length === 0 ? (
-              <tr>
-                <td colSpan={COLUMNS.length} className="alltime-table__empty">
-                  No riders match the current filters
-                </td>
-              </tr>
-            ) : (
-              sortedData.map((entry, idx) => (
-                <AllTimeRow
-                  key={entry.userId}
-                  entry={entry}
-                  rank={idx + 1}
-                  onViewRides={onViewRides}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Row sub-component
-// ---------------------------------------------------------------------------
-function AllTimeRow({
-  entry,
-  rank,
-  onViewRides,
-}: {
-  entry: AllTimeEntry;
-  rank: number;
-  onViewRides?: (userId: string, dateFrom: string, dateTo: string) => void;
-}) {
-  return (
-    <tr>
-      {/* Rank */}
-      <td className="alltime-table__rank">{rank}</td>
-
-      {/* Rider */}
-      <td>
+function allTimeColumns(
+  onViewRides: AllTimeTableProps["onViewRides"],
+): ColumnDef<AllTimeEntry, any>[] {
+  return [
+    {
+      id: "rank",
+      header: "#",
+      enableSorting: false,
+      size: 50,
+      meta: {
+        className: "alltime-table__rank",
+        title: "Rank by max rides in window",
+      },
+      cell: (info) => info.row.index + 1,
+    },
+    {
+      accessorKey: "displayName",
+      header: "Rider",
+      meta: {
+        defaultDir: "asc",
+        title: "Rider name — click to sort by name or view their profile",
+      },
+      cell: ({ row: { original: entry } }) => (
         <div className="alltime-table__rider">
           {entry.avatarUrl ? (
             <img
@@ -220,10 +72,17 @@ function AllTimeRow({
             {entry.displayName}
           </Link>
         </div>
-      </td>
-
-      {/* Max Rides — clickable to navigate to rides view */}
-      <td className="alltime-table__max-rides">
+      ),
+    },
+    {
+      accessorKey: "maxRidesInWindow",
+      header: "Max Rides",
+      meta: {
+        className: "alltime-table__max-rides",
+        title:
+          "Maximum number of SF2G rides completed within the rolling window — click to view rides",
+      },
+      cell: ({ row: { original: entry } }) => (
         <button
           className="leaderboard__count-btn leaderboard__total"
           type="button"
@@ -235,32 +94,70 @@ function AllTimeRow({
         >
           {entry.maxRidesInWindow}
         </button>
-      </td>
-
-      {/* Window Start */}
-      <td>{formatRideDate(entry.windowStart) ?? "—"}</td>
-
-      {/* Window End */}
-      <td>{formatRideDate(entry.windowEnd) ?? "—"}</td>
-    </tr>
-  );
+      ),
+    },
+    {
+      accessorKey: "windowStart",
+      header: "Window Start",
+      meta: { title: "Start date of the best rolling window" },
+      cell: (info) => formatRideDate(info.getValue()) ?? "—",
+    },
+    {
+      accessorKey: "windowEnd",
+      header: "Window End",
+      meta: { title: "End date of the best rolling window" },
+      cell: (info) => formatRideDate(info.getValue()) ?? "—",
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton loading rows
+// Component
 // ---------------------------------------------------------------------------
-function SkeletonRows() {
+export function AllTimeTable({
+  data,
+  isLoading,
+  error,
+  searchFilter,
+  durationLabel,
+  sortBy,
+  sortDir,
+  onSortChange,
+  onViewRides,
+}: AllTimeTableProps) {
+  // Client-side search (PPR and every other filter are applied in SQL)
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    if (!searchFilter) return data;
+    const q = searchFilter.toLowerCase();
+    return data.filter((entry) => entry.displayName.toLowerCase().includes(q));
+  }, [data, searchFilter]);
+
+  const columns = useMemo(() => allTimeColumns(onViewRides), [onViewRides]);
+  const table = useDataTable({
+    data: filteredData,
+    columns,
+    sort: sortBy,
+    dir: sortDir,
+    onSortChange,
+    sortClientSide: true,
+    getRowId: (r) => r.userId,
+  });
+
   return (
-    <>
-      {Array.from({ length: SKELETON_ROWS }, (_, i) => (
-        <tr key={`skel-${i}`} className="alltime-table__skeleton-row">
-          {COLUMNS.map((col) => (
-            <td key={col.key}>
-              <div className="alltime-table__skeleton" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
+    <div className="alltime-table">
+      <DataTable
+        table={table}
+        ariaLabel={`All-time rolling window leaderboard (${durationLabel})`}
+        className="alltime-table__wrapper"
+        isLoading={isLoading}
+        error={error}
+        empty={
+          <TableEmpty icon="🏆" title="No riders found">
+            No riders match the current filters.
+          </TableEmpty>
+        }
+      />
+    </div>
   );
 }

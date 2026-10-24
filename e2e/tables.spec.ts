@@ -34,20 +34,18 @@ test("mobile: the filters sheet holds the same controls", async ({ page }) => {
   await expect(page.getByText("Dee Reverse")).toHaveCount(0);
 });
 
-test("a shared link reproduces filters and sort in a fresh context", async ({
+test("a shared link reproduces view, filters and sort in a fresh context", async ({
   page,
   browser,
 }) => {
   await page.goto("/leaderboard");
   await expect(page.getByText("Ada Bayway").first()).toBeVisible();
+  await page.getByRole("button", { name: /Rides/ }).click();
   await page.getByRole("checkbox", { name: "Bayway" }).click();
-  await page
-    .getByRole("columnheader", { name: /Avg Speed/ })
-    .getByRole("button")
-    .click();
+  await page.locator('th[data-column-id="distance_meters"] button').click();
   await expect
     .poll(() => new URL(page.url()).searchParams.get("sort"))
-    .toBe("avg_speed_mps");
+    .toBe("distance_meters");
   const shared = page.url();
   const firstRow = await page.locator("tbody tr").first().innerText();
 
@@ -57,9 +55,13 @@ test("a shared link reproduces filters and sort in a fresh context", async ({
     localStorage.setItem("sf2g-sync-prompt-dismissed", "true"),
   );
   await other.goto(shared);
+  await expect(other.getByRole("button", { name: /Rides/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await expect(other.getByRole("checkbox", { name: "Bayway" })).toBeChecked();
   await expect(
-    other.getByRole("columnheader", { name: /Avg Speed/ }),
+    other.locator('th[data-column-id="distance_meters"]'),
   ).toHaveAttribute("aria-sort", "descending");
   await expect(other.locator("tbody tr").first()).toHaveText(firstRow);
   await context.close();

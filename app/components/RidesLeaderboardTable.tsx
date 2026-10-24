@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import type { RideLeaderboardEntry } from "../lib/database.types";
 import { currentUserQueryOptions } from "../queries/user";
@@ -16,14 +17,15 @@ import {
 
 import { useUnit } from "../lib/useUnit";
 import { RouteTag } from "./RouteTag";
-import { useColumnResize } from "../lib/useColumnResize";
+import { DataTable } from "./table/DataTable";
+import { TableEmpty } from "./table/TableStates";
+import { useDataTable } from "./table/useDataTable";
 
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 export interface RidesLeaderboardTableProps {
   rides: RideLeaderboardEntry[];
-  totalCount: number;
   isLoading: boolean;
   sortBy: string;
   sortDir: "asc" | "desc";
@@ -33,117 +35,198 @@ export interface RidesLeaderboardTableProps {
   isFetchingNextPage: boolean;
   activeUser?: string | null;
   onClearUser?: () => void;
+  error?: Error | null;
 }
 
 // ---------------------------------------------------------------------------
-// Sortable column definitions
+// Columns (keys match the server's sort allow-list, app/lib/table-query.ts)
 // ---------------------------------------------------------------------------
-interface ColumnDef {
-  key: string;
-  label: string;
-  sortable: boolean;
-  className?: string;
-  tooltip: string;
+interface RideColumnsContext {
+  unit: ReturnType<typeof useUnit>;
+  currentUserId?: string;
+  onEdit: (ride: EditRideData) => void;
 }
 
-const COLUMNS: ColumnDef[] = [
-  {
-    key: "rank",
-    label: "#",
-    sortable: false,
-    className: "rides-table__rank",
-    tooltip: "Row number in the current sort order",
-  },
-  {
-    key: "display_name",
-    label: "Rider",
-    sortable: true,
-    tooltip: "Rider name — click to sort by name or view their profile",
-  },
-  {
-    key: "name",
-    label: "Ride Name",
-    sortable: true,
-    tooltip: "Strava activity name — click header to sort alphabetically",
-  },
-  {
-    key: "ride_date",
-    label: "Date",
-    sortable: true,
-    tooltip: "Ride date — click header to sort by date",
-  },
-  {
-    key: "route_category",
-    label: "Route",
-    sortable: true,
-    tooltip: "Classified SF2G route corridor (Bayway, Skyline, HMBW, etc.)",
-  },
-  {
-    key: "average_speed_mps",
-    label: "Avg Speed",
-    sortable: true,
-    tooltip: "Average moving speed for the ride",
-  },
-  {
-    key: "distance_meters",
-    label: "Distance",
-    sortable: true,
-    tooltip: "Total ride distance",
-  },
-  {
-    key: "elevation_gain_meters",
-    label: "Elevation",
-    sortable: true,
-    tooltip: "Total elevation gain for the ride",
-  },
-  {
-    key: "moving_time_seconds",
-    label: "Time",
-    sortable: true,
-    tooltip: "Total moving time (excludes stopped time)",
-  },
-
-  {
-    key: "average_watts",
-    label: "Avg W",
-    sortable: true,
-    tooltip: "Average watts (power meter required)",
-  },
-  {
-    key: "max_watts",
-    label: "Max W",
-    sortable: true,
-    tooltip: "Maximum watts",
-  },
-  {
-    key: "average_heartrate",
-    label: "Avg HR",
-    sortable: true,
-    tooltip: "Average heart rate (HR monitor required)",
-  },
-  {
-    key: "kilojoules",
-    label: "Cal",
-    sortable: true,
-    tooltip: "Calories burned (estimated from Strava kilojoules)",
-  },
-  {
-    key: "edit",
-    label: "",
-    sortable: false,
-    className: "rides-table__edit-col",
-    tooltip: "Edit ride",
-  },
-];
-
-const SKELETON_ROWS = 8;
+function rideColumns({
+  unit,
+  currentUserId,
+  onEdit,
+}: RideColumnsContext): ColumnDef<RideLeaderboardEntry, any>[] {
+  const watts = (v: number | null) => (v != null ? `${Math.round(v)}W` : "—");
+  return [
+    {
+      id: "rank",
+      header: "#",
+      enableSorting: false,
+      size: 50,
+      meta: {
+        className: "rides-table__rank",
+        title: "Row number in the current sort order",
+      },
+      cell: (info) => info.row.index + 1,
+    },
+    {
+      accessorKey: "display_name",
+      header: "Rider",
+      meta: {
+        defaultDir: "asc",
+        title: "Rider name — click to sort by name or view their profile",
+      },
+      cell: ({ row: { original: ride } }) => (
+        <div className="rides-table__rider">
+          {ride.avatar_url ? (
+            <img
+              className="rides-table__avatar"
+              src={ride.avatar_url}
+              alt=""
+              loading="lazy"
+              width={32}
+              height={32}
+            />
+          ) : (
+            <span className="rides-table__avatar-fallback" aria-hidden="true">
+              👤
+            </span>
+          )}
+          <Link
+            to="/profile/$userId"
+            params={{ userId: ride.user_id }}
+            className="rides-table__rider-name"
+          >
+            {ride.display_name ?? "Unknown Rider"}
+          </Link>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: "Ride Name",
+      meta: {
+        defaultDir: "asc",
+        className: "rides-table__ride-name",
+        title: "Strava activity name — click header to sort alphabetically",
+      },
+      cell: ({ row: { original: ride } }) =>
+        ride.strava_activity_id ? (
+          <a
+            href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="profile-rides__strava-link"
+            title={ride.name ?? undefined}
+          >
+            {ride.name ?? "—"}
+          </a>
+        ) : (
+          (ride.name ?? "—")
+        ),
+    },
+    {
+      accessorKey: "ride_date",
+      header: "Date",
+      meta: { title: "Ride date — click header to sort by date" },
+      cell: (info) => formatRideDate(info.getValue()) ?? "—",
+    },
+    {
+      accessorKey: "route_category",
+      header: "Route",
+      meta: {
+        defaultDir: "asc",
+        title: "Classified SF2G route corridor (Bayway, Skyline, HMBW, etc.)",
+      },
+      cell: (info) =>
+        info.getValue() ? (
+          <RouteTag category={info.getValue()} />
+        ) : (
+          <span className="text-muted">—</span>
+        ),
+    },
+    {
+      accessorKey: "average_speed_mps",
+      header: "Avg Speed",
+      meta: { title: "Average moving speed for the ride" },
+      cell: (info) => formatSpeed(info.getValue(), unit),
+    },
+    {
+      accessorKey: "distance_meters",
+      header: "Distance",
+      meta: { title: "Total ride distance" },
+      cell: (info) => formatDistance(info.getValue(), unit),
+    },
+    {
+      accessorKey: "elevation_gain_meters",
+      header: "Elevation",
+      meta: { title: "Total elevation gain for the ride" },
+      cell: (info) => formatElevation(info.getValue(), unit),
+    },
+    {
+      accessorKey: "moving_time_seconds",
+      header: "Time",
+      meta: { title: "Total moving time (excludes stopped time)" },
+      cell: (info) => formatMovingTime(info.getValue()),
+    },
+    {
+      accessorKey: "average_watts",
+      header: "Avg W",
+      meta: { title: "Average watts (power meter required)" },
+      cell: (info) => watts(info.getValue()),
+    },
+    {
+      accessorKey: "max_watts",
+      header: "Max W",
+      meta: { title: "Maximum watts" },
+      cell: (info) => watts(info.getValue()),
+    },
+    {
+      accessorKey: "average_heartrate",
+      header: "Avg HR",
+      meta: { title: "Average heart rate (HR monitor required)" },
+      cell: (info) =>
+        info.getValue() != null ? `${Math.round(info.getValue())}bpm` : "—",
+    },
+    {
+      accessorKey: "kilojoules",
+      header: "Cal",
+      meta: { title: "Calories burned (estimated from Strava kilojoules)" },
+      cell: (info) =>
+        info.getValue() != null ? Math.round(info.getValue()) : "—",
+    },
+    {
+      id: "edit",
+      header: "",
+      enableSorting: false,
+      enableResizing: false,
+      size: 48,
+      meta: { className: "rides-table__edit-col", title: "Edit ride" },
+      cell: ({ row: { original: ride } }) =>
+        currentUserId && currentUserId === ride.user_id ? (
+          <Tooltip content="Edit this ride">
+            <button
+              className="edit-ride-btn"
+              onClick={() =>
+                onEdit({
+                  id: ride.id,
+                  name: ride.name,
+                  rideDate: ride.ride_date,
+                  routeCategory: ride.route_category,
+                  stravaActivityId: ride.strava_activity_id,
+                })
+              }
+              aria-label="Edit ride"
+            >
+              ✏️
+            </button>
+          </Tooltip>
+        ) : null,
+    },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 export function RidesLeaderboardTable({
   rides,
-  totalCount,
   isLoading,
   sortBy,
   sortDir,
@@ -153,47 +236,29 @@ export function RidesLeaderboardTable({
   isFetchingNextPage,
   activeUser,
   onClearUser,
+  error,
 }: RidesLeaderboardTableProps) {
-  const tableRef = useColumnResize<HTMLTableElement>();
+  const unit = useUnit();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
   const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
-  const loadMoreRef = useRef<HTMLTableRowElement>(null);
 
-  // IntersectionObserver for infinite scroll
-  useEffect(() => {
-    if (!hasNextPage || !fetchNextPage) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    const el = loadMoreRef.current;
-    if (el) observer.observe(el);
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, [hasNextPage, fetchNextPage]);
-
-  const handleSort = (col: ColumnDef) => {
-    if (!col.sortable) return;
-    if (sortBy === col.key) {
-      // Same column: toggle direction
-      onSortChange(col.key, sortDir === "desc" ? "asc" : "desc");
-    } else {
-      // New column: default to descending
-      onSortChange(col.key, "desc");
-    }
-  };
-
-  const ariaSortValue = (
-    col: ColumnDef,
-  ): "ascending" | "descending" | "none" => {
-    if (sortBy !== col.key) return "none";
-    return sortDir === "asc" ? "ascending" : "descending";
-  };
+  const columns = useMemo(
+    () =>
+      rideColumns({
+        unit,
+        currentUserId: currentUser?.id,
+        onEdit: setEditingRide,
+      }),
+    [unit, currentUser?.id],
+  );
+  const table = useDataTable({
+    data: rides,
+    columns,
+    sort: sortBy,
+    dir: sortDir,
+    onSortChange,
+    getRowId: (r) => r.id,
+  });
 
   // Active user display name (find from first ride that matches)
   const activeUserName =
@@ -221,81 +286,21 @@ export function RidesLeaderboardTable({
         </div>
       )}
 
-      {/* Table */}
-      <div className="rides-table__wrapper">
-        <table ref={tableRef} role="grid" aria-label="Rides leaderboard">
-          <thead>
-            <tr>
-              {COLUMNS.map((col) => (
-                <th
-                  key={col.key}
-                  className={col.className}
-                  aria-sort={col.sortable ? ariaSortValue(col) : undefined}
-                  onClick={() => handleSort(col)}
-                  title={col.tooltip}
-                  style={
-                    col.sortable ? { cursor: "pointer" } : { cursor: "help" }
-                  }
-                >
-                  {col.label}
-                  {col.sortable && (
-                    <span
-                      className={`sort-indicator${sortBy === col.key ? "" : " sort-indicator--placeholder"}`}
-                    >
-                      {sortBy === col.key
-                        ? sortDir === "asc"
-                          ? "▲"
-                          : "▼"
-                        : "▼"}
-                    </span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {isLoading ? (
-              <SkeletonRows />
-            ) : rides.length === 0 ? (
-              <tr>
-                <td colSpan={COLUMNS.length} className="rides-table__empty">
-                  No rides match the current filters
-                </td>
-              </tr>
-            ) : (
-              rides.map((ride, idx) => (
-                <RideRow
-                  key={ride.id}
-                  ride={ride}
-                  rank={idx + 1}
-                  currentUserId={currentUser?.id}
-                  onEdit={setEditingRide}
-                />
-              ))
-            )}
-            {hasNextPage && (
-              <tr ref={loadMoreRef}>
-                <td
-                  colSpan={COLUMNS.length}
-                  style={{ textAlign: "center", padding: "1rem" }}
-                >
-                  {isFetchingNextPage ? (
-                    <div
-                      className="rides-table__skeleton"
-                      style={{ width: "60%", margin: "0 auto" }}
-                    />
-                  ) : (
-                    <span style={{ color: "var(--color-text-secondary)" }}>
-                      Loading more…
-                    </span>
-                  )}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        table={table}
+        ariaLabel="Rides leaderboard"
+        className="rides-table__wrapper"
+        isLoading={isLoading}
+        error={error}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        empty={
+          <TableEmpty icon="🚴" title="No rides found">
+            No rides match the current filters.
+          </TableEmpty>
+        }
+      />
 
       {/* Edit Ride Dialog */}
       {editingRide && (
@@ -306,157 +311,5 @@ export function RidesLeaderboardTable({
         />
       )}
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Row sub-component
-// ---------------------------------------------------------------------------
-function RideRow({
-  ride,
-  rank,
-  currentUserId,
-  onEdit,
-}: {
-  ride: RideLeaderboardEntry;
-  rank: number;
-  currentUserId?: string;
-  onEdit: (ride: EditRideData) => void;
-}) {
-  const unit = useUnit();
-  return (
-    <tr>
-      {/* Rank */}
-      <td className="rides-table__rank">{rank}</td>
-
-      {/* Rider */}
-      <td>
-        <div className="rides-table__rider">
-          {ride.avatar_url ? (
-            <img
-              className="rides-table__avatar"
-              src={ride.avatar_url}
-              alt=""
-              loading="lazy"
-              width={32}
-              height={32}
-            />
-          ) : (
-            <span className="rides-table__avatar-fallback" aria-hidden="true">
-              👤
-            </span>
-          )}
-          <Link
-            to="/profile/$userId"
-            params={{ userId: ride.user_id }}
-            className="rides-table__rider-name"
-          >
-            {ride.display_name ?? "Unknown Rider"}
-          </Link>
-        </div>
-      </td>
-
-      {/* Ride Name */}
-      <td className="rides-table__ride-name" title={ride.name ?? undefined}>
-        {ride.strava_activity_id ? (
-          <a
-            href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="profile-rides__strava-link"
-          >
-            {ride.name ?? "—"}
-          </a>
-        ) : (
-          (ride.name ?? "—")
-        )}
-      </td>
-
-      {/* Date */}
-      <td>{formatRideDate(ride.ride_date) ?? "—"}</td>
-
-      {/* Route */}
-      <td>
-        {ride.route_category ? (
-          <RouteTag category={ride.route_category} />
-        ) : (
-          <span className="text-muted">—</span>
-        )}
-      </td>
-
-      {/* Avg Speed */}
-      <td>{formatSpeed(ride.average_speed_mps, unit)}</td>
-
-      {/* Distance */}
-      <td>{formatDistance(ride.distance_meters, unit)}</td>
-
-      {/* Elevation */}
-      <td>{formatElevation(ride.elevation_gain_meters, unit)}</td>
-
-      {/* Moving Time */}
-      <td>{formatMovingTime(ride.moving_time_seconds)}</td>
-
-      {/* Avg Watts */}
-      <td>
-        {ride.average_watts != null
-          ? `${Math.round(ride.average_watts)}W`
-          : "—"}
-      </td>
-
-      {/* Max Watts */}
-      <td>{ride.max_watts != null ? `${Math.round(ride.max_watts)}W` : "—"}</td>
-
-      {/* Avg HR */}
-      <td>
-        {ride.average_heartrate != null
-          ? `${Math.round(ride.average_heartrate)}bpm`
-          : "—"}
-      </td>
-
-      {/* Cal */}
-      <td>{ride.kilojoules != null ? Math.round(ride.kilojoules) : "—"}</td>
-
-      {/* Edit */}
-      <td className="rides-table__edit-col">
-        {currentUserId && currentUserId === ride.user_id && (
-          <Tooltip content="Edit this ride">
-            <button
-              className="edit-ride-btn"
-              onClick={() =>
-                onEdit({
-                  id: ride.id,
-                  name: ride.name,
-                  rideDate: ride.ride_date,
-                  routeCategory: ride.route_category,
-                  stravaActivityId: ride.strava_activity_id,
-                })
-              }
-              aria-label="Edit ride"
-            >
-              ✏️
-            </button>
-          </Tooltip>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton loading rows
-// ---------------------------------------------------------------------------
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: SKELETON_ROWS }, (_, i) => (
-        <tr key={`skel-${i}`} className="rides-table__skeleton-row">
-          {COLUMNS.map((col) => (
-            <td key={col.key}>
-              <div className="rides-table__skeleton" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
   );
 }
