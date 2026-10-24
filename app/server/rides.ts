@@ -28,6 +28,9 @@ const fetchUserRidesInput = (input: {
   includeHidden?: boolean;
   search?: string;
   routeCategories?: string[];
+  /** Any VALID_SORT_COLUMNS key; unknown keys fall back to ride_date. */
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
 }) => input;
 
 export async function fetchUserRidesImpl(
@@ -38,12 +41,22 @@ export async function fetchUserRidesImpl(
     `[rides] Fetching rides for user ${data.userId}, routeCategory: ${data.routeCategory ?? "all"}, includeAll: ${data.includeAllRides ?? false}`,
   );
 
+  // Sort on the server so every page is part of one ordering (T14: the
+  // profile table used to sort only the current page). Empty values last.
+  const sortBy =
+    data.sortBy && VALID_SORT_COLUMNS.has(data.sortBy)
+      ? data.sortBy
+      : "ride_date";
+  const ascending = data.sortBy === sortBy && data.sortDir === "asc";
   let query = supabase
     .from("rides")
     .select("*", { count: "exact" })
     .eq("user_id", data.userId)
-    .order("ride_date", { ascending: false })
-    .order("id", { ascending: true }); // unique tiebreaker: stable paging
+    .order(sortBy, { ascending, nullsFirst: false });
+  if (sortBy !== "ride_date") {
+    query = query.order("ride_date", { ascending: false });
+  }
+  query = query.order("id", { ascending: true }); // unique tiebreaker: stable paging
 
   // Optional route category filter
   if (data.routeCategory) {

@@ -4,23 +4,22 @@
  * Features:
  * - Shows ALL rides (SF2G and non-SF2G), not just classified ones
  * - Server-side pagination (25 per page)
- * - Server-side search (debounced 300ms)
+ * - Server-side search (debounced 300ms) and sort (across all pages, T14)
  * - Route category filter chips
- * - Sortable columns (date, route, speed, distance, elevation, time)
  * - Route category tag (or "—" for non-SF2G rides)
  * - Unit-aware formatting (mi/km)
  * - Edit button for own profile
  */
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { RouteTag } from "./RouteTag";
 import { useUnit } from "../lib/useUnit";
 import { currentUserQueryOptions } from "../queries/user";
 import { allUserRidesQueryOptions } from "../queries/rides";
 import { EditRideDialog } from "./EditRideDialog";
 import type { EditRideData } from "./EditRideDialog";
-import type { RouteCategory } from "../lib/database.types";
-import { useColumnResize } from "../lib/useColumnResize";
+import type { Ride, RouteCategory } from "../lib/database.types";
 import { Tooltip } from "./Tooltip";
 import { ROUTE_LABELS, ROUTE_COLORS } from "../lib/constants";
 import {
@@ -30,46 +29,136 @@ import {
   formatMovingTime,
   formatRideDate,
 } from "../lib/leaderboard-utils";
+import { DataTable } from "./table/DataTable";
+import { TableEmpty } from "./table/TableStates";
+import { useDataTable, type SortDir } from "./table/useDataTable";
 
 interface ProfileRidesTableProps {
   profileUserId: string;
 }
 
-type SortKey =
-  | "ride_date"
-  | "name"
-  | "route_category"
-  | "average_speed_mps"
-  | "distance_meters"
-  | "elevation_gain_meters"
-  | "moving_time_seconds";
-
-const BASE_COLUMNS: {
-  key: SortKey;
-  label: string;
-  className?: string;
-}[] = [
-  { key: "ride_date", label: "Date" },
-  { key: "name", label: "Ride Name", className: "profile-rides__name-col" },
-  { key: "route_category", label: "Route" },
-  { key: "average_speed_mps", label: "Avg Speed" },
-  { key: "distance_meters", label: "Distance" },
-  { key: "elevation_gain_meters", label: "Elevation" },
-  { key: "moving_time_seconds", label: "Time" },
-];
-
 const PAGE_SIZE = 25;
 
 const FILTER_ROUTES = ["bayway", "skyline", "hmbw", "royale"] as const;
 
+function profileColumns({
+  unit,
+  isOwnProfile,
+  onEdit,
+}: {
+  unit: ReturnType<typeof useUnit>;
+  isOwnProfile: boolean;
+  onEdit: (ride: EditRideData) => void;
+}): ColumnDef<Ride, any>[] {
+  const columns: ColumnDef<Ride, any>[] = [
+    {
+      accessorKey: "ride_date",
+      header: "Date",
+      cell: (info) => formatRideDate(info.getValue()) ?? "—",
+    },
+    {
+      accessorKey: "name",
+      header: "Ride Name",
+      meta: { className: "profile-rides__name-col", defaultDir: "asc" },
+      cell: ({ row: { original: ride } }) =>
+        ride.strava_activity_id ? (
+          <a
+            href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="profile-rides__strava-link"
+            title={ride.name ?? undefined}
+          >
+            {ride.name ?? "—"}
+          </a>
+        ) : (
+          (ride.name ?? "—")
+        ),
+    },
+    {
+      accessorKey: "route_category",
+      header: "Route",
+      meta: { defaultDir: "asc" },
+      cell: ({ row: { original: ride } }) => (
+        <div className="profile-rides__route-cell">
+          {ride.route_category ? (
+            <RouteTag category={ride.route_category as RouteCategory} />
+          ) : (
+            <span className="text-muted">—</span>
+          )}
+          {ride.is_hidden && (
+            <span className="profile-rides__excluded-badge">Excluded</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "average_speed_mps",
+      header: "Avg Speed",
+      cell: (info) => formatSpeed(info.getValue(), unit),
+    },
+    {
+      accessorKey: "distance_meters",
+      header: "Distance",
+      cell: (info) => formatDistance(info.getValue(), unit),
+    },
+    {
+      accessorKey: "elevation_gain_meters",
+      header: "Elevation",
+      cell: (info) => formatElevation(info.getValue(), unit),
+    },
+    {
+      accessorKey: "moving_time_seconds",
+      header: "Time",
+      cell: (info) => formatMovingTime(info.getValue()),
+    },
+  ];
+  if (isOwnProfile) {
+    columns.push({
+      id: "edit",
+      header: "",
+      enableSorting: false,
+      enableResizing: false,
+      size: 48,
+      meta: { className: "profile-rides__edit-col" },
+      cell: ({ row: { original: ride } }) => (
+        <Tooltip
+          content={
+            ride.is_hidden ? "Restore / edit this ride" : "Edit this ride"
+          }
+        >
+          <button
+            className={`edit-ride-btn${ride.is_hidden ? " edit-ride-btn--restore" : ""}`}
+            onClick={() =>
+              onEdit({
+                id: ride.id,
+                name: ride.name,
+                rideDate: ride.ride_date,
+                routeCategory: ride.route_category as RouteCategory | null,
+                stravaActivityId: ride.strava_activity_id,
+                isHidden: ride.is_hidden ?? undefined,
+              })
+            }
+            aria-label={ride.is_hidden ? "Restore ride" : "Edit ride"}
+          >
+            {ride.is_hidden ? "↩️" : "✏️"}
+          </button>
+        </Tooltip>
+      ),
+    });
+  }
+  return columns;
+}
+
 export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
-  const tableRef = useColumnResize<HTMLTableElement>();
   const unit = useUnit();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
   const [editingRide, setEditingRide] = useState<EditRideData | null>(null);
   const isOwnProfile = currentUser?.id === profileUserId;
-  const [sortKey, setSortKey] = useState<SortKey>("ride_date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sort, setSort] = useState<{ sortBy: string; sortDir: SortDir }>({
+    sortBy: "ride_date",
+    sortDir: "desc",
+  });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -81,53 +170,39 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset page when filters change
+  // Back to page 1 whenever the filter or the order changes
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, routeFilter]);
+  }, [debouncedSearch, routeFilter, sort]);
 
-  const { data: rides, isLoading } = useQuery(
+  // Sorted by the server across all of the rider's rides (T14).
+  const {
+    data: rides,
+    isLoading,
+    error,
+  } = useQuery(
     allUserRidesQueryOptions(
       profileUserId,
       page,
       PAGE_SIZE,
       debouncedSearch || undefined,
       routeFilter.length > 0 ? routeFilter : undefined,
+      sort,
     ),
   );
 
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
-  };
-
-  const sorted = useMemo(() => {
-    if (!rides) return [];
-    return [...rides].sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-
-      // Handle nulls
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-
-      // String comparison for name/date/route
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        const cmp = aVal.localeCompare(bVal);
-        return sortDir === "asc" ? cmp : -cmp;
-      }
-
-      // Numeric comparison
-      const numA = Number(aVal);
-      const numB = Number(bVal);
-      return sortDir === "asc" ? numA - numB : numB - numA;
-    });
-  }, [rides, sortKey, sortDir]);
+  const columns = useMemo(
+    () => profileColumns({ unit, isOwnProfile, onEdit: setEditingRide }),
+    [unit, isOwnProfile],
+  );
+  const table = useDataTable({
+    data: rides ?? [],
+    columns,
+    sort: sort.sortBy,
+    dir: sort.sortDir,
+    onSortChange: (sortBy, sortDir) => setSort({ sortBy, sortDir }),
+    getRowId: (r) => r.id,
+  });
 
   const hasMore = rides?.length === PAGE_SIZE;
   const totalShown = (page - 1) * PAGE_SIZE + (rides?.length ?? 0);
@@ -180,148 +255,21 @@ export function ProfileRidesTable({ profileUserId }: ProfileRidesTableProps) {
         })}
       </div>
 
-      {/* Table */}
-      <div className="profile-rides__table-wrapper">
-        <table ref={tableRef} className="profile-rides__table">
-          <thead>
-            <tr>
-              {BASE_COLUMNS.map((col) => {
-                const isSorted = sortKey === col.key;
-                return (
-                  <th
-                    key={col.key}
-                    className={col.className}
-                    onClick={() => handleSort(col.key)}
-                    style={{ cursor: "pointer" }}
-                    aria-sort={
-                      isSorted
-                        ? sortDir === "asc"
-                          ? "ascending"
-                          : "descending"
-                        : "none"
-                    }
-                  >
-                    {col.label}
-                    {isSorted && (
-                      <span className="sort-indicator">
-                        {sortDir === "asc" ? "▲" : "▼"}
-                      </span>
-                    )}
-                  </th>
-                );
-              })}
-              {isOwnProfile && <th className="profile-rides__edit-col" />}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              // Skeleton rows
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={`skeleton-${String(i)}`}>
-                  {BASE_COLUMNS.map((col) => (
-                    <td key={col.key}>
-                      <div className="profile-rides__skeleton" />
-                    </td>
-                  ))}
-                  {isOwnProfile && <td />}
-                </tr>
-              ))
-            ) : sorted.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={BASE_COLUMNS.length + (isOwnProfile ? 1 : 0)}
-                  style={{
-                    textAlign: "center",
-                    padding: "var(--space-6)",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  No rides found
-                </td>
-              </tr>
-            ) : (
-              sorted.map((ride) => (
-                <tr
-                  key={ride.id}
-                  className={
-                    ride.is_hidden ? "profile-rides__row--excluded" : ""
-                  }
-                >
-                  <td>{formatRideDate(ride.ride_date) ?? "—"}</td>
-                  <td
-                    className="profile-rides__name-col"
-                    title={ride.name ?? undefined}
-                  >
-                    {ride.strava_activity_id ? (
-                      <a
-                        href={`https://www.strava.com/activities/${String(ride.strava_activity_id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="profile-rides__strava-link"
-                      >
-                        {ride.name ?? "—"}
-                      </a>
-                    ) : (
-                      (ride.name ?? "—")
-                    )}
-                  </td>
-                  <td>
-                    <div className="profile-rides__route-cell">
-                      {ride.route_category ? (
-                        <RouteTag
-                          category={ride.route_category as RouteCategory}
-                        />
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
-                      {ride.is_hidden && (
-                        <span className="profile-rides__excluded-badge">
-                          Excluded
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td>{formatSpeed(ride.average_speed_mps, unit)}</td>
-                  <td>{formatDistance(ride.distance_meters, unit)}</td>
-                  <td>{formatElevation(ride.elevation_gain_meters, unit)}</td>
-                  <td>{formatMovingTime(ride.moving_time_seconds)}</td>
-                  {isOwnProfile && (
-                    <td className="profile-rides__edit-col">
-                      <Tooltip
-                        content={
-                          ride.is_hidden
-                            ? "Restore / edit this ride"
-                            : "Edit this ride"
-                        }
-                      >
-                        <button
-                          className={`edit-ride-btn${ride.is_hidden ? " edit-ride-btn--restore" : ""}`}
-                          onClick={() =>
-                            setEditingRide({
-                              id: ride.id,
-                              name: ride.name,
-                              rideDate: ride.ride_date,
-                              routeCategory:
-                                ride.route_category as RouteCategory | null,
-                              stravaActivityId: ride.strava_activity_id,
-                              isHidden: ride.is_hidden ?? undefined,
-                            })
-                          }
-                          aria-label={
-                            ride.is_hidden ? "Restore ride" : "Edit ride"
-                          }
-                        >
-                          {ride.is_hidden ? "↩️" : "✏️"}
-                        </button>
-                      </Tooltip>
-                    </td>
-                  )}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        table={table}
+        ariaLabel="All rides"
+        className="profile-rides__table-wrapper"
+        tableClassName="profile-rides__table"
+        isLoading={isLoading}
+        error={error}
+        skeletonRows={5}
+        getRowProps={(row) => ({
+          className: row.original.is_hidden
+            ? "profile-rides__row--excluded"
+            : undefined,
+        })}
+        empty={<TableEmpty icon="🚴" title="No rides found" />}
+      />
 
       {/* Pagination controls */}
       <div className="profile-rides__pagination">

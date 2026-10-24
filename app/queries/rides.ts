@@ -38,6 +38,7 @@ export function allUserRidesQueryOptions(
   pageSize = 25,
   search?: string,
   routeCategories?: string[],
+  sort?: { sortBy: string; sortDir: "asc" | "desc" },
 ) {
   return queryOptions({
     queryKey: [
@@ -47,6 +48,7 @@ export function allUserRidesQueryOptions(
       pageSize,
       search,
       routeCategories,
+      sort,
     ] as const,
     queryFn: () =>
       fetchUserRides({
@@ -60,6 +62,8 @@ export function allUserRidesQueryOptions(
           routeCategories: routeCategories?.length
             ? routeCategories
             : undefined,
+          sortBy: sort?.sortBy,
+          sortDir: sort?.sortDir,
         },
       }),
     staleTime: 120_000,

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { GroupRideDetailRider } from "../server/group-rides";
 import { useUnit } from "../lib/useUnit";
 import {
@@ -6,7 +7,8 @@ import {
   formatDistance,
   formatElevation,
 } from "../lib/leaderboard-utils";
-import { useColumnResize } from "../lib/useColumnResize";
+import { DataTable } from "./table/DataTable";
+import { useDataTable, type SortDir } from "./table/useDataTable";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -47,29 +49,89 @@ function formatCalories(kj: number | null): string {
 }
 
 // ---------------------------------------------------------------------------
-// Column definitions
+// Columns
 // ---------------------------------------------------------------------------
 
-type SortColumn =
-  | "rider"
-  | "time"
-  | "avgSpeed"
-  | "maxSpeed"
-  | "avgWatts"
-  | "maxWatts"
-  | "avgHr"
-  | "maxHr"
-  | "distance"
-  | "elevation"
-  | "calories";
+interface ComparisonRow {
+  rider: GroupRideDetailRider;
+  color: string;
+}
 
-interface ColumnDef {
-  key: SortColumn;
+interface Metric {
+  id: string;
   label: string;
-  /** Extract a sortable numeric value. null means "no data". */
-  getValue: (r: GroupRideDetailRider) => number | null;
-  /** Lower-is-better columns (e.g. time). Default is higher-is-better. */
+  get: (r: GroupRideDetailRider) => number | null;
+  format: (v: number | null) => string;
+  /** Lower is better (time): highlighted as best and sorted ascending first. */
   lowerIsBetter?: boolean;
+}
+
+function metrics(unit: ReturnType<typeof useUnit>): Metric[] {
+  const orDash = (f: (v: number) => string) => (v: number | null) =>
+    v != null ? f(v) : "—";
+  return [
+    {
+      id: "time",
+      label: "Time",
+      get: (r) => r.ride.moving_time_seconds,
+      format: formatTime,
+      lowerIsBetter: true,
+    },
+    {
+      id: "avgSpeed",
+      label: "Avg Speed",
+      get: (r) => r.ride.average_speed_mps,
+      format: orDash((v) => formatSpeed(v, unit)),
+    },
+    {
+      id: "maxSpeed",
+      label: "Max Speed",
+      get: (r) => r.ride.max_speed_mps,
+      format: orDash((v) => formatSpeed(v, unit)),
+    },
+    {
+      id: "avgWatts",
+      label: "Avg Watts",
+      get: (r) => r.ride.average_watts,
+      format: formatWatts,
+    },
+    {
+      id: "maxWatts",
+      label: "Max Watts",
+      get: (r) => r.ride.max_watts,
+      format: formatWatts,
+    },
+    {
+      id: "avgHr",
+      label: "Avg HR",
+      get: (r) => r.ride.average_heartrate,
+      format: formatHr,
+    },
+    {
+      id: "maxHr",
+      label: "Max HR",
+      get: (r) => r.ride.max_heartrate,
+      format: formatHr,
+    },
+    {
+      id: "distance",
+      label: "Distance",
+      get: (r) => r.ride.distance_meters,
+      format: orDash((v) => formatDistance(v, unit)),
+    },
+    {
+      id: "elevation",
+      label: "Elevation",
+      get: (r) => r.ride.elevation_gain_meters,
+      format: orDash((v) => formatElevation(v, unit)),
+    },
+    {
+      id: "calories",
+      label: "Calories",
+      get: (r) => r.ride.kilojoules,
+      format: formatCalories,
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -80,252 +142,109 @@ export function GroupRideComparisonTable({
   riders,
   riderColors,
 }: GroupRideComparisonTableProps) {
-  const tableRef = useColumnResize<HTMLTableElement>();
   const unit = useUnit();
+  const [sort, setSort] = useState<{ sort: string; dir: SortDir }>({
+    sort: "time",
+    dir: "asc",
+  });
 
-  const [sortColumn, setSortColumn] = useState<SortColumn>("time");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const rows = useMemo<ComparisonRow[]>(
+    () => riders.map((rider, i) => ({ rider, color: riderColors[i] })),
+    [riders, riderColors],
+  );
+  const metricList = useMemo(() => metrics(unit), [unit]);
 
-  // Column definitions with accessor + sort semantics
-  const columns: ColumnDef[] = useMemo(
+  // The best value per metric is highlighted.
+  const best = useMemo(() => {
+    const out = new Map<string, number>();
+    for (const m of metricList) {
+      const values = riders.map(m.get).filter((v): v is number => v != null);
+      if (values.length > 0)
+        out.set(
+          m.id,
+          m.lowerIsBetter ? Math.min(...values) : Math.max(...values),
+        );
+    }
+    return out;
+  }, [riders, metricList]);
+
+  const columns = useMemo<ColumnDef<ComparisonRow, any>[]>(
     () => [
       {
-        key: "time",
-        label: "Time",
-        getValue: (r) => r.ride.moving_time_seconds,
-        lowerIsBetter: true,
+        id: "rider",
+        accessorFn: (r) => r.rider.displayName,
+        header: "Rider",
+        meta: { defaultDir: "asc" },
+        cell: ({ row: { original } }) => (
+          <div className="group-ride-comparison__rider-cell">
+            <span
+              className="group-ride-comparison__avatar"
+              style={{
+                borderColor: original.color,
+                backgroundImage: original.rider.avatarUrl
+                  ? `url(${original.rider.avatarUrl})`
+                  : undefined,
+              }}
+            />
+            <span className="group-ride-comparison__rider-name">
+              {original.rider.displayName}
+            </span>
+          </div>
+        ),
       },
-      {
-        key: "avgSpeed",
-        label: "Avg Speed",
-        getValue: (r) => r.ride.average_speed_mps,
-      },
-      {
-        key: "maxSpeed",
-        label: "Max Speed",
-        getValue: (r) => r.ride.max_speed_mps,
-      },
-      {
-        key: "avgWatts",
-        label: "Avg Watts",
-        getValue: (r) => r.ride.average_watts,
-      },
-      {
-        key: "maxWatts",
-        label: "Max Watts",
-        getValue: (r) => r.ride.max_watts,
-      },
-      {
-        key: "avgHr",
-        label: "Avg HR",
-        getValue: (r) => r.ride.average_heartrate,
-      },
-      {
-        key: "maxHr",
-        label: "Max HR",
-        getValue: (r) => r.ride.max_heartrate,
-      },
-      {
-        key: "distance",
-        label: "Distance",
-        getValue: (r) => r.ride.distance_meters,
-      },
-      {
-        key: "elevation",
-        label: "Elevation",
-        getValue: (r) => r.ride.elevation_gain_meters,
-      },
-
-      {
-        key: "calories",
-        label: "Calories",
-        getValue: (r) => r.ride.kilojoules,
-      },
+      ...metricList.map(
+        (m): ColumnDef<ComparisonRow, any> => ({
+          id: m.id,
+          accessorFn: (r) => m.get(r.rider),
+          header: m.label,
+          size: 110,
+          meta: { defaultDir: m.lowerIsBetter ? "asc" : "desc" },
+          cell: ({ row: { original }, getValue }) =>
+            m.id === "time" ? (
+              <a
+                href={`https://www.strava.com/activities/${original.rider.ride.strava_activity_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group-ride-comparison__strava-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {m.format(getValue())}
+              </a>
+            ) : (
+              m.format(getValue())
+            ),
+        }),
+      ),
     ],
-    [],
+    [metricList],
   );
 
-  // Compute the best (highlighted) value per column
-  const bestByColumn = useMemo(() => {
-    const best = new Map<SortColumn, number>();
-    for (const col of columns) {
-      const values = riders
-        .map((r) => col.getValue(r))
-        .filter((v): v is number => v != null);
-      if (values.length === 0) continue;
-      best.set(
-        col.key,
-        col.lowerIsBetter ? Math.min(...values) : Math.max(...values),
-      );
-    }
-    return best;
-  }, [riders, columns]);
-
-  // Sort riders
-  const sortedRiders = useMemo(() => {
-    // Keep parallel rider/color mapping by sorting indices
-    const indices = riders.map((_, i) => i);
-
-    if (sortColumn === "rider") {
-      indices.sort((a, b) => {
-        const nameA = riders[a].displayName.toLowerCase();
-        const nameB = riders[b].displayName.toLowerCase();
-        return sortDir === "asc"
-          ? nameA.localeCompare(nameB)
-          : nameB.localeCompare(nameA);
-      });
-    } else {
-      const col = columns.find((c) => c.key === sortColumn);
-      if (col) {
-        indices.sort((a, b) => {
-          const va = col.getValue(riders[a]);
-          const vb = col.getValue(riders[b]);
-          // Push nulls to the bottom regardless of direction
-          if (va == null && vb == null) return 0;
-          if (va == null) return 1;
-          if (vb == null) return -1;
-          return sortDir === "asc" ? va - vb : vb - va;
-        });
-      }
-    }
-
-    return indices.map((i) => ({ rider: riders[i], color: riderColors[i] }));
-  }, [riders, riderColors, sortColumn, sortDir, columns]);
-
-  // Handle column header click
-  const handleSort = (col: SortColumn) => {
-    if (col === sortColumn) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortColumn(col);
-      // Default sort direction: asc for time (lower is better), desc for others
-      const def = columns.find((c) => c.key === col);
-      setSortDir(def?.lowerIsBetter ? "asc" : "desc");
-    }
-  };
-
-  // Format a cell value for display
-  const formatCell = (col: ColumnDef, rider: GroupRideDetailRider): string => {
-    const val = col.getValue(rider);
-    switch (col.key) {
-      case "avgSpeed":
-      case "maxSpeed":
-        return val != null ? formatSpeed(val, unit) : "—";
-      case "avgWatts":
-      case "maxWatts":
-        return formatWatts(val);
-      case "avgHr":
-      case "maxHr":
-        return formatHr(val);
-      case "distance":
-        return val != null ? formatDistance(val, unit) : "—";
-      case "elevation":
-        return val != null ? formatElevation(val, unit) : "—";
-      case "calories":
-        return formatCalories(val);
-      default:
-        return val != null ? String(val) : "—";
-    }
-  };
-
-  // Check if a value is the best for its column
-  const isBest = (col: ColumnDef, rider: GroupRideDetailRider): boolean => {
-    const val = col.getValue(rider);
-    if (val == null) return false;
-    return val === bestByColumn.get(col.key);
-  };
-
-  const sortIndicator = (col: SortColumn) => {
-    if (col !== sortColumn) return null;
-    return (
-      <span className="group-ride-comparison__sort-indicator">
-        {sortDir === "asc" ? "▲" : "▼"}
-      </span>
-    );
-  };
+  const table = useDataTable({
+    data: rows,
+    columns,
+    sort: sort.sort,
+    dir: sort.dir,
+    onSortChange: (s, d) => setSort({ sort: s, dir: d }),
+    sortClientSide: true,
+    getRowId: (r) => r.rider.userId,
+  });
 
   if (riders.length === 0) return null;
 
   return (
     <div className="group-ride-comparison">
-      <div className="group-ride-comparison__scroll">
-        <table ref={tableRef} className="group-ride-comparison__table">
-          <thead>
-            <tr>
-              <th
-                className={`group-ride-comparison__th group-ride-comparison__th--sticky${sortColumn === "rider" ? " group-ride-comparison__th--sorted" : ""}`}
-                onClick={() => handleSort("rider")}
-              >
-                Rider
-                {sortIndicator("rider")}
-                {sortColumn !== "rider" && (
-                  <span className="group-ride-comparison__sort-indicator group-ride-comparison__sort-indicator--placeholder">
-                    ▼
-                  </span>
-                )}
-              </th>
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className={`group-ride-comparison__th${sortColumn === col.key ? " group-ride-comparison__th--sorted" : ""}`}
-                  onClick={() => handleSort(col.key)}
-                >
-                  {col.label}
-                  {sortIndicator(col.key)}
-                  {sortColumn !== col.key && (
-                    <span className="group-ride-comparison__sort-indicator group-ride-comparison__sort-indicator--placeholder">
-                      ▼
-                    </span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedRiders.map(({ rider, color }) => (
-              <tr key={rider.userId} className="group-ride-comparison__row">
-                <td className="group-ride-comparison__td group-ride-comparison__td--sticky group-ride-comparison__rider-cell">
-                  <span
-                    className="group-ride-comparison__avatar"
-                    style={{
-                      borderColor: color,
-                      backgroundImage: rider.avatarUrl
-                        ? `url(${rider.avatarUrl})`
-                        : undefined,
-                    }}
-                  />
-                  <span className="group-ride-comparison__rider-name">
-                    {rider.displayName}
-                  </span>
-                </td>
-                {columns.map((col) => {
-                  const best = isBest(col, rider);
-                  return (
-                    <td
-                      key={col.key}
-                      className={`group-ride-comparison__td${best ? " group-ride-comparison__td--best" : ""}`}
-                    >
-                      {col.key === "time" ? (
-                        <a
-                          href={`https://www.strava.com/activities/${rider.ride.strava_activity_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group-ride-comparison__strava-link"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {formatTime(col.getValue(rider))}
-                        </a>
-                      ) : (
-                        formatCell(col, rider)
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        table={table}
+        ariaLabel="Rider comparison"
+        className="group-ride-comparison__scroll"
+        tableClassName="group-ride-comparison__table"
+        getCellClassName={(cell) => {
+          const v = cell.getValue();
+          return v != null && v === best.get(cell.column.id)
+            ? "group-ride-comparison__td--best"
+            : undefined;
+        }}
+      />
     </div>
   );
 }

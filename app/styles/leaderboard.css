@@ -143,28 +143,8 @@
   border-bottom: none;
 }
 
-.column-resizer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 5px;
-  height: 100%;
-  cursor: col-resize;
-  user-select: none;
-  touch-action: none;
-  opacity: 0;
-  background: var(--color-border);
-  transition: opacity var(--transition-fast), background var(--transition-fast);
-}
 
-th:hover > .column-resizer {
-  opacity: 1;
-}
 
-.column-resizer--resizing {
-  opacity: 1;
-  background: var(--color-sf2g-orange);
-}
 
 /* Cell-specific styles */
 .leaderboard__rank {
@@ -1466,22 +1446,7 @@ th:hover > .column-resizer {
    Sort Indicator — Inline to the right of column text.
    Always reserves space to prevent layout shift.
    ============================================================ */
-.sort-indicator {
-  display: inline-block;
-  width: 1em;
-  text-align: center;
-  font-size: 0.6rem;
-  opacity: 0.7;
-  pointer-events: none;
-  vertical-align: middle;
-  margin-left: 2px;
-  flex-shrink: 0;
-}
 
-/* Placeholder keeps the same width reserved when no sort is active */
-.sort-indicator--placeholder {
-  visibility: hidden;
-}
 
 /* ============================================================
    All-Routes Star Badge — Special Glow
