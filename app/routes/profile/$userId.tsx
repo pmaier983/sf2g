@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { leaderboardSearch } from "../../lib/table-query";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { userRidesQueryOptions } from "../../queries/rides";
@@ -220,31 +221,7 @@ function ProfilePage() {
           </p>
           <Link
             to="/leaderboard"
-            search={{
-              routes: [],
-              search: "",
-              ppr: false,
-              other: false,
-              weekends: false,
-              company: undefined,
-              user: undefined,
-              view: "riders" as const,
-              duration: "1w",
-              chart: false,
-              sort: "sf2g_total",
-              dir: "desc" as const,
-              rSort: "ride_date",
-              rDir: "desc" as const,
-              page: 1,
-              dateFrom: undefined,
-              dateTo: undefined,
-              datePreset: undefined,
-              density: "expanded" as const,
-              reverse: false,
-              gSort: "date",
-              gDir: "desc" as const,
-              gPage: 1,
-            }}
+            search={leaderboardSearch()}
             className="btn btn--primary"
             style={{ marginTop: "var(--space-4)" }}
           >
