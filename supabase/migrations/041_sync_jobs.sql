@@ -1,3 +1,6 @@
+-- One-time backfills below can exceed the API roles' 8 s statement timeout.
+SET statement_timeout = 0;
+
 -- ============================================================
 -- Migration 041: sync job queue (rework phase 04)
 -- ============================================================

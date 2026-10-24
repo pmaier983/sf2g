@@ -1,3 +1,6 @@
+-- One-time backfills below can exceed the API roles' 8 s statement timeout.
+SET statement_timeout = 0;
+
 -- ============================================================
 -- Migration 039: lean profile ride list (rework phase 03c)
 -- ============================================================
