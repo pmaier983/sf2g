@@ -4,6 +4,7 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import {
   fetchUserRides,
+  fetchProfileRides,
   fetchRidesLeaderboard,
   fetchCommunityStartHours,
   fetchCommunityStreaks,
@@ -19,7 +20,7 @@ import type { RouteCategory } from "../lib/database.types";
 export function userRidesQueryOptions(userId: string) {
   return queryOptions({
     queryKey: ["rides", userId] as const,
-    queryFn: () => fetchUserRides({ data: { userId, limit: 10000 } }),
+    queryFn: () => fetchProfileRides({ data: { userId } }),
     staleTime: 120_000, // 2 minutes
   });
 }
@@ -37,6 +38,7 @@ export function allUserRidesQueryOptions(
   pageSize = 25,
   search?: string,
   routeCategories?: string[],
+  sort?: { sortBy: string; sortDir: "asc" | "desc" },
 ) {
   return queryOptions({
     queryKey: [
@@ -46,6 +48,7 @@ export function allUserRidesQueryOptions(
       pageSize,
       search,
       routeCategories,
+      sort,
     ] as const,
     queryFn: () =>
       fetchUserRides({
@@ -59,6 +62,8 @@ export function allUserRidesQueryOptions(
           routeCategories: routeCategories?.length
             ? routeCategories
             : undefined,
+          sortBy: sort?.sortBy,
+          sortDir: sort?.sortDir,
         },
       }),
     staleTime: 120_000,
@@ -133,7 +138,8 @@ export interface RidesLeaderboardParams {
   dateTo?: string;
   includeOther?: boolean;
   excludeWeekends?: boolean;
-  pprRideIds?: string[];
+  /** Only PPR-at-dawn rides */
+  ppr?: boolean;
   reverse?: boolean;
 }
 

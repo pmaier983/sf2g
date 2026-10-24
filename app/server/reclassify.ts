@@ -13,6 +13,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
+import { assertAdmin } from "../lib/admin";
 import type { Json } from "../lib/database.types";
 import { classifyRoute } from "../lib/route-classifier";
 import { classifyDestination } from "../lib/destination-classifier";
@@ -418,19 +419,13 @@ export async function performReclassification(): Promise<ReclassifyResult> {
     }
   }
 
-  // Refresh both materialized views in parallel
-  const [leaderboardResult, companyResult] = await Promise.allSettled([
-    supabase.rpc("refresh_leaderboard"),
-    supabase.rpc("refresh_company_leaderboard"),
-  ]);
-
-  if (leaderboardResult.status === "rejected") {
-    errors.push(`Failed to refresh leaderboard: ${leaderboardResult.reason}`);
-  }
-  if (companyResult.status === "rejected") {
-    errors.push(
-      `Failed to refresh company leaderboard: ${companyResult.reason}`,
-    );
+  // Route changes move rides between group rides: refresh them via the
+  // queue (leaderboards read `rides` directly).
+  const { error: enqueueError } = await supabase.rpc("enqueue_sync_job", {
+    p_kind: "refresh_views",
+  });
+  if (enqueueError) {
+    errors.push(`Failed to queue group ride refresh: ${enqueueError.message}`);
   }
 
   return {
@@ -459,6 +454,7 @@ export async function performReclassification(): Promise<ReclassifyResult> {
  */
 export const triggerReclassify = createServerFn({ method: "POST" }).handler(
   async (): Promise<ReclassifyResult> => {
+    await assertAdmin();
     return performReclassification();
   },
 );

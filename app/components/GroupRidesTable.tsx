@@ -1,12 +1,8 @@
-import { useMemo, useRef, useEffect } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  createColumnHelper,
-  flexRender,
-  type SortingState,
-} from "@tanstack/react-table";
+import { useMemo } from "react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { DataTable } from "./table/DataTable";
+import { TableEmpty } from "./table/TableStates";
+import { useDataTable } from "./table/useDataTable";
 import type { GroupRideSummary } from "../server/group-rides";
 import { RouteTag } from "./RouteTag";
 import { Tooltip } from "./Tooltip";
@@ -31,6 +27,7 @@ interface GroupRidesTableProps {
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
+  error?: Error | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -78,11 +75,6 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
       cell: (info) => {
         const formatted = formatRideDate(info.getValue());
         return <span style={{ whiteSpace: "nowrap" }}>{formatted ?? "—"}</span>;
-      },
-      sortingFn: (a, b) => {
-        const da = new Date(a.original.date).getTime();
-        const db = new Date(b.original.date).getTime();
-        return da - db;
       },
       size: 120,
     }),
@@ -165,14 +157,12 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
       header: "# Riders",
       cell: (info) => info.getValue(),
       size: 90,
-      sortDescFirst: true,
     }),
 
     columnHelper.accessor("avgSpeedMps", {
       header: "Avg Speed",
       cell: (info) => formatSpeed(info.getValue(), unit),
       size: 110,
-      sortDescFirst: true,
     }),
 
     columnHelper.accessor("avgWatts", {
@@ -184,7 +174,6 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
         return Math.round(val);
       },
       size: 110,
-      sortDescFirst: true,
       sortUndefined: "last",
     }),
 
@@ -197,7 +186,6 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
         return Math.round(val);
       },
       size: 90,
-      sortDescFirst: true,
       sortUndefined: "last",
     }),
 
@@ -210,7 +198,6 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
         return Math.round(val);
       },
       size: 110,
-      sortDescFirst: true,
       sortUndefined: "last",
     }),
 
@@ -218,7 +205,6 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
       header: "Max Speed",
       cell: (info) => formatSpeed(info.getValue(), unit),
       size: 110,
-      sortDescFirst: true,
     }),
 
     columnHelper.accessor(
@@ -229,7 +215,8 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
         header: "Distance",
         cell: (info) => formatDistance(info.getValue(), unit),
         size: 110,
-        sortDescFirst: true,
+        // Average per rider: the server can't sort by it (T7).
+        enableSorting: false,
       },
     ),
   ];
@@ -240,12 +227,13 @@ function getGroupRideColumns(unit: ReturnType<typeof useUnit>) {
 // ---------------------------------------------------------------------------
 
 /**
- * GroupRidesTable — TanStack Table component for displaying group rides.
- * Uses client-side sorting with overlapping avatar circles and unit-aware formatting.
+ * GroupRidesTable — server-sorted, infinitely scrolling (DataTable). Only
+ * columns the server can sort by are sortable (T7).
  */
 export function GroupRidesTable({
   data,
   isLoading,
+  error,
   onGroupRideClick,
   sortBy,
   sortDir,
@@ -254,198 +242,34 @@ export function GroupRidesTable({
   fetchNextPage,
   isFetchingNextPage,
 }: GroupRidesTableProps) {
-  const loadMoreRef = useRef<HTMLTableRowElement>(null);
-
-  useEffect(() => {
-    if (!hasNextPage || !fetchNextPage) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    const el = loadMoreRef.current;
-    if (el) observer.observe(el);
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, [hasNextPage, fetchNextPage]);
-
   const unit = useUnit();
   const columns = useMemo(() => getGroupRideColumns(unit), [unit]);
-
-  // Derive sorting state from props
-  const sorting: SortingState = [{ id: sortBy, desc: sortDir === "desc" }];
-  const isResizingRef = useRef(false);
-
-  const table = useReactTable({
+  const table = useDataTable({
     data,
     columns,
-    state: {
-      sorting,
-    },
-    onSortingChange: (updater) => {
-      const newSorting =
-        typeof updater === "function" ? updater(sorting) : updater;
-      if (newSorting.length > 0) {
-        const col = newSorting[0];
-        if (col.id === sortBy) {
-          onSortChange(col.id, sortDir === "desc" ? "asc" : "desc");
-        } else {
-          onSortChange(col.id, col.desc ? "desc" : "asc");
-        }
-      } else {
-        // TanStack Table cleared sorting (3rd click) — treat as flip instead
-        onSortChange(sortBy, sortDir === "desc" ? "asc" : "desc");
-      }
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    manualSorting: true,
-    columnResizeMode: "onChange",
+    sort: sortBy,
+    dir: sortDir,
+    onSortChange,
+    getRowId: (r) => r.id,
   });
 
-  const { rows } = table.getRowModel();
-
-  if (!isLoading && data.length === 0) {
-    return (
-      <div className="empty-state">
-        <div className="empty-state__icon">🚴</div>
-        <h3 className="empty-state__title">No group rides found</h3>
-        <p className="empty-state__description">
+  return (
+    <DataTable
+      table={table}
+      ariaLabel="Group rides"
+      className="group-rides-table__wrapper"
+      tableClassName="group-rides-table"
+      isLoading={isLoading}
+      error={error}
+      onRowClick={(row) => onGroupRideClick(row.original)}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      empty={
+        <TableEmpty icon="🚴" title="No group rides found">
           No group rides match the current filters.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="group-rides-table__wrapper" aria-label="Group rides">
-      <table
-        className="group-rides-table"
-        style={{ width: "100%", minWidth: table.getTotalSize() }}
-      >
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                const sorted = header.column.getIsSorted();
-                const canSort = header.column.getCanSort();
-                return (
-                  <th
-                    key={header.id}
-                    onClick={(e) => {
-                      if (isResizingRef.current) return;
-                      header.column.getToggleSortingHandler()?.(e);
-                    }}
-                    className={sorted ? "th--sorted" : ""}
-                    style={{
-                      cursor: canSort ? "pointer" : "default",
-                      minWidth: header.getSize(),
-                    }}
-                    aria-sort={
-                      canSort
-                        ? sorted === "asc"
-                          ? "ascending"
-                          : sorted === "desc"
-                            ? "descending"
-                            : "none"
-                        : undefined
-                    }
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                    {canSort && (
-                      <span
-                        className={`sort-indicator${sorted ? "" : " sort-indicator--placeholder"}`}
-                      >
-                        {sorted === "asc" ? "▲" : "▼"}
-                      </span>
-                    )}
-                    <div
-                      onMouseDown={(e) => {
-                        isResizingRef.current = true;
-                        header.getResizeHandler()(e);
-                        const onUp = () => {
-                          setTimeout(() => {
-                            isResizingRef.current = false;
-                          }, 200);
-                          document.removeEventListener("mouseup", onUp);
-                        };
-                        document.addEventListener("mouseup", onUp);
-                      }}
-                      onTouchStart={header.getResizeHandler()}
-                      onClick={(e) => e.stopPropagation()}
-                      className={`column-resizer${header.column.getIsResizing() ? " column-resizer--resizing" : ""}`}
-                    />
-                  </th>
-                );
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <GroupRideSkeletonRows columnCount={columns.length} />
-          ) : (
-            rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={() => onGroupRideClick(row.original)}
-                style={{ cursor: "pointer" }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} style={{ minWidth: cell.column.getSize() }}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-          {hasNextPage && (
-            <tr ref={loadMoreRef}>
-              <td
-                colSpan={columns.length}
-                style={{ textAlign: "center", padding: "1rem" }}
-              >
-                {isFetchingNextPage ? (
-                  <div className="group-rides-table__skeleton" />
-                ) : (
-                  <span style={{ color: "var(--color-text-secondary)" }}>
-                    Loading more…
-                  </span>
-                )}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton loading rows
-// ---------------------------------------------------------------------------
-
-const SKELETON_ROW_COUNT = 8;
-
-function GroupRideSkeletonRows({ columnCount }: { columnCount: number }) {
-  return (
-    <>
-      {Array.from({ length: SKELETON_ROW_COUNT }, (_, i) => (
-        <tr key={`skel-${i}`} className="group-rides-table__skeleton-row">
-          {Array.from({ length: columnCount }, (_, j) => (
-            <td key={`skel-${i}-${j}`}>
-              <div className="group-rides-table__skeleton" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
+        </TableEmpty>
+      }
+    />
   );
 }

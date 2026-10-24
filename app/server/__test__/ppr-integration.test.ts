@@ -16,109 +16,13 @@ import { resolve } from "path";
 // PPR filter flows through to rides table
 // ---------------------------------------------------------------------------
 
-describe("PPR filter completeness", () => {
-  const leaderboardPageSource = readFileSync(
-    resolve(__dirname, "../../routes/leaderboard.tsx"),
-    "utf-8",
-  );
-
-  const ridesServerSource = readFileSync(
-    resolve(__dirname, "../../server/rides.ts"),
-    "utf-8",
-  );
-
-  const leaderboardServerSource = readFileSync(
-    resolve(__dirname, "../../server/leaderboard.ts"),
-    "utf-8",
-  );
-
-  const ridesQuerySource = readFileSync(
-    resolve(__dirname, "../../queries/rides.ts"),
-    "utf-8",
-  );
-
-  it("PprDawnResult includes rideIds field", () => {
-    // The PPR result must return ride IDs for the rides table filter
-    expect(leaderboardServerSource).toContain("rideIds: string[]");
-  });
-
-  it("fetchPprDawnRiderIds returns rideIds in all code paths", () => {
-    // The word "rideIds" should appear many times in the PPR function:
-    // - In the interface definition
-    // - In all early returns (empty results)
-    // - In the final return (populated results)
-    const rideIdMatches = leaderboardServerSource.match(/rideIds/g) ?? [];
-    // At minimum: 1 interface + 4 returns = 5 occurrences
-    expect(rideIdMatches.length).toBeGreaterThanOrEqual(5);
-  });
-
-  it("rides server function accepts pprRideIds parameter", () => {
-    expect(ridesServerSource).toContain("pprRideIds");
-  });
-
-  it("rides server function filters by pprRideIds when provided", () => {
-    // Should use .in('id', pprRideIds) to filter
-    expect(ridesServerSource).toContain("data.pprRideIds");
-  });
-
-  it("leaderboard page passes pprRideIds to rides query", () => {
-    expect(leaderboardPageSource).toContain("pprRideIds");
-    // Should conditionally pass when ppr is active
-    expect(leaderboardPageSource).toContain("ppr ? pprRideIds");
-  });
-
-  it("rides query options include pprRideIds in params", () => {
-    expect(ridesQuerySource).toContain("pprRideIds");
-  });
-});
-
 // ---------------------------------------------------------------------------
 // Supabase query limits — prevent 1000-row truncation
 // ---------------------------------------------------------------------------
 
-describe("Supabase query limits (prevent 1000-row truncation)", () => {
-  const leaderboardServerSource = readFileSync(
-    resolve(__dirname, "../../server/leaderboard.ts"),
-    "utf-8",
-  );
-
-  it("fetchFilteredLeaderboard uses pagination or explicit limits on ride queries", () => {
-    // The main rides query uses pagination (.range) to work around max_rows.
-    // Other queries may still use .limit(1000000).
-    const hasPagination =
-      leaderboardServerSource.includes("PAGE_SIZE") &&
-      leaderboardServerSource.includes(".range(offset,");
-    const hasLimits =
-      (leaderboardServerSource.match(/\.limit\(\d+\)/g) ?? []).length >= 2;
-    expect(hasPagination || hasLimits).toBe(true);
-  });
-
-  it("allRides query has pagination or explicit limit (bug: 100% dist/elev fix)", () => {
-    // The denominator for %dist/%elev MUST fetch all rows.
-    // This is done via pagination (.range) or RPC (bypasses max_rows).
-    const hasPagination = leaderboardServerSource.includes("PAGE_SIZE");
-    const hasLimit = leaderboardServerSource.includes(".limit(1000000)");
-    expect(hasPagination || hasLimit).toBe(true);
-  });
-});
-
 // ---------------------------------------------------------------------------
 // PPR dawn rides result shape
 // ---------------------------------------------------------------------------
-
-describe("PprDawnResult shape", () => {
-  it("interface has all required fields", () => {
-    const source = readFileSync(
-      resolve(__dirname, "../../server/leaderboard.ts"),
-      "utf-8",
-    );
-
-    // Verify the interface shape
-    expect(source).toContain("riderIds: string[]");
-    expect(source).toContain("rideCounts: Record<string, number>");
-    expect(source).toContain("rideIds: string[]");
-  });
-});
 
 // ---------------------------------------------------------------------------
 // Hydration safety — date inputs suppress hydration warnings

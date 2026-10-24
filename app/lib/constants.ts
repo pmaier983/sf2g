@@ -357,10 +357,23 @@ export const STRAVA_REVOKE_URL = `${STRAVA_OAUTH_BASE}/revoke`;
 export const STRAVA_DEAUTHORIZE_URL = `${STRAVA_OAUTH_BASE}/deauthorize`;
 export const STRAVA_WEBHOOK_URL = `${STRAVA_API_BASE}/push_subscriptions`;
 
-/** Strava Standard Tier Rate Limits (effective June 1, 2026) */
+/**
+ * Strava rate limits (per application, not per athlete).
+ * https://developers.strava.com/docs/rate-limits/
+ *
+ * - Overall: 200 requests / 15 min, 2,000 / day (`X-RateLimit-Usage`)
+ * - Read (non-upload) endpoints: 100 / 15 min, 1,000 / day
+ *   (`X-ReadRateLimit-Usage`). Every call this app makes is a read, so the
+ *   read limits are the binding ones.
+ *
+ * When Strava sends `X-RateLimit-Limit` / `X-ReadRateLimit-Limit`, those
+ * values win over these defaults.
+ */
 export const STRAVA_RATE_LIMIT = {
   LIMIT_15MIN: 200,
   LIMIT_DAILY: 2000,
+  READ_LIMIT_15MIN: 100,
+  READ_LIMIT_DAILY: 1000,
   SAFETY_MARGIN: 0.85,
 } as const;
 
@@ -402,43 +415,6 @@ export const OPEN_METEO_RATE_LIMIT = {
   LIMIT_PER_DAY: 10_000,
   /** Max API calls the cron job should use per invocation (leaves ~50% for manual use) */
   CRON_BUDGET: 200,
-} as const;
-
-/**
- * Cron sync budget for Strava API calls.
- * Reserves capacity for users manually syncing throughout the day.
- *
- * Budget allocation per 15-min window:
- * - Total: 200 requests (Strava limit)
- * - Safety margin (85%): 170 effective
- * - Cron budget: ~50% of effective = 85 requests
- * - Remaining for manual syncs: ~85 requests
- *
- * Each user's incremental sync typically uses 1-2 API calls (1 page).
- * With 85 requests budgeted, we can sync ~40-80 users per cron run.
- *
- * Cloudflare Workers subrequest limit:
- * - Free plan: 50 subrequests per invocation
- * - Paid plan: 10,000 (wrangler.jsonc sets 200 as configured limit)
- * - Each Supabase query or Strava fetch = 1 subrequest
- * - Per-user sync: ~5-7 subrequests (token check, user fetch, Strava page,
- *   ride upsert, user metadata update)
- * - MAX_USERS_PER_RUN limits users to stay within subrequest budget
- */
-export const CRON_SYNC_BUDGET = {
-  /** Max Strava API calls the cron job should use per run */
-  MAX_STRAVA_REQUESTS: 85,
-  /**
-   * Max users to sync per cron invocation.
-   * Each user costs ~5-7 Cloudflare subrequests. With the free plan's 50-subrequest
-   * limit, we need to leave ~10 subrequests for the reclassify step.
-   * Set to 6 for free plan safety; increase if on paid plan.
-   */
-  MAX_USERS_PER_RUN: 6,
-  /** Delay between syncing each user (ms) — spreads load across the 15min window */
-  DELAY_BETWEEN_USERS_MS: 2_000,
-  /** Max time allowed for the entire sync-all-users operation (ms) */
-  MAX_TOTAL_DURATION_MS: 10 * 60 * 1000, // 10 minutes
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -497,3 +473,10 @@ export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
     { lat: 37.45, lng: -122.18, mile: 28, label: "Palo Alto / Mountain View" },
   ],
 };
+
+/**
+ * Every outbound request (Strava, Open-Meteo, PostHog) gives up after this.
+ * Without it one stalled connection hangs the request indefinitely (seen as
+ * a 16-minute stuck e2e run).
+ */
+export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;

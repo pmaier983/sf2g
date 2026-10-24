@@ -217,7 +217,10 @@ export function SyncStatus() {
               <li>🔄 Re-fetches your entire ride history from Strava</li>
               <li>⚡ Updates watts, heart rate, and calories data</li>
               <li>✅ Manual ride overrides will be preserved</li>
-              <li>⏱️ This is a heavy operation — may take a minute</li>
+              <li>
+                ⏱️ Your newest rides update now; older ones fill in over the
+                next few minutes
+              </li>
             </ul>
             <p className="resync-dialog__note">
               This uses many Strava API calls. Only do this if you need to

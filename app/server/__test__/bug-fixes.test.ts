@@ -123,66 +123,15 @@ describe("Bug 3: Disconnect Strava dialog lists consequences", () => {
 // Bug 4: Years badge shows unfiltered active_years
 // ---------------------------------------------------------------------------
 
-describe("Bug 4: Years badge always shows unfiltered active_years", () => {
-  const leaderboardServerSource = readFileSync(
-    resolve(__dirname, "../../server/leaderboard.ts"),
-    "utf-8",
-  );
-
-  it("fetches unfiltered active_years from leaderboard_view", () => {
-    expect(leaderboardServerSource).toContain("unfilteredYears");
-    expect(leaderboardServerSource).toMatch(/from\(["']leaderboard_view["']\)/);
-    expect(leaderboardServerSource).toMatch(
-      /select\(["']user_id,\s*active_years["']\)/,
-    );
-  });
-
-  it("builds unfilteredYearsMap for lookup", () => {
-    expect(leaderboardServerSource).toContain("unfilteredYearsMap");
-    expect(leaderboardServerSource).toContain("new Map");
-  });
-
-  it("uses unfilteredYearsMap.get(userId) for active_years", () => {
-    expect(leaderboardServerSource).toContain("unfilteredYearsMap.get(userId)");
-  });
-
-  it("falls back to agg.years.size if materialized view lookup fails", () => {
-    expect(leaderboardServerSource).toContain(
-      "unfilteredYearsMap.get(userId) ?? agg.years.size",
-    );
-  });
-});
+// Bug 4 (years badge ignores filters) is now a behavioral test in
+// app/server/__test__/db/consistency.test.ts (get_leaderboard, migration 037).
 
 // ---------------------------------------------------------------------------
 // Bug 5: "Other" route selected shows riders with only 'other' rides
 // ---------------------------------------------------------------------------
 
-describe("Bug 5: Other route filter includes other_count in zero-ride check", () => {
-  const leaderboardPageSource = readFileSync(
-    resolve(__dirname, "../../routes/leaderboard.tsx"),
-    "utf-8",
-  );
-
-  it("checks other_count when includeOther is true or routes includes other", () => {
-    expect(leaderboardPageSource).toContain("includeOther");
-    expect(leaderboardPageSource).toMatch(/routes\.includes\(["']other["']/);
-    expect(leaderboardPageSource).toContain("other_count");
-  });
-
-  it("adds other_count to sf2g_total for the zero-ride filter", () => {
-    expect(leaderboardPageSource).toContain(
-      "(entry.sf2g_total ?? 0) + (entry.other_count ?? 0)",
-    );
-  });
-
-  it("includeOther is in the filteredData dependency array", () => {
-    // The useMemo dependency array must include includeOther
-    const depsMatch = leaderboardPageSource.match(
-      /\[\s*leaderboardData,\s*routes,\s*includeOther/,
-    );
-    expect(depsMatch).not.toBeNull();
-  });
-});
+// Bug 5 (Other filter keeps Other-only riders) is now a behavioral test in
+// app/server/__test__/db/consistency.test.ts (get_leaderboard, migration 037).
 
 // ---------------------------------------------------------------------------
 // Bug 6: All-Time table + company filter (verified working, structural test)
@@ -208,11 +157,6 @@ describe("Bug 6: All-Time view respects company filter end-to-end", () => {
     expect(allTimeParamsSource).toContain("company?: string");
   });
 
-  it("alltime server function applies company filter", () => {
-    expect(allTimeServerSource).toContain("destination_company");
-    expect(allTimeServerSource).toContain("data.company");
-  });
-
   it("leaderboard page passes company to allTimeQueryOptions", () => {
     expect(leaderboardPageSource).toContain("company:");
     expect(leaderboardPageSource).toContain("allTimeQueryOptions");
@@ -222,28 +166,3 @@ describe("Bug 6: All-Time view respects company filter end-to-end", () => {
 // ---------------------------------------------------------------------------
 // Bug 7: PPR + route filter no longer double-filters
 // ---------------------------------------------------------------------------
-
-describe("Bug 7: PPR query does not filter by route categories", () => {
-  const leaderboardPageSource = readFileSync(
-    resolve(__dirname, "../../routes/leaderboard.tsx"),
-    "utf-8",
-  );
-
-  it("pprDawnRiderIdsQueryOptions call does NOT include routeCategories", () => {
-    // Find the pprDawnRiderIdsQueryOptions call and verify no routeCategories param
-    const pprCallMatch = leaderboardPageSource.match(
-      /pprDawnRiderIdsQueryOptions\(\{[\s\S]*?\}\)/,
-    );
-    expect(pprCallMatch).not.toBeNull();
-    expect(pprCallMatch![0]).not.toContain("routeCategories");
-  });
-
-  it("PPR query only passes dateFrom and dateTo", () => {
-    const pprCallMatch = leaderboardPageSource.match(
-      /pprDawnRiderIdsQueryOptions\(\{[\s\S]*?\}\)/,
-    );
-    expect(pprCallMatch).not.toBeNull();
-    expect(pprCallMatch![0]).toContain("dateFrom");
-    expect(pprCallMatch![0]).toContain("dateTo");
-  });
-});

@@ -20,7 +20,10 @@ import {
   clearSessionData,
 } from "../lib/session";
 import { getMissingScopes } from "../lib/constants";
-import type { User } from "../lib/database.types";
+import { PUBLIC_USER_COLUMNS, type PublicUser } from "../lib/public-user";
+
+/** Activities imported inline during the OAuth callback (one Strava page). */
+const INITIAL_IMPORT_PER_PAGE = 100;
 
 // ---------------------------------------------------------------------------
 // getStravaAuthUrl — returns the Strava OAuth authorize URL
@@ -75,6 +78,9 @@ export const handleStravaCallback = createServerFn({ method: "POST" })
             tokenData.expires_at * 1000,
           ).toISOString(),
           strava_scopes: data.scope,
+          // Reconnecting fixes a rejected refresh token.
+          needs_reauth: false,
+          deauthorized_at: null,
         },
         { onConflict: "strava_id" },
       )
@@ -90,10 +96,11 @@ export const handleStravaCallback = createServerFn({ method: "POST" })
     // 4. Set session cookie
     await setSessionData({ userId: user.id, stravaId: user.strava_id });
 
-    // 5. Trigger initial ride sync so the user sees their history immediately.
-    //    With the webhook transition, the cron no longer polls Strava for rides.
-    //    Webhooks only fire for future activities, not historical backfill.
-    //    This sync runs inline so the callback page can show progress/results.
+    // 5. Import the newest page of rides inline so the rider sees them right
+    //    away, then queue the rest of their history: the sync queue drain
+    //    pages backwards one page per tick (app/server/sync-drain.ts). A full
+    //    history import inside this request used to exceed the Worker's
+    //    subrequest limit and leave riders with truncated histories.
     let syncResult: {
       newRides: number;
       totalProcessed: number;
@@ -102,20 +109,44 @@ export const handleStravaCallback = createServerFn({ method: "POST" })
     let syncError: string | null = null;
 
     try {
-      const { performSync } = await import("./sync");
-      console.log(
-        `[auth] Triggering initial sync for user ${user.id} (${user.display_name ?? user.username ?? "new user"})`,
+      const { backfillStep } = await import("./sync");
+      const step = await backfillStep(
+        user.id,
+        Math.floor(Date.now() / 1000),
+        INITIAL_IMPORT_PER_PAGE,
       );
-      syncResult = await performSync(user.id);
+      syncResult = {
+        newRides: step.upserted,
+        totalProcessed: step.upserted,
+        errors: [],
+      };
+      if (step.nextBefore !== null) {
+        await supabase.rpc("enqueue_sync_job", {
+          p_kind: "backfill",
+          p_user_id: user.id,
+          p_cursor: { before: step.nextBefore },
+        });
+      }
+      await supabase.rpc("enqueue_sync_job", { p_kind: "refresh_views" });
       console.log(
-        `[auth] Initial sync complete: ${syncResult.newRides} new rides, ${syncResult.totalProcessed} total`,
+        `[auth] Initial import for ${user.id}: ${step.upserted} rides${step.nextBefore !== null ? ", backfill queued" : ""}`,
       );
     } catch (err) {
-      // Don't block auth on sync failure — the user can manually sync later.
+      // Don't block auth on sync failure — the queue retries it.
       // But propagate rate limit errors so the callback page can show them.
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[auth] Initial sync failed (non-blocking): ${message}`);
+      console.error(`[auth] Initial import failed (non-blocking): ${message}`);
       syncError = message;
+      await supabase
+        .rpc("enqueue_sync_job", {
+          p_kind: "backfill",
+          p_user_id: user.id,
+          p_cursor: { before: Math.floor(Date.now() / 1000) },
+        })
+        .then(
+          () => undefined,
+          () => undefined,
+        );
     }
 
     // 6. Return redirect URL with sync result metadata
@@ -130,14 +161,14 @@ export const handleStravaCallback = createServerFn({ method: "POST" })
 // getCurrentUser — reads session cookie and returns the user from DB
 // ---------------------------------------------------------------------------
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(
-  async (): Promise<User | null> => {
+  async (): Promise<PublicUser | null> => {
     const session = await getSessionData();
     if (!session) return null;
 
     const supabase = createAnonClient();
     const { data: user, error } = await supabase
       .from("users")
-      .select("*")
+      .select(PUBLIC_USER_COLUMNS)
       .eq("id", session.userId)
       .single();
 
@@ -210,13 +241,15 @@ export async function cleanupDeauthorizedUser(
     console.log(`[auth] Deleted ${deletedCount ?? 0} rides for user ${userId}`);
   }
 
-  // 3. Refresh leaderboard view to remove deleted user's data
-  try {
-    await supabase.rpc("refresh_leaderboard");
-  } catch (err) {
+  // 3. Leaderboards read `rides` directly; queue the group-ride refresh so
+  //    the rider also disappears from group rides and the network.
+  const { error: enqueueError } = await supabase.rpc("enqueue_sync_job", {
+    p_kind: "refresh_views",
+  });
+  if (enqueueError) {
     console.error(
-      "[auth] Failed to refresh leaderboard after ride deletion:",
-      err,
+      "[auth] Failed to queue refresh after ride deletion:",
+      enqueueError.message,
     );
   }
 
@@ -263,5 +296,31 @@ export const disconnectStrava = createServerFn({ method: "POST" }).handler(
     await clearSessionData();
 
     return { redirectTo: "/" as const };
+  },
+);
+
+// ---------------------------------------------------------------------------
+// getMySyncState — the signed-in rider's own sync health (never another's)
+// ---------------------------------------------------------------------------
+export interface MySyncState {
+  needsReauth: boolean;
+  /** Queued or running sync jobs (history import in progress). */
+  pendingJobs: number;
+}
+
+export const getMySyncState = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MySyncState | null> => {
+    const session = await getSessionData();
+    if (!session) return null;
+    const { data } = await createServiceClient()
+      .from("sync_health")
+      .select("needs_reauth, open_jobs")
+      .eq("user_id", session.userId)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      needsReauth: data.needs_reauth ?? false,
+      pendingJobs: Number(data.open_jobs ?? 0),
+    };
   },
 );

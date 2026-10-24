@@ -4,6 +4,7 @@
  * Shows an animated map replay, offset chart, and comparison table
  * for a group ride. Streams are lazily fetched from Strava on first view.
  */
+import { leaderboardSearch } from "../../lib/table-query";
 import {
   createFileRoute,
   Link,
@@ -299,31 +300,7 @@ function GroupRideDetailPage() {
       <div className="group-ride-detail">
         <Link
           to="/leaderboard"
-          search={{
-            routes: [],
-            search: "",
-            ppr: false,
-            other: false,
-            weekends: false,
-            company: undefined,
-            user: undefined,
-            view: "groups" as const,
-            duration: "1w",
-            chart: false,
-            sort: "sf2g_total",
-            dir: "desc" as const,
-            rSort: "ride_date",
-            rDir: "desc" as const,
-            page: 1,
-            dateFrom: undefined,
-            dateTo: undefined,
-            datePreset: undefined,
-            density: "expanded" as const,
-            reverse: false,
-            gSort: "date",
-            gDir: "desc" as const,
-            gPage: 1,
-          }}
+          search={leaderboardSearch({ view: "groups" })}
           className="group-ride-detail__back"
         >
           ← Back to Group Rides
@@ -363,31 +340,7 @@ function GroupRideDetailPage() {
       <div className="group-ride-detail__header">
         <Link
           to="/leaderboard"
-          search={{
-            routes: [],
-            search: "",
-            ppr: false,
-            other: false,
-            weekends: false,
-            company: undefined,
-            user: undefined,
-            view: "groups" as const,
-            duration: "1w",
-            chart: false,
-            sort: "sf2g_total",
-            dir: "desc" as const,
-            rSort: "ride_date",
-            rDir: "desc" as const,
-            page: 1,
-            dateFrom: undefined,
-            dateTo: undefined,
-            datePreset: undefined,
-            density: "expanded" as const,
-            reverse: false,
-            gSort: "date",
-            gDir: "desc" as const,
-            gPage: 1,
-          }}
+          search={leaderboardSearch({ view: "groups" })}
           className="group-ride-detail__back"
         >
           ← Back to Group Rides

@@ -1,8 +1,4 @@
-import {
-  createFileRoute,
-  stripSearchParams,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   useMemo,
@@ -13,14 +9,9 @@ import {
   Suspense,
 } from "react";
 import { MobileBottomBar } from "../components/MobileBottomBar";
-import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
   leaderboardQueryOptions,
-  filteredLeaderboardQueryOptions,
-  pprDawnRiderIdsQueryOptions,
   riderGrowthQueryOptions,
-  dailyGrowthQueryOptions,
-  companyRiderIdsQueryOptions,
 } from "../queries/leaderboard";
 import { ridesLeaderboardQueryOptions } from "../queries/rides";
 import { allTimeQueryOptions } from "../queries/alltime";
@@ -37,10 +28,21 @@ const AllTimeChart = lazy(() =>
   })),
 );
 import { FilterChips } from "../components/FilterChips";
+import { ViewSwitcher } from "../components/ViewSwitcher";
 import { SyncStatus } from "../components/SyncStatus";
 import { RIDER_COLORS } from "../lib/constants";
 import { groupRidesQueryOptions } from "../queries/group-rides";
 import type { RouteCategory, DestinationCompany } from "../lib/database.types";
+import type { LeaderboardQueryInput } from "../lib/leaderboard-query";
+import {
+  hasActiveFilters,
+  parseSearch,
+  serializeSearch,
+  type DatePreset,
+  type TableQuery,
+} from "../lib/table-query";
+import { useTableQuery } from "../lib/useTableQuery";
+import { detectGranularity } from "../lib/growth-granularity";
 import "../styles/leaderboard.css";
 
 // ---------------------------------------------------------------------------
@@ -86,112 +88,19 @@ function getDurationLabel(duration: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Route definition with query param validation
+// Route definition — all table state lives in the URL (app/lib/table-query.ts)
 // ---------------------------------------------------------------------------
 
-/** Search params for the /leaderboard route */
-export interface LeaderboardSearch {
-  routes: RouteCategory[];
-  search: string;
-  ppr: boolean;
-  other: boolean;
-  weekends: boolean;
-  company: string | undefined;
-  user: string | undefined;
-  view: "riders" | "rides" | "alltime" | "groups";
-  duration: string;
-  chart: boolean;
-  sort: string;
-  dir: "asc" | "desc";
-  rSort: string;
-  rDir: "asc" | "desc";
-  page: number;
-  dateFrom: string | undefined;
-  dateTo: string | undefined;
-  datePreset: string | undefined;
-  density: "condensed" | "expanded";
-  reverse: boolean;
-  gSort: string;
-  gDir: "asc" | "desc";
-  gPage: number;
-}
-
-/** Default search param values — used for validation and URL cleanup */
-const SEARCH_DEFAULTS: LeaderboardSearch = {
-  routes: [],
-  search: "",
-  ppr: false,
-  other: false,
-  weekends: false,
-  company: undefined,
-  user: undefined,
-  view: "riders",
-  duration: "1w",
-  chart: false,
-  sort: "sf2g_total",
-  dir: "desc",
-  rSort: "ride_date",
-  rDir: "desc",
-  page: 1,
-  dateFrom: undefined,
-  dateTo: undefined,
-  datePreset: undefined,
-  density: "expanded",
-  reverse: false,
-  gSort: "date",
-  gDir: "desc",
-  gPage: 1,
-};
-
-const toBool = (v: unknown) => v === "true" || v === true;
-
 export const Route = createFileRoute("/leaderboard")({
-  validateSearch: (raw: Record<string, unknown>): LeaderboardSearch => ({
-    routes:
-      typeof raw.routes === "string" && raw.routes
-        ? (raw.routes.split(",").filter(Boolean) as RouteCategory[])
-        : Array.isArray(raw.routes)
-          ? (raw.routes as RouteCategory[])
-          : [],
-    search: (raw.search as string) || "",
-    ppr: toBool(raw.ppr),
-    other: toBool(raw.other),
-    weekends: raw.weekends === undefined ? false : toBool(raw.weekends),
-    company: (raw.company as string) || undefined,
-    user: (raw.user as string) || undefined,
-    view: (raw.view as "riders" | "rides" | "alltime" | "groups") || "riders",
-    duration: (raw.duration as string) || "1w",
-    chart: toBool(raw.chart),
-    sort: (raw.sort as string) || "sf2g_total",
-    dir: (raw.dir as "asc" | "desc") || "desc",
-    rSort: (raw.rSort as string) || "ride_date",
-    rDir: (raw.rDir as "asc" | "desc") || "desc",
-    page: Number(raw.page) || 1,
-    dateFrom: (raw.dateFrom as string) || undefined,
-    dateTo: (raw.dateTo as string) || undefined,
-    datePreset: (raw.datePreset as string) || undefined,
-    density: (raw.density as "condensed" | "expanded") || "expanded",
-    reverse: toBool(raw.reverse),
-    gSort: (raw.gSort as string) || "date",
-    gDir: (raw.gDir as "asc" | "desc") || "desc",
-    gPage: Number(raw.gPage) || 1,
-  }),
-  // Strip defaults to keep URLs clean
+  validateSearch: (raw: Record<string, unknown>): TableQuery =>
+    parseSearch(raw),
   search: {
+    // Keep URLs short: drop defaults, join routes with commas.
     middlewares: [
-      // Use TanStack Router's built-in default-stripping — handles initial load,
-      // hydration, and navigation correctly (the custom approach was buggy).
-      stripSearchParams(SEARCH_DEFAULTS),
-      // Serialize routes array → comma string (since stripSearchParams only
-      // handles primitives, not deep array equality)
-      ({ search, next }) => {
-        const out = { ...search } as Record<string, unknown>;
-        if (Array.isArray(out.routes)) {
-          const arr = out.routes as string[];
-          out.routes = arr.length > 0 ? arr.join(",") : undefined;
-        }
-        return next(out as unknown as typeof search);
-      },
+      ({ search, next }) =>
+        serializeSearch(
+          parseSearch(next(search) as unknown as Record<string, unknown>),
+        ) as unknown as TableQuery,
     ],
   },
   component: LeaderboardPage,
@@ -212,6 +121,12 @@ export const Route = createFileRoute("/leaderboard")({
 // ---------------------------------------------------------------------------
 function LeaderboardPage() {
   const {
+    query,
+    set: updateSearch,
+    reset: handleClearAll,
+    dates,
+  } = useTableQuery();
+  const {
     routes,
     search,
     ppr,
@@ -223,79 +138,14 @@ function LeaderboardPage() {
     chart: chartOpen,
     sort,
     dir,
-    rSort,
-    rDir,
-    page,
-    dateFrom,
-    dateTo,
     datePreset,
     density,
     duration,
     reverse,
-    gSort,
-    gDir,
-    gPage,
-  } = Route.useSearch();
+  } = query;
+  const { dateFrom, dateTo } = dates;
   const navigate = useNavigate({ from: Route.fullPath });
-
-  // ---- Shared search param updater ----
-  const updateSearch = useCallback(
-    (patch: Partial<LeaderboardSearch>) =>
-      navigate({ search: (prev) => ({ ...prev, ...patch }) }),
-    [navigate],
-  );
-
-  // ---- Check if any filters differ from defaults ----
-  const hasActiveFilters = useMemo(() => {
-    if (routes.length > 0) return true;
-    if (search !== "") return true;
-    if (ppr) return true;
-    if (includeOther) return true;
-    if (weekends) return true;
-    if (company) return true;
-    if (user) return true;
-    if (dateFrom) return true;
-    if (dateTo) return true;
-    if (datePreset) return true;
-    if (view !== "riders") return true;
-    if (chartOpen) return true;
-    if (density !== "expanded") return true;
-    if (sort !== "sf2g_total") return true;
-    if (dir !== "desc") return true;
-    if (rSort !== "ride_date") return true;
-    if (rDir !== "desc") return true;
-    if (page !== 1) return true;
-    if (duration !== "1w") return true;
-    if (reverse) return true;
-    return false;
-  }, [
-    routes,
-    search,
-    ppr,
-    includeOther,
-    weekends,
-    company,
-    user,
-    dateFrom,
-    dateTo,
-    datePreset,
-    view,
-    chartOpen,
-    density,
-    sort,
-    dir,
-    rSort,
-    rDir,
-    page,
-    duration,
-    reverse,
-  ]);
-
-  // ---- Clear all filters → reset to defaults ----
-  const handleClearAll = useCallback(
-    () => navigate({ search: SEARCH_DEFAULTS }),
-    [navigate],
-  );
+  const activeFilters = hasActiveFilters(query);
 
   // ---- Chart selection state (local — not URL-worthy) ----
   const [selectedRiderIds, setSelectedRiderIds] = useState<Set<string>>(
@@ -309,27 +159,23 @@ function LeaderboardPage() {
 
   // ---- Data queries ----
   const excludeWeekends = !weekends;
-  const isCustomFiltered = routes.length > 0 || !!company || !!reverse;
 
-  // Use the fast pre-computed leaderboard_view (or date-range RPC) when
-  // compound route/company/reverse filters are not active.
-  const leaderboardOptions = isCustomFiltered
-    ? filteredLeaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-        routeCategories: routes.length > 0 ? routes : undefined,
-        company: company || undefined,
-        excludeWeekends,
-        reverse: reverse || undefined,
-      })
-    : leaderboardQueryOptions({
-        sortBy: sort,
-        sortDir: dir,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-      });
+  // One server query for every filter combination (get_leaderboard in SQL).
+  // Search stays client-side so typing doesn't refetch.
+  const leaderboardOptions = leaderboardQueryOptions({
+    routes,
+    includeOther,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+    excludeWeekends,
+    ppr,
+    reverse,
+    company: (company || undefined) as LeaderboardQueryInput["company"],
+    sort: (view === "riders"
+      ? sort
+      : "sf2g_total") as LeaderboardQueryInput["sort"],
+    dir: view === "riders" ? dir : "desc",
+  });
   const {
     data: leaderboardData,
     isLoading,
@@ -338,29 +184,7 @@ function LeaderboardPage() {
     ...leaderboardOptions,
     enabled: view === "riders",
   });
-  const { data: pprDawnData } = useQuery({
-    ...pprDawnRiderIdsQueryOptions({
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    }),
-    enabled: ppr,
-  });
-  const pprDawnRiderIds = pprDawnData?.riderIds;
-  const pprRideCounts = pprDawnData?.rideCounts;
-  const pprRideIds = pprDawnData?.rideIds;
-  const { data: companyRiderIds } = useQuery({
-    ...companyRiderIdsQueryOptions(company),
-    enabled: !!company && view === "riders",
-  });
   const isChartActive = (chartOpen || mobileGraphOpen) && view === "riders";
-  const { data: growthData } = useQuery({
-    ...riderGrowthQueryOptions(),
-    enabled: isChartActive,
-  });
-  const { data: dailyData } = useQuery({
-    ...dailyGrowthQueryOptions(),
-    enabled: isChartActive,
-  });
 
   const ridesQuery = useInfiniteQuery({
     ...ridesLeaderboardQueryOptions({
@@ -368,14 +192,13 @@ function LeaderboardPage() {
       routeCategories: routes.length > 0 ? routes : undefined,
       company: company || undefined,
       search: search || undefined,
-      sortBy: rSort,
-      sortDir: rDir,
+      sortBy: view === "rides" ? sort : undefined,
+      sortDir: view === "rides" ? dir : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
       includeOther,
       excludeWeekends,
-      // When PPR filter is active, only show qualifying PPR rides
-      pprRideIds: ppr ? pprRideIds : undefined,
+      ppr,
       reverse: reverse || undefined,
     }),
     enabled: view === "rides",
@@ -391,6 +214,7 @@ function LeaderboardPage() {
       includeOther,
       company: company || undefined,
       reverse: reverse || undefined,
+      ppr,
     }),
     enabled: view === "alltime",
   });
@@ -398,9 +222,8 @@ function LeaderboardPage() {
   // ---- Group Rides query ----
   const groupRidesQuery = useInfiniteQuery({
     ...groupRidesQueryOptions({
-      page: gPage,
-      sortBy: gSort,
-      sortDir: gDir,
+      sortBy: view === "groups" ? sort : undefined,
+      sortDir: view === "groups" ? dir : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
       routeCategories: routes.length > 0 ? routes : undefined,
@@ -412,38 +235,8 @@ function LeaderboardPage() {
   // ---- Client-side filtering for the Users table ----
   const filteredData = useMemo(() => {
     if (!leaderboardData) return [];
+    // Every filter except search is applied in SQL (get_leaderboard).
     let data = leaderboardData;
-    // Track whether we've mutated values that require a client-side re-sort
-    let needsResort = false;
-
-    if (!isCustomFiltered) {
-      if (routes.length > 0) {
-        data = data.filter((entry) =>
-          routes.some(
-            (r) => (entry[`${r}_count` as keyof typeof entry] as number) > 0,
-          ),
-        );
-      }
-      if (company && companyRiderIds) {
-        const companySet = new Set(companyRiderIds);
-        data = data.filter((entry) => companySet.has(entry.user_id ?? ""));
-      }
-    }
-
-    if (ppr && pprDawnRiderIds) {
-      const pprSet = new Set(pprDawnRiderIds);
-      data = data.filter((entry) => pprSet.has(entry.user_id ?? ""));
-      // Override sf2g_total with PPR ride count so the count column reflects
-      // only PPR-qualifying rides when the PPR filter is active
-      if (pprRideCounts) {
-        data = data.map((entry) => ({
-          ...entry,
-          sf2g_total: pprRideCounts[entry.user_id ?? ""] ?? 0,
-        }));
-        needsResort = true;
-      }
-    }
-
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(
@@ -452,44 +245,8 @@ function LeaderboardPage() {
           entry.username?.toLowerCase().includes(q),
       );
     }
-
-    // Re-sort client-side when values have been mutated (e.g. PPR count override)
-    // so the displayed order reflects the current sort column and direction.
-    if (needsResort && sort) {
-      const multiplier = dir === "asc" ? 1 : -1;
-      data = [...data].sort((a, b) => {
-        const aVal = (a as Record<string, unknown>)[sort];
-        const bVal = (b as Record<string, unknown>)[sort];
-        const aNum = typeof aVal === "number" ? aVal : 0;
-        const bNum = typeof bVal === "number" ? bVal : 0;
-        return (aNum - bNum) * multiplier;
-      });
-    }
-
-    // Exclude riders with zero matching rides
-    data = data.filter((entry) => {
-      const total =
-        includeOther || routes.includes("other" as RouteCategory)
-          ? (entry.sf2g_total ?? 0) + (entry.other_count ?? 0)
-          : (entry.sf2g_total ?? 0);
-      return total > 0;
-    });
-
     return data;
-  }, [
-    leaderboardData,
-    routes,
-    includeOther,
-    ppr,
-    pprDawnRiderIds,
-    pprRideCounts,
-    company,
-    companyRiderIds,
-    search,
-    isCustomFiltered,
-    sort,
-    dir,
-  ]);
+  }, [leaderboardData, search]);
 
   // ---- Default selection: top 10 by sf2g_total ----
   useEffect(() => {
@@ -516,6 +273,27 @@ function LeaderboardPage() {
       .map((e) => e.user_id)
       .filter((id): id is string => id != null);
   }, [leaderboardData, selectedRiderIds]);
+
+  // Growth chart: buckets for the riders on the chart, same filters as the table
+  const chartGranularity = detectGranularity(
+    dateFrom || undefined,
+    dateTo || undefined,
+  );
+  const { data: growthBuckets } = useQuery({
+    ...riderGrowthQueryOptions({
+      routes,
+      includeOther,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      excludeWeekends,
+      ppr,
+      reverse,
+      company: (company || undefined) as LeaderboardQueryInput["company"],
+      riderIds: selectedRiderArray,
+      granularity: chartGranularity,
+    }),
+    enabled: isChartActive && selectedRiderArray.length > 0,
+  });
 
   const riderColorMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -590,8 +368,6 @@ function LeaderboardPage() {
     [],
   );
 
-  const handleVisibleRidersChange = useCallback(() => {}, []);
-
   // ---- Navigate handler for "View rides" from the users table ----
   const handleViewRides = useCallback(
     (userId: string, routeCategory?: RouteCategory) =>
@@ -599,8 +375,36 @@ function LeaderboardPage() {
         view: "rides",
         user: userId,
         ...(routeCategory ? { routes: [routeCategory] } : {}),
-        page: 1,
       }),
+    [updateSearch],
+  );
+
+  // All Time has its own rolling window, so it drops the date filter.
+  const switchView = useCallback(
+    (next: TableQuery["view"]) =>
+      updateSearch(
+        next === "alltime"
+          ? {
+              view: next,
+              dateFrom: undefined,
+              dateTo: undefined,
+              datePreset: undefined,
+            }
+          : { view: next },
+      ),
+    [updateSearch],
+  );
+
+  // A preset is stored by name (resolved in LA time); custom dates as-is.
+  const handleDateChange = useCallback(
+    (from: string | undefined, to: string | undefined, preset?: string) =>
+      preset
+        ? updateSearch({ datePreset: preset as DatePreset })
+        : updateSearch({
+            datePreset: undefined,
+            dateFrom: from,
+            dateTo: to,
+          }),
     [updateSearch],
   );
 
@@ -608,186 +412,116 @@ function LeaderboardPage() {
     <section
       className={`leaderboard${chartOpen ? " leaderboard--chart-open" : ""}`}
     >
-      {/* ---- Mobile: Header with view toggle ---- */}
-      <div className="mobile-view-header">
-        <div className="mobile-view-header__toggle">
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "riders" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "riders", page: 1 })}
-            aria-pressed={view === "riders"}
-          >
-            👤 Riders
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "alltime" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() =>
-              updateSearch({
-                view: "alltime",
-                page: 1,
-                dateFrom: undefined,
-                dateTo: undefined,
-                datePreset: undefined,
-              })
-            }
-            aria-pressed={view === "alltime"}
-          >
-            🏆 All Time
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "rides" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "rides", page: 1 })}
-            aria-pressed={view === "rides"}
-          >
-            🚴 Rides
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "groups" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "groups", gPage: 1 })}
-            aria-pressed={view === "groups"}
-          >
-            👥 Groups
-          </button>
+      {/* One set of controls for every screen size (T1, T13): on mobile the
+          view switcher becomes the header and the rest a slide-up sheet. */}
+      <div className="leaderboard__header">
+        <div className="leaderboard__switcher-cell">
+          <ViewSwitcher view={view} onChange={switchView} />
         </div>
-      </div>
-
-      {/* Toolbar: View toggle | Chart btn | Search | Density | Sync — all on one line */}
-      <div className="leaderboard__toolbar">
-        <div className="leaderboard__view-toggle">
-          <button
-            className={`leaderboard__view-btn ${view === "riders" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "riders", page: 1 })}
-            aria-pressed={view === "riders"}
-          >
-            👤 Riders
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "alltime" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() =>
-              updateSearch({
-                view: "alltime",
-                page: 1,
-                dateFrom: undefined,
-                dateTo: undefined,
-                datePreset: undefined,
-              })
-            }
-            aria-pressed={view === "alltime"}
-          >
-            🏆 All Time
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "rides" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "rides", page: 1 })}
-            aria-pressed={view === "rides"}
-          >
-            🚴 Rides
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "groups" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "groups", gPage: 1 })}
-            aria-pressed={view === "groups"}
-          >
-            👥 Groups
-          </button>
-        </div>
-        <button
-          className={`leaderboard__chart-btn${chartOpen ? " leaderboard__chart-btn--active" : ""}`}
-          onClick={() => updateSearch({ chart: !chartOpen })}
-          aria-pressed={chartOpen}
-          aria-label={chartOpen ? "Hide growth chart" : "Show growth chart"}
-          title="Toggle growth chart"
-        >
-          📊
-        </button>
-        <label htmlFor="leaderboard-search" className="sr-only">
-          {view === "riders" ? "Search riders" : "Search rides"}
-        </label>
-        <input
-          id="leaderboard-search"
-          type="search"
-          className="leaderboard__search"
-          placeholder={
-            view === "alltime"
-              ? "Search riders..."
-              : view === "riders"
-                ? "Search riders..."
-                : "Search rides..."
-          }
-          value={search}
-          onChange={(e) => updateSearch({ search: e.target.value, page: 1 })}
-        />
-        <button
-          type="button"
-          className="filter-chips__clear-btn"
-          onClick={handleClearAll}
-          disabled={!hasActiveFilters}
-          aria-label="Clear all filters"
-        >
-          <span className="filter-chips__clear-icon" aria-hidden="true">
-            ✕
-          </span>
-          Clear Filters
-        </button>
-        {/* Density toggle — only show in riders view */}
-        {view === "riders" && (
-          <div className="leaderboard__density-toggle">
-            <button
-              className={`leaderboard__density-btn${density === "condensed" ? " leaderboard__density-btn--active" : ""}`}
-              onClick={() => updateSearch({ density: "condensed" })}
-              aria-pressed={density === "condensed"}
-              title="Condensed view"
-            >
-              ≡
-            </button>
-            <button
-              className={`leaderboard__density-btn${density === "expanded" ? " leaderboard__density-btn--active" : ""}`}
-              onClick={() => updateSearch({ density: "expanded" })}
-              aria-pressed={density === "expanded"}
-              title="Expanded view"
-            >
-              ⊞
-            </button>
-          </div>
+        {mobileSettingsOpen && (
+          <div
+            className="leaderboard__controls-backdrop"
+            onClick={() => setMobileSettingsOpen(false)}
+            aria-hidden="true"
+          />
         )}
-        <SyncStatus />
-      </div>
-
-      {/* Filters below toolbar */}
-      <div className="leaderboard__filters-bar">
-        <FilterChips
-          selectedRoutes={routes}
-          onRoutesChange={(r) => updateSearch({ routes: r, page: 1 })}
-          pprActive={ppr}
-          onPprChange={(v) => updateSearch({ ppr: v })}
-          weekendsActive={weekends}
-          onWeekendsChange={(v) => updateSearch({ weekends: v })}
-          includeOther={includeOther}
-          onOtherChange={(v) => updateSearch({ other: v })}
-          selectedCompany={company as DestinationCompany | undefined}
-          onCompanyChange={(c) => updateSearch({ company: c, page: 1 })}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          datePreset={datePreset}
-          onDateChange={(from, to, preset) =>
-            updateSearch({
-              dateFrom: from,
-              dateTo: to,
-              datePreset: preset,
-              page: 1,
-            })
-          }
-          view={view}
-          duration={duration}
-          onDurationChange={(d) => updateSearch({ duration: d })}
-          reverseActive={reverse}
-          onReverseChange={(v) => updateSearch({ reverse: v })}
-          hasActiveFilters={hasActiveFilters}
-          onClearAll={handleClearAll}
-        />
+        <div
+          className={`leaderboard__controls${mobileSettingsOpen ? " leaderboard__controls--open" : ""}`}
+          aria-label="Leaderboard filters"
+        >
+          <div className="leaderboard__controls-handle" aria-hidden="true">
+            <div className="leaderboard__controls-handle-bar" />
+          </div>
+          <div className="leaderboard__toolbar">
+            <button
+              className={`leaderboard__chart-btn${chartOpen ? " leaderboard__chart-btn--active" : ""}`}
+              onClick={() => updateSearch({ chart: !chartOpen })}
+              aria-pressed={chartOpen}
+              aria-label={chartOpen ? "Hide growth chart" : "Show growth chart"}
+              title="Toggle growth chart"
+            >
+              📊
+            </button>
+            <label htmlFor="leaderboard-search" className="sr-only">
+              {view === "riders" ? "Search riders" : "Search rides"}
+            </label>
+            <input
+              id="leaderboard-search"
+              type="search"
+              className="leaderboard__search"
+              placeholder={
+                view === "alltime"
+                  ? "Search riders..."
+                  : view === "riders"
+                    ? "Search riders..."
+                    : "Search rides..."
+              }
+              value={search}
+              onChange={(e) => updateSearch({ search: e.target.value })}
+            />
+            <button
+              type="button"
+              className="filter-chips__clear-btn"
+              onClick={handleClearAll}
+              disabled={!activeFilters}
+              aria-label="Clear all filters"
+            >
+              <span className="filter-chips__clear-icon" aria-hidden="true">
+                ✕
+              </span>
+              Clear Filters
+            </button>
+            {/* Density toggle — only show in riders view */}
+            {view === "riders" && (
+              <div className="leaderboard__density-toggle">
+                <button
+                  className={`leaderboard__density-btn${density === "condensed" ? " leaderboard__density-btn--active" : ""}`}
+                  onClick={() => updateSearch({ density: "condensed" })}
+                  aria-pressed={density === "condensed"}
+                  title="Condensed view"
+                >
+                  ≡
+                </button>
+                <button
+                  className={`leaderboard__density-btn${density === "expanded" ? " leaderboard__density-btn--active" : ""}`}
+                  onClick={() => updateSearch({ density: "expanded" })}
+                  aria-pressed={density === "expanded"}
+                  title="Expanded view"
+                >
+                  ⊞
+                </button>
+              </div>
+            )}
+            <SyncStatus />
+          </div>
+          <div className="leaderboard__filters-bar">
+            <FilterChips
+              selectedRoutes={routes}
+              onRoutesChange={(r) => updateSearch({ routes: r })}
+              pprActive={ppr}
+              onPprChange={(v) => updateSearch({ ppr: v })}
+              weekendsActive={weekends}
+              onWeekendsChange={(v) => updateSearch({ weekends: v })}
+              includeOther={includeOther}
+              onOtherChange={(v) => updateSearch({ other: v })}
+              selectedCompany={company as DestinationCompany | undefined}
+              onCompanyChange={(c) =>
+                updateSearch({ company: c as TableQuery["company"] })
+              }
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              datePreset={datePreset}
+              onDateChange={handleDateChange}
+              view={view}
+              duration={duration}
+              onDurationChange={(d) => updateSearch({ duration: d })}
+              reverseActive={reverse}
+              onReverseChange={(v) => updateSearch({ reverse: v })}
+              hasActiveFilters={activeFilters}
+              onClearAll={handleClearAll}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main layout: chart panel (left) + table (right), BELOW filters */}
@@ -806,18 +540,14 @@ function LeaderboardPage() {
                   selectedRiderIds={allTimeSelectedIds}
                 />
               </Suspense>
-            ) : growthData && growthData.length > 0 ? (
+            ) : growthBuckets && growthBuckets.length > 0 ? (
               <Suspense fallback={<div className="chart-skeleton" />}>
                 <GrowthChart
-                  growthData={growthData}
-                  dailyData={dailyData}
+                  buckets={growthBuckets}
+                  granularity={chartGranularity}
                   visibleRiderIds={selectedRiderArray}
                   riderColorMap={riderColorMap}
                   riderNameMap={riderNameMap}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  routeCategories={routes}
-                  includeOther={includeOther}
                   onToggleRider={handleToggleRider}
                 />
               </Suspense>
@@ -840,49 +570,33 @@ function LeaderboardPage() {
         {/* Table fills remaining space */}
         <div className="leaderboard__table-area">
           {view === "riders" ? (
-            <>
-              {error ? (
-                <div className="error-state">
-                  <div className="error-state__icon">⚠️</div>
-                  <h3 className="error-state__title">
-                    Failed to load leaderboard
-                  </h3>
-                  <p className="error-state__message">{error.message}</p>
-                </div>
-              ) : isLoading ? (
-                <div className="loading-state">
-                  <div className="loading-state__spinner" />
-                  <p className="loading-state__text">Loading leaderboard...</p>
-                </div>
-              ) : (
-                <LeaderboardTable
-                  data={filteredData}
-                  searchFilter={search}
-                  riderColorMap={riderColorMap}
-                  onViewRides={handleViewRides}
-                  onVisibleRidersChange={handleVisibleRidersChange}
-                  sortBy={sort}
-                  sortDir={dir}
-                  onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
-                  density={density}
-                  isAllTime={!dateFrom && !dateTo}
-                  includeOther={includeOther}
-                  chartOpen={chartOpen}
-                  selectedRiderIds={selectedRiderIds}
-                  onToggleRider={handleToggleRider}
-                  onSelectAllRiders={handleSelectAllRiders}
-                  onDeselectAllRiders={handleDeselectAllRiders}
-                />
-              )}
-            </>
+            <LeaderboardTable
+              data={filteredData}
+              searchFilter={search}
+              riderColorMap={riderColorMap}
+              onViewRides={handleViewRides}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
+              density={density}
+              isAllTime={!dateFrom && !dateTo}
+              includeOther={includeOther}
+              chartOpen={chartOpen}
+              selectedRiderIds={selectedRiderIds}
+              onToggleRider={handleToggleRider}
+              onSelectAllRiders={handleSelectAllRiders}
+              onDeselectAllRiders={handleDeselectAllRiders}
+              isLoading={isLoading}
+              error={error}
+            />
           ) : view === "rides" ? (
             <RidesLeaderboardTable
               rides={ridesQuery.data?.pages.flatMap((p) => p.rides) ?? []}
-              totalCount={ridesQuery.data?.pages[0]?.totalCount ?? 0}
               isLoading={ridesQuery.isLoading}
-              sortBy={rSort}
-              sortDir={rDir}
-              onSortChange={(col, d) => updateSearch({ rSort: col, rDir: d })}
+              error={ridesQuery.error}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
               hasNextPage={ridesQuery.hasNextPage}
               fetchNextPage={ridesQuery.fetchNextPage}
               isFetchingNextPage={ridesQuery.isFetchingNextPage}
@@ -890,53 +604,40 @@ function LeaderboardPage() {
               onClearUser={() => updateSearch({ user: undefined })}
             />
           ) : view === "groups" ? (
-            groupRidesQuery.isError ? (
-              <div className="group-rides-table__empty">
-                <p>⚠️ Error loading group rides</p>
-                <p
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "var(--color-text-secondary)",
-                  }}
-                >
-                  {groupRidesQuery.error?.message ?? "Unknown error"}
-                </p>
-              </div>
-            ) : (
-              <GroupRidesTable
-                data={
-                  groupRidesQuery.data?.pages.flatMap((p) => p.groupRides) ?? []
-                }
-                isLoading={groupRidesQuery.isLoading}
-                hasNextPage={groupRidesQuery.hasNextPage}
-                fetchNextPage={groupRidesQuery.fetchNextPage}
-                isFetchingNextPage={groupRidesQuery.isFetchingNextPage}
-                onGroupRideClick={(gr) => {
-                  navigate({
-                    to: "/group-rides/$groupRideId",
-                    params: { groupRideId: gr.id },
-                    search: {
-                      date: gr.date,
-                      route: gr.routeCategory,
-                      riders: gr.riders.map((r) => r.userId).join(","),
-                    },
-                  });
-                }}
-                sortBy={gSort}
-                sortDir={gDir}
-                onSortChange={(col, d) =>
-                  updateSearch({ gSort: col, gDir: d, gPage: 1 })
-                }
-              />
-            )
+            <GroupRidesTable
+              data={
+                groupRidesQuery.data?.pages.flatMap((p) => p.groupRides) ?? []
+              }
+              isLoading={groupRidesQuery.isLoading}
+              error={groupRidesQuery.error}
+              hasNextPage={groupRidesQuery.hasNextPage}
+              fetchNextPage={groupRidesQuery.fetchNextPage}
+              isFetchingNextPage={groupRidesQuery.isFetchingNextPage}
+              onGroupRideClick={(gr) => {
+                navigate({
+                  to: "/group-rides/$groupRideId",
+                  params: { groupRideId: gr.id },
+                  search: {
+                    date: gr.date,
+                    route: gr.routeCategory,
+                    riders: gr.riders.map((r) => r.userId).join(","),
+                  },
+                });
+              }}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
+            />
           ) : (
             <AllTimeTable
               data={allTimeQuery.data}
               isLoading={allTimeQuery.isLoading}
+              error={allTimeQuery.error}
               searchFilter={search}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
               durationLabel={getDurationLabel(duration)}
-              pprActive={ppr}
-              pprDawnRiderIds={pprDawnRiderIds}
               onViewRides={(userId, dateFrom, dateTo) =>
                 updateSearch({
                   view: "rides",
@@ -944,7 +645,6 @@ function LeaderboardPage() {
                   dateFrom,
                   dateTo,
                   datePreset: undefined,
-                  page: 1,
                 })
               }
             />
@@ -960,44 +660,6 @@ function LeaderboardPage() {
         isSettingsOpen={mobileSettingsOpen}
       />
 
-      {/* ---- Mobile: Settings panel (slide-up drawer) ---- */}
-      <MobileSettingsPanel
-        isOpen={mobileSettingsOpen}
-        onClose={() => setMobileSettingsOpen(false)}
-        search={search}
-        onSearchChange={(value) => updateSearch({ search: value, page: 1 })}
-        view={view}
-        density={density}
-        onDensityChange={(d) => updateSearch({ density: d })}
-        duration={duration}
-        onDurationChange={(d) => updateSearch({ duration: d })}
-        selectedRoutes={routes}
-        onRoutesChange={(r) => updateSearch({ routes: r, page: 1 })}
-        pprActive={ppr}
-        onPprChange={(v) => updateSearch({ ppr: v })}
-        weekendsActive={weekends}
-        onWeekendsChange={(v) => updateSearch({ weekends: v })}
-        includeOther={includeOther}
-        onOtherChange={(v) => updateSearch({ other: v })}
-        selectedCompany={company as DestinationCompany | undefined}
-        onCompanyChange={(c) => updateSearch({ company: c, page: 1 })}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        datePreset={datePreset}
-        onDateChange={(from, to, preset) =>
-          updateSearch({
-            dateFrom: from,
-            dateTo: to,
-            datePreset: preset,
-            page: 1,
-          })
-        }
-        reverseActive={reverse}
-        onReverseChange={(v) => updateSearch({ reverse: v })}
-        hasActiveFilters={hasActiveFilters}
-        onClearAll={handleClearAll}
-      />
-
       {/* ---- Mobile: Full-screen graph overlay ---- */}
       {mobileGraphOpen && (
         <div className="mobile-graph-overlay">
@@ -1010,18 +672,14 @@ function LeaderboardPage() {
             ✕
           </button>
           <div className="mobile-graph-overlay__content">
-            {growthData && growthData.length > 0 ? (
+            {growthBuckets && growthBuckets.length > 0 ? (
               <Suspense fallback={<div className="chart-skeleton" />}>
                 <GrowthChart
-                  growthData={growthData}
-                  dailyData={dailyData}
+                  buckets={growthBuckets}
+                  granularity={chartGranularity}
                   visibleRiderIds={selectedRiderArray}
                   riderColorMap={riderColorMap}
                   riderNameMap={riderNameMap}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  routeCategories={routes}
-                  includeOther={includeOther}
                   onToggleRider={handleToggleRider}
                 />
               </Suspense>

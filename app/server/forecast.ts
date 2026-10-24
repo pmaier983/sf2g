@@ -6,6 +6,7 @@
  * at each waypoint based on distance and average speed, then maps each
  * waypoint to the closest hourly forecast data.
  */
+import { OUTBOUND_FETCH_TIMEOUT_MS } from "../lib/constants";
 import { createServerFn } from "@tanstack/react-start";
 import { ROUTE_WAYPOINTS } from "../lib/constants";
 
@@ -276,7 +277,9 @@ export const fetchRouteForecast = createServerFn({ method: "GET" })
     url.searchParams.set("timezone", "America/Los_Angeles");
     url.searchParams.set("forecast_days", "7");
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
+    });
 
     if (!response.ok) {
       console.error(

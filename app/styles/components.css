@@ -2061,7 +2061,7 @@
   white-space: nowrap;
 }
 
-.group-ride-comparison__th {
+.group-ride-comparison__table th {
   padding: 0.625rem 0.75rem;
   text-align: left;
   font-weight: 600;
@@ -2076,56 +2076,47 @@
   position: relative;
 }
 
-.group-ride-comparison__th:hover {
+.group-ride-comparison__table th:hover {
   color: var(--color-text);
 }
 
-.group-ride-comparison__th--sorted {
+.group-ride-comparison__table th.th--sorted {
   color: var(--color-text);
 }
 
-.group-ride-comparison__th--sticky {
+.group-ride-comparison__table th:first-child {
   position: sticky;
   left: 0;
   z-index: 2;
   background: var(--color-surface-elevated);
 }
 
-.group-ride-comparison__sort-indicator {
-  margin-left: 0.25rem;
-  font-size: 0.625rem;
-}
-
-.group-ride-comparison__sort-indicator--placeholder {
-  visibility: hidden;
-}
-
-.group-ride-comparison__row {
+.group-ride-comparison__table tbody tr {
   transition: background-color 0.15s ease;
 }
 
-.group-ride-comparison__row:hover {
+.group-ride-comparison__table tbody tr:hover {
   background: var(--color-surface-hover);
 }
 
-.group-ride-comparison__td {
+.group-ride-comparison__table td {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--color-border-subtle);
   color: var(--color-text);
 }
 
-.group-ride-comparison__td--sticky {
+.group-ride-comparison__table td:first-child {
   position: sticky;
   left: 0;
   z-index: 1;
   background: var(--color-surface);
 }
 
-.group-ride-comparison__row:hover .group-ride-comparison__td--sticky {
+.group-ride-comparison__table tbody tr:hover td:first-child {
   background: var(--color-surface-hover);
 }
 
-.group-ride-comparison__td--best {
+.group-ride-comparison__table td.group-ride-comparison__td--best {
   font-weight: 700;
   color: var(--color-sf2g-orange);
 }
@@ -2170,8 +2161,8 @@
 
 /* Mobile: tighter padding */
 @media (max-width: 640px) {
-  .group-ride-comparison__th,
-  .group-ride-comparison__td {
+  .group-ride-comparison__table th,
+  .group-ride-comparison__table td {
     padding: 0.375rem 0.5rem;
     font-size: 0.8125rem;
   }
@@ -2181,3 +2172,105 @@
   }
 }
 
+
+/* Reconnect banner (expired Strava connection) */
+.reconnect-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) var(--space-4) 0;
+  border: 1px solid var(--color-warning, #d97706);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* ---------------------------------------------------------------------------
+   DataTable shell (app/components/table/DataTable.tsx)
+   --------------------------------------------------------------------------- */
+
+.column-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  opacity: 0;
+  background: var(--color-border);
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+
+th:hover > .column-resizer {
+  opacity: 1;
+}
+
+.column-resizer--resizing {
+  opacity: 1;
+  background: var(--color-sf2g-orange);
+}
+
+.sort-indicator {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  font-size: 0.6rem;
+  opacity: 0.7;
+  pointer-events: none;
+  vertical-align: middle;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+/* Placeholder keeps the same width reserved when no sort is active */
+.sort-indicator--placeholder {
+  visibility: hidden;
+}
+
+/* The sort target is a button so it is keyboard-reachable and separate from
+   the resize handle; it inherits the header's look. */
+.data-table__sort {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+}
+
+.data-table__sort:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.data-table__skeleton-row td {
+  padding: var(--space-3) var(--space-4);
+}
+
+.data-table__skeleton {
+  height: 1rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-hover) 25%,
+    var(--color-border-subtle) 50%,
+    var(--color-surface-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Dark map tiles: OpenStreetMap has no dark style, so invert the light one
+   (app/lib/map-tiles.ts). Hue-rotate keeps water blue and parks green. */
+.map-tiles--dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}

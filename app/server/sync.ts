@@ -8,6 +8,7 @@ import { createServiceClient } from "../lib/supabase";
 import { ensureValidToken } from "../lib/strava-oauth";
 import {
   fetchAthleteActivities,
+  fetchSingleActivity,
   type StravaActivitySummary,
 } from "../lib/strava";
 import { classifyRoute } from "../lib/route-classifier";
@@ -29,14 +30,39 @@ export interface SyncResult {
   newRides: number;
   totalProcessed: number;
   errors: string[];
+  /** A page came back full and pagination stopped early — call again to continue. */
+  hasMore: boolean;
+  /** Pagination stopped because Strava usage is near its limit. */
+  rateLimited: boolean;
 }
 
 /** Options to control sync behavior (used by cron to reduce subrequests) */
 export interface SyncOptions {
-  /** Skip per-user leaderboard refresh (cron's reclassify step handles it) */
-  skipLeaderboardRefresh?: boolean;
+  /** Skip the co-occurrence refresh + group ride recompute (cron does it once) */
+  skipGroupRides?: boolean;
+  /** Skip the extra "re-check today's rides" Strava call */
+  skipSameDayRecheck?: boolean;
+  /** Max Strava pages per call (default MAX_PAGES_PER_SYNC) */
+  maxPages?: number;
+  /** Activities per Strava page (default PAGE_SIZE) */
+  perPage?: number;
+  /**
+   * Clear the caller's session cookie when the token is dead. True for
+   * interactive syncs; cron and webhooks have no rider session.
+   */
+  clearSessionOnReauth?: boolean;
   /** Ignore last_activity_at and re-fetch all rides from Strava */
   fullResync?: boolean;
+}
+
+/** True when Strava returned activities oldest-first (it does when `after` is set). */
+export function isAscendingByStartDate(
+  activities: Array<{ start_date: string }>,
+): boolean {
+  if (activities.length < 2) return true;
+  return (
+    activities[0].start_date <= activities[activities.length - 1].start_date
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -55,7 +81,7 @@ const MAX_PAGES_PER_SYNC = 5;
 /**
  * Transform a Strava activity summary into a RideInsert object.
  */
-function activityToRideInsert(
+export function activityToRideInsert(
   userId: string,
   activity: StravaActivitySummary,
 ): RideInsert {
@@ -148,8 +174,10 @@ export async function performSync(
       message.includes("invalid") ||
       message.includes("Authorization Error")
     ) {
-      // Clear the session so the user has to re-login
-      await clearSessionData();
+      // Clear the session so the user has to re-login (interactive syncs only)
+      if (options?.clearSessionOnReauth !== false) {
+        await clearSessionData();
+      }
       throw new Error(
         "REAUTH_REQUIRED:Your Strava connection has expired. Please log in again.",
       );
@@ -165,14 +193,42 @@ export async function performSync(
   } else {
     const { data: userData } = await supabase
       .from("users")
-      .select("*")
+      .select("last_activity_at")
       .eq("id", userId)
       .single();
 
-    lastActivityAt = userData?.last_activity_at
-      ? Math.floor(new Date(userData.last_activity_at).getTime() / 1000)
+    let lastActivityIso = userData?.last_activity_at ?? null;
+
+    // A previous initial sync can die after upserting rides but before
+    // writing last_activity_at. Without this, every later sync would restart
+    // from the beginning of the athlete's history and die the same way.
+    if (!lastActivityIso) {
+      const { data: latestRide } = await supabase
+        .from("rides")
+        .select("start_date")
+        .eq("user_id", userId)
+        .order("start_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestRide?.start_date) {
+        lastActivityIso = latestRide.start_date;
+        console.log(
+          `[sync] last_activity_at missing — resuming after latest stored ride ${lastActivityIso}`,
+        );
+      }
+    }
+
+    lastActivityAt = lastActivityIso
+      ? Math.floor(new Date(lastActivityIso).getTime() / 1000)
       : undefined;
   }
+
+  const perPage = options?.perPage ?? PAGE_SIZE;
+  const maxPages = options?.maxPages ?? MAX_PAGES_PER_SYNC;
+  let hasMorePages = false;
+  let rateLimited = false;
+  /** Latest start_date across every fetched activity (rides or not). */
+  let latestFetchedStart: string | null = null;
 
   console.log(
     `[sync] Incremental sync after: ${lastActivityAt ?? "none (full sync)"}`,
@@ -190,19 +246,24 @@ export async function performSync(
   while (hasMore) {
     try {
       console.log(
-        `[sync] Fetching Strava activities page ${page} (per_page=${PAGE_SIZE})`,
+        `[sync] Fetching Strava activities page ${page} (per_page=${perPage})`,
       );
 
       const { activities, response } = await fetchAthleteActivities(
         accessToken,
         {
           after: lastActivityAt,
-          perPage: PAGE_SIZE,
+          perPage,
           page,
         },
       );
 
       totalActivitiesFromStrava += activities.length;
+      for (const a of activities) {
+        if (!latestFetchedStart || a.start_date > latestFetchedStart) {
+          latestFetchedStart = a.start_date;
+        }
+      }
       console.log(
         `[sync] Page ${page}: Strava returned ${activities.length} activities`,
       );
@@ -221,7 +282,7 @@ export async function performSync(
       }
 
       // Filter to rides only (non-manual)
-      const rides = activities.filter((a) => a.type === "Ride" && !a.manual);
+      const rides = activities.filter(isSyncableActivity);
 
       const filtered = activities.length - rides.length;
       totalFilteredOut += filtered;
@@ -243,29 +304,45 @@ export async function performSync(
         }
       }
 
+      if (
+        lastActivityAt !== undefined &&
+        activities.length === perPage &&
+        !isAscendingByStartDate(activities)
+      ) {
+        // Continuation via last_activity_at assumes oldest-first pages.
+        console.warn(
+          "[sync] Strava returned a full page newest-first; continuation may skip activities",
+        );
+      }
+
       // Check if we should stop paginating
-      if (activities.length < PAGE_SIZE) {
+      if (activities.length < perPage) {
         hasMore = false;
       } else if (response.__approachingRateLimit) {
         const msg = "Approaching Strava rate limit — stopping pagination early";
         console.warn(`[sync] ${msg}`);
         errors.push(msg);
         hasMore = false;
+        hasMorePages = true;
+        rateLimited = true;
       } else {
         page++;
-        // Safety valve: stop after MAX_PAGES_PER_SYNC to stay within Cloudflare subrequest limits
-        if (page > MAX_PAGES_PER_SYNC) {
-          const msg =
-            "Large history detected — synced first 1000 activities. Click sync again for more.";
-          console.warn(`[sync] ${msg}`);
-          errors.push(msg);
+        // Safety valve: stop after maxPages to stay within Cloudflare subrequest limits
+        if (page > maxPages) {
+          if (maxPages === MAX_PAGES_PER_SYNC) {
+            const msg = `Large history detected — synced first ${maxPages * perPage} activities. Click sync again for more.`;
+            console.warn(`[sync] ${msg}`);
+            errors.push(msg);
+          }
           hasMore = false;
+          hasMorePages = true;
         }
       }
     } catch (err) {
       const errMsg = `Failed to fetch page ${page}: ${err instanceof Error ? err.message : String(err)}`;
       console.error(`[sync] ${errMsg}`);
       errors.push(errMsg);
+      if (errMsg.includes("RATE_LIMITED")) rateLimited = true;
       stravaApiFailed = true;
       hasMore = false;
     }
@@ -282,7 +359,11 @@ export async function performSync(
   // catch it because it uses `after` = `last_activity_at`. This secondary pass
   // re-fetches today's rides (1 extra API call) so any edited fields are picked
   // up via the onConflict upsert. Cost: 1 API call per sync — negligible.
-  if (!stravaApiFailed && lastActivityAt !== undefined) {
+  if (
+    !stravaApiFailed &&
+    lastActivityAt !== undefined &&
+    !options?.skipSameDayRecheck
+  ) {
     try {
       const todayEpoch = Math.floor(
         new Date(
@@ -295,12 +376,10 @@ export async function performSync(
 
       const { activities: todayActivities } = await fetchAthleteActivities(
         accessToken,
-        { after: todayEpoch, perPage: PAGE_SIZE, page: 1 },
+        { after: todayEpoch, perPage, page: 1 },
       );
 
-      const todayRides = todayActivities.filter(
-        (a) => a.type === "Ride" && !a.manual,
-      );
+      const todayRides = todayActivities.filter(isSyncableActivity);
 
       // Deduplicate: only process rides we didn't already fetch in the main pass
       const existingIds = new Set(allRides.map((r) => r.strava_activity_id));
@@ -372,106 +451,68 @@ export async function performSync(
   }
 
   // 4b. Re-apply ride overrides — user edits must survive syncs
-  try {
-    // Get all ride IDs that were just upserted
-    const upsertedRideIds = allRides.map((r) => r.strava_activity_id);
-
-    if (upsertedRideIds.length > 0) {
-      // Find any overrides for this user's rides
-      const { data: overrides } = await supabase
-        .from("ride_overrides")
-        .select(
-          "ride_id, override_name, override_route_category, is_hidden, is_not_sf2g",
-        )
-        .eq("user_id", userId);
-
-      if (overrides && overrides.length > 0) {
-        console.log(`[sync] Re-applying ${overrides.length} ride override(s)`);
-        for (const override of overrides) {
-          const updateFields: RideUpdate = {};
-
-          if (override.override_name !== null) {
-            updateFields.name = override.override_name;
-          }
-          if (override.is_not_sf2g) {
-            updateFields.route_category = null;
-          } else if (override.override_route_category !== null) {
-            updateFields.route_category =
-              override.override_route_category as RouteCategory;
-          }
-          if (override.is_hidden) {
-            updateFields.is_hidden = true;
-          }
-
-          if (Object.keys(updateFields).length > 0) {
-            await supabase
-              .from("rides")
-              .update(updateFields)
-              .eq("id", override.ride_id);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    // Override re-application is non-critical — don't fail the sync
-    console.warn(
-      `[sync] Override re-application failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-    );
+  if (allRides.length > 0) {
+    await reapplyOverrides(supabase, userId);
   }
 
   // 5. Update user sync metadata
-  const latestActivityDate = allRides.reduce<string | null>((latest, ride) => {
+  // Advance last_activity_at past every fetched activity (not just rides), so
+  // a page of non-ride activities can't pin the cursor in place.
+  const latestRideDate = allRides.reduce<string | null>((latest, ride) => {
     if (!latest || ride.start_date > latest) return ride.start_date;
     return latest;
   }, null);
+  const latestActivityDate =
+    [latestRideDate, latestFetchedStart]
+      .filter((d): d is string => !!d)
+      .sort()
+      .pop() ?? null;
 
-  const updateFields: UserUpdate = {
-    last_sync_at: new Date().toISOString(),
-  };
+  const madeProgress =
+    latestActivityDate !== null &&
+    (lastActivityAt === undefined ||
+      new Date(latestActivityDate).getTime() / 1000 > lastActivityAt);
+
+  // last_sync_at means "caught up as of". While more pages remain (and we are
+  // making progress) leave it alone so the cron batch picks this user again.
+  const updateFields: UserUpdate = {};
+  if (!hasMorePages || !madeProgress) {
+    updateFields.last_sync_at = new Date().toISOString();
+  }
+  if (!stravaApiFailed) {
+    updateFields.last_sync_success_at = new Date().toISOString();
+    updateFields.needs_reauth = false;
+  }
   if (latestActivityDate) {
     updateFields.last_activity_at = latestActivityDate;
   }
 
-  await supabase.from("users").update(updateFields).eq("id", userId);
-
-  // 6. Refresh leaderboard materialized view (skipped in cron — reclassify handles it)
-  if (!options?.skipLeaderboardRefresh) {
-    try {
-      await supabase.rpc("refresh_leaderboard");
-    } catch (err) {
-      errors.push(
-        `Failed to refresh leaderboard: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    // Also refresh PPR dawn rides so PPR filter picks up new morning rides
-    try {
-      await supabase.rpc("refresh_ppr_dawn_rides" as never);
-    } catch (err) {
-      // Non-critical — PPR data will be refreshed in cron
-      console.warn(
-        `[sync] PPR dawn rides refresh failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
+  if (Object.keys(updateFields).length > 0) {
+    await supabase.from("users").update(updateFields).eq("id", userId);
   }
 
-  // Always refresh ride co-occurrences after sync so new riders appear in
-  // group rides immediately — this must NOT be gated by skipLeaderboardRefresh
-  try {
-    await supabase.rpc("refresh_ride_co_occurrences" as never);
-    // Pre-compute group rides from the refreshed MV
-    await computeAndStoreGroupRides();
-  } catch (err) {
-    // Non-critical — co-occurrences / group rides will be refreshed in cron
-    console.warn(
-      `[sync] Ride co-occurrences / group rides failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-    );
+  // Refresh ride co-occurrences after an interactive sync so new riders
+  // appear in group rides immediately. Cron skips this per user (it costs
+  // 10+ subrequests) and does it once in its maintenance step instead.
+  if (!options?.skipGroupRides) {
+    try {
+      await supabase.rpc("refresh_ride_co_occurrences" as never);
+      // Pre-compute group rides from the refreshed MV
+      await computeAndStoreGroupRides();
+    } catch (err) {
+      // Non-critical — co-occurrences / group rides will be refreshed in cron
+      console.warn(
+        `[sync] Ride co-occurrences / group rides failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   const result: SyncResult = {
     newRides,
     totalProcessed: allRides.length,
     errors,
+    hasMore: hasMorePages,
+    rateLimited,
   };
 
   console.log(
@@ -490,3 +531,122 @@ export async function performSync(
 // That separation lets route components import triggerSync without
 // pulling in this file's server-only transitive dependencies.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Shared helpers for queue jobs (sync-drain.ts)
+// ---------------------------------------------------------------------------
+
+/** Which Strava activities become rides. One rule for every sync path. */
+export function isSyncableActivity(a: {
+  type: string;
+  manual?: boolean;
+}): boolean {
+  return a.type === "Ride" && !a.manual;
+}
+
+type ServiceClient = ReturnType<typeof createServiceClient>;
+
+/** Re-apply a rider's manual ride edits in one statement. */
+export async function reapplyOverrides(
+  supabase: ServiceClient,
+  userId: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("reapply_ride_overrides", {
+    p_user_id: userId,
+  });
+  if (error) {
+    // Non-critical: the next sync re-applies them
+    console.warn(`[sync] Override re-application failed: ${error.message}`);
+  }
+}
+
+export type ActivityJobOutcome =
+  | "ride_upserted"
+  | "skipped_not_a_ride"
+  | "not_found";
+
+/**
+ * Fetch one activity (webhook create/update) and upsert it.
+ * ~5 subrequests: user read (+ token refresh when expired), Strava, upsert,
+ * overrides, user update.
+ */
+export async function syncSingleActivity(
+  userId: string,
+  activityId: number,
+): Promise<ActivityJobOutcome> {
+  const supabase = createServiceClient();
+  const accessToken = await ensureValidToken(userId);
+  let activity: StravaActivitySummary;
+  try {
+    ({ activity } = await fetchSingleActivity(accessToken, activityId));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // Deleted or made private on Strava before we got to it
+    if (msg.includes("(404)")) return "not_found";
+    throw err;
+  }
+  if (!isSyncableActivity(activity)) return "skipped_not_a_ride";
+
+  const ride = activityToRideInsert(userId, activity);
+  const { error } = await supabase
+    .from("rides")
+    .upsert(ride, { onConflict: "strava_activity_id" });
+  if (error) throw new Error(`Upsert failed: ${error.message}`);
+  await reapplyOverrides(supabase, userId);
+
+  const now = new Date().toISOString();
+  await supabase
+    .from("users")
+    .update({
+      last_sync_success_at: now,
+      consecutive_sync_failures: 0,
+      last_sync_error: null,
+      needs_reauth: false,
+    })
+    .eq("id", userId);
+  return "ride_upserted";
+}
+
+export interface BackfillStepResult {
+  upserted: number;
+  /** Cursor for the next page (epoch seconds), or null when history is done */
+  nextBefore: number | null;
+}
+
+/**
+ * Import one page of a rider's older history (activities before `before`,
+ * newest first). Called repeatedly by backfill jobs until nextBefore is null.
+ */
+export async function backfillStep(
+  userId: string,
+  before: number,
+  perPage: number,
+): Promise<BackfillStepResult> {
+  const supabase = createServiceClient();
+  const accessToken = await ensureValidToken(userId);
+  const { activities } = await fetchAthleteActivities(accessToken, {
+    before,
+    perPage,
+    page: 1,
+  });
+  const rides = activities
+    .filter(isSyncableActivity)
+    .map((a) => activityToRideInsert(userId, a));
+  for (let i = 0; i < rides.length; i += BATCH_SIZE) {
+    const { error } = await supabase
+      .from("rides")
+      .upsert(rides.slice(i, i + BATCH_SIZE), {
+        onConflict: "strava_activity_id",
+      });
+    if (error) throw new Error(`Backfill upsert failed: ${error.message}`);
+  }
+  if (rides.length > 0) await reapplyOverrides(supabase, userId);
+
+  const oldest = activities.reduce<number | null>((min, a) => {
+    const t = Math.floor(new Date(a.start_date).getTime() / 1000);
+    return min === null || t < min ? t : min;
+  }, null);
+  const done =
+    activities.length < perPage || oldest === null || oldest >= before;
+  return { upserted: rides.length, nextBefore: done ? null : oldest };
+}

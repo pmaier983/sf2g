@@ -4,10 +4,11 @@
  * Draws each rider's route as a colored polyline and renders animated
  * circular markers that move along the route based on `currentTime`.
  *
- * Uses Leaflet with CartoDB tiles (free, no API key needed).
+ * Uses Leaflet with OpenStreetMap tiles (app/lib/map-tiles.ts).
  */
 
 // Static CSS import — Vite bundles this, no runtime injection needed
+import { tileOptions, tileUrl } from "../lib/map-tiles";
 import "leaflet/dist/leaflet.css";
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -39,17 +40,6 @@ interface PreparedRider {
   color: string;
   index: number;
 }
-
-// ---------------------------------------------------------------------------
-// Tile layer URLs
-// ---------------------------------------------------------------------------
-
-const TILE_LIGHT =
-  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-const TILE_DARK =
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
 // ---------------------------------------------------------------------------
 // Hooks
@@ -239,8 +229,8 @@ export function GroupRideMap({
       zoomControl: true,
     }).setView([37.6, -122.4], 10);
 
-    LLib.tileLayer(theme === "dark" ? TILE_DARK : TILE_LIGHT, {
-      attribution: TILE_ATTRIBUTION,
+    LLib.tileLayer(tileUrl(theme), {
+      ...tileOptions(theme),
       maxZoom: 18,
     }).addTo(map);
 
@@ -271,11 +261,10 @@ export function GroupRideMap({
   useEffect(() => {
     if (!mapRef.current || !LLib) return;
     mapRef.current.eachLayer((layer) => {
-      if ((layer as any)._url?.includes("cartocdn"))
-        mapRef.current!.removeLayer(layer);
+      if (layer instanceof LLib.TileLayer) mapRef.current!.removeLayer(layer);
     });
-    LLib.tileLayer(theme === "dark" ? TILE_DARK : TILE_LIGHT, {
-      attribution: TILE_ATTRIBUTION,
+    LLib.tileLayer(tileUrl(theme), {
+      ...tileOptions(theme),
       maxZoom: 18,
     }).addTo(mapRef.current);
   }, [theme, LLib]);

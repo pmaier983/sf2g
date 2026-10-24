@@ -1,0 +1,306 @@
+/**
+ * Leaderboard consistency against independently computed fixture totals
+ * (supabase/seed/EXPECTED.json, written by scripts/gen-fixtures.ts).
+ *
+ * Every server function is called exactly the way the UI calls it today.
+ * `it.fails` marks a known discrepancy (see docs/rework/KNOWN_DISCREPANCIES.md):
+ * the test documents the correct behavior and is expected to fail until the
+ * fix lands — at which point Vitest reports it, and the `.fails` is removed.
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import { fetchLeaderboardImpl } from "../../leaderboard";
+import { fetchRidesLeaderboardImpl, fetchUserRidesImpl } from "../../rides";
+import { freezeFixtureClock, RIDER } from "../../../test/characterize";
+
+freezeFixtureClock();
+
+interface Expected {
+  name: string;
+  sf2gVisible: number;
+  sf2gVisibleWeekdays: number;
+  hiddenRides: number;
+}
+const EXPECTED = JSON.parse(
+  readFileSync(
+    resolve(__dirname, "../../../../supabase/seed/EXPECTED.json"),
+    "utf8",
+  ),
+).perRider as Record<string, Expected>;
+
+const RIDERS_WITH_RIDES = Object.entries(EXPECTED).filter(
+  ([, e]) => e.sf2gVisible > 0,
+);
+
+function totalsById(
+  rows: Array<{ user_id: string | null; sf2g_total: number | null }>,
+) {
+  return Object.fromEntries(rows.map((r) => [r.user_id, Number(r.sf2g_total)]));
+}
+
+function expectTotals(
+  rows: Array<{ user_id: string | null; sf2g_total: number | null }>,
+  field: "sf2gVisible" | "sf2gVisibleWeekdays",
+) {
+  const got = totalsById(rows);
+  const want = Object.fromEntries(
+    RIDERS_WITH_RIDES.map(([id, e]) => [id, e[field]]),
+  );
+  expect(got).toEqual(want);
+}
+
+describe("riders view", () => {
+  // Called exactly as the page calls it: every chip goes to get_leaderboard.
+  it("D1: 'Exclude Weekends' (default) excludes weekend rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: true });
+    expectTotals(rows, "sf2gVisibleWeekdays");
+  });
+
+  it("D2: including weekends with a date range includes weekend rides", async () => {
+    const rows = await fetchLeaderboardImpl({
+      dateFrom: "2000-01-01",
+      dateTo: "2026-12-31",
+      excludeWeekends: false,
+    });
+    expectTotals(rows, "sf2gVisible");
+  });
+
+  it("D3: hidden rides are not counted", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    expect(totalsById(rows)[RIDER.fay]).toBe(EXPECTED[RIDER.fay].sf2gVisible);
+  });
+
+  it("route filter and no filter agree for a single-route rider set", async () => {
+    // Ivy only rides Skyline, so a Skyline filter must not change her row.
+    const all = totalsById(await fetchLeaderboardImpl({}));
+    const sky = totalsById(await fetchLeaderboardImpl({ routes: ["skyline"] }));
+    expect(sky[RIDER.ivy]).toBe(all[RIDER.ivy]);
+  });
+});
+
+describe("rides view and profile", () => {
+  it("rides view total equals the sum of visible SF2G rides", async () => {
+    const res = await fetchRidesLeaderboardImpl({ pageSize: 1000 } as never);
+    const want = RIDERS_WITH_RIDES.reduce((s, [, e]) => s + e.sf2gVisible, 0);
+    expect((res as { totalCount: number }).totalCount).toBe(want);
+  });
+
+  it("a rider's profile ride list excludes hidden rides", async () => {
+    const rides = await fetchUserRidesImpl({ userId: RIDER.fay });
+    expect(rides.some((r) => r.is_hidden)).toBe(false);
+  });
+
+  it("D4: the leaderboard and the rider's own ride list agree on SF2G rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    const rides = await fetchUserRidesImpl({ userId: RIDER.fay });
+    const sf2g = rides.filter(
+      (r) => r.route_category && r.route_category !== "other",
+    ).length;
+    expect(totalsById(rows)[RIDER.fay]).toBe(sf2g);
+  });
+});
+
+describe("group rides", () => {
+  it("lists each group's riders in a stable (alphabetical) order", async () => {
+    const { fetchGroupRidesImpl } = await import("../../group-rides");
+    for (let i = 0; i < 3; i++) {
+      const { groupRides } = await fetchGroupRidesImpl({});
+      for (const g of groupRides) {
+        const names = g.riders.map((r) => r.displayName);
+        expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+      }
+    }
+  });
+});
+
+describe("leaderboard regressions (were source-text tests before 03a)", () => {
+  it("Bug 4: the years badge shows career years, unaffected by filters", async () => {
+    const all = await fetchLeaderboardImpl({ excludeWeekends: false });
+    const narrowed = await fetchLeaderboardImpl({
+      routes: ["skyline"],
+      dateFrom: "2026-01-01",
+      dateTo: "2026-12-31",
+    });
+    const years = (rows: typeof all) =>
+      Object.fromEntries(rows.map((r) => [r.user_id, r.active_years]));
+    const career = years(all);
+    for (const [id, y] of Object.entries(years(narrowed))) {
+      expect([id, y]).toEqual([id, career[id]]);
+    }
+  });
+
+  it("Bug 5: filtering by Other keeps riders whose only matches are Other", async () => {
+    const rows = await fetchLeaderboardImpl({
+      routes: ["other"],
+      excludeWeekends: false,
+    });
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.sf2g_total).toBe(0);
+      expect(r.other_count).toBeGreaterThan(0);
+    }
+  });
+
+  it("% distance denominator counts every ride in the date range", async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const { LOCAL_SUPABASE } = await import("../../../test/local-supabase");
+    const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
+    const { data } = await db
+      .from("rides")
+      .select("distance_meters")
+      .eq("user_id", RIDER.ada)
+      .gte("ride_date", "2025-01-01")
+      .lte("ride_date", "2025-12-31");
+    const expected = (data ?? []).reduce(
+      (s, r) => s + (r.distance_meters ?? 0),
+      0,
+    );
+    const rows = await fetchLeaderboardImpl({
+      dateFrom: "2025-01-01",
+      dateTo: "2025-12-31",
+      routes: ["skyline"],
+    });
+    const ada = rows.find((r) => r.user_id === RIDER.ada);
+    expect(ada?.total_distance_meters).toBeCloseTo(expected, 0);
+  });
+
+  it("returns one row per rider and never a rider without matching rides", async () => {
+    const rows = await fetchLeaderboardImpl({ excludeWeekends: false });
+    expect(new Set(rows.map((r) => r.user_id)).size).toBe(rows.length);
+    expect(rows.find((r) => r.user_id === RIDER.gus)).toBeUndefined();
+  });
+});
+
+describe("rides view and growth chart (phase 03b)", () => {
+  it("D8: filtering by weekday or direction keeps pages full and totals right", async () => {
+    const { fetchRidesLeaderboardImpl } = await import("../../rides");
+    const weekdays = RIDERS_WITH_RIDES.reduce(
+      (s, [, e]) => s + e.sf2gVisibleWeekdays,
+      0,
+    );
+    const first = await fetchRidesLeaderboardImpl({
+      excludeWeekends: true,
+      pageSize: 100,
+    });
+    expect(first.totalCount).toBe(weekdays);
+    expect(first.rides).toHaveLength(100);
+    const pages = [first];
+    for (let p = 2; (p - 1) * 100 < first.totalCount; p++) {
+      pages.push(
+        await fetchRidesLeaderboardImpl({
+          excludeWeekends: true,
+          pageSize: 100,
+          page: p,
+        }),
+      );
+    }
+    const ids = pages.flatMap((pg) => pg.rides.map((r) => r.id));
+    expect(new Set(ids).size).toBe(weekdays); // no duplicates, nothing missing
+  });
+
+  it("the chart's cumulative totals equal the table's counts for the same filters", async () => {
+    const { fetchRiderGrowthImpl } = await import("../../leaderboard");
+    const filters = { routes: ["skyline" as const], excludeWeekends: true };
+    const table = totalsById(await fetchLeaderboardImpl(filters));
+    const riders = Object.keys(table);
+    const buckets = await fetchRiderGrowthImpl({
+      ...filters,
+      riderIds: riders,
+      granularity: "monthly",
+    });
+    const chart: Record<string, number> = {};
+    for (const b of buckets)
+      chart[b.user_id] = (chart[b.user_id] ?? 0) + b.count;
+    expect(chart).toEqual(table);
+  });
+});
+
+describe("Strava privacy: private rides never appear", () => {
+  it("is excluded from the leaderboard, rides view, all-time and chart", async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const { LOCAL_SUPABASE } = await import("../../../test/local-supabase");
+    const { fetchRidesLeaderboardImpl } = await import("../../rides");
+    const { fetchAllTimeLeaderboardImpl } = await import("../../alltime");
+    const { fetchRiderGrowthImpl } = await import("../../leaderboard");
+    const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
+
+    const before = {
+      lb: totalsById(await fetchLeaderboardImpl({ excludeWeekends: false })),
+      rides: (await fetchRidesLeaderboardImpl({ userId: RIDER.gus }))
+        .totalCount,
+    };
+    const { error } = await db.from("rides").insert({
+      user_id: RIDER.gus,
+      strava_activity_id: 1_999_999_999,
+      name: "Private SF2G",
+      ride_date: "2026-10-14",
+      start_date: "2026-10-14T13:00:00Z",
+      route_category: "skyline",
+      is_private: true,
+      start_latlng: [37.773433, -122.438898],
+      end_latlng: [37.4419, -122.143],
+    });
+    expect(error).toBeNull();
+    try {
+      const lb = totalsById(
+        await fetchLeaderboardImpl({ excludeWeekends: false }),
+      );
+      expect(lb).toEqual(before.lb);
+      expect(
+        (await fetchRidesLeaderboardImpl({ userId: RIDER.gus })).totalCount,
+      ).toBe(before.rides);
+      const at = await fetchAllTimeLeaderboardImpl({ durationDays: 30 });
+      expect(at.find((r) => r.userId === RIDER.gus)).toBeUndefined();
+      const growth = await fetchRiderGrowthImpl({
+        riderIds: [RIDER.gus],
+        granularity: "monthly",
+      });
+      expect(growth).toEqual([]);
+    } finally {
+      await db.from("rides").delete().eq("strava_activity_id", 1_999_999_999);
+    }
+  });
+});
+
+describe("profile (phase 03c)", () => {
+  it("a rider's profile list holds exactly their visible commutes", async () => {
+    const { fetchProfileRidesImpl } = await import("../../rides");
+    const rows = totalsById(
+      await fetchLeaderboardImpl({
+        excludeWeekends: false,
+        includeOther: true,
+      }),
+    );
+    for (const [id, e] of RIDERS_WITH_RIDES) {
+      const rides = await fetchProfileRidesImpl({ userId: id });
+      const sf2g = rides.filter((r) => r.route_category !== "other").length;
+      expect([e.name, sf2g]).toEqual([e.name, e.sf2gVisible]);
+      expect([e.name, sf2g]).toEqual([e.name, rows[id]]);
+    }
+  });
+
+  it("is not capped at PostgREST's 1000-row limit", async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const { LOCAL_SUPABASE } = await import("../../../test/local-supabase");
+    const { fetchProfileRidesImpl } = await import("../../rides");
+    const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
+    const extra = Array.from({ length: 1100 }, (_, i) => ({
+      user_id: RIDER.gus,
+      strava_activity_id: 1_900_000_000 + i,
+      name: `bulk ${i}`,
+      ride_date: "2020-01-06",
+      start_date: "2020-01-06T15:00:00Z",
+      route_category: "bayway",
+    }));
+    const { error } = await db.from("rides").insert(extra);
+    expect(error).toBeNull();
+    try {
+      expect(await fetchProfileRidesImpl({ userId: RIDER.gus })).toHaveLength(
+        1100,
+      );
+    } finally {
+      await db.from("rides").delete().eq("user_id", RIDER.gus);
+    }
+  });
+});

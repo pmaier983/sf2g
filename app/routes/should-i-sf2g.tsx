@@ -7,11 +7,8 @@
  * All input controls (date, route, departure, speed) are synced to URL
  * search params so shared links restore the exact forecast view.
  */
-import {
-  createFileRoute,
-  stripSearchParams,
-  useNavigate,
-} from "@tanstack/react-router";
+import { addDays, todayInLA, weekdayShort } from "../lib/dates";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useCallback, lazy, Suspense } from "react";
 import { forecastQueryOptions } from "../queries/forecast";
@@ -32,7 +29,8 @@ import "../styles/forecast.css";
 
 /** Search params for the /should-i-sf2g route */
 export interface ForecastSearch {
-  date: string;
+  /** YYYY-MM-DD; absent = tomorrow (resolved at render, in LA time). */
+  date?: string;
   route: string;
   departure: number;
   speed: number;
@@ -46,15 +44,9 @@ const FORECAST_ROUTES: RouteCategory[] = [
   "royale",
 ];
 
-/** Get tomorrow's date as YYYY-MM-DD (default day for the forecast) */
-function getTomorrowDate(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split("T")[0];
-}
-
-const SEARCH_DEFAULTS: ForecastSearch = {
-  date: getTomorrowDate(),
+// No default date here: a module-level "tomorrow" is frozen when the Worker
+// isolate starts. The page resolves a missing date to tomorrow in LA time.
+const SEARCH_DEFAULTS = {
   route: "skyline",
   departure: 6,
   speed: 17,
@@ -72,11 +64,10 @@ export const Route = createFileRoute("/should-i-sf2g")({
       ? rawRoute
       : SEARCH_DEFAULTS.route;
 
-    // Validate date — must be YYYY-MM-DD format
-    const rawDate = (raw.date as string) || SEARCH_DEFAULTS.date;
-    const date = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
-      ? rawDate
-      : SEARCH_DEFAULTS.date;
+    // Validate date — must be YYYY-MM-DD format (absent = tomorrow)
+    const rawDate = raw.date as string | undefined;
+    const date =
+      rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : undefined;
 
     // Validate departure — clamp to slider range [4, 9]
     const rawDeparture = Number(raw.departure);
@@ -96,7 +87,16 @@ export const Route = createFileRoute("/should-i-sf2g")({
   },
   // Strip defaults to keep URLs clean
   search: {
-    middlewares: [stripSearchParams(SEARCH_DEFAULTS)],
+    middlewares: [
+      ({ search, next }) => {
+        const out: Record<string, unknown> = { ...next(search) };
+        for (const [k, v] of Object.entries(SEARCH_DEFAULTS)) {
+          if (out[k] === v) delete out[k];
+        }
+        if (out.date === undefined) delete out.date;
+        return out as unknown as ForecastSearch;
+      },
+    ],
   },
   component: ShouldISf2gPage,
   head: () => ({
@@ -132,30 +132,20 @@ export const Route = createFileRoute("/should-i-sf2g")({
 // ---------------------------------------------------------------------------
 
 /**
- * Generate day options: Today, Tomorrow, +2, +3, +4, +5, +6
+ * Day options: Today, Tomorrow, then weekday names — LA calendar days, so
+ * the server render and every browser produce the same pills.
  */
-function getDayOptions(): Array<{
+function getDayOptions(today: string): Array<{
   label: string;
   date: string;
   dayName: string;
 }> {
-  const options: Array<{ label: string; date: string; dayName: string }> = [];
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split("T")[0];
-    const dayName = dayNames[d.getDay()];
-
-    let label: string;
-    if (i === 0) label = "Today";
-    else if (i === 1) label = "Tomorrow";
-    else label = dayName;
-
-    options.push({ label, date: dateStr, dayName });
-  }
-  return options;
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(today, i);
+    const dayName = weekdayShort(date);
+    const label = i === 0 ? "Today" : i === 1 ? "Tomorrow" : dayName;
+    return { label, date, dayName };
+  });
 }
 
 /**
@@ -174,15 +164,17 @@ function formatDepartureHour(hour: number): string {
 // ---------------------------------------------------------------------------
 
 function ShouldISf2gPage() {
-  const dayOptions = useMemo(() => getDayOptions(), []);
+  const today = todayInLA();
+  const dayOptions = useMemo(() => getDayOptions(today), [today]);
 
   // Read state from URL search params
   const {
-    date: selectedDate,
+    date: dateParam,
     route: selectedRoute,
     departure: departureHour,
     speed: avgSpeed,
   } = Route.useSearch();
+  const selectedDate = dateParam ?? addDays(today, 1);
   const navigate = useNavigate({ from: Route.fullPath });
 
   // Shared search param updater (follows leaderboard pattern)

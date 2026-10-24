@@ -22,14 +22,14 @@ export function safeNumber(value: unknown): number {
 export function formatMiles(meters: unknown): string {
   const m = safeNumber(meters);
   const miles = m / METERS_PER_MILE;
-  return `${miles.toLocaleString(undefined, { maximumFractionDigits: 0 })} mi`;
+  return `${miles.toLocaleString("en-US", { maximumFractionDigits: 0 })} mi`;
 }
 
 /** Meters → feet (localized string with no decimal places) */
 export function formatFeet(meters: unknown): string {
   const m = safeNumber(meters);
   const feet = m * METERS_TO_FEET;
-  return `${feet.toLocaleString(undefined, { maximumFractionDigits: 0 })} ft`;
+  return `${feet.toLocaleString("en-US", { maximumFractionDigits: 0 })} ft`;
 }
 
 /** Meters/second → miles/hour (1 decimal place) */
@@ -87,20 +87,20 @@ export function formatDistance(meters: unknown, unit: UnitSystem): string {
   const m = safeNumber(meters);
   if (unit === "km") {
     const km = m / 1000;
-    return `${km.toLocaleString(undefined, { maximumFractionDigits: 0 })} km`;
+    return `${km.toLocaleString("en-US", { maximumFractionDigits: 0 })} km`;
   }
   const miles = m / METERS_PER_MILE;
-  return `${miles.toLocaleString(undefined, { maximumFractionDigits: 0 })} mi`;
+  return `${miles.toLocaleString("en-US", { maximumFractionDigits: 0 })} mi`;
 }
 
 /** Meters → display elevation in the given unit system (0 decimal places) */
 export function formatElevation(meters: unknown, unit: UnitSystem): string {
   const m = safeNumber(meters);
   if (unit === "km") {
-    return `${m.toLocaleString(undefined, { maximumFractionDigits: 0 })} m`;
+    return `${m.toLocaleString("en-US", { maximumFractionDigits: 0 })} m`;
   }
   const feet = m * METERS_TO_FEET;
-  return `${feet.toLocaleString(undefined, { maximumFractionDigits: 0 })} ft`;
+  return `${feet.toLocaleString("en-US", { maximumFractionDigits: 0 })} ft`;
 }
 
 /** m/s → display speed in the given unit system (1 decimal place) */

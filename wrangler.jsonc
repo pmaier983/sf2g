@@ -3,12 +3,14 @@
   "name": "sf2g",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "./app/ssr.tsx",
   "vars": {
     "NODE_ENV": "production"
+  },
+  // Sync queue drain (app/ssr.tsx → scheduled → app/server/scheduled.ts):
+  // queues riders due for a sync and processes a budgeted batch of jobs.
+  // Webhooks enqueue jobs; this is what turns them into rides.
+  "triggers": {
+    "crons": ["*/5 * * * *"]
   }
-  // Cron jobs (sync all users + reclassification + wind enrichment) run via:
-  // 1. GitHub Actions → POST /api/cron (every 6 hours, auth'd with CRON_SECRET)
-  // 2. DevTools panel "Run All Cron Jobs" button
-  // Note: CRON_SECRET must be set as a Cloudflare Pages secret.
 }

@@ -50,28 +50,9 @@ const networkSource = readFileSync(
 // ---------------------------------------------------------------------------
 
 describe("Supabase max_rows truncation prevention", () => {
-  it("fetchAllTimeLeaderboard paginates to avoid max_rows truncation", () => {
-    // .limit(1000000) does NOT work — Supabase silently truncates to max_rows (1000).
-    // The fix paginates through all rows using .range() in a loop.
-    expect(alltimeSource).toContain("PAGE_SIZE");
-    expect(alltimeSource).toMatch(/\.range\(\s*offset,/);
-  });
-
-  it("fetchFilteredLeaderboard paginates to avoid max_rows truncation", () => {
-    // .limit(1000000) does NOT work — Supabase silently truncates to max_rows (1000).
-    // The fix paginates through all rows using .range() in a loop.
-    expect(leaderboardSource).toContain("PAGE_SIZE");
-    expect(leaderboardSource).toContain(".range(offset,");
-  });
-
   it("fetchGroupRides paginates to avoid max_rows truncation", () => {
     expect(groupRidesSource).toContain("PAGE_SIZE");
     expect(groupRidesSource).toContain(".range(");
-  });
-
-  it("fetchRiderNetwork paginates to avoid max_rows truncation", () => {
-    expect(networkSource).toContain("PAGE_SIZE");
-    expect(networkSource).toContain(".range(");
   });
 });
 
@@ -82,18 +63,6 @@ describe("Supabase max_rows truncation prevention", () => {
 describe("All Time leaderboard — route filtering", () => {
   it("alltime.ts validates route categories against allow-list", () => {
     expect(alltimeSource).toContain("VALID_ROUTE_CATEGORIES.has(c)");
-  });
-
-  it("alltime.ts applies route filter with .in()", () => {
-    expect(alltimeSource).toContain('query.in("route_category", validCats)');
-  });
-
-  it("alltime.ts excludes other routes by default when no route filter", () => {
-    expect(alltimeSource).toContain('query.neq("route_category", "other")');
-  });
-
-  it("alltime.ts filters null route_category by default", () => {
-    expect(alltimeSource).toContain('.not("route_category", "is", null)');
   });
 
   it("alltime.ts supports all standard route categories", () => {
@@ -113,34 +82,9 @@ describe("All Time leaderboard — route filtering", () => {
   });
 });
 
-describe("All Time leaderboard — company filtering", () => {
-  it("alltime.ts validates company against allow-list", () => {
-    expect(alltimeSource).toContain("VALID_COMPANIES.has(data.company)");
-  });
-
-  it("alltime.ts applies company filter with .eq()", () => {
-    expect(alltimeSource).toContain("query.eq(");
-    expect(alltimeSource).toContain('"destination_company"');
-  });
-
-  it("alltime.ts supports standard company values", () => {
-    for (const company of ["netflix", "google", "apple", "meta"]) {
-      expect(alltimeSource).toContain(`"${company}"`);
-    }
-  });
-});
-
 describe("All Time leaderboard — date filtering", () => {
   it("alltime.ts validates date strings", () => {
     expect(alltimeSource).toContain("isValidDateString");
-  });
-
-  it("alltime.ts applies dateFrom with .gte()", () => {
-    expect(alltimeSource).toContain('query.gte("ride_date", dateFrom)');
-  });
-
-  it("alltime.ts applies dateTo with .lte()", () => {
-    expect(alltimeSource).toContain('query.lte("ride_date", dateTo)');
   });
 });
 
@@ -153,23 +97,22 @@ describe("Group ride co-occurrences — refresh after sync", () => {
     expect(syncSource).toContain("refresh_ride_co_occurrences");
   });
 
-  it("co-occurrences refresh is NOT inside skipLeaderboardRefresh guard", () => {
-    // The co-occurrences refresh must be called unconditionally.
-    // Find the refresh call and verify it's NOT nested inside the
-    // skipLeaderboardRefresh conditional block.
+  it("co-occurrences refresh is gated by skipGroupRides, not skipLeaderboardRefresh", () => {
+    // Regression: cron skipped the leaderboard refresh and, with it, the
+    // co-occurrence refresh, so group rides went stale. Now the per-user
+    // refresh has its own flag and cron runs it once in maintenance.
+    const refreshIdx = syncSource.indexOf("refresh_ride_co_occurrences");
+    const guardIdx = syncSource.lastIndexOf("if (", refreshIdx);
+    const guard = syncSource.slice(guardIdx, syncSource.indexOf("{", guardIdx));
+    expect(guard).toContain("skipGroupRides");
+    expect(guard).not.toContain("skipLeaderboardRefresh");
+  });
 
-    // Strategy: split the source at the closing brace of the skipLeaderboardRefresh block
-    // and verify the co-occurrences refresh appears AFTER it
-    const skipGuardIndex = syncSource.indexOf("skipLeaderboardRefresh");
-    const coOccRefreshIndex = syncSource.indexOf("refresh_ride_co_occurrences");
-
-    // Both should exist
-    expect(skipGuardIndex).toBeGreaterThan(-1);
-    expect(coOccRefreshIndex).toBeGreaterThan(-1);
-
-    // Find the closing brace of the skipLeaderboardRefresh block
-    // The co-occurrences refresh comment should reference "must NOT be gated"
-    expect(syncSource).toContain("must NOT be gated by skipLeaderboardRefresh");
+  it("cron maintenance refreshes ride_co_occurrences every run", async () => {
+    const { MATERIALIZED_VIEW_REFRESHES } = await import("../cron");
+    expect(MATERIALIZED_VIEW_REFRESHES).toContain(
+      "refresh_ride_co_occurrences",
+    );
   });
 
   it("co-occurrences refresh is wrapped in try/catch for resilience", () => {

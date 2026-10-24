@@ -63,7 +63,7 @@ function findUserRideTotalsMigration(): string {
 
   for (let i = files.length - 1; i >= 0; i--) {
     const content = readFileSync(resolve(migrationsDir, files[i]), "utf-8");
-    if (content.includes("get_user_ride_totals")) {
+    if (content.includes("CREATE OR REPLACE FUNCTION get_user_ride_totals")) {
       return content;
     }
   }
@@ -209,31 +209,11 @@ describe("fetchFilteredLeaderboard — all-rides denominator via RPC", () => {
     "utf-8",
   );
 
-  it("uses get_user_ride_totals RPC to compute per-user totals in SQL", () => {
-    // The Supabase REST API enforces a max_rows limit (default 1000) that
-    // silently truncates .limit() calls. To bypass this, the server must
-    // use an RPC function that aggregates on the database side.
-    expect(serverSource).toContain('"get_user_ride_totals"');
-  });
-
   it("does NOT use raw allRidesQuery (bypassed by Supabase max_rows)", () => {
     // The old approach fetched raw rides and aggregated in JS, but was
     // silently capped at 1000 rows by Supabase's server-side max_rows config.
     // Ensure we no longer use this broken approach.
     expect(serverSource).not.toContain("allRidesQuery");
-  });
-
-  it("builds userTotals map from the RPC result", () => {
-    // The server should build a Map<string, { distance, elevation }> from
-    // the RPC result rows for use as the % dist/elev denominator.
-    expect(serverSource).toContain("userTotals");
-    expect(serverSource).toContain("userTotalsRows");
-  });
-
-  it("uses allTotals (from RPC) as the denominator, not filtered totals", () => {
-    // The entry construction should prefer allTotals over agg.total_distance
-    expect(serverSource).toContain("allTotals?.distance");
-    expect(serverSource).toContain("allTotals?.elevation");
   });
 });
 

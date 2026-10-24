@@ -6,7 +6,7 @@
  * 2. Query factory includes filter params for cache invalidation
  * 3. Leaderboard page passes filters through to group rides query
  * 4. GroupRidesTable uses correct scrollable container + circular avatars
- * 5. GroupRideMap uses Leaflet (not Mapbox) with CartoDB tiles
+ * 5. GroupRideMap uses Leaflet (not Mapbox) with the shared tile provider
  * 6. CSS consistency with leaderboard table styling
  *
  * Strategy: Static analysis of source files to verify structural invariants.
@@ -26,11 +26,6 @@ const serverSource = readFileSync(
 
 const querySource = readFileSync(
   resolve(__dirname, "../../queries/group-rides.ts"),
-  "utf-8",
-);
-
-const leaderboardSource = readFileSync(
-  resolve(__dirname, "../../routes/leaderboard.tsx"),
   "utf-8",
 );
 
@@ -126,61 +121,6 @@ describe("Query factory: groupRidesQueryOptions", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. Leaderboard integration
-// ---------------------------------------------------------------------------
-
-describe("Leaderboard: Group Rides integration", () => {
-  it("imports GroupRidesTable", () => {
-    expect(leaderboardSource).toContain("import { GroupRidesTable }");
-  });
-
-  it("imports groupRidesQueryOptions", () => {
-    expect(leaderboardSource).toContain("import { groupRidesQueryOptions }");
-  });
-
-  it("has groups as a valid view type", () => {
-    expect(leaderboardSource).toMatch(
-      /["']riders["']\s*\|\s*["']rides["']\s*\|\s*["']alltime["']\s*\|\s*["']groups["']/,
-    );
-  });
-
-  it("passes routeCategories from routes filter to group rides query", () => {
-    expect(leaderboardSource).toContain(
-      "routeCategories: routes.length > 0 ? routes : undefined",
-    );
-  });
-
-  it("passes weekends filter to group rides query", () => {
-    // Should pass `weekends` to the query options
-    expect(leaderboardSource).toMatch(
-      /groupRidesQueryOptions\(\{[\s\S]*?weekends[\s\S]*?\}\)/,
-    );
-  });
-
-  it("passes dateFrom and dateTo to group rides query", () => {
-    expect(leaderboardSource).toContain("dateFrom: dateFrom || undefined");
-    expect(leaderboardSource).toContain("dateTo: dateTo || undefined");
-  });
-
-  it("has gSort, gDir, gPage params in search defaults", () => {
-    expect(leaderboardSource).toContain("gSort:");
-    expect(leaderboardSource).toContain("gDir:");
-    expect(leaderboardSource).toContain("gPage:");
-  });
-
-  it("renders GroupRidesTable when view is groups", () => {
-    expect(leaderboardSource).toContain("<GroupRidesTable");
-    expect(leaderboardSource).toMatch(/view === ["']groups["']/);
-  });
-
-  it("passes isLoading to GroupRidesTable", () => {
-    expect(leaderboardSource).toContain(
-      "isLoading={groupRidesQuery.isLoading}",
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
 // 4. GroupRidesTable component
 // ---------------------------------------------------------------------------
 
@@ -199,15 +139,6 @@ describe("GroupRidesTable component", () => {
 
   it("accepts isLoading prop", () => {
     expect(tableSource).toContain("isLoading: boolean");
-  });
-
-  it("shows skeleton rows when loading", () => {
-    expect(tableSource).toContain("group-rides-table__skeleton");
-    expect(tableSource).toContain("GroupRideSkeletonRows");
-  });
-
-  it("only shows empty state when NOT loading", () => {
-    expect(tableSource).toContain("!isLoading && data.length === 0");
   });
 
   it("has date column", () => {
@@ -252,8 +183,9 @@ describe("GroupRideMap component", () => {
     expect(mapSource).not.toContain("VITE_MAPBOX_TOKEN");
   });
 
-  it("uses CartoDB tile URLs", () => {
-    expect(mapSource).toContain("cartocdn.com");
+  it("uses the shared tile provider (app/lib/map-tiles.ts)", () => {
+    expect(mapSource).toContain("../lib/map-tiles");
+    expect(mapSource).not.toContain("cartocdn.com");
   });
 
   it("uses useTheme hook for dark/light mode", () => {

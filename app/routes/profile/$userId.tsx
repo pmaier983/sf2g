@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { leaderboardSearch } from "../../lib/table-query";
+import { SF2G_TIME_ZONE, yearInLA } from "../../lib/dates";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { userRidesQueryOptions } from "../../queries/rides";
 import { fetchUserProfile } from "../../server/users";
 import { disconnectStrava } from "../../server/auth";
 import { currentUserQueryOptions } from "../../queries/user";
 import { ProfileRidesTable } from "../../components/ProfileRidesTable";
-import type { User } from "../../lib/database.types";
 const RideFrequencyChart = lazy(() =>
   import("../../components/RideFrequencyChart").then((m) => ({
     default: m.RideFrequencyChart,
@@ -32,15 +33,42 @@ import {
 import { toast } from "../../components/Toast";
 
 export const Route = createFileRoute("/profile/$userId")({
+  // Loaded on the server so the page (and its <title>) render with the name.
+  loader: async ({ params }) => {
+    try {
+      return {
+        profile: await fetchUserProfile({ data: { userId: params.userId } }),
+        error: null,
+      };
+    } catch (err) {
+      return {
+        profile: null,
+        error: err instanceof Error ? err.message : "Failed to load profile",
+      };
+    }
+  },
+  head: ({ loaderData }) => {
+    const p = loaderData?.profile;
+    const name = p?.display_name ?? p?.username;
+    return {
+      meta: [
+        { title: name ? `${name} — SF2G` : "Rider not found — SF2G" },
+        {
+          name: "description",
+          content: name
+            ? `${name}'s SF2G bike commutes: rides, routes, speed and streaks.`
+            : "SF2G rider profile.",
+        },
+      ],
+    };
+  },
   component: ProfilePage,
 });
 
 function ProfilePage() {
   const { userId } = Route.useParams();
   const { data: currentUser } = useQuery(currentUserQueryOptions());
-  const [profile, setProfile] = useState<User | null>(null);
-  const [profileError, setProfileError] = useState<string | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const { profile, error: profileError } = Route.useLoaderData();
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
 
@@ -64,32 +92,6 @@ function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProfile() {
-      try {
-        const user = await fetchUserProfile({ data: { userId } });
-        if (!cancelled) {
-          setProfile(user);
-          setProfileLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setProfileError(
-            err instanceof Error ? err.message : "Failed to load profile",
-          );
-          setProfileLoading(false);
-        }
-      }
-    }
-
-    loadProfile();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
   // Rides are server-side filtered (is_hidden=false), so all stats exclude hidden rides
   // SF2G rides exclude 'other' category to match leaderboard's sf2g_total definition
   const sf2gRides = rides
@@ -101,10 +103,8 @@ function ProfilePage() {
     0,
   );
 
-  const currentYear = new Date().getFullYear();
-  const ytdRides = sf2gRides.filter(
-    (r) => new Date(r.ride_date).getUTCFullYear() === currentYear,
-  );
+  const currentYear = String(yearInLA());
+  const ytdRides = sf2gRides.filter((r) => r.ride_date.startsWith(currentYear));
   const ytdRideCount = ytdRides.length;
   const ytdDistanceMeters = ytdRides.reduce(
     (sum, r) => sum + (r.distance_meters ?? 0),
@@ -198,17 +198,6 @@ function ProfilePage() {
   ]);
 
   // Early returns AFTER all hooks
-  if (profileLoading) {
-    return (
-      <div className="container" style={{ paddingTop: "var(--space-6)" }}>
-        <div className="loading-state">
-          <div className="loading-state__spinner" />
-          <p className="loading-state__text">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (profileError || !profile) {
     return (
       <div className="container" style={{ paddingTop: "var(--space-6)" }}>
@@ -220,31 +209,7 @@ function ProfilePage() {
           </p>
           <Link
             to="/leaderboard"
-            search={{
-              routes: [],
-              search: "",
-              ppr: false,
-              other: false,
-              weekends: false,
-              company: undefined,
-              user: undefined,
-              view: "riders" as const,
-              duration: "1w",
-              chart: false,
-              sort: "sf2g_total",
-              dir: "desc" as const,
-              rSort: "ride_date",
-              rDir: "desc" as const,
-              page: 1,
-              dateFrom: undefined,
-              dateTo: undefined,
-              datePreset: undefined,
-              density: "expanded" as const,
-              reverse: false,
-              gSort: "date",
-              gDir: "desc" as const,
-              gPage: 1,
-            }}
+            search={leaderboardSearch()}
             className="btn btn--primary"
             style={{ marginTop: "var(--space-4)" }}
           >
@@ -255,9 +220,11 @@ function ProfilePage() {
     );
   }
 
+  // Explicit zone: the server render (UTC) and the browser must agree.
   const memberSince = new Date(profile.created_at).toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
+    timeZone: SF2G_TIME_ZONE,
   });
 
   return (

@@ -16,6 +16,7 @@ import {
   STRAVA_REVOKE_URL,
   STRAVA_DEAUTHORIZE_URL,
   STRAVA_SCOPES,
+  OUTBOUND_FETCH_TIMEOUT_MS,
 } from "./constants";
 
 // ---------------------------------------------------------------------------
@@ -95,6 +96,7 @@ export async function exchangeCode(code: string): Promise<StravaTokenResponse> {
   }
 
   const response = await fetch(STRAVA_TOKEN_URL, {
+    signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -140,6 +142,7 @@ export async function refreshToken(
   }
 
   const response = await fetch(STRAVA_TOKEN_URL, {
+    signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -268,6 +271,7 @@ export async function revokeToken(accessToken: string): Promise<void> {
   //    the app from the athlete's settings page and decrements the athlete count.
   //    Takes access_token as a body parameter.
   const deauthResponse = await fetch(STRAVA_DEAUTHORIZE_URL, {
+    signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ access_token: accessToken }),
@@ -292,6 +296,7 @@ export async function revokeToken(accessToken: string): Promise<void> {
   try {
     const credentials = btoa(`${clientId}:${clientSecret}`);
     const revokeResponse = await fetch(STRAVA_REVOKE_URL, {
+      signal: AbortSignal.timeout(OUTBOUND_FETCH_TIMEOUT_MS),
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
