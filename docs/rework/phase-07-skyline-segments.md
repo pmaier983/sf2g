@@ -338,6 +338,13 @@ Add, deterministically:
 - `kom_seconds` on 900001–900003 (so `pct_of_kom` is testable), null on the rest; `xoms_fetched_at = fixtureNow` where set.
 - `EXPECTED.json.segments`: `{ shown: [ids in display order for default filters], leaders: { "900001": { userId, seconds } … }, riderCounts, crown: [ { userId, koms, podiums, points } … in order ] }`, computed in the script with plain loops.
 
+**As built in 07a (read before 07b):**
+- The opted-out rider who is fastest on 900001 is **rider 9 (Ivy)**, not rider 7: Gus has no rides, and every effort needs a ride. `EXPECTED.segments.optedOutRider` holds the id.
+- The seed has **no private ride**: private rides count toward a rider's total distance and their own ride list, so adding one moved existing goldens. 07b's test inserts its own private ride and a faster 900002 effort for an opted-in rider (throwaway-row pattern from `segments-ingest.test.ts`) and deletes them afterwards.
+- Also in `EXPECTED.segments`: `pctOfKom` (900001–900003), `north` and `both` (shown ids for those directions), and `window: { date_from: "2025-01-01", date_to: "2025-12-31", leaders }`. Within that window the 900003 leader changes (rider 5 → rider 3).
+- Segment step results carry `rateLimited`. When a finished step's Strava response is near the limit, the drain stops starting jobs for that tick (`JobOutcome.rateLimited`).
+- `segment_ingest_stats()` (service role) backs `fetchSegmentIngestStats` in a single call.
+
 ---
 
 ## 6. Sub-phase 07a — data layer

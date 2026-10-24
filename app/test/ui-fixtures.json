@@ -1136,7 +1136,8 @@
           "has_power_meter": true,
           "has_heartrate": true,
           "commute_direction": "sf2g",
-          "is_ppr_dawn": true
+          "is_ppr_dawn": true,
+          "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
         },
         "streams": null
       },
@@ -1194,7 +1195,8 @@
           "has_power_meter": true,
           "has_heartrate": true,
           "commute_direction": "sf2g",
-          "is_ppr_dawn": true
+          "is_ppr_dawn": true,
+          "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
         },
         "streams": null
       },
@@ -1252,7 +1254,8 @@
           "has_power_meter": false,
           "has_heartrate": false,
           "commute_direction": "sf2g",
-          "is_ppr_dawn": true
+          "is_ppr_dawn": true,
+          "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
         },
         "streams": null
       }
@@ -1329,7 +1332,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000031",
@@ -1381,7 +1385,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000006",
@@ -1433,7 +1438,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000077",
@@ -1485,7 +1491,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000079",
@@ -1537,7 +1544,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000074",
@@ -1589,7 +1597,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000073",
@@ -1641,7 +1650,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000038",
@@ -1693,7 +1703,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000022",
@@ -1745,7 +1756,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "g2sf",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000048",
@@ -1797,7 +1809,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000047",
@@ -1849,7 +1862,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000070",
@@ -1901,7 +1915,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000043",
@@ -1953,7 +1968,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000032",
@@ -2005,7 +2021,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": false
+      "is_ppr_dawn": false,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     },
     {
       "id": "10000000-0000-4000-8000-000000000011",
@@ -2057,7 +2074,8 @@
       "has_power_meter": true,
       "has_heartrate": true,
       "commute_direction": "sf2g",
-      "is_ppr_dawn": true
+      "is_ppr_dawn": true,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00"
     }
   ],
   "profileRides": [

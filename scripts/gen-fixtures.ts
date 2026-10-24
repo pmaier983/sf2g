@@ -4,7 +4,8 @@
  *   node scripts/gen-fixtures.ts
  *
  * Writes:
- *   supabase/seed/010_fixtures.sql   — users, rides, ride_overrides
+ *   supabase/seed/010_fixtures.sql   — users, rides, ride_overrides,
+ *                                      segments, segment_efforts
  *   supabase/seed/EXPECTED.json      — totals computed here, independently of
  *                                      the SQL views, used to validate them
  *
@@ -16,6 +17,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import polyline from "@mapbox/polyline";
+import { SKYLINE_REFERENCE_POLYLINE } from "../app/lib/constants.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SEED = 20261022;
@@ -606,6 +608,298 @@ for (const o of overrides) {
 rides.sort((a, b) => a.start.getTime() - b.start.getTime() || a.user - b.user);
 
 // ---------------------------------------------------------------------------
+// Skyline segments and efforts (phase 07)
+//
+// Plain arithmetic only — no rand() — so the rides above stay byte-identical.
+// ---------------------------------------------------------------------------
+/** Riders 1–6 opted in to the segment board; 7–9 did not. */
+const SEGMENT_OPT_IN = new Set([1, 2, 3, 4, 5, 6]);
+const SKYLINE_LINE = polyline.decode(SKYLINE_REFERENCE_POLYLINE) as LatLng[];
+
+function haversineM(a: LatLng, b: LatLng): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(b[0] - a[0]);
+  const dLng = rad(b[1] - a[1]);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 6_371_000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+const eastOf = ([lat, lng]: LatLng, m: number): LatLng => [
+  round(lat, 5),
+  round(lng + m / (111_320 * Math.cos((lat * Math.PI) / 180)), 5),
+];
+
+interface SegmentSpec {
+  id: number;
+  name: string;
+  from: number;
+  to: number;
+  grade: number;
+  corridor: "skyline" | null;
+  /** Shift both endpoints east (off the corridor). */
+  offsetM?: number;
+  baseSeconds: number;
+  /** Riders in order of their best time (fastest first). */
+  riders: number[];
+  kom?: number;
+}
+
+const SEGMENT_SPECS: SegmentSpec[] = [
+  {
+    id: 900001,
+    name: "Skyline Climb A",
+    from: 5,
+    to: 20,
+    grade: 4,
+    corridor: "skyline",
+    baseSeconds: 300,
+    riders: [3, 2, 5, 1, 6, 4],
+    kom: 280,
+  },
+  {
+    id: 900002,
+    name: "Skyline Climb B",
+    from: 25,
+    to: 40,
+    grade: 6,
+    corridor: "skyline",
+    baseSeconds: 420,
+    riders: [2, 3, 1, 5, 4],
+    kom: 390,
+  },
+  {
+    id: 900003,
+    name: "Skyline Climb C",
+    from: 45,
+    to: 60,
+    grade: 3,
+    corridor: "skyline",
+    baseSeconds: 260,
+    riders: [5, 3, 2, 4],
+    kom: 240,
+  },
+  {
+    id: 900004,
+    name: "Skyline Flat D",
+    from: 65,
+    to: 80,
+    grade: 0.5,
+    corridor: "skyline",
+    baseSeconds: 180,
+    riders: [1, 2],
+  },
+  {
+    id: 900005,
+    name: "Skyline Flat E",
+    from: 85,
+    to: 100,
+    grade: -0.5,
+    corridor: "skyline",
+    baseSeconds: 200,
+    riders: [6, 1, 3],
+  },
+  {
+    id: 900006,
+    name: "Skyline Descent F",
+    from: 105,
+    to: 120,
+    grade: -4,
+    corridor: "skyline",
+    baseSeconds: 150,
+    riders: [1, 2, 3, 4],
+  },
+  {
+    id: 900007,
+    name: "Skyline North G",
+    from: 30,
+    to: 15,
+    grade: 4,
+    corridor: "skyline",
+    baseSeconds: 330,
+    riders: [3, 5, 2],
+  },
+  {
+    id: 900008,
+    name: "Off Corridor H",
+    from: 5,
+    to: 20,
+    grade: 4,
+    corridor: null,
+    offsetM: 2000,
+    baseSeconds: 310,
+    riders: [1, 2, 3, 4],
+  },
+];
+/** Seconds between consecutive riders' best times on a segment. */
+const RIDER_GAP_S = 7;
+/** An opted-out rider faster than everyone on 900001 (Ivy: Gus, rider 7, has no rides). */
+const SEGMENT_OPTED_OUT_RIDER = 9;
+/** The 07b date-window test: within this year the 900003 leader changes. */
+const SEGMENT_WINDOW = { date_from: "2025-01-01", date_to: "2025-12-31" };
+
+const segmentRides = (n: number, year: string) =>
+  rides.filter((r) => r.user === n && !r.hidden && r.date.startsWith(year));
+
+interface EffortRow {
+  id: number;
+  segmentId: number;
+  user: number;
+  ride: Ride;
+  seconds: number;
+  komRank: number | null;
+}
+const segmentRows = SEGMENT_SPECS.map((spec) => {
+  let start = SKYLINE_LINE[spec.from];
+  let end = SKYLINE_LINE[spec.to];
+  if (spec.offsetM) {
+    start = eastOf(start, spec.offsetM);
+    end = eastOf(end, spec.offsetM);
+  }
+  const lo = Math.min(spec.from, spec.to);
+  const hi = Math.max(spec.from, spec.to);
+  let distance = 0;
+  for (let i = lo; i < hi; i++)
+    distance += haversineM(SKYLINE_LINE[i], SKYLINE_LINE[i + 1]);
+  const climb = (distance * spec.grade) / 100;
+  return {
+    spec,
+    start,
+    end,
+    distance: round(distance, 1),
+    direction: end[0] < start[0] ? "south" : "north",
+    terrain: spec.grade >= 2 ? "climb" : spec.grade >= -1 ? "flat" : "descent",
+    elevationLow: round(200 + Math.min(0, climb), 1),
+    elevationHigh: round(200 + Math.max(0, climb), 1),
+  };
+});
+
+let effortSeq = 0;
+const efforts: EffortRow[] = [];
+SEGMENT_SPECS.forEach((spec, si) => {
+  spec.riders.forEach((n, rank) => {
+    const best = spec.baseSeconds + rank * RIDER_GAP_S;
+    // Three efforts each; the best is never the first. Bests are ridden in
+    // 2026, slower efforts in 2025 — except 900003's leader, who has no 2025
+    // efforts, so within SEGMENT_WINDOW the runner-up leads.
+    const noWindow = spec.id === 900003 && rank === 0;
+    const plan: Array<[number, string]> = [
+      [best + 20, noWindow ? "2026" : "2025"],
+      [best, "2026"],
+      [best + 9, noWindow ? "2026" : "2025"],
+    ];
+    plan.forEach(([seconds, year], k) => {
+      const pool = segmentRides(n, year);
+      if (pool.length === 0)
+        throw new Error(`rider ${n} has no ${year} rides for segment efforts`);
+      efforts.push({
+        id: 9_500_000_000 + ++effortSeq,
+        segmentId: spec.id,
+        user: n,
+        ride: pool[(si * 3 + k) % pool.length],
+        seconds,
+        komRank: spec.id === 900001 && rank === 0 && k === 1 ? 7 : null,
+      });
+    });
+  });
+});
+// Faster than everyone, but excluded: an opted-out rider on 900001.
+// (The private-ride case is set up inside the 07b test: a private ride in
+// the seed would change every total-distance golden, since private rides
+// count toward a rider's totals.)
+efforts.push({
+  id: 9_500_000_000 + ++effortSeq,
+  segmentId: 900001,
+  user: SEGMENT_OPTED_OUT_RIDER,
+  ride: segmentRides(SEGMENT_OPTED_OUT_RIDER, "2026")[0],
+  seconds: SEGMENT_SPECS[0].baseSeconds - 30,
+  komRank: null,
+});
+
+/** What get_segment_leaderboard (07b) must return, computed with plain loops. */
+function segmentBoard(opts: {
+  direction: "south" | "north" | "both";
+  date_from?: string;
+  date_to?: string;
+}) {
+  const shownSegments = segmentRows.filter(
+    (s) =>
+      s.spec.corridor === "skyline" &&
+      s.terrain !== "descent" &&
+      s.distance >= 300 &&
+      (opts.direction === "both" || s.direction === opts.direction),
+  );
+  const riderName = (n: number) => {
+    const r = RIDERS.find((x) => x.n === n)!;
+    return `${r.first} ${r.last}`;
+  };
+  const board = shownSegments
+    .map((s) => {
+      const best = new Map<number, number>();
+      for (const e of efforts) {
+        const r = RIDERS.find((x) => x.n === e.user)!;
+        if (e.segmentId !== s.spec.id) continue;
+        if (!SEGMENT_OPT_IN.has(e.user) || r.deauthorized) continue;
+        if (opts.date_from && e.ride.date < opts.date_from) continue;
+        if (opts.date_to && e.ride.date > opts.date_to) continue;
+        const cur = best.get(e.user);
+        if (cur === undefined || e.seconds < cur) best.set(e.user, e.seconds);
+      }
+      const ordered = [...best.entries()].sort((a, b) => a[1] - b[1]);
+      // Dense rank; the fixture has no ties, so rank = position + 1.
+      const ranked = ordered.map(([n, seconds], i) => ({
+        n,
+        seconds,
+        rank: i + 1,
+      }));
+      return { id: s.spec.id, name: s.spec.name, kom: s.spec.kom, ranked };
+    })
+    .filter((s) => s.ranked.length >= 3)
+    .sort(
+      (a, b) =>
+        b.ranked.length - a.ranked.length ||
+        (a.name < b.name ? -1 : a.name > b.name ? 1 : 0),
+    );
+
+  const crown = new Map<
+    number,
+    { koms: number; podiums: number; points: number }
+  >();
+  for (const s of board) {
+    for (const r of s.ranked) {
+      const c = crown.get(r.n) ?? { koms: 0, podiums: 0, points: 0 };
+      if (r.rank === 1) c.koms++;
+      if (r.rank <= 3) c.podiums++;
+      c.points += Math.max(0, 11 - r.rank);
+      crown.set(r.n, c);
+    }
+  }
+  return {
+    shown: board.map((s) => s.id),
+    leaders: Object.fromEntries(
+      board.map((s) => [
+        s.id,
+        { userId: userId(s.ranked[0].n), seconds: s.ranked[0].seconds },
+      ]),
+    ),
+    riderCounts: Object.fromEntries(board.map((s) => [s.id, s.ranked.length])),
+    pctOfKom: Object.fromEntries(
+      board
+        .filter((s) => s.kom)
+        .map((s) => [s.id, round(s.kom! / s.ranked[0].seconds, 3)]),
+    ),
+    crown: [...crown.entries()]
+      .sort(
+        (a, b) =>
+          b[1].koms - a[1].koms ||
+          b[1].points - a[1].points ||
+          (riderName(a[0]) < riderName(b[0]) ? -1 : 1),
+      )
+      .map(([n, c]) => ({ userId: userId(n), ...c })),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // SQL
 // ---------------------------------------------------------------------------
 const q = (v: unknown): string => {
@@ -630,13 +924,15 @@ function avatarDataUri(initials: string, n: number): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 let sql = `-- GENERATED by scripts/gen-fixtures.ts — do not edit by hand.
--- ${RIDERS.length} riders, ${rides.length} rides, ${overrides.length} ride overrides.
+-- ${RIDERS.length} riders, ${rides.length} rides, ${overrides.length} ride overrides,
+-- ${segmentRows.length} segments, ${efforts.length} segment efforts.
 
 BEGIN;
 
 INSERT INTO users (id, strava_id, username, first_name, last_name, avatar_url,
   strava_access_token, strava_refresh_token, strava_token_expires_at, strava_scopes,
-  last_sync_at, last_activity_at, created_at, updated_at, deauthorized_at) VALUES
+  last_sync_at, last_activity_at, created_at, updated_at, deauthorized_at,
+  segment_board_opt_in) VALUES
 `;
 sql +=
   RIDERS.map((s) => {
@@ -657,6 +953,7 @@ sql +=
       q("2026-06-01T00:00:00Z"),
       q(FIXTURE_NOW),
       q(s.deauthorized ? "2026-09-01T00:00:00Z" : null),
+      q(SEGMENT_OPT_IN.has(s.n)),
     ].join(", ")})`;
   }).join(",\n") + ";\n\n";
 
@@ -666,8 +963,9 @@ const rideCols = `id, user_id, strava_activity_id, name, ride_date, start_date, 
   average_speed_mps, max_speed_mps, start_latlng, end_latlng, summary_polyline,
   is_commute, is_private, destination_company, tailwind_component_ms,
   average_watts, max_watts, average_heartrate, max_heartrate, kilojoules,
-  has_power_meter, has_heartrate, is_hidden, created_at`;
+  has_power_meter, has_heartrate, is_hidden, created_at, segment_efforts_fetched_at`;
 
+// Every fixture ride counts as fetched, so the seed queues no segment jobs.
 for (let i = 0; i < rides.length; i += 100) {
   sql += `INSERT INTO rides (${rideCols}) VALUES\n`;
   sql +=
@@ -708,6 +1006,7 @@ for (let i = 0; i < rides.length; i += 100) {
             q(r.hr !== null),
             q(r.hidden),
             q(new Date(r.start.getTime() + 6 * 3600_000).toISOString()),
+            q(FIXTURE_NOW),
           ].join(", ")})`,
       )
       .join(",\n") + ";\n\n";
@@ -719,6 +1018,54 @@ sql +=
     .map(
       (o) =>
         `  (${[q(o.ride.id), q(userId(o.ride.user)), q(o.override_route_category), q(o.is_hidden), q(o.is_not_sf2g)].join(", ")})`,
+    )
+    .join(",\n") + ";\n\n";
+sql += `INSERT INTO segments (id, name, distance_meters, average_grade, maximum_grade,
+  elevation_high, elevation_low, climb_category, start_latlng, end_latlng, hazardous,
+  corridor, direction, kom_seconds, xoms_fetched_at, first_seen_at, updated_at) VALUES\n`;
+sql +=
+  segmentRows
+    .map(
+      (s) =>
+        `  (${[
+          s.spec.id,
+          q(s.spec.name),
+          s.distance,
+          s.spec.grade,
+          round(Math.abs(s.spec.grade) * 2, 1),
+          s.elevationHigh,
+          s.elevationLow,
+          0,
+          `'${JSON.stringify(s.start)}'::jsonb`,
+          `'${JSON.stringify(s.end)}'::jsonb`,
+          "FALSE",
+          q(s.spec.corridor),
+          q(s.direction),
+          q(s.spec.kom ?? null),
+          q(s.spec.kom ? FIXTURE_NOW : null),
+          q(FIXTURE_NOW),
+          q(FIXTURE_NOW),
+        ].join(", ")})`,
+    )
+    .join(",\n") + ";\n\n";
+
+sql += `INSERT INTO segment_efforts (id, segment_id, user_id, ride_id, elapsed_time_seconds,
+  moving_time_seconds, start_date, kom_rank, pr_rank) VALUES\n`;
+sql +=
+  efforts
+    .map(
+      (e) =>
+        `  (${[
+          e.id,
+          e.segmentId,
+          q(userId(e.user)),
+          q(e.ride.id),
+          e.seconds,
+          e.seconds - 4,
+          q(new Date(e.ride.start.getTime() + 20 * 60_000).toISOString()),
+          q(e.komRank),
+          "NULL",
+        ].join(", ")})`,
     )
     .join(",\n") + ";\n\n";
 sql += `COMMIT;\n`;
@@ -779,6 +1126,17 @@ const expected = {
     }),
   ),
   groupDays: GROUP_DAYS.map((g) => ({ ...g, riders: g.riders.map(userId) })),
+  /** get_segment_leaderboard (07b) with default filters: south, all terrain, all time. */
+  segments: {
+    ...segmentBoard({ direction: "south" }),
+    optedOutRider: userId(SEGMENT_OPTED_OUT_RIDER),
+    north: segmentBoard({ direction: "north" }).shown,
+    both: segmentBoard({ direction: "both" }).shown,
+    window: {
+      ...SEGMENT_WINDOW,
+      leaders: segmentBoard({ direction: "south", ...SEGMENT_WINDOW }).leaders,
+    },
+  },
 };
 
 mkdirSync(resolve(ROOT, "supabase/seed"), { recursive: true });
@@ -787,4 +1145,6 @@ writeFileSync(
   resolve(ROOT, "supabase/seed/EXPECTED.json"),
   JSON.stringify(expected, null, 2) + "\n",
 );
-console.log(`wrote ${rides.length} rides for ${RIDERS.length} riders`);
+console.log(
+  `wrote ${rides.length} rides, ${segmentRows.length} segments, ${efforts.length} segment efforts for ${RIDERS.length} riders`,
+);

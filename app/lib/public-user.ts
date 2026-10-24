@@ -11,7 +11,7 @@ import type { User } from "./database.types";
 
 // A string literal (not a joined array) so supabase-js can type the result.
 export const PUBLIC_USER_COLUMNS =
-  "id, strava_id, username, first_name, last_name, display_name, avatar_url, last_sync_at, last_activity_at, created_at, updated_at" as const;
+  "id, strava_id, username, first_name, last_name, display_name, avatar_url, last_sync_at, last_activity_at, created_at, updated_at, segment_board_opt_in" as const;
 
 export type PublicUser = Pick<
   User,
@@ -26,4 +26,5 @@ export type PublicUser = Pick<
   | "last_activity_at"
   | "created_at"
   | "updated_at"
+  | "segment_board_opt_in"
 >;

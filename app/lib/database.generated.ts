@@ -241,14 +241,14 @@ isOneToOne: true
                   ]
                 },"rides": {
                   Row: {
-                    "average_heartrate": number | null,"average_speed_mps": number | null,"average_watts": number | null,"classification_confidence": number | null,"classification_method": string | null,"commute_direction": string | null,"created_at": string,"crosswind_component_ms": number | null,"destination_company": string | null,"destination_distance_meters": number | null,"destination_office": string | null,"distance_meters": number | null,"elapsed_time_seconds": number | null,"elevation_gain_meters": number | null,"end_latlng": Json | null,"has_heartrate": boolean | null,"has_power_meter": boolean | null,"id": string,"is_commute": boolean | null,"is_hidden": boolean | null,"is_ppr_dawn": boolean,"is_private": boolean | null,"kilojoules": number | null,"max_heartrate": number | null,"max_speed_mps": number | null,"max_watts": number | null,"moving_time_seconds": number | null,"name": string | null,"ride_bearing_deg": number | null,"ride_date": string,"route_category": string | null,"start_date": string,"start_latlng": Json | null,"strava_activity_id": number,"strava_raw": Json | null,"suffer_score": number | null,"summary_polyline": string | null,"tailwind_component_ms": number | null,"timezone": string | null,"user_id": string,"wind_data_source": string | null,"wind_direction_deg": number | null,"wind_gust_ms": number | null,"wind_speed_ms": number | null
+                    "average_heartrate": number | null,"average_speed_mps": number | null,"average_watts": number | null,"classification_confidence": number | null,"classification_method": string | null,"commute_direction": string | null,"created_at": string,"crosswind_component_ms": number | null,"destination_company": string | null,"destination_distance_meters": number | null,"destination_office": string | null,"distance_meters": number | null,"elapsed_time_seconds": number | null,"elevation_gain_meters": number | null,"end_latlng": Json | null,"has_heartrate": boolean | null,"has_power_meter": boolean | null,"id": string,"is_commute": boolean | null,"is_hidden": boolean | null,"is_ppr_dawn": boolean,"is_private": boolean | null,"kilojoules": number | null,"max_heartrate": number | null,"max_speed_mps": number | null,"max_watts": number | null,"moving_time_seconds": number | null,"name": string | null,"ride_bearing_deg": number | null,"ride_date": string,"route_category": string | null,"segment_efforts_fetched_at": string | null,"start_date": string,"start_latlng": Json | null,"strava_activity_id": number,"strava_raw": Json | null,"suffer_score": number | null,"summary_polyline": string | null,"tailwind_component_ms": number | null,"timezone": string | null,"user_id": string,"wind_data_source": string | null,"wind_direction_deg": number | null,"wind_gust_ms": number | null,"wind_speed_ms": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "average_heartrate"?: number | null,"average_speed_mps"?: number | null,"average_watts"?: number | null,"classification_confidence"?: number | null,"classification_method"?: string | null,"commute_direction"?: never,"created_at"?: string,"crosswind_component_ms"?: number | null,"destination_company"?: string | null,"destination_distance_meters"?: number | null,"destination_office"?: string | null,"distance_meters"?: number | null,"elapsed_time_seconds"?: number | null,"elevation_gain_meters"?: number | null,"end_latlng"?: Json | null,"has_heartrate"?: boolean | null,"has_power_meter"?: boolean | null,"id"?: string,"is_commute"?: boolean | null,"is_hidden"?: boolean | null,"is_ppr_dawn"?: boolean,"is_private"?: boolean | null,"kilojoules"?: number | null,"max_heartrate"?: number | null,"max_speed_mps"?: number | null,"max_watts"?: number | null,"moving_time_seconds"?: number | null,"name"?: string | null,"ride_bearing_deg"?: number | null,"ride_date": string,"route_category"?: string | null,"start_date": string,"start_latlng"?: Json | null,"strava_activity_id": number,"strava_raw"?: Json | null,"suffer_score"?: number | null,"summary_polyline"?: string | null,"tailwind_component_ms"?: number | null,"timezone"?: string | null,"user_id": string,"wind_data_source"?: string | null,"wind_direction_deg"?: number | null,"wind_gust_ms"?: number | null,"wind_speed_ms"?: number | null
+                    "average_heartrate"?: number | null,"average_speed_mps"?: number | null,"average_watts"?: number | null,"classification_confidence"?: number | null,"classification_method"?: string | null,"commute_direction"?: never,"created_at"?: string,"crosswind_component_ms"?: number | null,"destination_company"?: string | null,"destination_distance_meters"?: number | null,"destination_office"?: string | null,"distance_meters"?: number | null,"elapsed_time_seconds"?: number | null,"elevation_gain_meters"?: number | null,"end_latlng"?: Json | null,"has_heartrate"?: boolean | null,"has_power_meter"?: boolean | null,"id"?: string,"is_commute"?: boolean | null,"is_hidden"?: boolean | null,"is_ppr_dawn"?: boolean,"is_private"?: boolean | null,"kilojoules"?: number | null,"max_heartrate"?: number | null,"max_speed_mps"?: number | null,"max_watts"?: number | null,"moving_time_seconds"?: number | null,"name"?: string | null,"ride_bearing_deg"?: number | null,"ride_date": string,"route_category"?: string | null,"segment_efforts_fetched_at"?: string | null,"start_date": string,"start_latlng"?: Json | null,"strava_activity_id": number,"strava_raw"?: Json | null,"suffer_score"?: number | null,"summary_polyline"?: string | null,"tailwind_component_ms"?: number | null,"timezone"?: string | null,"user_id": string,"wind_data_source"?: string | null,"wind_direction_deg"?: number | null,"wind_gust_ms"?: number | null,"wind_speed_ms"?: number | null
                   }
                   Update: {
-                    "average_heartrate"?: number | null,"average_speed_mps"?: number | null,"average_watts"?: number | null,"classification_confidence"?: number | null,"classification_method"?: string | null,"commute_direction"?: never,"created_at"?: string,"crosswind_component_ms"?: number | null,"destination_company"?: string | null,"destination_distance_meters"?: number | null,"destination_office"?: string | null,"distance_meters"?: number | null,"elapsed_time_seconds"?: number | null,"elevation_gain_meters"?: number | null,"end_latlng"?: Json | null,"has_heartrate"?: boolean | null,"has_power_meter"?: boolean | null,"id"?: string,"is_commute"?: boolean | null,"is_hidden"?: boolean | null,"is_ppr_dawn"?: boolean,"is_private"?: boolean | null,"kilojoules"?: number | null,"max_heartrate"?: number | null,"max_speed_mps"?: number | null,"max_watts"?: number | null,"moving_time_seconds"?: number | null,"name"?: string | null,"ride_bearing_deg"?: number | null,"ride_date"?: string,"route_category"?: string | null,"start_date"?: string,"start_latlng"?: Json | null,"strava_activity_id"?: number,"strava_raw"?: Json | null,"suffer_score"?: number | null,"summary_polyline"?: string | null,"tailwind_component_ms"?: number | null,"timezone"?: string | null,"user_id"?: string,"wind_data_source"?: string | null,"wind_direction_deg"?: number | null,"wind_gust_ms"?: number | null,"wind_speed_ms"?: number | null
+                    "average_heartrate"?: number | null,"average_speed_mps"?: number | null,"average_watts"?: number | null,"classification_confidence"?: number | null,"classification_method"?: string | null,"commute_direction"?: never,"created_at"?: string,"crosswind_component_ms"?: number | null,"destination_company"?: string | null,"destination_distance_meters"?: number | null,"destination_office"?: string | null,"distance_meters"?: number | null,"elapsed_time_seconds"?: number | null,"elevation_gain_meters"?: number | null,"end_latlng"?: Json | null,"has_heartrate"?: boolean | null,"has_power_meter"?: boolean | null,"id"?: string,"is_commute"?: boolean | null,"is_hidden"?: boolean | null,"is_ppr_dawn"?: boolean,"is_private"?: boolean | null,"kilojoules"?: number | null,"max_heartrate"?: number | null,"max_speed_mps"?: number | null,"max_watts"?: number | null,"moving_time_seconds"?: number | null,"name"?: string | null,"ride_bearing_deg"?: number | null,"ride_date"?: string,"route_category"?: string | null,"segment_efforts_fetched_at"?: string | null,"start_date"?: string,"start_latlng"?: Json | null,"strava_activity_id"?: number,"strava_raw"?: Json | null,"suffer_score"?: number | null,"summary_polyline"?: string | null,"tailwind_component_ms"?: number | null,"timezone"?: string | null,"user_id"?: string,"wind_data_source"?: string | null,"wind_direction_deg"?: number | null,"wind_gust_ms"?: number | null,"wind_speed_ms"?: number | null
                   }
                   Relationships: [
                     {
@@ -270,6 +270,88 @@ isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     }
+                  ]
+                },"segment_efforts": {
+                  Row: {
+                    "average_watts": number | null,"device_watts": boolean | null,"elapsed_time_seconds": number,"id": number,"kom_rank": number | null,"moving_time_seconds": number | null,"pr_rank": number | null,"ride_id": string,"segment_id": number,"start_date": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "average_watts"?: number | null,"device_watts"?: boolean | null,"elapsed_time_seconds": number,"id": number,"kom_rank"?: number | null,"moving_time_seconds"?: number | null,"pr_rank"?: number | null,"ride_id": string,"segment_id": number,"start_date": string,"user_id": string
+                  }
+                  Update: {
+                    "average_watts"?: number | null,"device_watts"?: boolean | null,"elapsed_time_seconds"?: number,"id"?: number,"kom_rank"?: number | null,"moving_time_seconds"?: number | null,"pr_rank"?: number | null,"ride_id"?: string,"segment_id"?: number,"start_date"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "segment_efforts_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "ride_co_occurrences"
+      referencedColumns: ["ride1_id"]
+    },{
+      foreignKeyName: "segment_efforts_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "ride_co_occurrences"
+      referencedColumns: ["ride2_id"]
+    },{
+      foreignKeyName: "segment_efforts_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "segment_efforts_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride1_id"]
+    },{
+      foreignKeyName: "segment_efforts_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "visible_ride_pairs"
+      referencedColumns: ["ride2_id"]
+    },{
+      foreignKeyName: "segment_efforts_segment_id_fkey"
+      columns: ["segment_id"]
+isOneToOne: false
+      referencedRelation: "segments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "segment_efforts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "monthly_ride_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "segment_efforts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "segment_efforts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"segments": {
+                  Row: {
+                    "athlete_count": number | null,"average_grade": number,"climb_category": number | null,"corridor": string | null,"curated_rank": number | null,"direction": string,"distance_meters": number,"effort_count": number | null,"elevation_high": number | null,"elevation_low": number | null,"end_latlng": NonNullable<Json>,"first_seen_at": string,"hazardous": boolean,"hidden": boolean,"id": number,"kom_seconds": number | null,"maximum_grade": number | null,"name": string,"overall_seconds": number | null,"qom_seconds": number | null,"start_latlng": NonNullable<Json>,"terrain": string | null,"updated_at": string,"xoms_fetched_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "athlete_count"?: number | null,"average_grade": number,"climb_category"?: number | null,"corridor"?: string | null,"curated_rank"?: number | null,"direction": string,"distance_meters": number,"effort_count"?: number | null,"elevation_high"?: number | null,"elevation_low"?: number | null,"end_latlng": NonNullable<Json>,"first_seen_at"?: string,"hazardous"?: boolean,"hidden"?: boolean,"id": number,"kom_seconds"?: number | null,"maximum_grade"?: number | null,"name": string,"overall_seconds"?: number | null,"qom_seconds"?: number | null,"start_latlng": NonNullable<Json>,"terrain"?: never,"updated_at"?: string,"xoms_fetched_at"?: string | null
+                  }
+                  Update: {
+                    "athlete_count"?: number | null,"average_grade"?: number,"climb_category"?: number | null,"corridor"?: string | null,"curated_rank"?: number | null,"direction"?: string,"distance_meters"?: number,"effort_count"?: number | null,"elevation_high"?: number | null,"elevation_low"?: number | null,"end_latlng"?: NonNullable<Json>,"first_seen_at"?: string,"hazardous"?: boolean,"hidden"?: boolean,"id"?: number,"kom_seconds"?: number | null,"maximum_grade"?: number | null,"name"?: string,"overall_seconds"?: number | null,"qom_seconds"?: number | null,"start_latlng"?: NonNullable<Json>,"terrain"?: never,"updated_at"?: string,"xoms_fetched_at"?: string | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"sync_jobs": {
                   Row: {
@@ -305,14 +387,14 @@ isOneToOne: false
                   ]
                 },"users": {
                   Row: {
-                    "avatar_url": string | null,"consecutive_sync_failures": number,"created_at": string,"deauthorized_at": string | null,"display_name": string | null,"first_name": string | null,"id": string,"last_activity_at": string | null,"last_name": string | null,"last_sync_at": string | null,"last_sync_error": string | null,"last_sync_success_at": string | null,"needs_reauth": boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes": string | null,"strava_token_expires_at": string,"updated_at": string,"username": string | null
+                    "avatar_url": string | null,"consecutive_sync_failures": number,"created_at": string,"deauthorized_at": string | null,"display_name": string | null,"first_name": string | null,"id": string,"last_activity_at": string | null,"last_name": string | null,"last_sync_at": string | null,"last_sync_error": string | null,"last_sync_success_at": string | null,"needs_reauth": boolean,"segment_board_opt_in": boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes": string | null,"strava_token_expires_at": string,"updated_at": string,"username": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes"?: string | null,"strava_token_expires_at": string,"updated_at"?: string,"username"?: string | null
+                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"segment_board_opt_in"?: boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes"?: string | null,"strava_token_expires_at": string,"updated_at"?: string,"username"?: string | null
                   }
                   Update: {
-                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"strava_access_token"?: string,"strava_id"?: number,"strava_refresh_token"?: string,"strava_scopes"?: string | null,"strava_token_expires_at"?: string,"updated_at"?: string,"username"?: string | null
+                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"segment_board_opt_in"?: boolean,"strava_access_token"?: string,"strava_id"?: number,"strava_refresh_token"?: string,"strava_scopes"?: string | null,"strava_token_expires_at"?: string,"updated_at"?: string,"username"?: string | null
                   }
                   Relationships: [
                     
@@ -458,8 +540,14 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"enqueue_due_segment_xoms":
+{ Args: { "p_limit"?: number,"p_older_than"?: string }; Returns: number
+                           },
 "enqueue_due_syncs":
 { Args: { "p_limit"?: number,"p_older_than"?: string }; Returns: number
+                           },
+"enqueue_segment_backfill":
+{ Args: { "p_limit"?: number }; Returns: number
                            },
 "enqueue_sync_job":
 { Args: { "p_cursor"?: Json,"p_kind": string,"p_payload"?: Json,"p_run_after"?: string,"p_user_id"?: string }; Returns: boolean
@@ -520,6 +608,9 @@ isOneToOne: false
 "refresh_ride_co_occurrences":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"segment_ingest_stats":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "sf2g_commute_direction":
 { Args: { "end_latlng": Json,"start_latlng": Json }; Returns: string
                            },
@@ -564,6 +655,7 @@ isOneToOne: false
 "ride_bearing_deg": number | null,
 "ride_date": string,
 "route_category": string | null,
+"segment_efforts_fetched_at": string | null,
 "start_date": string,
 "start_latlng": Json | null,
 "strava_activity_id": number,

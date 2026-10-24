@@ -2,6 +2,7 @@ import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
 import type { SyncHealth } from "../server/users";
+import type { SegmentIngestStats } from "../server/segments-admin";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -23,6 +24,15 @@ export function DevToolsPanel() {
   // Sync health state
   const [health, setHealth] = useState<SyncHealth | null>(null);
   const [healthLoading, setHealthLoading] = useState(false);
+
+  // Segment ingest state
+  const [segmentLimit, setSegmentLimit] = useState(500);
+  const [segmentStats, setSegmentStats] = useState<SegmentIngestStats | null>(
+    null,
+  );
+  const [segmentEnqueued, setSegmentEnqueued] = useState<number | null>(null);
+  const [segmentBusy, setSegmentBusy] = useState(false);
+  const [segmentError, setSegmentError] = useState<string | null>(null);
 
   const handleReclassify = async () => {
     setIsRunning(true);
@@ -64,6 +74,39 @@ export function DevToolsPanel() {
       setCronError(err instanceof Error ? err.message : String(err));
     } finally {
       setCronIsRunning(false);
+    }
+  };
+
+  const handleSegmentStats = async () => {
+    setSegmentBusy(true);
+    setSegmentError(null);
+    try {
+      const { fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
+    }
+  };
+
+  const handleSegmentBackfill = async () => {
+    setSegmentBusy(true);
+    setSegmentEnqueued(null);
+    setSegmentError(null);
+    try {
+      const { enqueueSegmentBackfill, fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      const res = await enqueueSegmentBackfill({
+        data: { limit: segmentLimit },
+      });
+      setSegmentEnqueued(res.enqueued);
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
     }
   };
 
@@ -417,6 +460,69 @@ export function DevToolsPanel() {
                     </table>
                   </div>
                 </>
+              )}
+            </div>
+
+            {/* Segments Section */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">⛰️ Segments</h4>
+              <p className="dev-tools__section-desc">
+                Queue one Strava activity-detail read per unfetched Skyline ride
+                (opted-in riders first, newest first). The queue tick drains
+                them.
+              </p>
+              <label className="dev-tools__section-desc">
+                Rides to queue{" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={2000}
+                  value={segmentLimit}
+                  onChange={(e) =>
+                    setSegmentLimit(Number(e.target.value) || 500)
+                  }
+                  id="dev-tools-segment-limit"
+                  style={{ width: "6em" }}
+                />
+              </label>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentBackfill}
+                disabled={segmentBusy}
+                id="dev-tools-segment-backfill-btn"
+              >
+                {segmentBusy ? "Working…" : "⛰️ Backfill segment efforts"}
+              </button>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentStats}
+                disabled={segmentBusy}
+                id="dev-tools-segment-stats-btn"
+              >
+                📊 Load segment stats
+              </button>
+              {segmentError && (
+                <div className="dev-tools__error">
+                  <strong>Error:</strong> {segmentError}
+                </div>
+              )}
+              {segmentEnqueued !== null && (
+                <p className="dev-tools__section-desc">
+                  Queued {segmentEnqueued} rides.
+                </p>
+              )}
+              {segmentStats && (
+                <p className="dev-tools__section-desc">
+                  Skyline rides: {segmentStats.rides_pending} pending ·{" "}
+                  {segmentStats.rides_fetched} fetched
+                  <br />
+                  Segments: {segmentStats.segments_corridor} on corridor /{" "}
+                  {segmentStats.segments_total} total · {segmentStats.efforts}{" "}
+                  efforts
+                  <br />
+                  Jobs: {segmentStats.open_jobs} open ·{" "}
+                  {segmentStats.failed_jobs} failed
+                </p>
               )}
             </div>
 
