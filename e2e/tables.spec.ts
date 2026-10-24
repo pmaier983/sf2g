@@ -49,7 +49,12 @@ test("a shared link reproduces filters and sort in a fresh context", async ({
     .poll(() => new URL(page.url()).searchParams.get("sort"))
     .toBe("avg_speed_mps");
   const shared = page.url();
-  const firstRow = await page.locator("tbody tr").first().innerText();
+  // Wait for the re-sorted data (not the previous order or skeletons), and
+  // compare textContent on both sides: innerText depends on layout.
+  await expect(page.locator(".data-table__skeleton-row")).toHaveCount(0);
+  await page.waitForLoadState("networkidle");
+  const firstRow = (await page.locator("tbody tr").first().textContent()) ?? "";
+  expect(firstRow).not.toBe("");
 
   const context = await browser.newContext({ timezoneId: "Asia/Tokyo" });
   const other = await context.newPage();
