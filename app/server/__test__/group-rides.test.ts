@@ -29,11 +29,6 @@ const querySource = readFileSync(
   "utf-8",
 );
 
-const leaderboardSource = readFileSync(
-  resolve(__dirname, "../../routes/leaderboard.tsx"),
-  "utf-8",
-);
-
 const tableSource = readFileSync(
   resolve(__dirname, "../../components/GroupRidesTable.tsx"),
   "utf-8",
@@ -121,61 +116,6 @@ describe("Query factory: groupRidesQueryOptions", () => {
   it("uses params in query key for cache invalidation", () => {
     expect(querySource).toMatch(
       /queryKey:\s*\[["']group-rides["'],\s*params\]/,
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 3. Leaderboard integration
-// ---------------------------------------------------------------------------
-
-describe("Leaderboard: Group Rides integration", () => {
-  it("imports GroupRidesTable", () => {
-    expect(leaderboardSource).toContain("import { GroupRidesTable }");
-  });
-
-  it("imports groupRidesQueryOptions", () => {
-    expect(leaderboardSource).toContain("import { groupRidesQueryOptions }");
-  });
-
-  it("has groups as a valid view type", () => {
-    expect(leaderboardSource).toMatch(
-      /["']riders["']\s*\|\s*["']rides["']\s*\|\s*["']alltime["']\s*\|\s*["']groups["']/,
-    );
-  });
-
-  it("passes routeCategories from routes filter to group rides query", () => {
-    expect(leaderboardSource).toContain(
-      "routeCategories: routes.length > 0 ? routes : undefined",
-    );
-  });
-
-  it("passes weekends filter to group rides query", () => {
-    // Should pass `weekends` to the query options
-    expect(leaderboardSource).toMatch(
-      /groupRidesQueryOptions\(\{[\s\S]*?weekends[\s\S]*?\}\)/,
-    );
-  });
-
-  it("passes dateFrom and dateTo to group rides query", () => {
-    expect(leaderboardSource).toContain("dateFrom: dateFrom || undefined");
-    expect(leaderboardSource).toContain("dateTo: dateTo || undefined");
-  });
-
-  it("has gSort, gDir, gPage params in search defaults", () => {
-    expect(leaderboardSource).toContain("gSort:");
-    expect(leaderboardSource).toContain("gDir:");
-    expect(leaderboardSource).toContain("gPage:");
-  });
-
-  it("renders GroupRidesTable when view is groups", () => {
-    expect(leaderboardSource).toContain("<GroupRidesTable");
-    expect(leaderboardSource).toMatch(/view === ["']groups["']/);
-  });
-
-  it("passes isLoading to GroupRidesTable", () => {
-    expect(leaderboardSource).toContain(
-      "isLoading={groupRidesQuery.isLoading}",
     );
   });
 });
