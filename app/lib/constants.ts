@@ -417,34 +417,6 @@ export const OPEN_METEO_RATE_LIMIT = {
   CRON_BUDGET: 200,
 } as const;
 
-/**
- * Budgets for one `/api/cron?task=sync` invocation.
- *
- * Cloudflare Workers Free: 50 subrequests and 10 ms CPU per invocation. Each
- * Supabase REST call and each Strava call is a subrequest. A cron-mode user
- * sync costs ~5–8 subrequests (user read, token refresh + write when expired,
- * one Strava page, upsert, override read, user update), so the batch stops
- * starting new users once the live subrequest count leaves less than
- * WORST_CASE_SUBREQUESTS_PER_USER of headroom.
- *
- * The GitHub Actions workflow calls the endpoint repeatedly until it reports
- * `remaining: 0`, so there is no per-call user limit beyond the budget.
- */
-export const CRON_SYNC_BUDGET = {
-  /** Stop starting new users above this many subrequests (hard cap is 50). */
-  SUBREQUEST_BUDGET: 44,
-  /** Headroom reserved before starting each user. */
-  WORST_CASE_SUBREQUESTS_PER_USER: 10,
-  /** Hard cap on users per invocation regardless of budget. */
-  MAX_USERS_PER_RUN: 6,
-  /** Activities per Strava page in cron mode (1 page per user per call). */
-  PER_PAGE: 100,
-  /** Users synced within this window are skipped. */
-  RESYNC_AFTER_MS: 4 * 60 * 60 * 1000,
-  /** Wall-clock cap for one invocation (the workflow's curl allows 300 s). */
-  MAX_TOTAL_DURATION_MS: 240_000,
-} as const;
-
 // ---------------------------------------------------------------------------
 // Route Waypoints (for weather forecast sampling)
 // ---------------------------------------------------------------------------

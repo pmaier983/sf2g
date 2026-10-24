@@ -8,6 +8,7 @@ import { createServiceClient } from "../lib/supabase";
 import { ensureValidToken } from "../lib/strava-oauth";
 import {
   fetchAthleteActivities,
+  fetchSingleActivity,
   type StravaActivitySummary,
 } from "../lib/strava";
 import { classifyRoute } from "../lib/route-classifier";
@@ -82,7 +83,7 @@ const MAX_PAGES_PER_SYNC = 5;
 /**
  * Transform a Strava activity summary into a RideInsert object.
  */
-function activityToRideInsert(
+export function activityToRideInsert(
   userId: string,
   activity: StravaActivitySummary,
 ): RideInsert {
@@ -283,7 +284,7 @@ export async function performSync(
       }
 
       // Filter to rides only (non-manual)
-      const rides = activities.filter((a) => a.type === "Ride" && !a.manual);
+      const rides = activities.filter(isSyncableActivity);
 
       const filtered = activities.length - rides.length;
       totalFilteredOut += filtered;
@@ -380,9 +381,7 @@ export async function performSync(
         { after: todayEpoch, perPage, page: 1 },
       );
 
-      const todayRides = todayActivities.filter(
-        (a) => a.type === "Ride" && !a.manual,
-      );
+      const todayRides = todayActivities.filter(isSyncableActivity);
 
       // Deduplicate: only process rides we didn't already fetch in the main pass
       const existingIds = new Set(allRides.map((r) => r.strava_activity_id));
@@ -454,51 +453,8 @@ export async function performSync(
   }
 
   // 4b. Re-apply ride overrides — user edits must survive syncs
-  try {
-    // Get all ride IDs that were just upserted
-    const upsertedRideIds = allRides.map((r) => r.strava_activity_id);
-
-    if (upsertedRideIds.length > 0) {
-      // Find any overrides for this user's rides
-      const { data: overrides } = await supabase
-        .from("ride_overrides")
-        .select(
-          "ride_id, override_name, override_route_category, is_hidden, is_not_sf2g",
-        )
-        .eq("user_id", userId);
-
-      if (overrides && overrides.length > 0) {
-        console.log(`[sync] Re-applying ${overrides.length} ride override(s)`);
-        for (const override of overrides) {
-          const updateFields: RideUpdate = {};
-
-          if (override.override_name !== null) {
-            updateFields.name = override.override_name;
-          }
-          if (override.is_not_sf2g) {
-            updateFields.route_category = null;
-          } else if (override.override_route_category !== null) {
-            updateFields.route_category =
-              override.override_route_category as RouteCategory;
-          }
-          if (override.is_hidden) {
-            updateFields.is_hidden = true;
-          }
-
-          if (Object.keys(updateFields).length > 0) {
-            await supabase
-              .from("rides")
-              .update(updateFields)
-              .eq("id", override.ride_id);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    // Override re-application is non-critical — don't fail the sync
-    console.warn(
-      `[sync] Override re-application failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-    );
+  if (allRides.length > 0) {
+    await reapplyOverrides(supabase, userId);
   }
 
   // 5. Update user sync metadata
@@ -524,6 +480,10 @@ export async function performSync(
   const updateFields: UserUpdate = {};
   if (!hasMorePages || !madeProgress) {
     updateFields.last_sync_at = new Date().toISOString();
+  }
+  if (!stravaApiFailed) {
+    updateFields.last_sync_success_at = new Date().toISOString();
+    updateFields.needs_reauth = false;
   }
   if (latestActivityDate) {
     updateFields.last_activity_at = latestActivityDate;
@@ -594,3 +554,122 @@ export async function performSync(
 // That separation lets route components import triggerSync without
 // pulling in this file's server-only transitive dependencies.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Shared helpers for queue jobs (sync-drain.ts)
+// ---------------------------------------------------------------------------
+
+/** Which Strava activities become rides. One rule for every sync path. */
+export function isSyncableActivity(a: {
+  type: string;
+  manual?: boolean;
+}): boolean {
+  return a.type === "Ride" && !a.manual;
+}
+
+type ServiceClient = ReturnType<typeof createServiceClient>;
+
+/** Re-apply a rider's manual ride edits in one statement. */
+export async function reapplyOverrides(
+  supabase: ServiceClient,
+  userId: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("reapply_ride_overrides", {
+    p_user_id: userId,
+  });
+  if (error) {
+    // Non-critical: the next sync re-applies them
+    console.warn(`[sync] Override re-application failed: ${error.message}`);
+  }
+}
+
+export type ActivityJobOutcome =
+  | "ride_upserted"
+  | "skipped_not_a_ride"
+  | "not_found";
+
+/**
+ * Fetch one activity (webhook create/update) and upsert it.
+ * ~5 subrequests: user read (+ token refresh when expired), Strava, upsert,
+ * overrides, user update.
+ */
+export async function syncSingleActivity(
+  userId: string,
+  activityId: number,
+): Promise<ActivityJobOutcome> {
+  const supabase = createServiceClient();
+  const accessToken = await ensureValidToken(userId);
+  let activity: StravaActivitySummary;
+  try {
+    ({ activity } = await fetchSingleActivity(accessToken, activityId));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // Deleted or made private on Strava before we got to it
+    if (msg.includes("(404)")) return "not_found";
+    throw err;
+  }
+  if (!isSyncableActivity(activity)) return "skipped_not_a_ride";
+
+  const ride = activityToRideInsert(userId, activity);
+  const { error } = await supabase
+    .from("rides")
+    .upsert(ride, { onConflict: "strava_activity_id" });
+  if (error) throw new Error(`Upsert failed: ${error.message}`);
+  await reapplyOverrides(supabase, userId);
+
+  const now = new Date().toISOString();
+  await supabase
+    .from("users")
+    .update({
+      last_sync_success_at: now,
+      consecutive_sync_failures: 0,
+      last_sync_error: null,
+      needs_reauth: false,
+    })
+    .eq("id", userId);
+  return "ride_upserted";
+}
+
+export interface BackfillStepResult {
+  upserted: number;
+  /** Cursor for the next page (epoch seconds), or null when history is done */
+  nextBefore: number | null;
+}
+
+/**
+ * Import one page of a rider's older history (activities before `before`,
+ * newest first). Called repeatedly by backfill jobs until nextBefore is null.
+ */
+export async function backfillStep(
+  userId: string,
+  before: number,
+  perPage: number,
+): Promise<BackfillStepResult> {
+  const supabase = createServiceClient();
+  const accessToken = await ensureValidToken(userId);
+  const { activities } = await fetchAthleteActivities(accessToken, {
+    before,
+    perPage,
+    page: 1,
+  });
+  const rides = activities
+    .filter(isSyncableActivity)
+    .map((a) => activityToRideInsert(userId, a));
+  for (let i = 0; i < rides.length; i += BATCH_SIZE) {
+    const { error } = await supabase
+      .from("rides")
+      .upsert(rides.slice(i, i + BATCH_SIZE), {
+        onConflict: "strava_activity_id",
+      });
+    if (error) throw new Error(`Backfill upsert failed: ${error.message}`);
+  }
+  if (rides.length > 0) await reapplyOverrides(supabase, userId);
+
+  const oldest = activities.reduce<number | null>((min, a) => {
+    const t = Math.floor(new Date(a.start_date).getTime() / 1000);
+    return min === null || t < min ? t : min;
+  }, null);
+  const done =
+    activities.length < perPage || oldest === null || oldest >= before;
+  return { upserted: rides.length, nextBefore: done ? null : oldest };
+}

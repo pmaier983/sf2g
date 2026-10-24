@@ -133,6 +133,12 @@ isOneToOne: false
       foreignKeyName: "ride_override_audit_log_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ride_override_audit_log_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     }
@@ -208,6 +214,12 @@ isOneToOne: false
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "route_speed_leaderboard"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ride_overrides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "ride_overrides_user_id_fkey"
@@ -321,20 +333,76 @@ isOneToOne: false
       foreignKeyName: "rides_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sync_jobs": {
+                  Row: {
+                    "attempts": number,"created_at": string,"cursor": NonNullable<Json>,"finished_at": string | null,"id": number,"kind": string,"last_error": string | null,"locked_at": string | null,"payload": NonNullable<Json>,"run_after": string,"status": string,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"cursor"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: number,"kind": string,"last_error"?: string | null,"locked_at"?: string | null,"payload"?: NonNullable<Json>,"run_after"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"cursor"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: number,"kind"?: string,"last_error"?: string | null,"locked_at"?: string | null,"payload"?: NonNullable<Json>,"run_after"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "company_leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "leaderboard_view"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "monthly_ride_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "route_speed_leaderboard"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "sync_jobs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     }
                   ]
                 },"users": {
                   Row: {
-                    "avatar_url": string | null,"consecutive_sync_failures": number,"created_at": string,"deauthorized_at": string | null,"display_name": string | null,"first_name": string | null,"id": string,"last_activity_at": string | null,"last_name": string | null,"last_sync_at": string | null,"last_sync_error": string | null,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes": string | null,"strava_token_expires_at": string,"updated_at": string,"username": string | null
+                    "avatar_url": string | null,"consecutive_sync_failures": number,"created_at": string,"deauthorized_at": string | null,"display_name": string | null,"first_name": string | null,"id": string,"last_activity_at": string | null,"last_name": string | null,"last_sync_at": string | null,"last_sync_error": string | null,"last_sync_success_at": string | null,"needs_reauth": boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes": string | null,"strava_token_expires_at": string,"updated_at": string,"username": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes"?: string | null,"strava_token_expires_at": string,"updated_at"?: string,"username"?: string | null
+                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"strava_access_token": string,"strava_id": number,"strava_refresh_token": string,"strava_scopes"?: string | null,"strava_token_expires_at": string,"updated_at"?: string,"username"?: string | null
                   }
                   Update: {
-                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"strava_access_token"?: string,"strava_id"?: number,"strava_refresh_token"?: string,"strava_scopes"?: string | null,"strava_token_expires_at"?: string,"updated_at"?: string,"username"?: string | null
+                    "avatar_url"?: string | null,"consecutive_sync_failures"?: number,"created_at"?: string,"deauthorized_at"?: string | null,"display_name"?: never,"first_name"?: string | null,"id"?: string,"last_activity_at"?: string | null,"last_name"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean,"strava_access_token"?: string,"strava_id"?: number,"strava_refresh_token"?: string,"strava_scopes"?: string | null,"strava_token_expires_at"?: string,"updated_at"?: string,"username"?: string | null
                   }
                   Relationships: [
                     
@@ -395,6 +463,12 @@ isOneToOne: false
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "route_speed_leaderboard"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "rides_user_id_fkey"
@@ -462,6 +536,18 @@ isOneToOne: false
       foreignKeyName: "rides_user_id_fkey"
       columns: ["rider1_id"]
 isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     },{
@@ -478,6 +564,20 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
+                    
+                  ]
+                },"sync_health": {
+                  Row: {
+                    "consecutive_sync_failures": number | null,"deauthorized_at": string | null,"display_name": string | null,"failed_jobs": number | null,"last_activity_at": string | null,"last_sync_at": string | null,"last_sync_error": string | null,"last_sync_success_at": string | null,"needs_reauth": boolean | null,"open_jobs": number | null,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "consecutive_sync_failures"?: number | null,"deauthorized_at"?: string | null,"display_name"?: string | null,"failed_jobs"?: never,"last_activity_at"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean | null,"open_jobs"?: never,"user_id"?: string | null
+                         }
+                        Update: {
+                           "consecutive_sync_failures"?: number | null,"deauthorized_at"?: string | null,"display_name"?: string | null,"failed_jobs"?: never,"last_activity_at"?: string | null,"last_sync_at"?: string | null,"last_sync_error"?: string | null,"last_sync_success_at"?: string | null,"needs_reauth"?: boolean | null,"open_jobs"?: never,"user_id"?: string | null
+                         }
+                        Relationships: [
                     
                   ]
                 },"visible_ride_pairs": {
@@ -538,6 +638,18 @@ isOneToOne: false
       foreignKeyName: "rides_user_id_fkey"
       columns: ["rider1_id"]
 isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider2_id"]
+isOneToOne: false
+      referencedRelation: "sync_health"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "rides_user_id_fkey"
+      columns: ["rider1_id"]
+isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     },{
@@ -553,6 +665,37 @@ isOneToOne: false
           Functions: {
             "batch_update_ride_classifications":
 { Args: { "updates": Json }; Returns: number
+                           },
+"claim_sync_jobs":
+{ Args: { "n": number }; Returns: {
+              "attempts": number,
+"created_at": string,
+"cursor": NonNullable<Json>,
+"finished_at": string | null,
+"id": number,
+"kind": string,
+"last_error": string | null,
+"locked_at": string | null,
+"payload": NonNullable<Json>,
+"run_after": string,
+"status": string,
+"updated_at": string,
+"user_id": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "sync_jobs"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"enqueue_due_syncs":
+{ Args: { "p_limit"?: number,"p_older_than"?: string }; Returns: number
+                           },
+"enqueue_sync_job":
+{ Args: { "p_cursor"?: Json,"p_kind": string,"p_payload"?: Json,"p_run_after"?: string,"p_user_id"?: string }; Returns: boolean
+                           },
+"enqueue_webhook_event":
+{ Args: { "p_aspect_type": string,"p_object_id": number,"p_object_type": string,"p_owner_id": number,"p_updates"?: Json }; Returns: string
                            },
 "extract_iana_timezone":
 { Args: { "tz": string }; Returns: string
@@ -597,6 +740,9 @@ isOneToOne: false
 { Args: { "p_date_from"?: string,"p_date_to"?: string }; Returns: {
               "total_distance": number,"total_elevation": number,"user_id": string
             }[]
+                           },
+"reapply_ride_overrides":
+{ Args: { "p_user_id": string }; Returns: number
                            },
 "recompute_group_rides":
 { Args: Record<PropertyKey, never>; Returns: number

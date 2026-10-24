@@ -2181,3 +2181,17 @@
   }
 }
 
+
+/* Reconnect banner (expired Strava connection) */
+.reconnect-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) var(--space-4) 0;
+  border: 1px solid var(--color-warning, #d97706);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}

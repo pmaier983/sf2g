@@ -3,17 +3,17 @@
  *
  * Regression: the old handler returned 202 and left runCronJobs() as a
  * dangling promise, which Cloudflare Workers cancel. Nothing was ever synced
- * while the GitHub Action reported success.
+ * while the GitHub Action reported success. Scheduled syncing now runs from
+ * the Cloudflare Cron Trigger; this endpoint runs the same tick on demand.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const syncUserBatch = vi.fn();
+const runScheduledTick = vi.fn();
 const runMaintenance = vi.fn();
 const runGroupRides = vi.fn();
 
-vi.mock("../cron", () => ({ syncUserBatch, runMaintenance, runGroupRides }));
-vi.mock("../sync", () => ({ performSync: vi.fn() }));
-vi.mock("../../lib/supabase", () => ({ createServiceClient: () => ({}) }));
+vi.mock("../cron", () => ({ runMaintenance, runGroupRides }));
+vi.mock("../scheduled", () => ({ runScheduledTick }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (opts: unknown) => opts,
 }));
@@ -35,9 +35,9 @@ describe("POST /api/cron", () => {
   });
 
   it("rejects a wrong secret", async () => {
-    const res = await handleCronRequest(post("sync", "nope"));
+    const res = await handleCronRequest(post("drain", "nope"));
     expect(res.status).toBe(401);
-    expect(syncUserBatch).not.toHaveBeenCalled();
+    expect(runScheduledTick).not.toHaveBeenCalled();
   });
 
   it("rejects an unknown task", async () => {
@@ -45,30 +45,41 @@ describe("POST /api/cron", () => {
     expect(res.status).toBe(400);
   });
 
-  it("awaits the sync batch and returns its counts with 200", async () => {
+  it("awaits one queue tick and returns its counts with 200", async () => {
     let finished = false;
-    syncUserBatch.mockImplementation(async () => {
+    runScheduledTick.mockImplementation(async () => {
       await new Promise((r) => setTimeout(r, 20));
       finished = true;
-      return { eligible: 9, remaining: 3, synced: 6, failed: 0, results: [] };
+      return {
+        claimed: 3,
+        done: 2,
+        requeued: 1,
+        failed: 0,
+        stopReason: "claimed_all",
+      };
     });
 
     const res = await handleCronRequest(post());
     expect(finished).toBe(true);
     expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body).toMatchObject({
+    expect(await res.json()).toMatchObject({
       ok: true,
-      task: "sync",
-      synced: 6,
-      remaining: 3,
+      task: "drain",
+      claimed: 3,
+      done: 2,
     });
-    expect(body.subrequests).toBeTypeOf("number");
   });
 
-  it("reports ok:false when any rider failed", async () => {
-    syncUserBatch.mockResolvedValue({ synced: 5, failed: 1, remaining: 0 });
+  it("keeps task=sync as an alias of drain", async () => {
+    runScheduledTick.mockResolvedValue({ claimed: 0, done: 0, failed: 0 });
     const body = await (await handleCronRequest(post("sync"))).json();
+    expect(body).toMatchObject({ ok: true, task: "sync" });
+    expect(runScheduledTick).toHaveBeenCalledOnce();
+  });
+
+  it("reports ok:false when a job failed for good", async () => {
+    runScheduledTick.mockResolvedValue({ claimed: 2, done: 1, failed: 1 });
+    const body = await (await handleCronRequest(post("drain"))).json();
     expect(body.ok).toBe(false);
   });
 
@@ -89,9 +100,9 @@ describe("POST /api/cron", () => {
   });
 
   it("returns 500 with the message when a task crashes", async () => {
-    syncUserBatch.mockRejectedValue(new Error("Failed to load due users"));
-    const res = await handleCronRequest(post("sync"));
+    runScheduledTick.mockRejectedValue(new Error("claim_sync_jobs: boom"));
+    const res = await handleCronRequest(post("drain"));
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toContain("Failed to load due users");
+    expect((await res.json()).error).toContain("claim_sync_jobs: boom");
   });
 });
