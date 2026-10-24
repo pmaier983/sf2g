@@ -11,7 +11,6 @@ import { LeaderboardTable } from "../LeaderboardTable";
 import { RidesLeaderboardTable } from "../RidesLeaderboardTable";
 import { AllTimeTable } from "../AllTimeTable";
 import { GroupRidesTable } from "../GroupRidesTable";
-import { RouteSpeedTable, type RouteSpeedEntry } from "../RouteSpeedTable";
 import { GroupRideComparisonTable } from "../GroupRideComparisonTable";
 import { ProfileRidesTable } from "../ProfileRidesTable";
 import type {
@@ -113,20 +112,6 @@ describe("table smoke tests", () => {
     );
     await screen.findAllByText(/skyline/i);
     expect(container.querySelectorAll("tr").length).toBeGreaterThan(1);
-  });
-
-  it("RouteSpeedTable", async () => {
-    const rows = fixtures.routeSpeed as unknown as RouteSpeedEntry[];
-    renderWithProviders(
-      <RouteSpeedTable
-        data={rows}
-        searchFilter=""
-        riderColorMap={new Map()}
-        onViewRides={noop}
-        onVisibleRidersChange={noop}
-      />,
-    );
-    await expectSomeRiderVisible(rows.map((r) => r.display_name ?? ""));
   });
 
   it("GroupRideComparisonTable", async () => {

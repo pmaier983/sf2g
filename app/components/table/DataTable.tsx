@@ -20,6 +20,7 @@ import {
 } from "react";
 import {
   flexRender,
+  type Cell,
   type Header,
   type Row,
   type Table,
@@ -45,6 +46,8 @@ export interface DataTableProps<T> {
     style?: CSSProperties;
   };
   onRowClick?: (row: Row<T>) => void;
+  /** Extra class for one cell (e.g. highlight the best value). */
+  getCellClassName?: (cell: Cell<T, unknown>) => string | undefined;
   /** Content of the full-width row shown under an expanded row. */
   renderSubRow?: (row: Row<T>) => ReactNode;
   /** Extra leading header/cell (e.g. the chart-select toggle). */
@@ -73,6 +76,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
     rowHeight = 48,
     getRowProps,
     onRowClick,
+    getCellClassName,
     renderSubRow,
     leadingHeader,
     renderLeadingCell,
@@ -175,7 +179,14 @@ export function DataTable<T>(props: DataTableProps<T>) {
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
-                            className={cell.column.columnDef.meta?.className}
+                            className={
+                              [
+                                cell.column.columnDef.meta?.className,
+                                getCellClassName?.(cell),
+                              ]
+                                .filter(Boolean)
+                                .join(" ") || undefined
+                            }
                             style={{ minWidth: cell.column.getSize() }}
                           >
                             {flexRender(
