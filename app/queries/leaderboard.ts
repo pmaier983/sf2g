@@ -6,7 +6,6 @@ import {
   fetchLeaderboard,
   fetchRiderGrowth,
   type RiderGrowthInput,
-  fetchRouteSpeedLeaderboard,
   fetchCommunityBreakdown,
 } from "../server/leaderboard";
 import type { LeaderboardQueryInput } from "../lib/leaderboard-query";
@@ -23,18 +22,6 @@ export function leaderboardQueryOptions(params: LeaderboardQueryInput = {}) {
   return queryOptions({
     queryKey: ["leaderboard", params] as const,
     queryFn: async () => (await fetchLeaderboard({ data: params })) ?? [],
-    staleTime: 300_000,
-    gcTime: 1_800_000,
-  });
-}
-
-export function routeSpeedLeaderboardQueryOptions(
-  routeCategory: RouteCategory,
-) {
-  return queryOptions({
-    queryKey: ["route-speed-leaderboard", routeCategory] as const,
-    queryFn: async () =>
-      (await fetchRouteSpeedLeaderboard({ data: { routeCategory } })) ?? [],
     staleTime: 300_000,
     gcTime: 1_800_000,
   });

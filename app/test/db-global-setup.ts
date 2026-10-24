@@ -49,13 +49,8 @@ export default async function setup(): Promise<void> {
   process.env.SUPABASE_SERVICE_ROLE_KEY = LOCAL_SUPABASE.serviceRoleKey;
 
   const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
-  for (const fn of [
-    "refresh_leaderboard",
-    "refresh_company_leaderboard",
-    "refresh_route_speed_leaderboard",
-    "refresh_ppr_dawn_rides",
-    "refresh_ride_co_occurrences",
-  ]) {
+  const { MATERIALIZED_VIEW_REFRESHES } = await import("../server/cron");
+  for (const fn of MATERIALIZED_VIEW_REFRESHES) {
     const { error } = await db.rpc(fn as never);
     if (error) throw new Error(`${fn}: ${error.message}`);
   }

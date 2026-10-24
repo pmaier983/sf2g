@@ -3,7 +3,6 @@
  *
  * - `fetchLeaderboard` — Riders table via get_leaderboard (one SQL call)
  * - `fetchRiderGrowth` — cumulative-chart buckets for selected riders
- * - `fetchRouteSpeedLeaderboard` — speed rankings per route category
  * - `fetchCommunityBreakdown` — aggregate SF2G vs other distance/elevation
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -12,7 +11,6 @@ import type {
   Json,
   LeaderboardEntry,
   RouteCategory,
-  RouteSpeedEntry,
 } from "../lib/database.types";
 import { withPerf } from "../lib/perf";
 import {
@@ -153,50 +151,6 @@ export const fetchRiderGrowth = createServerFn({ method: "GET" })
   .handler(
     withPerf("fetchRiderGrowth", ({ data }) => fetchRiderGrowthImpl(data)),
   );
-
-// ---------------------------------------------------------------------------
-// fetchRouteSpeedLeaderboard — speed rankings per route category
-// ---------------------------------------------------------------------------
-const fetchRouteSpeedLeaderboardInput = (input: { routeCategory: string }) => {
-  const valid = [
-    "bayway",
-    "skyline",
-    "hmbw",
-    "royale",
-    "fleaway",
-    "mebw",
-    "febw",
-  ];
-  if (!valid.includes(input.routeCategory)) {
-    throw new Error(`Invalid route category: ${input.routeCategory}`);
-  }
-  return input as { routeCategory: RouteCategory };
-};
-
-export async function fetchRouteSpeedLeaderboardImpl(
-  data: ReturnType<typeof fetchRouteSpeedLeaderboardInput>,
-): Promise<RouteSpeedEntry[]> {
-  const supabase = createAnonClient();
-  const { data: entries, error } = await supabase
-    .from("route_speed_leaderboard")
-    .select("*")
-    .eq("route_category", data.routeCategory)
-    .order("avg_speed_mps", { ascending: false });
-  if (error) {
-    console.error(
-      "[leaderboard] Failed to fetch route speed leaderboard:",
-      error,
-    );
-    throw new Error(
-      `Failed to fetch route speed leaderboard: ${error.message}`,
-    );
-  }
-  return (entries ?? []) as RouteSpeedEntry[];
-}
-
-export const fetchRouteSpeedLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator(fetchRouteSpeedLeaderboardInput)
-  .handler(({ data }) => fetchRouteSpeedLeaderboardImpl(data));
 
 // ---------------------------------------------------------------------------
 // fetchCommunityBreakdown — aggregate SF2G vs non-SF2G distance + elevation

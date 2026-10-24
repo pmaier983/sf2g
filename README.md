@@ -140,7 +140,8 @@ app/
 │   ├── reclassify.ts             # Bulk route reclassification
 │   ├── wind-enrichment.ts        # Wind data enrichment
 │   ├── weather.ts                # Weather API integration
-│   ├── cron.ts                   # Cron job orchestration
+│   ├── cron.ts                   # Maintenance + admin "run one tick"
+│   ├── sync-drain.ts             # Sync job queue drain (Cron Trigger)
 │   └── users.ts                  # User management
 └── styles/              # CSS files
     ├── global.css                # Theme variables, base styles
@@ -169,27 +170,50 @@ Routes are classified using **GPS gateway checkpoints** — specific lat/lng coo
 **Intercept**: JD/Skyline (37.698, -122.495)
 **Gateway radius**: 500 meters
 
+## How it works
+
+```
+Browser ──► Cloudflare Worker (TanStack Start, Free plan: 10 ms CPU, 50 subrequests)
+              │  every page = one SQL function call (get_leaderboard, get_rides, …)
+              ▼
+            Supabase Postgres ◄── sync_jobs queue ◄── Strava webhook (records only)
+              ▲                        │
+              └── Cron Trigger */5 ────┘  drains the queue in budget-sized steps
+```
+
+- **Reads**: aggregation happens in Postgres (migrations 037–040); the
+  Worker never loads rides to aggregate them. Table state lives in the URL
+  (`app/lib/table-query.ts`) and every table renders through
+  `app/components/table/DataTable.tsx`.
+- **Sync**: the webhook enqueues; a Cloudflare Cron Trigger (`wrangler.jsonc`)
+  drains `sync_jobs` every 5 minutes; a 12-hour sweep catches anything a
+  webhook missed. See [docs/ops/sync.md](docs/ops/sync.md).
+- **Dates**: calendar dates are America/Los_Angeles (`app/lib/dates.ts`).
+
 ## Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in:
+Copy `.env.example` to `.env.local` (local values) — production values are
+Cloudflare secrets/vars.
 
-| Variable | Scope | Description |
-|----------|-------|------------|
-| `VITE_SUPABASE_URL` | Client + Server | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Client + Server | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Supabase service role key |
-| `STRAVA_CLIENT_ID` | Server only | Strava API app client ID |
-| `STRAVA_CLIENT_SECRET` | Server only | Strava API app client secret |
-| `SESSION_SECRET` | Server only | Secret for signing session cookies |
-| `VITE_APP_URL` | Client + Server | Public app URL |
+| Variable | Description |
+|----------|-------------|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Supabase project (local: `pnpm db:start`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only — sync, queue, admin |
+| `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET` | Strava API app |
+| `STRAVA_WEBHOOK_VERIFY_TOKEN` | Echoed back when Strava verifies the webhook |
+| `STRAVA_WEBHOOK_SUBSCRIPTION_ID` | Optional — ignore events for other subscriptions |
+| `SESSION_SECRET` | ≥ 32 chars, signs session cookies |
+| `ADMIN_USER_IDS` | Comma-separated user ids allowed to use admin actions |
+| `CRON_SECRET` | Bearer token for `POST /api/cron` |
+| `APP_URL` | Public app URL |
+| `VITE_MAP_TILE_URL`, `VITE_MAP_TILE_URL_DARK`, `VITE_MAP_TILE_ATTRIBUTION` | Optional map tile provider (default: OpenStreetMap) |
 
-## Reference
+## Docs
 
-- [Implementation Plan](swarm_session/docs/implementation_plan.md) — Detailed task breakdown
-- [System Architecture](swarm_session/docs/system_architecture.md) — Full system design
-- [Egan Scraper](Egan%20Scraper.md) — Historical context on Strava segment scraping
-- [SF2G Website](https://sf2g.com/) — Official community site
+- [Operations runbooks](docs/ops/README.md) — deploys, migrations, secrets, sync, logs
+- [Rework plan](docs/rework/README.md) — why the app is built the way it is
 - [Strava API Docs](https://developers.strava.com/docs/reference/)
+- [SF2G Website](https://sf2g.com/)
 
 ## License
 

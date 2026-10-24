@@ -1,13 +1,28 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { isAdminUser, parseAdminIds } from "../admin";
+import { assertSafeDevDatabase, isAdminUser, parseAdminIds } from "../admin";
 
 describe("isAdminUser", () => {
   const prod = { NODE_ENV: "production", ADMIN_USER_IDS: "aaa, bbb" };
 
   it("allows everything on a local dev server", () => {
     expect(isAdminUser(null, { NODE_ENV: "development" })).toBe(true);
+    expect(
+      isAdminUser(null, {
+        NODE_ENV: "development",
+        SUPABASE_URL: "http://127.0.0.1:54321",
+      }),
+    ).toBe(true);
+  });
+
+  it("does NOT bypass admin when a dev server points at a hosted database", () => {
+    const dev = {
+      NODE_ENV: "development",
+      SUPABASE_URL: "https://dgoqjrfjrzewplwayhhz.supabase.co",
+    };
+    expect(isAdminUser(null, dev)).toBe(false);
+    expect(isAdminUser("aaa", { ...dev, ADMIN_USER_IDS: "aaa" })).toBe(false);
   });
 
   it("allows only listed user ids in production", () => {
@@ -23,6 +38,34 @@ describe("isAdminUser", () => {
 
   it("parses comma-separated ids, ignoring blanks", () => {
     expect([...parseAdminIds(" a ,, b ,")]).toEqual(["a", "b"]);
+  });
+});
+
+describe("assertSafeDevDatabase", () => {
+  it("refuses a local dev server pointed at a hosted Supabase project", () => {
+    expect(() =>
+      assertSafeDevDatabase({
+        NODE_ENV: "development",
+        SUPABASE_URL: "https://dgoqjrfjrzewplwayhhz.supabase.co",
+      }),
+    ).toThrow(/local dev server .* non-local database/i);
+  });
+
+  it("allows local databases and deployed builds", () => {
+    for (const SUPABASE_URL of [
+      "http://127.0.0.1:54321",
+      "http://localhost:54321",
+    ]) {
+      expect(() =>
+        assertSafeDevDatabase({ NODE_ENV: "development", SUPABASE_URL }),
+      ).not.toThrow();
+    }
+    expect(() =>
+      assertSafeDevDatabase({
+        NODE_ENV: "production",
+        SUPABASE_URL: "https://x.supabase.co",
+      }),
+    ).not.toThrow();
   });
 });
 

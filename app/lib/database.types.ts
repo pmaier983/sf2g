@@ -73,10 +73,7 @@ export type LeaderboardEntry = Omit<
   Database["public"]["Functions"]["get_leaderboard"]["Returns"][number],
   "total_count"
 >;
-export type CompanyLeaderboardEntry = _Views["company_leaderboard_view"]["Row"];
 export type MonthlyRideStat = _Views["monthly_ride_stats"]["Row"];
-export type RouteSpeedEntry = _Views["route_speed_leaderboard"]["Row"];
-export type PprDawnRide = _Views["ppr_dawn_rides"]["Row"];
 
 // ---------------------------------------------------------------------------
 // Rides leaderboard types

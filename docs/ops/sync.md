@@ -80,5 +80,7 @@ other subscription are ignored (optional, recommended).
    `/ingest` proxy) and `triggers.crons: ["*/5 * * * *"]`.
 3. Check the Cron Trigger in the Cloudflare dashboard (Workers → sf2g →
    Settings → Triggers) and watch the logs for `[scheduled]` lines.
-4. The GitHub Actions cron workflow is gone; remove its `CRON_SECRET` repo
+4. Later, after phase 06b is deployed, apply 042 (drops the unused
+   materialized views — see its header for the deploy order).
+5. The GitHub Actions cron workflow is gone; remove its `CRON_SECRET` repo
    secret only if nothing else uses it (`/api/cron` still does).

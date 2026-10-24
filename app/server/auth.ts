@@ -241,13 +241,15 @@ export async function cleanupDeauthorizedUser(
     console.log(`[auth] Deleted ${deletedCount ?? 0} rides for user ${userId}`);
   }
 
-  // 3. Refresh leaderboard view to remove deleted user's data
-  try {
-    await supabase.rpc("refresh_leaderboard");
-  } catch (err) {
+  // 3. Leaderboards read `rides` directly; queue the group-ride refresh so
+  //    the rider also disappears from group rides and the network.
+  const { error: enqueueError } = await supabase.rpc("enqueue_sync_job", {
+    p_kind: "refresh_views",
+  });
+  if (enqueueError) {
     console.error(
-      "[auth] Failed to refresh leaderboard after ride deletion:",
-      err,
+      "[auth] Failed to queue refresh after ride deletion:",
+      enqueueError.message,
     );
   }
 

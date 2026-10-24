@@ -38,8 +38,6 @@ export interface SyncResult {
 
 /** Options to control sync behavior (used by cron to reduce subrequests) */
 export interface SyncOptions {
-  /** Skip per-user materialized view refreshes (cron maintenance does them once) */
-  skipLeaderboardRefresh?: boolean;
   /** Skip the co-occurrence refresh + group ride recompute (cron does it once) */
   skipGroupRides?: boolean;
   /** Skip the extra "re-check today's rides" Strava call */
@@ -491,27 +489,6 @@ export async function performSync(
 
   if (Object.keys(updateFields).length > 0) {
     await supabase.from("users").update(updateFields).eq("id", userId);
-  }
-
-  // 6. Refresh leaderboard materialized view (skipped in cron — reclassify handles it)
-  if (!options?.skipLeaderboardRefresh) {
-    try {
-      await supabase.rpc("refresh_leaderboard");
-    } catch (err) {
-      errors.push(
-        `Failed to refresh leaderboard: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    // Also refresh PPR dawn rides so PPR filter picks up new morning rides
-    try {
-      await supabase.rpc("refresh_ppr_dawn_rides" as never);
-    } catch (err) {
-      // Non-critical — PPR data will be refreshed in cron
-      console.warn(
-        `[sync] PPR dawn rides refresh failed (non-critical): ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
   }
 
   // Refresh ride co-occurrences after an interactive sync so new riders

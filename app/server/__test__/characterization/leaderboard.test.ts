@@ -3,7 +3,6 @@ import {
   fetchCommunityBreakdownImpl,
   fetchLeaderboardImpl,
   fetchRiderGrowthImpl,
-  fetchRouteSpeedLeaderboardImpl,
 } from "../../leaderboard";
 
 freezeFixtureClock();
@@ -53,12 +52,6 @@ characterize("fetchLeaderboard", fetchLeaderboardImpl, {
     dir: "sideways",
     company: "acme",
   } as never,
-});
-
-characterize("fetchRouteSpeedLeaderboard", fetchRouteSpeedLeaderboardImpl, {
-  skyline: { routeCategory: "skyline" },
-  bayway: { routeCategory: "bayway" },
-  "invalid route": { routeCategory: "nope" as "skyline" },
 });
 
 characterize("fetchCommunityBreakdown", () => fetchCommunityBreakdownImpl(), {

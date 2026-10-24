@@ -73,12 +73,6 @@ isOneToOne: false
       foreignKeyName: "ride_override_audit_log_ride_id_fkey"
       columns: ["ride_id"]
 isOneToOne: false
-      referencedRelation: "ppr_dawn_rides"
-      referencedColumns: ["ride_id"]
-    },{
-      foreignKeyName: "ride_override_audit_log_ride_id_fkey"
-      columns: ["ride_id"]
-isOneToOne: false
       referencedRelation: "ride_co_occurrences"
       referencedColumns: ["ride1_id"]
     },{
@@ -109,25 +103,7 @@ isOneToOne: false
       foreignKeyName: "ride_override_audit_log_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_override_audit_log_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_override_audit_log_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_override_audit_log_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "ride_override_audit_log_user_id_fkey"
@@ -159,12 +135,6 @@ isOneToOne: false
       foreignKeyName: "ride_overrides_ride_id_fkey"
       columns: ["ride_id"]
 isOneToOne: false
-      referencedRelation: "ppr_dawn_rides"
-      referencedColumns: ["ride_id"]
-    },{
-      foreignKeyName: "ride_overrides_ride_id_fkey"
-      columns: ["ride_id"]
-isOneToOne: false
       referencedRelation: "ride_co_occurrences"
       referencedColumns: ["ride1_id"]
     },{
@@ -195,25 +165,7 @@ isOneToOne: false
       foreignKeyName: "ride_overrides_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_overrides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_overrides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "ride_overrides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "ride_overrides_user_id_fkey"
@@ -256,12 +208,6 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
-      foreignKeyName: "ride_streams_ride_id_fkey"
-      columns: ["ride_id"]
-isOneToOne: true
-      referencedRelation: "ppr_dawn_rides"
-      referencedColumns: ["ride_id"]
-    },{
       foreignKeyName: "ride_streams_ride_id_fkey"
       columns: ["ride_id"]
 isOneToOne: true
@@ -309,25 +255,7 @@ isOneToOne: true
       foreignKeyName: "rides_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "rides_user_id_fkey"
@@ -359,25 +287,7 @@ isOneToOne: false
       foreignKeyName: "sync_jobs_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "sync_jobs_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "sync_jobs_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "sync_jobs_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "sync_jobs_user_id_fkey"
@@ -410,73 +320,13 @@ isOneToOne: false
                 }
           }
           Views: {
-            "company_leaderboard_view": {
-                  Row: {
-                    "apple_count": number | null,"avatar_url": string | null,"avg_speed_mps": number | null,"display_name": string | null,"first_ride_date": string | null,"google_count": number | null,"last_ride_date": string | null,"meta_count": number | null,"netflix_count": number | null,"nvidia_count": number | null,"stanford_count": number | null,"tesla_count": number | null,"total_company_rides": number | null,"total_distance_meters": number | null,"total_elevation_meters": number | null,"user_id": string | null,"username": string | null
-                  }
-                  ComputedFields: never
-                  Relationships: [
-                    
-                  ]
-                },"leaderboard_view": {
-                  Row: {
-                    "active_years": number | null,"avatar_url": string | null,"avg_heartrate": number | null,"avg_kilojoules": number | null,"avg_speed_mps": number | null,"avg_tailwind_ms": number | null,"avg_watts": number | null,"bayway_count": number | null,"display_name": string | null,"febw_count": number | null,"first_ride_date": string | null,"fleaway_count": number | null,"hmbw_count": number | null,"last_ride_date": string | null,"mebw_count": number | null,"median_speed_mps": number | null,"median_watts": number | null,"other_count": number | null,"royale_count": number | null,"sf2g_distance_meters": number | null,"sf2g_elevation_meters": number | null,"sf2g_total": number | null,"skyline_count": number | null,"total_distance_meters": number | null,"total_elevation_meters": number | null,"total_rides": number | null,"user_id": string | null,"username": string | null
-                  }
-                  ComputedFields: never
-                  Relationships: [
-                    
-                  ]
-                },"monthly_ride_stats": {
+            "monthly_ride_stats": {
                   Row: {
                     "avg_speed": number | null,"month": string | null,"ride_count": number | null,"route_category": string | null,"total_distance": number | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [
                     
-                  ]
-                },"ppr_dawn_rides": {
-                  Row: {
-                    "moving_time_seconds": number | null,"ride_id": string | null,"start_date": string | null,"start_latlng": Json | null,"summary_polyline": string | null,"timezone": string | null,"user_id": string | null
-                  }
-                  ComputedFields: never
-                  Relationships: [
-                    {
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "sync_health"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "users"
-      referencedColumns: ["id"]
-    }
                   ]
                 },"ride_co_occurrences": {
                   Row: {
@@ -488,30 +338,6 @@ isOneToOne: false
       foreignKeyName: "rides_user_id_fkey"
       columns: ["rider1_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
       referencedColumns: ["user_id"]
     },{
@@ -519,18 +345,6 @@ isOneToOne: false
       columns: ["rider2_id"]
 isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "rides_user_id_fkey"
@@ -557,14 +371,6 @@ isOneToOne: false
       referencedRelation: "users"
       referencedColumns: ["id"]
     }
-                  ]
-                },"route_speed_leaderboard": {
-                  Row: {
-                    "avatar_url": string | null,"avg_distance_meters": number | null,"avg_elevation_meters": number | null,"avg_speed_mps": number | null,"display_name": string | null,"last_ride_date": string | null,"max_speed_mps": number | null,"median_speed_mps": number | null,"route_category": string | null,"route_ride_count": number | null,"user_id": string | null,"username": string | null
-                  }
-                  ComputedFields: never
-                  Relationships: [
-                    
                   ]
                 },"sync_health": {
                   Row: {
@@ -590,30 +396,6 @@ isOneToOne: false
       foreignKeyName: "rides_user_id_fkey"
       columns: ["rider1_id"]
 isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "company_leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "leaderboard_view"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
       referencedRelation: "monthly_ride_stats"
       referencedColumns: ["user_id"]
     },{
@@ -621,18 +403,6 @@ isOneToOne: false
       columns: ["rider2_id"]
 isOneToOne: false
       referencedRelation: "monthly_ride_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider1_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "rides_user_id_fkey"
-      columns: ["rider2_id"]
-isOneToOne: false
-      referencedRelation: "route_speed_leaderboard"
       referencedColumns: ["user_id"]
     },{
       foreignKeyName: "rides_user_id_fkey"
@@ -747,19 +517,7 @@ isOneToOne: false
 "recompute_group_rides":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
-"refresh_company_leaderboard":
-{ Args: Record<PropertyKey, never>; Returns: undefined
-                           },
-"refresh_leaderboard":
-{ Args: Record<PropertyKey, never>; Returns: undefined
-                           },
-"refresh_ppr_dawn_rides":
-{ Args: Record<PropertyKey, never>; Returns: undefined
-                           },
 "refresh_ride_co_occurrences":
-{ Args: Record<PropertyKey, never>; Returns: undefined
-                           },
-"refresh_route_speed_leaderboard":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "sf2g_commute_direction":

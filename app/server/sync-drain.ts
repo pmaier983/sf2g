@@ -39,7 +39,6 @@ export const DRAIN_BUDGET = {
 
 /** Cron-mode sync: one page per step, no per-user side work. */
 const STEP_SYNC_OPTIONS: SyncOptions = {
-  skipLeaderboardRefresh: true,
   skipGroupRides: true,
   skipSameDayRecheck: true,
   maxPages: 1,

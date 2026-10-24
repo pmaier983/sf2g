@@ -45,12 +45,13 @@ type ServiceClient = ReturnType<typeof createServiceClient>;
 // Maintenance: materialized view refreshes
 // ---------------------------------------------------------------------------
 
-/** Every materialized view the app reads, refreshed once per sync pass. */
+/**
+ * Every materialized view the app reads, refreshed once per sync pass.
+ * Leaderboards, rides and profiles are computed from `rides` directly
+ * (migrations 037–040); only the co-occurrence MV behind group rides and
+ * the rider network remains (042 dropped the rest).
+ */
 export const MATERIALIZED_VIEW_REFRESHES = [
-  "refresh_leaderboard",
-  "refresh_company_leaderboard",
-  "refresh_route_speed_leaderboard",
-  "refresh_ppr_dawn_rides",
   "refresh_ride_co_occurrences",
 ] as const;
 

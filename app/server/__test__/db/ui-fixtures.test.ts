@@ -8,10 +8,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, it } from "vitest";
-import {
-  fetchLeaderboardImpl,
-  fetchRouteSpeedLeaderboardImpl,
-} from "../../leaderboard";
+import { fetchLeaderboardImpl } from "../../leaderboard";
 import {
   fetchProfileRidesImpl,
   fetchRidesLeaderboardImpl,
@@ -43,9 +40,6 @@ it("ui-fixtures.json matches the fixture database", async () => {
     leaderboard: await fetchLeaderboardImpl({}),
     ridesLeaderboard: await fetchRidesLeaderboardImpl({ pageSize: 15 }),
     allTime: await fetchAllTimeLeaderboardImpl({ durationDays: 30 }),
-    routeSpeed: await fetchRouteSpeedLeaderboardImpl({
-      routeCategory: "skyline",
-    }),
     groupRides: groups,
     groupRideDetail: detail,
     userRides: await fetchUserRidesImpl({ userId: RIDER.ada, limit: 15 }),

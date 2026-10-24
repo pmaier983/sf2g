@@ -85,8 +85,8 @@ describe("POST /api/cron", () => {
 
   it("runs maintenance and reports refresh errors", async () => {
     runMaintenance.mockResolvedValue({
-      refreshed: ["refresh_leaderboard"],
-      errors: ["refresh_ppr_dawn_rides: boom"],
+      refreshed: [],
+      errors: ["refresh_ride_co_occurrences: boom"],
       durationMs: 5,
     });
     const body = await (await handleCronRequest(post("maintenance"))).json();
