@@ -1,3 +1,6 @@
+-- One-time backfills below can exceed the API roles' 8 s statement timeout.
+SET statement_timeout = 0;
+
 -- ============================================================
 -- Migration 038: Rides view, All-time, growth chart and community
 -- stats as SQL functions (rework phase 03b)
