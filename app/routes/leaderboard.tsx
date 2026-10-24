@@ -9,7 +9,6 @@ import {
   Suspense,
 } from "react";
 import { MobileBottomBar } from "../components/MobileBottomBar";
-import { MobileSettingsPanel } from "../components/MobileSettingsPanel";
 import {
   leaderboardQueryOptions,
   riderGrowthQueryOptions,
@@ -29,6 +28,7 @@ const AllTimeChart = lazy(() =>
   })),
 );
 import { FilterChips } from "../components/FilterChips";
+import { ViewSwitcher } from "../components/ViewSwitcher";
 import { SyncStatus } from "../components/SyncStatus";
 import { RIDER_COLORS } from "../lib/constants";
 import { groupRidesQueryOptions } from "../queries/group-rides";
@@ -368,8 +368,6 @@ function LeaderboardPage() {
     [],
   );
 
-  const handleVisibleRidersChange = useCallback(() => {}, []);
-
   // ---- Navigate handler for "View rides" from the users table ----
   const handleViewRides = useCallback(
     (userId: string, routeCategory?: RouteCategory) =>
@@ -378,6 +376,22 @@ function LeaderboardPage() {
         user: userId,
         ...(routeCategory ? { routes: [routeCategory] } : {}),
       }),
+    [updateSearch],
+  );
+
+  // All Time has its own rolling window, so it drops the date filter.
+  const switchView = useCallback(
+    (next: TableQuery["view"]) =>
+      updateSearch(
+        next === "alltime"
+          ? {
+              view: next,
+              dateFrom: undefined,
+              dateTo: undefined,
+              datePreset: undefined,
+            }
+          : { view: next },
+      ),
     [updateSearch],
   );
 
@@ -398,179 +412,116 @@ function LeaderboardPage() {
     <section
       className={`leaderboard${chartOpen ? " leaderboard--chart-open" : ""}`}
     >
-      {/* ---- Mobile: Header with view toggle ---- */}
-      <div className="mobile-view-header">
-        <div className="mobile-view-header__toggle">
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "riders" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "riders" })}
-            aria-pressed={view === "riders"}
-          >
-            👤 Riders
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "alltime" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() =>
-              updateSearch({
-                view: "alltime",
-                dateFrom: undefined,
-                dateTo: undefined,
-                datePreset: undefined,
-              })
-            }
-            aria-pressed={view === "alltime"}
-          >
-            🏆 All Time
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "rides" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "rides" })}
-            aria-pressed={view === "rides"}
-          >
-            🚴 Rides
-          </button>
-          <button
-            type="button"
-            className={`mobile-view-header__btn${view === "groups" ? " mobile-view-header__btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "groups" })}
-            aria-pressed={view === "groups"}
-          >
-            👥 Groups
-          </button>
+      {/* One set of controls for every screen size (T1, T13): on mobile the
+          view switcher becomes the header and the rest a slide-up sheet. */}
+      <div className="leaderboard__header">
+        <div className="leaderboard__switcher-cell">
+          <ViewSwitcher view={view} onChange={switchView} />
         </div>
-      </div>
-
-      {/* Toolbar: View toggle | Chart btn | Search | Density | Sync — all on one line */}
-      <div className="leaderboard__toolbar">
-        <div className="leaderboard__view-toggle">
-          <button
-            className={`leaderboard__view-btn ${view === "riders" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "riders" })}
-            aria-pressed={view === "riders"}
-          >
-            👤 Riders
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "alltime" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() =>
-              updateSearch({
-                view: "alltime",
-                dateFrom: undefined,
-                dateTo: undefined,
-                datePreset: undefined,
-              })
-            }
-            aria-pressed={view === "alltime"}
-          >
-            🏆 All Time
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "rides" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "rides" })}
-            aria-pressed={view === "rides"}
-          >
-            🚴 Rides
-          </button>
-          <button
-            className={`leaderboard__view-btn ${view === "groups" ? "leaderboard__view-btn--active" : ""}`}
-            onClick={() => updateSearch({ view: "groups" })}
-            aria-pressed={view === "groups"}
-          >
-            👥 Groups
-          </button>
-        </div>
-        <button
-          className={`leaderboard__chart-btn${chartOpen ? " leaderboard__chart-btn--active" : ""}`}
-          onClick={() => updateSearch({ chart: !chartOpen })}
-          aria-pressed={chartOpen}
-          aria-label={chartOpen ? "Hide growth chart" : "Show growth chart"}
-          title="Toggle growth chart"
-        >
-          📊
-        </button>
-        <label htmlFor="leaderboard-search" className="sr-only">
-          {view === "riders" ? "Search riders" : "Search rides"}
-        </label>
-        <input
-          id="leaderboard-search"
-          type="search"
-          className="leaderboard__search"
-          placeholder={
-            view === "alltime"
-              ? "Search riders..."
-              : view === "riders"
-                ? "Search riders..."
-                : "Search rides..."
-          }
-          value={search}
-          onChange={(e) => updateSearch({ search: e.target.value })}
-        />
-        <button
-          type="button"
-          className="filter-chips__clear-btn"
-          onClick={handleClearAll}
-          disabled={!activeFilters}
-          aria-label="Clear all filters"
-        >
-          <span className="filter-chips__clear-icon" aria-hidden="true">
-            ✕
-          </span>
-          Clear Filters
-        </button>
-        {/* Density toggle — only show in riders view */}
-        {view === "riders" && (
-          <div className="leaderboard__density-toggle">
-            <button
-              className={`leaderboard__density-btn${density === "condensed" ? " leaderboard__density-btn--active" : ""}`}
-              onClick={() => updateSearch({ density: "condensed" })}
-              aria-pressed={density === "condensed"}
-              title="Condensed view"
-            >
-              ≡
-            </button>
-            <button
-              className={`leaderboard__density-btn${density === "expanded" ? " leaderboard__density-btn--active" : ""}`}
-              onClick={() => updateSearch({ density: "expanded" })}
-              aria-pressed={density === "expanded"}
-              title="Expanded view"
-            >
-              ⊞
-            </button>
-          </div>
+        {mobileSettingsOpen && (
+          <div
+            className="leaderboard__controls-backdrop"
+            onClick={() => setMobileSettingsOpen(false)}
+            aria-hidden="true"
+          />
         )}
-        <SyncStatus />
-      </div>
-
-      {/* Filters below toolbar */}
-      <div className="leaderboard__filters-bar">
-        <FilterChips
-          selectedRoutes={routes}
-          onRoutesChange={(r) => updateSearch({ routes: r })}
-          pprActive={ppr}
-          onPprChange={(v) => updateSearch({ ppr: v })}
-          weekendsActive={weekends}
-          onWeekendsChange={(v) => updateSearch({ weekends: v })}
-          includeOther={includeOther}
-          onOtherChange={(v) => updateSearch({ other: v })}
-          selectedCompany={company as DestinationCompany | undefined}
-          onCompanyChange={(c) =>
-            updateSearch({ company: c as TableQuery["company"] })
-          }
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          datePreset={datePreset}
-          onDateChange={handleDateChange}
-          view={view}
-          duration={duration}
-          onDurationChange={(d) => updateSearch({ duration: d })}
-          reverseActive={reverse}
-          onReverseChange={(v) => updateSearch({ reverse: v })}
-          hasActiveFilters={activeFilters}
-          onClearAll={handleClearAll}
-        />
+        <div
+          className={`leaderboard__controls${mobileSettingsOpen ? " leaderboard__controls--open" : ""}`}
+          aria-label="Leaderboard filters"
+        >
+          <div className="leaderboard__controls-handle" aria-hidden="true">
+            <div className="leaderboard__controls-handle-bar" />
+          </div>
+          <div className="leaderboard__toolbar">
+            <button
+              className={`leaderboard__chart-btn${chartOpen ? " leaderboard__chart-btn--active" : ""}`}
+              onClick={() => updateSearch({ chart: !chartOpen })}
+              aria-pressed={chartOpen}
+              aria-label={chartOpen ? "Hide growth chart" : "Show growth chart"}
+              title="Toggle growth chart"
+            >
+              📊
+            </button>
+            <label htmlFor="leaderboard-search" className="sr-only">
+              {view === "riders" ? "Search riders" : "Search rides"}
+            </label>
+            <input
+              id="leaderboard-search"
+              type="search"
+              className="leaderboard__search"
+              placeholder={
+                view === "alltime"
+                  ? "Search riders..."
+                  : view === "riders"
+                    ? "Search riders..."
+                    : "Search rides..."
+              }
+              value={search}
+              onChange={(e) => updateSearch({ search: e.target.value })}
+            />
+            <button
+              type="button"
+              className="filter-chips__clear-btn"
+              onClick={handleClearAll}
+              disabled={!activeFilters}
+              aria-label="Clear all filters"
+            >
+              <span className="filter-chips__clear-icon" aria-hidden="true">
+                ✕
+              </span>
+              Clear Filters
+            </button>
+            {/* Density toggle — only show in riders view */}
+            {view === "riders" && (
+              <div className="leaderboard__density-toggle">
+                <button
+                  className={`leaderboard__density-btn${density === "condensed" ? " leaderboard__density-btn--active" : ""}`}
+                  onClick={() => updateSearch({ density: "condensed" })}
+                  aria-pressed={density === "condensed"}
+                  title="Condensed view"
+                >
+                  ≡
+                </button>
+                <button
+                  className={`leaderboard__density-btn${density === "expanded" ? " leaderboard__density-btn--active" : ""}`}
+                  onClick={() => updateSearch({ density: "expanded" })}
+                  aria-pressed={density === "expanded"}
+                  title="Expanded view"
+                >
+                  ⊞
+                </button>
+              </div>
+            )}
+            <SyncStatus />
+          </div>
+          <div className="leaderboard__filters-bar">
+            <FilterChips
+              selectedRoutes={routes}
+              onRoutesChange={(r) => updateSearch({ routes: r })}
+              pprActive={ppr}
+              onPprChange={(v) => updateSearch({ ppr: v })}
+              weekendsActive={weekends}
+              onWeekendsChange={(v) => updateSearch({ weekends: v })}
+              includeOther={includeOther}
+              onOtherChange={(v) => updateSearch({ other: v })}
+              selectedCompany={company as DestinationCompany | undefined}
+              onCompanyChange={(c) =>
+                updateSearch({ company: c as TableQuery["company"] })
+              }
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              datePreset={datePreset}
+              onDateChange={handleDateChange}
+              view={view}
+              duration={duration}
+              onDurationChange={(d) => updateSearch({ duration: d })}
+              reverseActive={reverse}
+              onReverseChange={(v) => updateSearch({ reverse: v })}
+              hasActiveFilters={activeFilters}
+              onClearAll={handleClearAll}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main layout: chart panel (left) + table (right), BELOW filters */}
@@ -619,41 +570,25 @@ function LeaderboardPage() {
         {/* Table fills remaining space */}
         <div className="leaderboard__table-area">
           {view === "riders" ? (
-            <>
-              {error ? (
-                <div className="error-state">
-                  <div className="error-state__icon">⚠️</div>
-                  <h3 className="error-state__title">
-                    Failed to load leaderboard
-                  </h3>
-                  <p className="error-state__message">{error.message}</p>
-                </div>
-              ) : isLoading ? (
-                <div className="loading-state">
-                  <div className="loading-state__spinner" />
-                  <p className="loading-state__text">Loading leaderboard...</p>
-                </div>
-              ) : (
-                <LeaderboardTable
-                  data={filteredData}
-                  searchFilter={search}
-                  riderColorMap={riderColorMap}
-                  onViewRides={handleViewRides}
-                  onVisibleRidersChange={handleVisibleRidersChange}
-                  sortBy={sort}
-                  sortDir={dir}
-                  onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
-                  density={density}
-                  isAllTime={!dateFrom && !dateTo}
-                  includeOther={includeOther}
-                  chartOpen={chartOpen}
-                  selectedRiderIds={selectedRiderIds}
-                  onToggleRider={handleToggleRider}
-                  onSelectAllRiders={handleSelectAllRiders}
-                  onDeselectAllRiders={handleDeselectAllRiders}
-                />
-              )}
-            </>
+            <LeaderboardTable
+              data={filteredData}
+              searchFilter={search}
+              riderColorMap={riderColorMap}
+              onViewRides={handleViewRides}
+              sortBy={sort}
+              sortDir={dir}
+              onSortChange={(col, d) => updateSearch({ sort: col, dir: d })}
+              density={density}
+              isAllTime={!dateFrom && !dateTo}
+              includeOther={includeOther}
+              chartOpen={chartOpen}
+              selectedRiderIds={selectedRiderIds}
+              onToggleRider={handleToggleRider}
+              onSelectAllRiders={handleSelectAllRiders}
+              onDeselectAllRiders={handleDeselectAllRiders}
+              isLoading={isLoading}
+              error={error}
+            />
           ) : view === "rides" ? (
             <RidesLeaderboardTable
               rides={ridesQuery.data?.pages.flatMap((p) => p.rides) ?? []}
@@ -732,39 +667,6 @@ function LeaderboardPage() {
         onToggleSettings={() => setMobileSettingsOpen((prev) => !prev)}
         isGraphOpen={mobileGraphOpen}
         isSettingsOpen={mobileSettingsOpen}
-      />
-
-      {/* ---- Mobile: Settings panel (slide-up drawer) ---- */}
-      <MobileSettingsPanel
-        isOpen={mobileSettingsOpen}
-        onClose={() => setMobileSettingsOpen(false)}
-        search={search}
-        onSearchChange={(value) => updateSearch({ search: value })}
-        view={view}
-        density={density}
-        onDensityChange={(d) => updateSearch({ density: d })}
-        duration={duration}
-        onDurationChange={(d) => updateSearch({ duration: d })}
-        selectedRoutes={routes}
-        onRoutesChange={(r) => updateSearch({ routes: r })}
-        pprActive={ppr}
-        onPprChange={(v) => updateSearch({ ppr: v })}
-        weekendsActive={weekends}
-        onWeekendsChange={(v) => updateSearch({ weekends: v })}
-        includeOther={includeOther}
-        onOtherChange={(v) => updateSearch({ other: v })}
-        selectedCompany={company as DestinationCompany | undefined}
-        onCompanyChange={(c) =>
-          updateSearch({ company: c as TableQuery["company"] })
-        }
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        datePreset={datePreset}
-        onDateChange={handleDateChange}
-        reverseActive={reverse}
-        onReverseChange={(v) => updateSearch({ reverse: v })}
-        hasActiveFilters={activeFilters}
-        onClearAll={handleClearAll}
       />
 
       {/* ---- Mobile: Full-screen graph overlay ---- */}

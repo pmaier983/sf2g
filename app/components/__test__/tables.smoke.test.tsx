@@ -52,7 +52,6 @@ describe("table smoke tests", () => {
         searchFilter=""
         riderColorMap={new Map()}
         onViewRides={noop}
-        onVisibleRidersChange={noop}
         sortBy="sf2g_total"
         sortDir="desc"
         onSortChange={noop}
