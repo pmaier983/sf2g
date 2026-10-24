@@ -2195,3 +2195,45 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
+
+/* ---------------------------------------------------------------------------
+   DataTable shell (app/components/table/DataTable.tsx)
+   --------------------------------------------------------------------------- */
+
+/* The sort target is a button so it is keyboard-reachable and separate from
+   the resize handle; it inherits the header's look. */
+.data-table__sort {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+}
+
+.data-table__sort:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.data-table__skeleton-row td {
+  padding: var(--space-3) var(--space-4);
+}
+
+.data-table__skeleton {
+  height: 1rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-hover) 25%,
+    var(--color-border-subtle) 50%,
+    var(--color-surface-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
