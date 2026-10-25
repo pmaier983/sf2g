@@ -594,6 +594,9 @@ isOneToOne: false
               "avatar_url": string,"average_heartrate": number,"average_speed_mps": number,"average_watts": number,"destination_company": string,"display_name": string,"distance_meters": number,"elevation_gain_meters": number,"end_latlng": Json,"id": string,"kilojoules": number,"max_heartrate": number,"max_watts": number,"moving_time_seconds": number,"name": string,"ride_date": string,"route_category": string,"start_latlng": Json,"strava_activity_id": number,"total_count": number,"user_id": string,"username": string
             }[]
                            },
+"get_segment_leaderboard":
+{ Args: { "q"?: Json }; Returns: Json
+                           },
 "get_user_ride_totals":
 { Args: { "p_date_from"?: string,"p_date_to"?: string }; Returns: {
               "total_distance": number,"total_elevation": number,"user_id": string

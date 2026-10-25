@@ -82,6 +82,15 @@ const PAGES: PageCase[] = [
     },
   },
   {
+    path: "/segments",
+    landmark: async (p) => {
+      await expect(
+        p.getByRole("table", { name: "Skyline segment board" }),
+      ).toBeVisible();
+      await expect(p.getByText("Skyline Climb A").first()).toBeVisible();
+    },
+  },
+  {
     path: "/should-i-sf2g",
     landmark: async (p) => {
       await expect(p.getByText(/should i sf2g/i).first()).toBeVisible();
@@ -148,6 +157,26 @@ test("route filter chip narrows the riders table and updates the URL", async ({
   await page.reload();
   await expect(page.getByText("Ben Skyline").first()).toBeVisible();
   await expect(page.getByText("Dee Reverse")).toHaveCount(0);
+});
+
+test("segments: the Climbs chip narrows the board and updates the URL", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  await page.goto("/segments");
+  const rows = page
+    .getByRole("table", { name: "Skyline segment board" })
+    .locator("tbody tr");
+  await expect(page.getByText("Skyline Flat E").first()).toBeVisible();
+  const before = await rows.count();
+
+  await page.getByRole("radio", { name: "Climbs" }).click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("terrain"))
+    .toBe("climb");
+  await expect(page.getByText("Skyline Flat E")).toHaveCount(0);
+  expect(await rows.count()).toBeLessThan(before);
+  expect(errors).toEqual([]);
 });
 
 test("/routes map tiles load (no 'API KEY REQUIRED' provider)", async ({

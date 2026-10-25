@@ -408,6 +408,15 @@ Add, deterministically:
 - [ ] A logged-out visit to `/segments` and a logged-in visit as an opted-out rider both show the same riders; the opted-out rider sees the banner; clicking it flips `segment_board_opt_in` and they appear after refetch.
 - [ ] Phone width: no horizontal page scroll, tables scroll inside their container.
 
+**As built in 07b (read before 07c):**
+- The migration is `045_get_segment_leaderboard.sql` (044 is phase 08's `044_app_errors_and_monthly_reports.sql`).
+- `range` uses the existing preset names from `table-query.ts` (`this-year`, `last-30-days`, …) plus `all`.
+- `/segments` has no route loader: like `/leaderboard`, it reads with `useQuery` (`keepPreviousData`), because the root `QueryClient` is not in router context.
+- `SegmentOptInBanner` also gives an opted-in rider a "Hide my times" link (same server fn with `optIn: false`).
+- `getCurrentUser` needed no change: it already selects `PUBLIC_USER_COLUMNS`, which includes `segment_board_opt_in` since 07a.
+- `ui-fixtures.json` has a `segments` key (the default board) for component tests.
+- `E2E_PORT` in `playwright.config.ts` points e2e at a dev server on another port.
+
 ## 8. Sub-phase 07c — polish
 
 **Files:** `app/components/SegmentMap.tsx` (lazy Leaflet, reference line + segment start markers, click → scroll to row; same tiles/attribution as `/routes`), DevTools curation (`setSegmentCuration({ id, curated_rank, hidden })`, `assertAdmin()`), profile page strip (`fetchRiderSegmentSummary(userId)`: one RPC `get_rider_segment_summary(p_user_id)` returning koms/podiums/best rank, only when the rider is opted in), `CopyLinkButton` on `/segments`, PostHog events `segments_viewed` (with filters) and `segment_board_opt_in`.
