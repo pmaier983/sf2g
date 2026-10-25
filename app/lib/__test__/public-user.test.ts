@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PUBLIC_USER_COLUMNS } from "../public-user";
 
@@ -22,17 +22,17 @@ describe("PUBLIC_USER_COLUMNS", () => {
     }
   });
 
-  it("matches the column grant in migration 036", () => {
-    const sql = readFileSync(
-      resolve(
-        __dirname,
-        "../../../supabase/migrations/036_lock_down_rpcs_and_user_tokens.sql",
-      ),
-      "utf8",
-    );
-    const grant = sql.match(/GRANT SELECT \(([^)]+)\)\s+ON public\.users/);
-    expect(grant).not.toBeNull();
-    const granted = grant![1].split(",").map((c) => c.trim());
+  it("matches the column grants in the migrations (036, 043)", () => {
+    const dir = resolve(__dirname, "../../../supabase/migrations");
+    const granted = readdirSync(dir)
+      .filter((f) => f.endsWith(".sql"))
+      .flatMap((f) => [
+        ...readFileSync(resolve(dir, f), "utf8").matchAll(
+          /GRANT SELECT \(([^)]+)\)\s+ON public\.users/g,
+        ),
+      ])
+      .flatMap((m) => m[1].split(",").map((c) => c.trim()));
+    expect(granted.length).toBeGreaterThan(0);
     expect([...granted].sort()).toEqual([...publicColumns].sort());
   });
 });

@@ -4,6 +4,8 @@
  * All Strava API calls go through `fetchWithRateLimit()` to respect rate limits.
  *
  * - `fetchAthleteActivities(accessToken, params)` — paginated activity list
+ * - `fetchActivityDetail(accessToken, id)` — one activity with all its segment efforts
+ * - `fetchSegment(accessToken, id)` — one segment with its KOM/QOM times
  */
 
 import { STRAVA_API_BASE } from "./constants";
@@ -64,6 +66,50 @@ export interface StravaActivitySummary {
   average_heartrate?: number;
   max_heartrate?: number;
   suffer_score?: number;
+}
+
+/** The segment summary embedded in every segment effort. */
+export interface StravaSegmentSummary {
+  id: number;
+  name: string;
+  activity_type: string;
+  distance: number;
+  average_grade: number;
+  maximum_grade: number;
+  elevation_high: number;
+  elevation_low: number;
+  climb_category: number;
+  start_latlng: [number, number];
+  end_latlng: [number, number];
+  private: boolean;
+  hazardous: boolean;
+}
+
+/** One effort from `segment_efforts[]` of a detailed activity. */
+export interface StravaSegmentEffort {
+  id: number;
+  elapsed_time: number;
+  moving_time: number;
+  start_date: string;
+  start_date_local: string;
+  distance: number;
+  kom_rank: number | null;
+  pr_rank: number | null;
+  average_watts?: number;
+  device_watts?: boolean;
+  segment: StravaSegmentSummary;
+}
+
+/** `GET /activities/{id}?include_all_efforts=true` */
+export interface StravaActivityDetail extends StravaActivitySummary {
+  segment_efforts?: StravaSegmentEffort[];
+}
+
+/** `GET /segments/{id}` — xoms are strings like "4:49", with no holder name. */
+export interface StravaSegmentDetail extends StravaSegmentSummary {
+  effort_count: number;
+  athlete_count: number;
+  xoms?: { kom?: string; qom?: string; overall?: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -148,4 +194,61 @@ export async function fetchSingleActivity(
   console.log(`[strava] Fetched activity: ${activity.name} (${activity.type})`);
 
   return { activity, response };
+}
+
+/**
+ * Fetch one activity with every segment effort in it (one read).
+ *
+ * Used by the segment_efforts job; the response is mapped to rows and never
+ * stored raw (Strava API terms).
+ */
+export async function fetchActivityDetail(
+  accessToken: string,
+  activityId: number,
+): Promise<{ activity: StravaActivityDetail; response: RateLimitedResponse }> {
+  const url = `${STRAVA_API_BASE}/activities/${activityId}?include_all_efforts=true`;
+
+  console.log(`[strava] Fetching activity detail ${activityId}`);
+
+  const response = await fetchWithRateLimit(url, accessToken);
+
+  console.log(`[strava] Response status: ${response.status}`);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[strava] API error (${response.status}): ${errorText}`);
+    throw new Error(`Strava API error (${response.status}): ${errorText}`);
+  }
+
+  const activity = (await response.json()) as StravaActivityDetail;
+  console.log(
+    `[strava] Fetched activity ${activity.id} with ${activity.segment_efforts?.length ?? 0} segment efforts`,
+  );
+
+  return { activity, response };
+}
+
+/** Fetch one segment, including its KOM/QOM times (one read). */
+export async function fetchSegment(
+  accessToken: string,
+  segmentId: number,
+): Promise<{ segment: StravaSegmentDetail; response: RateLimitedResponse }> {
+  const url = `${STRAVA_API_BASE}/segments/${segmentId}`;
+
+  console.log(`[strava] Fetching segment ${segmentId}`);
+
+  const response = await fetchWithRateLimit(url, accessToken);
+
+  console.log(`[strava] Response status: ${response.status}`);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[strava] API error (${response.status}): ${errorText}`);
+    throw new Error(`Strava API error (${response.status}): ${errorText}`);
+  }
+
+  const segment = (await response.json()) as StravaSegmentDetail;
+  console.log(`[strava] Fetched segment: ${segment.name}`);
+
+  return { segment, response };
 }

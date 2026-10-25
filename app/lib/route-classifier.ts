@@ -57,7 +57,7 @@ const EARTH_RADIUS_METERS = 6_371_000;
  * Calculate the haversine distance between two lat/lng points.
  * @returns Distance in meters
  */
-function haversineDistance(
+export function haversineDistance(
   lat1: number,
   lng1: number,
   lat2: number,

@@ -480,3 +480,25 @@ export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
  * a 16-minute stuck e2e run).
  */
 export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;
+
+// ---------------------------------------------------------------------------
+// Segment corridors (rework phase 07)
+// ---------------------------------------------------------------------------
+
+/** Skyline Blvd, Daly City gateway → Kings Mountain gateway, from Strava activity 20662409258 (2026-10-20), 128 points, 26.6 km. */
+export const SKYLINE_REFERENCE_POLYLINE =
+  "ol|dFffrjVnGkGxBkDzJoRzNeOnGkJdB{Afe@qW~MkGhEQhXdD`CUlu@op@zFoF~B_DvRib@rGqJxDoElEaEbKyHpO{PxM{GlCmBblAwiAlIiFxi@kg@tT{Y`NqNJe@w@aBCw@fAoBbZwXrJeK`@GrAjBt@EjJmL|KkPdF}FdDeCrLuFNk@k@eEJkAnQwSdZgRtR_PzP{PpCiBnAkBfCgIvBiDv\\i]~JuIn\\_SdJmH~OgRb@cBVuF`@qAx@E~HtMd@JtU{Rt`@mRxJyArGmFfAe@nAFhExAdCCpAsAfA}EfFiHrEsAnE}CjJ{CRHPhCh@Rj@QfB}BzA}ALgAYuDJq@r@CzBtEn@FfDgFlC_@|@mClC]xC}DhI}DnBmCxHsFbZuXs@uHJiCj@cBvFeJhBoBtHqB`DsChBeDjAuEhEcGhGuQzAgC|DkCdFo@nBq@hDgDdAsC`@eC?qJ`@{EnAgEfBoCxBkB~Aq@~NoBnFgCjCwCjUm\\lDqD";
+
+/** Reference lines that decide which Strava segments a board shows. */
+export const SEGMENT_CORRIDORS = {
+  skyline: { label: "Skyline", polyline: SKYLINE_REFERENCE_POLYLINE },
+} as const;
+export type SegmentCorridor = keyof typeof SEGMENT_CORRIDORS;
+
+/** A segment is on a corridor when both its endpoints are this close to the line. */
+export const SEGMENT_CORRIDOR_RADIUS_M = 400;
+/** Opted-in riders a segment needs before the board shows it. */
+export const SEGMENT_MIN_RIDERS = 3;
+export const SEGMENT_MIN_DISTANCE_M = 300;
+/** average_grade ≥ climbMinGrade → climb; ≥ flatMinGrade → flat; else descent. */
+export const SEGMENT_TERRAIN = { climbMinGrade: 2, flatMinGrade: -1 } as const;

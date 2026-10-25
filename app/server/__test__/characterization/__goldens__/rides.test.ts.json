@@ -43598,6 +43598,7 @@
     "last_activity_at": "2026-10-13T13:00:00+00:00",
     "last_name": "Bayway",
     "last_sync_at": "2026-10-16T12:00:00+00:00",
+    "segment_board_opt_in": true,
     "strava_id": 7000001,
     "updated_at": "2026-10-16T12:00:00+00:00",
     "username": "ada"
@@ -43641,6 +43642,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-10-13",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-10-13T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -43693,6 +43695,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-10-05",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-10-05T12:16:00+00:00",
       "start_latlng": [
         37.77343,
@@ -43745,6 +43748,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-29",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-29T13:05:00+00:00",
       "start_latlng": [
         37.77343,
@@ -43797,6 +43801,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-24",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-24T15:52:00+00:00",
       "start_latlng": [
         37.7599,
@@ -43849,6 +43854,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-01",
       "route_category": "other",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-01T12:22:00+00:00",
       "start_latlng": [
         37.77343,
@@ -43901,6 +43907,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-08-24",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-08-24T12:38:00+00:00",
       "start_latlng": [
         37.77343,
@@ -43953,6 +43960,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-07-13",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-07-13T12:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44005,6 +44013,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-07-07",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-07-07T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44057,6 +44066,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-05-14",
       "route_category": "other",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-05-14T15:44:00+00:00",
       "start_latlng": [
         37.4419,
@@ -44109,6 +44119,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-04-13",
       "route_category": "other",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-04-13T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44161,6 +44172,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-03-18",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-03-18T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44213,6 +44225,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-16",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-16T14:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44265,6 +44278,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-13",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-13T13:09:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44317,6 +44331,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-08-12",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-08-12T15:57:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44369,6 +44384,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-06-26",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-06-26T14:34:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44421,6 +44437,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-06-10",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-06-10T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44473,6 +44490,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-07",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-07T13:15:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44525,6 +44543,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-02-21",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-02-21T17:03:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44577,6 +44596,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-02-17",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-02-17T17:02:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44629,6 +44649,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-12-25",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-12-25T14:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44681,6 +44702,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-31",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-31T12:32:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44733,6 +44755,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-28",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-28T12:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44785,6 +44808,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-07-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-07-10T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -44837,6 +44861,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-10T15:36:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44889,6 +44914,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-05-27",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-05-27T14:34:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44941,6 +44967,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-04-04",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-04-04T16:47:00+00:00",
       "start_latlng": [
         37.7599,
@@ -44993,6 +45020,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-03-07",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-03-07T15:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45045,6 +45073,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-02-19",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-02-19T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45097,6 +45126,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-02-01",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-02-01T13:25:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45149,6 +45179,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-11-15",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-11-15T17:34:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45201,6 +45232,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-11-13",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-11-13T13:02:00+00:00",
       "start_latlng": [
         37.4419,
@@ -45253,6 +45285,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-10-23",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-10-23T12:55:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45305,6 +45338,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-07-03",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-07-03T15:32:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45357,6 +45391,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-06-26",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-06-26T14:41:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45409,6 +45444,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-05-09",
       "route_category": "other",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-05-09T16:21:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45461,6 +45497,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-04-06",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-04-06T15:05:00+00:00",
       "start_latlng": [
         37.4419,
@@ -45513,6 +45550,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-03-20",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-03-20T14:29:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45565,6 +45603,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-02-28",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-02-28T16:39:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45617,6 +45656,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-02-08",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-02-08T15:29:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45669,6 +45709,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-12-21",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-12-21T16:57:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45721,6 +45762,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-09-07",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-09-07T12:30:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45773,6 +45815,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-08-16",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-08-16T15:19:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45825,6 +45868,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-07-28",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-07-28T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45877,6 +45921,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-07-25",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-07-25T12:06:00+00:00",
       "start_latlng": [
         37.77343,
@@ -45929,6 +45974,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-07-12",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-07-12T16:24:00+00:00",
       "start_latlng": [
         37.7599,
@@ -45981,6 +46027,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-05-26",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-05-26T14:38:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46033,6 +46080,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-05-20",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-05-20T16:29:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46085,6 +46133,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-05-04",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-05-04T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46137,6 +46186,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-03-01",
       "route_category": null,
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-03-01T16:49:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46189,6 +46239,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-02-22",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-02-22T16:02:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46243,6 +46294,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-04-28",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-04-28T14:49:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46295,6 +46347,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-04-03",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-04-03T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46347,6 +46400,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-03-24",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-03-24T15:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46399,6 +46453,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-03-10",
       "route_category": "hmbw",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-03-10T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46451,6 +46506,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-02-12",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-02-12T13:50:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46503,6 +46559,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-06",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-06T13:36:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46555,6 +46612,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-12-03",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-12-03T13:04:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46607,6 +46665,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-09-01",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-09-01T12:52:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46659,6 +46718,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-08-05",
       "route_category": "hmbw",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-08-05T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46711,6 +46771,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-06-10",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-06-10T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46765,6 +46826,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-10-13",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-10-13T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46817,6 +46879,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-10-06",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-10-06T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46869,6 +46932,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-28",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-28T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -46921,6 +46985,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-04",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-04T15:25:00+00:00",
       "start_latlng": [
         37.7599,
@@ -46973,6 +47038,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-08-25",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-08-25T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47025,6 +47091,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-08-24",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-08-24T15:24:00+00:00",
       "start_latlng": [
         37.7599,
@@ -47077,6 +47144,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-22",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-22T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47129,6 +47197,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-09",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-09T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47181,6 +47250,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-04-28",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-04-28T14:49:00+00:00",
       "start_latlng": [
         37.7599,
@@ -47233,6 +47303,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-04-03",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-04-03T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47285,6 +47356,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-03-24",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-03-24T15:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -47337,6 +47409,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-02-12",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-02-12T13:50:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47389,6 +47462,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-06",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-06T13:36:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47441,6 +47515,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-12-03",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-12-03T13:04:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47493,6 +47568,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-09-01",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-09-01T12:52:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47545,6 +47621,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-06-10",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-06-10T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47597,6 +47674,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-05-01",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-05-01T15:43:00+00:00",
       "start_latlng": [
         37.7599,
@@ -47649,6 +47727,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-04-22",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-04-22T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47701,6 +47780,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-22",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-22T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47753,6 +47833,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-13",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-13T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47805,6 +47886,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-02-21",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-02-21T14:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47857,6 +47939,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-02-19",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-02-19T14:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47909,6 +47992,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-02-07",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-02-07T14:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -47961,6 +48045,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-01-14",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-01-14T14:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48013,6 +48098,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-01-06",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-01-06T14:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48065,6 +48151,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-12-13",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-12-13T14:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48117,6 +48204,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-11-29",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-11-29T14:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48169,6 +48257,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-09-03",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-09-03T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48221,6 +48310,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-07-23",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-07-23T12:47:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48273,6 +48363,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-05-27",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-05-27T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48325,6 +48416,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-04-16",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-04-16T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48377,6 +48469,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-11-23",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-11-23T14:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48429,6 +48522,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-10-30",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-10-30T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48481,6 +48575,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-07-25",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-07-25T14:11:00+00:00",
       "start_latlng": [
         37.7599,
@@ -48533,6 +48628,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-04-25",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-04-25T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48585,6 +48681,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2023-03-28",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2023-03-28T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48637,6 +48734,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-08-29",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-08-29T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48689,6 +48787,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-08-11",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-08-11T15:51:00+00:00",
       "start_latlng": [
         37.7599,
@@ -48741,6 +48840,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-07-22",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-07-22T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48793,6 +48893,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-06-30",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-06-30T12:13:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48845,6 +48946,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-06-24",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-06-24T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48897,6 +48999,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-05-31",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-05-31T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -48949,6 +49052,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2022-03-30",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2022-03-30T13:01:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49001,6 +49105,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-12-05",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-12-05T13:20:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49053,6 +49158,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-09-08",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-09-08T15:13:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49105,6 +49211,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-08-23",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-08-23T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49157,6 +49264,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-08-20",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-08-20T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49209,6 +49317,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-08-02",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-08-02T16:48:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49261,6 +49370,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-06-07",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-06-07T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49313,6 +49423,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2021-03-10",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2021-03-10T15:08:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49367,6 +49478,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-15",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-15T12:53:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49419,6 +49531,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-07-28",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-07-28T15:06:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49471,6 +49584,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-29",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-29T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49523,6 +49637,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-22",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-22T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49575,6 +49690,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-02-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-02-10T15:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49627,6 +49743,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-27",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-27T16:57:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49679,6 +49796,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-10-16",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-10-16T14:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49731,6 +49849,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-10-08",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-10-08T12:25:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49783,6 +49902,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-08-28",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-08-28T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49835,6 +49955,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-12",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-12T12:26:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49887,6 +50008,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-11",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-11T15:16:00+00:00",
       "start_latlng": [
         37.7599,
@@ -49939,6 +50061,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-11-01",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-11-01T12:57:00+00:00",
       "start_latlng": [
         37.77343,
@@ -49991,6 +50114,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-10-30",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-10-30T15:18:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50043,6 +50167,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-13",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-13T14:14:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50095,6 +50220,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-09",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-09T15:33:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50147,6 +50273,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-21",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-21T16:22:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50199,6 +50326,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-20",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-20T15:09:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50251,6 +50379,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-10T15:21:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50303,6 +50432,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-05-27",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-05-27T14:09:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50357,6 +50487,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-29",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-29T13:05:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50409,6 +50540,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-09-15",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-09-15T12:53:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50461,6 +50593,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-07-28",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-07-28T15:06:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50513,6 +50646,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-29",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-29T13:00:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50565,6 +50699,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-06-22",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-06-22T13:02:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50617,6 +50752,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-02-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-02-10T15:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50669,6 +50805,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2026-01-27",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2026-01-27T16:57:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50721,6 +50858,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-10-16",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-10-16T14:40:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50773,6 +50911,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-10-08",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-10-08T12:25:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50825,6 +50964,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-08-28",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-08-28T13:03:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50877,6 +51017,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-12",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-12T12:26:00+00:00",
       "start_latlng": [
         37.77343,
@@ -50929,6 +51070,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2025-03-11",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2025-03-11T15:16:00+00:00",
       "start_latlng": [
         37.7599,
@@ -50981,6 +51123,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-11-01",
       "route_category": "skyline",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-11-01T12:57:00+00:00",
       "start_latlng": [
         37.77343,
@@ -51033,6 +51176,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-10-30",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-10-30T15:18:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51085,6 +51229,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-13",
       "route_category": "royale",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-13T14:14:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51137,6 +51282,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-08-09",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-08-09T15:33:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51189,6 +51335,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-21",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-21T16:22:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51241,6 +51388,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-20",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-20T15:09:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51293,6 +51441,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-06-10",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-06-10T15:21:00+00:00",
       "start_latlng": [
         37.7599,
@@ -51345,6 +51494,7 @@
       "ride_bearing_deg": null,
       "ride_date": "2024-05-27",
       "route_category": "bayway",
+      "segment_efforts_fetched_at": "2026-10-16T12:00:00+00:00",
       "start_date": "2024-05-27T14:09:00+00:00",
       "start_latlng": [
         37.7599,
