@@ -9,6 +9,7 @@
  * 1102 there dropped the event.
  */
 import { createServiceClient } from "../lib/supabase";
+import { reportError } from "./report-error";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,8 +74,10 @@ export async function processWebhookEvent(
       p_updates: event.updates ?? {},
     });
     if (error) {
-      console.error(
-        `[webhook] enqueue failed for ${eventType}: ${error.message}`,
+      await reportError(
+        "webhook",
+        new Error(`enqueue failed for ${eventType}: ${error.message}`),
+        { eventType, objectId: event.object_id },
       );
       return {
         event_type: eventType,
@@ -86,7 +89,7 @@ export async function processWebhookEvent(
     return { event_type: eventType, action_taken: String(data), success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[webhook] Error recording ${eventType}: ${message}`);
+    await reportError("webhook", err, { eventType, objectId: event.object_id });
     return {
       event_type: eventType,
       action_taken: "error",

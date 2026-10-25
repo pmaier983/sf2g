@@ -78,7 +78,7 @@ export interface DrainResult {
   jobs: Array<{ id: number; kind: string; status: string; detail: string }>;
 }
 
-function isReauthError(message: string): boolean {
+export function isReauthError(message: string): boolean {
   // Only a rejected refresh token means the rider must reconnect; a Strava
   // outage (5xx) during refresh is retried like any other failure.
   return (

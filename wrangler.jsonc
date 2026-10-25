@@ -11,6 +11,11 @@
   // queues riders due for a sync and processes a budgeted batch of jobs.
   // Webhooks enqueue jobs; this is what turns them into rides.
   "triggers": {
-    "crons": ["*/5 * * * *"]
+    "crons": [
+      "*/5 * * * *",
+      // Monthly report email for the previous month (app/server/monthly-report.ts):
+      // 1st of the month, 16:00 UTC = 9 am PDT / 8 am PST.
+      "0 16 1 * *"
+    ]
   }
 }

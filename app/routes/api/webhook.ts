@@ -16,10 +16,13 @@
  * TODO(security): Consider adding subscription_id validation to POST handler
  * once the subscription is created and the ID is known.
  */
-import { createFileRoute } from '@tanstack/react-router'
-import { processWebhookEvent, type StravaWebhookEvent } from '../../server/webhook'
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  processWebhookEvent,
+  type StravaWebhookEvent,
+} from "../../server/webhook";
 
-export const Route = createFileRoute('/api/webhook')({
+export const Route = createFileRoute("/api/webhook")({
   server: {
     handlers: {
       // -----------------------------------------------------------------
@@ -29,34 +32,36 @@ export const Route = createFileRoute('/api/webhook')({
       // with hub.mode, hub.verify_token, and hub.challenge. We must echo
       // back the challenge value if the verify_token matches.
       GET: async ({ request }) => {
-        const url = new URL(request.url)
-        const mode = url.searchParams.get('hub.mode')
-        const token = url.searchParams.get('hub.verify_token')
-        const challenge = url.searchParams.get('hub.challenge')
+        const url = new URL(request.url);
+        const mode = url.searchParams.get("hub.mode");
+        const token = url.searchParams.get("hub.verify_token");
+        const challenge = url.searchParams.get("hub.challenge");
 
-        const verifyToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN
+        const verifyToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
 
         if (!verifyToken) {
-          console.error('[webhook] STRAVA_WEBHOOK_VERIFY_TOKEN not configured')
+          console.error("[webhook] STRAVA_WEBHOOK_VERIFY_TOKEN not configured");
           return new Response(
-            JSON.stringify({ error: 'Webhook endpoint not configured' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } },
-          )
+            JSON.stringify({ error: "Webhook endpoint not configured" }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
         }
 
-        if (mode === 'subscribe' && token === verifyToken) {
-          console.log('[webhook] Subscription verification successful')
-          return new Response(
-            JSON.stringify({ 'hub.challenge': challenge }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          )
+        if (mode === "subscribe" && token === verifyToken) {
+          console.log("[webhook] Subscription verification successful");
+          return new Response(JSON.stringify({ "hub.challenge": challenge }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
-        console.warn('[webhook] Subscription verification failed — invalid verify_token')
-        return new Response(
-          JSON.stringify({ error: 'Invalid verify token' }),
-          { status: 403, headers: { 'Content-Type': 'application/json' } },
-        )
+        console.warn(
+          "[webhook] Subscription verification failed — invalid verify_token",
+        );
+        return new Response(JSON.stringify({ error: "Invalid verify token" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       },
 
       // -----------------------------------------------------------------
@@ -69,47 +74,47 @@ export const Route = createFileRoute('/api/webhook')({
       // Typical processing time: ~400-800ms (well within 2s limit)
       POST: async ({ request }) => {
         try {
-          const event = (await request.json()) as StravaWebhookEvent
+          const event = (await request.json()) as StravaWebhookEvent;
 
           // Basic payload validation — treat as untrusted input
           if (
             !event ||
-            typeof event.object_type !== 'string' ||
-            typeof event.aspect_type !== 'string' ||
-            typeof event.object_id !== 'number' ||
-            typeof event.owner_id !== 'number'
+            typeof event.object_type !== "string" ||
+            typeof event.aspect_type !== "string" ||
+            typeof event.object_id !== "number" ||
+            typeof event.owner_id !== "number"
           ) {
-            console.warn('[webhook] Invalid event payload received')
+            console.warn("[webhook] Invalid event payload received");
             return new Response(
-              JSON.stringify({ error: 'Invalid event payload' }),
-              { status: 400, headers: { 'Content-Type': 'application/json' } },
-            )
+              JSON.stringify({ error: "Invalid event payload" }),
+              { status: 400, headers: { "Content-Type": "application/json" } },
+            );
           }
 
           console.log(
             `[webhook] Received: ${event.object_type}.${event.aspect_type} ` +
-            `object_id=${event.object_id} owner_id=${event.owner_id}`,
-          )
+              `object_id=${event.object_id} owner_id=${event.owner_id}`,
+          );
 
-          const result = await processWebhookEvent(event)
+          const result = await processWebhookEvent(event);
 
           return new Response(JSON.stringify(result), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          })
+            headers: { "Content-Type": "application/json" },
+          });
         } catch (err) {
-          const message = err instanceof Error ? err.message : 'Unknown error'
-          console.error('[webhook] Unhandled error:', message)
+          const { reportError } = await import("../../server/report-error");
+          await reportError("api/webhook", err, { requestUrl: "/api/webhook" });
 
           // Always return 200 to prevent Strava from disabling the subscription.
           // Strava interprets non-2xx responses as delivery failures and may
           // throttle or disable the subscription after repeated failures.
           return new Response(
-            JSON.stringify({ error: 'Processing failed', acknowledged: true }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          )
+            JSON.stringify({ error: "Processing failed", acknowledged: true }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
         }
       },
     },
   },
-})
+});

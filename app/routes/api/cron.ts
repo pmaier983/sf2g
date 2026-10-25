@@ -18,8 +18,32 @@ import { runGroupRides, runMaintenance } from "../../server/cron";
 import { runScheduledTick } from "../../server/scheduled";
 import { logPerf, trackSubrequests } from "../../lib/perf";
 
-const TASKS = ["sync", "maintenance", "groups", "drain"] as const;
+const TASKS = [
+  "sync",
+  "maintenance",
+  "groups",
+  "drain",
+  "monthly-report",
+] as const;
 type CronTask = (typeof TASKS)[number];
+
+/**
+ * `task=monthly-report` options:
+ * - `month=YYYY-MM` — report a specific month (default: previous LA month)
+ * - `dry=1`         — render and store, do not email
+ * - `force=1`       — email again even if that month was already sent
+ */
+function monthlyReportOptions(url: URL) {
+  const month = url.searchParams.get("month") ?? undefined;
+  if (month && !/^\d{4}-\d{2}$/.test(month)) {
+    throw new Error(`month must be YYYY-MM, got ${month}`);
+  }
+  return {
+    month,
+    send: url.searchParams.get("dry") !== "1",
+    force: url.searchParams.get("force") === "1",
+  };
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -28,8 +52,25 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-async function runTask(task: CronTask): Promise<Record<string, unknown>> {
+async function runTask(
+  task: CronTask,
+  url: URL,
+): Promise<Record<string, unknown>> {
   switch (task) {
+    case "monthly-report": {
+      const { runMonthlyReport, defaultMonthlyReportDeps } =
+        await import("../../server/monthly-report");
+      const { result, subrequests } = await trackSubrequests(() =>
+        runMonthlyReport(monthlyReportOptions(url), defaultMonthlyReportDeps()),
+      );
+      // The rendered email is large; return everything but the bodies.
+      const { html: _html, text: _text, ...rest } = result;
+      return {
+        ok: result.status !== "send_failed",
+        subrequests,
+        ...rest,
+      };
+    }
     case "maintenance": {
       const { result, subrequests } = await trackSubrequests(() =>
         runMaintenance(),
@@ -65,20 +106,21 @@ export async function handleCronRequest(request: Request): Promise<Response> {
     return json({ ok: false, error: "Unauthorized" }, 401);
   }
 
-  const task = (new URL(request.url).searchParams.get("task") ??
-    "drain") as CronTask;
+  const url = new URL(request.url);
+  const task = (url.searchParams.get("task") ?? "drain") as CronTask;
   if (!TASKS.includes(task)) {
     return json({ ok: false, error: `Unknown task: ${task}` }, 400);
   }
 
   const startedAt = Date.now();
   try {
-    const body = await runTask(task);
+    const body = await runTask(task, url);
     logPerf(`cron:${task}`, Number(body.subrequests ?? 0), startedAt);
     return json({ task, ...body });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[api/cron] ${task} crashed: ${message}`);
+    const { reportError } = await import("../../server/report-error");
+    await reportError("api/cron", err, { task, requestUrl: url.pathname });
     return json({ ok: false, task, error: message }, 500);
   }
 }

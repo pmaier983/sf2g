@@ -4,6 +4,7 @@ Runbooks for keeping sf2ging.com healthy. Production is one Cloudflare
 Worker (Free plan) and one Supabase project (`dgoqjrfjrzewplwayhhz`, Free
 plan). Everything here is done by Phillip; agents never write to production.
 
+- [observability.md](observability.md) — where errors go, the monthly report email
 - [sync.md](sync.md) — how rides arrive, the Strava webhook subscription,
   inspecting and retrying sync jobs
 - [Deploying](#deploying)
@@ -56,6 +57,7 @@ a new Worker version with the secret; no separate deploy needed).
 | `STRAVA_CLIENT_SECRET` | Regenerate at strava.com/settings/api, then put. Riders stay connected. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Roll in Supabase → Settings → API (JWT secret), then put the new key. |
 | `STRAVA_WEBHOOK_VERIFY_TOKEN` | Only checked when (re)registering the webhook — see sync.md. |
+| `RESEND_API_KEY` | Monthly report email; rotate at resend.com. See observability.md. |
 
 ## Reading logs
 
@@ -71,6 +73,10 @@ or Cloudflare dashboard → Workers → sf2g → Logs. Useful lines:
 - `[scheduled] claimed=… done=… requeued=… failed=… stop=…` — one per
   Cron tick (every 5 min). `stop=rate_limited` is expected occasionally.
 - `[webhook]` — events received/ignored.
+- `[error] <scope>: <message>` — an unexpected failure, also stored in
+  `app_errors` (DevTools → Recent Errors). See observability.md.
+- `[monthly-report] YYYY-MM sent|stored|already_sent|send_failed` — the
+  monthly email (1st of the month).
 
 ## When Strava rate-limits
 
