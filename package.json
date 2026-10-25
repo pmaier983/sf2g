@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "pnpm build && wrangler deploy",
+    "deploy": "NODE_ENV=production vite build && wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --project unit --project component",
     "test:watch": "vitest --project unit --project component",

@@ -18,7 +18,7 @@ plan). Everything here is done by Phillip; agents never write to production.
 
 ```bash
 pnpm typecheck && pnpm test && pnpm test:db && pnpm e2e
-pnpm deploy                      # vite build && wrangler deploy
+pnpm deploy                      # NODE_ENV=production vite build && wrangler deploy
 ```
 
 Check a PR's description for a deploy order. Migrations that remove things
@@ -105,3 +105,8 @@ Security → WAF → Rate limiting rules → *URI Path equals `/api/cron`* →
 DevTools admin actions call the same code through server functions gated by
 `assertAdmin()` (`ADMIN_USER_IDS`). A local dev server pointed at a
 non-local database is refused outright.
+
+> `.env.local` sets `NODE_ENV=development` for the local dev server. Vite
+> reads it during a build too, so a plain `pnpm build` on a laptop produces a
+> development bundle (slow React, analytics disabled). `pnpm deploy` forces
+> `NODE_ENV=production`; always deploy with it.
