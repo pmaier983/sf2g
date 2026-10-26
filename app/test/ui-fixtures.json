@@ -2727,5 +2727,363 @@
       "moving_time_seconds": 8556,
       "elevation_gain_meters": 899.5
     }
-  ]
+  ],
+  "segments": {
+    "crown": [
+      {
+        "rank": 1,
+        "points": 36,
+        "podiums": 4,
+        "user_id": "00000000-0000-4000-8000-000000000003",
+        "sf2g_koms": 1,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Cam Mixed",
+        "strava_top10s": 1,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.915,
+        "segments_ridden": 4
+      },
+      {
+        "rank": 2,
+        "points": 27,
+        "podiums": 3,
+        "user_id": "00000000-0000-4000-8000-000000000002",
+        "sf2g_koms": 1,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(94%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EBS%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Ben Skyline",
+        "strava_top10s": 0,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.906,
+        "segments_ridden": 3
+      },
+      {
+        "rank": 3,
+        "points": 25,
+        "podiums": 2,
+        "user_id": "00000000-0000-4000-8000-000000000005",
+        "sf2g_koms": 1,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(235%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EEW%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Eve Weekend",
+        "strava_top10s": 0,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.9,
+        "segments_ridden": 3
+      },
+      {
+        "rank": 4,
+        "points": 16,
+        "podiums": 1,
+        "user_id": "00000000-0000-4000-8000-000000000006",
+        "sf2g_koms": 1,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(282%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EFH%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Fay Hidden",
+        "strava_top10s": 0,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.854,
+        "segments_ridden": 2
+      },
+      {
+        "rank": 5,
+        "points": 24,
+        "podiums": 2,
+        "user_id": "00000000-0000-4000-8000-000000000001",
+        "sf2g_koms": 0,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(47%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EAB%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Ada Bayway",
+        "strava_top10s": 0,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.886,
+        "segments_ridden": 3
+      },
+      {
+        "rank": 6,
+        "points": 18,
+        "podiums": 0,
+        "user_id": "00000000-0000-4000-8000-000000000004",
+        "sf2g_koms": 0,
+        "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E",
+        "display_name": "Dee Reverse",
+        "strava_top10s": 0,
+        "segments_total": 4,
+        "mean_pct_of_kom": 0.854,
+        "segments_ridden": 3
+      }
+    ],
+    "corridor": "skyline",
+    "segments": [
+      {
+        "id": 900001,
+        "name": "Skyline Climb A",
+        "riders": [
+          {
+            "rank": 1,
+            "user_id": "00000000-0000-4000-8000-000000000003",
+            "kom_rank": 7,
+            "best_date": "2026-02-17",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.933,
+            "best_seconds": 300,
+            "display_name": "Cam Mixed",
+            "effort_count": 3,
+            "strava_activity_id": 9000000211
+          },
+          {
+            "rank": 2,
+            "user_id": "00000000-0000-4000-8000-000000000002",
+            "kom_rank": null,
+            "best_date": "2026-02-12",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(94%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EBS%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.912,
+            "best_seconds": 307,
+            "display_name": "Ben Skyline",
+            "effort_count": 3,
+            "strava_activity_id": 9000000177
+          },
+          {
+            "rank": 3,
+            "user_id": "00000000-0000-4000-8000-000000000005",
+            "kom_rank": null,
+            "best_date": "2026-01-17",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(235%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EEW%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.892,
+            "best_seconds": 314,
+            "display_name": "Eve Weekend",
+            "effort_count": 3,
+            "strava_activity_id": 9000000311
+          },
+          {
+            "rank": 4,
+            "user_id": "00000000-0000-4000-8000-000000000001",
+            "kom_rank": null,
+            "best_date": "2026-01-16",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(47%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EAB%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.872,
+            "best_seconds": 321,
+            "display_name": "Ada Bayway",
+            "effort_count": 3,
+            "strava_activity_id": 9000000070
+          },
+          {
+            "rank": 5,
+            "user_id": "00000000-0000-4000-8000-000000000006",
+            "kom_rank": null,
+            "best_date": "2026-02-10",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(282%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EFH%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.854,
+            "best_seconds": 328,
+            "display_name": "Fay Hidden",
+            "effort_count": 3,
+            "strava_activity_id": 9000000332
+          },
+          {
+            "rank": 6,
+            "user_id": "00000000-0000-4000-8000-000000000004",
+            "kom_rank": null,
+            "best_date": "2026-02-23",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.836,
+            "best_seconds": 335,
+            "display_name": "Dee Reverse",
+            "effort_count": 3,
+            "strava_activity_id": 9000000264
+          }
+        ],
+        "terrain": "climb",
+        "direction": "south",
+        "kom_seconds": 280,
+        "qom_seconds": null,
+        "rider_count": 6,
+        "curated_rank": null,
+        "average_grade": 4,
+        "distance_meters": 4993.4
+      },
+      {
+        "id": 900002,
+        "name": "Skyline Climb B",
+        "riders": [
+          {
+            "rank": 1,
+            "user_id": "00000000-0000-4000-8000-000000000002",
+            "kom_rank": null,
+            "best_date": "2026-04-03",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(94%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EBS%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.929,
+            "best_seconds": 420,
+            "display_name": "Ben Skyline",
+            "effort_count": 3,
+            "strava_activity_id": 9000000116
+          },
+          {
+            "rank": 2,
+            "user_id": "00000000-0000-4000-8000-000000000003",
+            "kom_rank": null,
+            "best_date": "2026-05-14",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.913,
+            "best_seconds": 427,
+            "display_name": "Cam Mixed",
+            "effort_count": 3,
+            "strava_activity_id": 9000000242
+          },
+          {
+            "rank": 3,
+            "user_id": "00000000-0000-4000-8000-000000000001",
+            "kom_rank": null,
+            "best_date": "2026-05-14",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(47%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EAB%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.899,
+            "best_seconds": 434,
+            "display_name": "Ada Bayway",
+            "effort_count": 3,
+            "strava_activity_id": 9000000022
+          },
+          {
+            "rank": 4,
+            "user_id": "00000000-0000-4000-8000-000000000005",
+            "kom_rank": null,
+            "best_date": "2026-04-26",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(235%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EEW%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.884,
+            "best_seconds": 441,
+            "display_name": "Eve Weekend",
+            "effort_count": 3,
+            "strava_activity_id": 9000000289
+          },
+          {
+            "rank": 5,
+            "user_id": "00000000-0000-4000-8000-000000000004",
+            "kom_rank": null,
+            "best_date": "2026-05-19",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.871,
+            "best_seconds": 448,
+            "display_name": "Dee Reverse",
+            "effort_count": 3,
+            "strava_activity_id": 9000000280
+          }
+        ],
+        "terrain": "climb",
+        "direction": "south",
+        "kom_seconds": 390,
+        "qom_seconds": null,
+        "rider_count": 5,
+        "curated_rank": null,
+        "average_grade": 6,
+        "distance_meters": 2928.2
+      },
+      {
+        "id": 900003,
+        "name": "Skyline Climb C",
+        "riders": [
+          {
+            "rank": 1,
+            "user_id": "00000000-0000-4000-8000-000000000005",
+            "kom_rank": null,
+            "best_date": "2026-08-16",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(235%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EEW%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.923,
+            "best_seconds": 260,
+            "display_name": "Eve Weekend",
+            "effort_count": 3,
+            "strava_activity_id": 9000000301
+          },
+          {
+            "rank": 2,
+            "user_id": "00000000-0000-4000-8000-000000000003",
+            "kom_rank": null,
+            "best_date": "2026-07-21",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.899,
+            "best_seconds": 267,
+            "display_name": "Cam Mixed",
+            "effort_count": 3,
+            "strava_activity_id": 9000000184
+          },
+          {
+            "rank": 3,
+            "user_id": "00000000-0000-4000-8000-000000000002",
+            "kom_rank": null,
+            "best_date": "2026-06-22",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(94%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EBS%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.876,
+            "best_seconds": 274,
+            "display_name": "Ben Skyline",
+            "effort_count": 3,
+            "strava_activity_id": 9000000150
+          },
+          {
+            "rank": 4,
+            "user_id": "00000000-0000-4000-8000-000000000004",
+            "kom_rank": null,
+            "best_date": "2026-08-23",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(188%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EDR%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": 0.854,
+            "best_seconds": 281,
+            "display_name": "Dee Reverse",
+            "effort_count": 3,
+            "strava_activity_id": 9000000262
+          }
+        ],
+        "terrain": "climb",
+        "direction": "south",
+        "kom_seconds": 240,
+        "qom_seconds": null,
+        "rider_count": 4,
+        "curated_rank": null,
+        "average_grade": 3,
+        "distance_meters": 4189
+      },
+      {
+        "id": 900005,
+        "name": "Skyline Flat E",
+        "riders": [
+          {
+            "rank": 1,
+            "user_id": "00000000-0000-4000-8000-000000000006",
+            "kom_rank": null,
+            "best_date": "2026-09-15",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(282%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EFH%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": null,
+            "best_seconds": 200,
+            "display_name": "Fay Hidden",
+            "effort_count": 3,
+            "strava_activity_id": 9000000327
+          },
+          {
+            "rank": 2,
+            "user_id": "00000000-0000-4000-8000-000000000001",
+            "kom_rank": null,
+            "best_date": "2026-01-13",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(47%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3EAB%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": null,
+            "best_seconds": 207,
+            "display_name": "Ada Bayway",
+            "effort_count": 3,
+            "strava_activity_id": 9000000044
+          },
+          {
+            "rank": 3,
+            "user_id": "00000000-0000-4000-8000-000000000003",
+            "kom_rank": null,
+            "best_date": "2026-03-31",
+            "avatar_url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22hsl(141%2C60%25%2C45%25)%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%3ECM%3C%2Ftext%3E%3C%2Fsvg%3E",
+            "pct_of_kom": null,
+            "best_seconds": 214,
+            "display_name": "Cam Mixed",
+            "effort_count": 3,
+            "strava_activity_id": 9000000183
+          }
+        ],
+        "terrain": "flat",
+        "direction": "south",
+        "kom_seconds": null,
+        "qom_seconds": null,
+        "rider_count": 3,
+        "curated_rank": null,
+        "average_grade": -0.5,
+        "distance_meters": 1985.4
+      }
+    ],
+    "segments_total": 4
+  }
 }
