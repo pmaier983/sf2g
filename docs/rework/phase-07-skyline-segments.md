@@ -417,13 +417,11 @@ Add, deterministically:
 - `ui-fixtures.json` has a `segments` key (the default board) for component tests.
 - `E2E_PORT` in `playwright.config.ts` points e2e at a dev server on another port.
 
-## 8. Sub-phase 07c — polish
+## 8. Sub-phase 07c — Skyline route view
 
-**Files:** `app/components/SegmentMap.tsx` (lazy Leaflet, reference line + segment start markers, click → scroll to row; same tiles/attribution as `/routes`), DevTools curation (`setSegmentCuration({ id, curated_rank, hidden })`, `assertAdmin()`), profile page strip (`fetchRiderSegmentSummary(userId)`: one RPC `get_rider_segment_summary(p_user_id)` returning koms/podiums/best rank, only when the rider is opted in), `CopyLinkButton` on `/segments`, PostHog events `segments_viewed` (with filters) and `segment_board_opt_in`.
+Re-planned 2026-10-25: a Strava-style route view (route tabs, map, elevation profile, segments overlaid as packed bars) above the tables, for the core Skyline line Mussel Rock → Arastradero Rd. Spec, decisions C1–C11, tests and steps are in [phase-07c-route-view.md](phase-07c-route-view.md). The pieces of the original 07c that it does not cover (curation, profile strip, PostHog, copy-link) are 07d, §9 of that file.
 
-Tests: curation changes the RPC output (hidden segment disappears, curated one moves first); profile summary returns null for an opted-out rider; e2e: map renders without tile errors.
-
-**Done when:** tests green; every corridor segment in prod has `xoms_fetched_at` within 8 days after a week (Phillip checks).
+**Done when:** that file's §7 is green; after the prod reclassification every corridor segment has `xoms_fetched_at` within 8 days after a week (Phillip checks).
 
 ---
 
