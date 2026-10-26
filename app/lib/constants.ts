@@ -485,9 +485,16 @@ export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;
 // Segment corridors (rework phase 07)
 // ---------------------------------------------------------------------------
 
-/** Skyline Blvd, Daly City gateway → Kings Mountain gateway, from Strava activity 20662409258 (2026-10-20), 128 points, 26.6 km. */
+/**
+ * The core SF2G Skyline route: where the ride turns from Sloat Blvd onto
+ * Skyline Blvd (1.8 km before Strava's "Mussel Rock Climb") → Foothill Expwy /
+ * Arastradero Rd, via Skyline, Cañada, Woodside, Sand Hill and Junipero
+ * Serra. From Strava activity 20662409258 (2026-10-20), 150 points, 56.4 km. Regenerate with
+ * scripts/gen-corridor-profile.ts (which also writes the route view's
+ * app/lib/corridors/skyline-profile.json).
+ */
 export const SKYLINE_REFERENCE_POLYLINE =
-  "ol|dFffrjVnGkGxBkDzJoRzNeOnGkJdB{Afe@qW~MkGhEQhXdD`CUlu@op@zFoF~B_DvRib@rGqJxDoElEaEbKyHpO{PxM{GlCmBblAwiAlIiFxi@kg@tT{Y`NqNJe@w@aBCw@fAoBbZwXrJeK`@GrAjBt@EjJmL|KkPdF}FdDeCrLuFNk@k@eEJkAnQwSdZgRtR_PzP{PpCiBnAkBfCgIvBiDv\\i]~JuIn\\_SdJmH~OgRb@cBVuF`@qAx@E~HtMd@JtU{Rt`@mRxJyArGmFfAe@nAFhExAdCCpAsAfA}EfFiHrEsAnE}CjJ{CRHPhCh@Rj@QfB}BzA}ALgAYuDJq@r@CzBtEn@FfDgFlC_@|@mClC]xC}DhI}DnBmCxHsFbZuXs@uHJiCj@cBvFeJhBoBtHqB`DsChBeDjAuEhEcGhGuQzAgC|DkCdFo@nBq@hDgDdAsC`@eC?qJ`@{EnAgEfBoCxBkB~Aq@~NoBnFgCjCwCjUm\\lDqD";
+  "}wheFjgtjVxStTnE~CzQnG`Hb@|FmBnNcKjQwAjOiIj[}@b[p@`TgGzXwKlc@{B|JwFnPoR~HiDrI_@fd@pFfMk@jg@eStGmGxMwVjO}OdHaKtSmMjc@gTvECzV~C|Cg@d}@gx@pVkg@fMqPpP{MdPqQhRiK`kAwhAlJgGni@_g@xUe[fMuMi@wEzAqBhe@id@xBnBp@Ub^me@dRgKYoH|PeS|YgR|i@ye@nI}Qt\\i]vJmIt]{SrIeHtOyQzAmLfAHrHdMp@DhUsR``@eRlKaBzIsG~K|ApAuAdA{ExFyHbW}J^pCvA@`E{ELwHpEbFtDsF`CUn@aCxCg@lCuDtIgEng@wd@u@gJx@{DbIaMdI{BtEoE|Tkh@~DiCrIaBrCiC`CmI\\yPvDuIjFgDnOqBzEgCh^_f@p}CgjCpQcY~@sDv@mM`BoFrToNxz@azAtEgLfImEpEeH~{@}`A`TeR`BuHEqMnJzAzCe@lDiD`IsUrCyCh`AyXnA_BFwAcMaHmE_FeOka@g@mKfC_n@cNaq@_@__@aGiy@qE}RyP}YdBoCfCi@v@qJtKcZj@kRhHk_@xCeErN_K|P_XdEoJ~ByPdEaNzc@qp@zAgHzA{]fC}QdG{RbRu_@pDsP";
 
 /** Reference lines that decide which Strava segments a board shows. */
 export const SEGMENT_CORRIDORS = {
