@@ -1,0 +1,50 @@
+name: Local Supabase
+description: >-
+  Start the local Supabase stack (migrations + fixtures) with its Docker images
+  cached between runs, so CI does not depend on anonymous pulls from
+  public.ecr.aws (shared runner IPs hit "toomanyrequests" regularly).
+
+inputs:
+  cli-version:
+    description: Supabase CLI version (image tags are baked into the CLI)
+    required: false
+    default: "2.121.0"
+
+runs:
+  using: composite
+  steps:
+    - uses: supabase/setup-cli@v1
+      with:
+        version: ${{ inputs.cli-version }}
+
+    # The image set depends on the CLI version (tags), supabase/config.toml
+    # (postgres major version) and package.json (the `db:start` exclude list).
+    - id: images
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/sf2g/supabase-images.tar
+        key: supabase-images-${{ runner.os }}-${{ inputs.cli-version }}-${{ hashFiles('supabase/config.toml', 'package.json') }}
+
+    - name: Load cached images
+      if: steps.images.outputs.cache-hit == 'true'
+      shell: bash
+      run: docker load --input ~/.cache/sf2g/supabase-images.tar
+
+    - name: Start local Supabase (applies migrations + fixtures)
+      shell: bash
+      run: scripts/ci/db-start.sh
+
+    - name: Save images for the next run
+      if: steps.images.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.cache/sf2g
+        docker save --output ~/.cache/sf2g/supabase-images.tar \
+          $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^public.ecr.aws/supabase/')
+        ls -lh ~/.cache/sf2g/supabase-images.tar
+
+    - if: steps.images.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.cache/sf2g/supabase-images.tar
+        key: ${{ steps.images.outputs.cache-primary-key }}

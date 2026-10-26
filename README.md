@@ -29,21 +29,21 @@ A competitive cycling commute tracker for the [SF2G](https://sf2g.com/) communit
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | [TanStack Start](https://tanstack.com/start/latest) (full-stack React) |
-| UI | React 19, [TanStack Table](https://tanstack.com/table/latest), [TanStack Virtual](https://tanstack.com/virtual/latest) |
-| Data | [TanStack Query](https://tanstack.com/query/latest) |
-| Backend | [Supabase](https://supabase.com/) (PostgreSQL + REST) |
-| Auth | Strava OAuth 2.0 |
-| Charts | [Recharts](https://recharts.org/) |
-| Maps | [Leaflet](https://leafletjs.com/) |
-| Analytics | [PostHog](https://posthog.com/) |
-| Styling | Vanilla CSS (custom properties, glassmorphism) |
-| Testing | [Vitest](https://vitest.dev/) |
-| Bundler | [Vite](https://vite.dev/) |
-| Deploy | [Cloudflare Workers](https://developers.cloudflare.com/workers/) (Free plan) |
-| Package Manager | [pnpm](https://pnpm.io/) |
+| Layer           | Technology                                                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Framework       | [TanStack Start](https://tanstack.com/start/latest) (full-stack React)                                                 |
+| UI              | React 19, [TanStack Table](https://tanstack.com/table/latest), [TanStack Virtual](https://tanstack.com/virtual/latest) |
+| Data            | [TanStack Query](https://tanstack.com/query/latest)                                                                    |
+| Backend         | [Supabase](https://supabase.com/) (PostgreSQL + REST)                                                                  |
+| Auth            | Strava OAuth 2.0                                                                                                       |
+| Charts          | [Recharts](https://recharts.org/)                                                                                      |
+| Maps            | [Leaflet](https://leafletjs.com/)                                                                                      |
+| Analytics       | [PostHog](https://posthog.com/)                                                                                        |
+| Styling         | Vanilla CSS (custom properties, glassmorphism)                                                                         |
+| Testing         | [Vitest](https://vitest.dev/)                                                                                          |
+| Bundler         | [Vite](https://vite.dev/)                                                                                              |
+| Deploy          | [Cloudflare Workers](https://developers.cloudflare.com/workers/) (Free plan)                                           |
+| Package Manager | [pnpm](https://pnpm.io/)                                                                                               |
 
 ## Getting Started
 
@@ -71,18 +71,20 @@ pnpm dev                     # http://localhost:5173
 
 ### Scripts
 
-| Command | Description |
-|---------|------------|
-| `pnpm dev` | Start Vite dev server (localhost:5173) |
-| `pnpm build` | Production build for Cloudflare |
-| `pnpm preview` | Preview production build locally |
-| `pnpm deploy` | Build and deploy to Cloudflare Workers |
-| `pnpm typecheck` | Run TypeScript type checking |
-| `pnpm test` | Run tests once |
-| `pnpm test:watch` | Run tests in watch mode |
-| `pnpm db:start` / `db:stop` | Start / stop the local Supabase stack |
-| `pnpm db:reset` | Re-apply all migrations and seed data locally |
-| `pnpm db:types` | Regenerate `app/lib/database.types.ts` from the local DB |
+| Command                     | Description                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm dev`                  | Start Vite dev server (localhost:5173)                                               |
+| `pnpm build`                | Production build for Cloudflare                                                      |
+| `pnpm preview`              | Preview production build locally                                                     |
+| `pnpm deploy`               | Build and deploy to Cloudflare Workers                                               |
+| `pnpm typecheck`            | Run TypeScript type checking                                                         |
+| `pnpm test`                 | Run tests once                                                                       |
+| `pnpm test:watch`           | Run tests in watch mode                                                              |
+| `pnpm test:db`              | DB tests against the local fixture DB (resets it when migrations or fixtures differ) |
+| `pnpm e2e`                  | Playwright smoke tests (reuses a running `pnpm dev`)                                 |
+| `pnpm db:start` / `db:stop` | Start / stop the local Supabase stack                                                |
+| `pnpm db:reset`             | Re-apply all migrations and seed data locally                                        |
+| `pnpm db:types`             | Regenerate `app/lib/database.types.ts` from the local DB                             |
 
 ## Project Structure
 
@@ -156,15 +158,15 @@ app/
 
 Routes are classified using **GPS gateway checkpoints** — specific lat/lng coordinates that a ride's decoded polyline must pass through. This avoids dependency on Strava segment IDs and works reliably across different GPS devices.
 
-| Route | Description | Gateway North | Gateway South |
-|-------|------------|---------------|---------------|
-| Bayway | Bay shore / Foster City | (37.684, -122.390) | (37.579, -122.311) |
+| Route   | Description                   | Gateway North      | Gateway South      |
+| ------- | ----------------------------- | ------------------ | ------------------ |
+| Bayway  | Bay shore / Foster City       | (37.684, -122.390) | (37.579, -122.311) |
 | Skyline | Mountain ridge / Skyline Blvd | (37.668, -122.485) | (37.489, -122.320) |
-| HMBW | Coastal / Devil's Slide | (37.578, -122.512) | (37.449, -122.429) |
-| Royale | El Camino Real corridor | (37.611, -122.403) | (37.521, -122.277) |
-| Fleaway | Flat El Camino / Bayshore | (37.624, -122.408) | (37.492, -122.266) |
-| MEBW | Middle East Bay | (37.683, -122.178) | (37.509, -122.114) |
-| FEBW | Far East Bay | (37.814, -122.144) | (37.669, -122.001) |
+| HMBW    | Coastal / Devil's Slide       | (37.578, -122.512) | (37.449, -122.429) |
+| Royale  | El Camino Real corridor       | (37.611, -122.403) | (37.521, -122.277) |
+| Fleaway | Flat El Camino / Bayshore     | (37.624, -122.408) | (37.492, -122.266) |
+| MEBW    | Middle East Bay               | (37.683, -122.178) | (37.509, -122.114) |
+| FEBW    | Far East Bay                  | (37.814, -122.144) | (37.669, -122.001) |
 
 **Start point**: Peet's Coffee, PPR (37.773, -122.439)
 **Intercept**: JD/Skyline (37.698, -122.495)
@@ -195,18 +197,18 @@ Browser ──► Cloudflare Worker (TanStack Start, Free plan: 10 ms CPU, 50 su
 Copy `.env.example` to `.env.local` (local values) — production values are
 Cloudflare secrets/vars.
 
-| Variable | Description |
-|----------|-------------|
-| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Supabase project (local: `pnpm db:start`) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only — sync, queue, admin |
-| `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET` | Strava API app |
-| `STRAVA_WEBHOOK_VERIFY_TOKEN` | Echoed back when Strava verifies the webhook |
-| `STRAVA_WEBHOOK_SUBSCRIPTION_ID` | Optional — ignore events for other subscriptions |
-| `SESSION_SECRET` | ≥ 32 chars, signs session cookies |
-| `ADMIN_USER_IDS` | Comma-separated user ids allowed to use admin actions |
-| `CRON_SECRET` | Bearer token for `POST /api/cron` |
-| `APP_URL` | Public app URL |
-| `VITE_MAP_TILE_URL`, `VITE_MAP_TILE_URL_DARK`, `VITE_MAP_TILE_ATTRIBUTION` | Optional map tile provider (default: OpenStreetMap) |
+| Variable                                                                   | Description                                           |
+| -------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY`                                        | Supabase project (local: `pnpm db:start`)             |
+| `SUPABASE_SERVICE_ROLE_KEY`                                                | Server only — sync, queue, admin                      |
+| `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`                                 | Strava API app                                        |
+| `STRAVA_WEBHOOK_VERIFY_TOKEN`                                              | Echoed back when Strava verifies the webhook          |
+| `STRAVA_WEBHOOK_SUBSCRIPTION_ID`                                           | Optional — ignore events for other subscriptions      |
+| `SESSION_SECRET`                                                           | ≥ 32 chars, signs session cookies                     |
+| `ADMIN_USER_IDS`                                                           | Comma-separated user ids allowed to use admin actions |
+| `CRON_SECRET`                                                              | Bearer token for `POST /api/cron`                     |
+| `APP_URL`                                                                  | Public app URL                                        |
+| `VITE_MAP_TILE_URL`, `VITE_MAP_TILE_URL_DARK`, `VITE_MAP_TILE_ATTRIBUTION` | Optional map tile provider (default: OpenStreetMap)   |
 
 ## Docs
 
