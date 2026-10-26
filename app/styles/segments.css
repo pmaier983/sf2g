@@ -394,6 +394,13 @@
   stroke-opacity: 1;
 }
 
+.route-map__segment-end {
+  stroke: var(--color-surface);
+  stroke-width: 1.5px;
+  fill: var(--color-text);
+  fill-opacity: 1;
+}
+
 .route-map__marker {
   stroke: #ffffff;
   stroke-width: 2px;

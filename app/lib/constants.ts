@@ -486,15 +486,15 @@ export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;
 // ---------------------------------------------------------------------------
 
 /**
- * The core SF2G Skyline route, bottom of Strava's "Mussel Rock Climb" (Skyline
- * Blvd at Lake Merced) → Foothill Expwy / Arastradero Rd, via Skyline, Cañada,
- * Woodside, Sand Hill and Junipero Serra. From Strava activity 20662409258
- * (2026-10-20), 144 points, 54.6 km. Regenerate with
+ * The core SF2G Skyline route: where the ride turns from Sloat Blvd onto
+ * Skyline Blvd (1.8 km before Strava's "Mussel Rock Climb") → Foothill Expwy /
+ * Arastradero Rd, via Skyline, Cañada, Woodside, Sand Hill and Junipero
+ * Serra. From Strava activity 20662409258 (2026-10-20), 150 points, 56.4 km. Regenerate with
  * scripts/gen-corridor-profile.ts (which also writes the route view's
  * app/lib/corridors/skyline-profile.json).
  */
 export const SKYLINE_REFERENCE_POLYLINE =
-  "k~eeFnztjVnFc@bL_HnDu@bYq@b\\j@|l@ySvb@sBrK_GnPoRdK{D`JAra@dFjQuAfc@{QtGmGxMwVjO}OdHaKtSmMjc@gTvECvW`DzEsBjz@}u@pVkg@fMqPpP{MdPqQhRiK`kAwhAlJgGni@_g@xUe[fMuMi@wEzAqBhe@id@xBnBp@Ub^me@dRgKYoH|PeS|YgR|i@ye@nI}Qt\\i]vJmIt]{SrIeHtOyQzAmLfAHrHdMp@DhUsR``@eRlKaBzIsG~K|ApAuAdA{EfFkHtWkK^pCvA@`E{ELwHpEbFtDsFrBK|@kCxCg@lCuDtIgElc@q`@`CeCu@gIX{CtGeL~AiBlI}BzD_E|Tkh@~DiCrIaBrDyDdBuHXaPvDuIjFgDnOqBzEgCh^_f@n_DolC~OuWjBgR`BoFrToNxz@azAtEgLfImEpEeH~{@}`A`TeR`BuHEqMnJzAzCe@lDiD`IsUrCyClaAsYr@}CcMaH}FeHuMe_@g@mKfC_n@cNaq@_@__@aGiy@qE}RyP}YdBoCfCi@v@qJtKcZj@kRhHk_@xCeErN_K|P_XdEoJ~ByPdEaNzc@qp@zAgHzA{]fC}QdG{RbRu_@pDsP";
+  "}wheFjgtjVxStTnE~CzQnG`Hb@|FmBnNcKjQwAjOiIj[}@b[p@`TgGzXwKlc@{B|JwFnPoR~HiDrI_@fd@pFfMk@jg@eStGmGxMwVjO}OdHaKtSmMjc@gTvECzV~C|Cg@d}@gx@pVkg@fMqPpP{MdPqQhRiK`kAwhAlJgGni@_g@xUe[fMuMi@wEzAqBhe@id@xBnBp@Ub^me@dRgKYoH|PeS|YgR|i@ye@nI}Qt\\i]vJmIt]{SrIeHtOyQzAmLfAHrHdMp@DhUsR``@eRlKaBzIsG~K|ApAuAdA{ExFyHbW}J^pCvA@`E{ELwHpEbFtDsF`CUn@aCxCg@lCuDtIgEng@wd@u@gJx@{DbIaMdI{BtEoE|Tkh@~DiCrIaBrCiC`CmI\\yPvDuIjFgDnOqBzEgCh^_f@p}CgjCpQcY~@sDv@mM`BoFrToNxz@azAtEgLfImEpEeH~{@}`A`TeR`BuHEqMnJzAzCe@lDiD`IsUrCyCh`AyXnA_BFwAcMaHmE_FeOka@g@mKfC_n@cNaq@_@__@aGiy@qE}RyP}YdBoCfCi@v@qJtKcZj@kRhHk_@xCeErN_K|P_XdEoJ~ByPdEaNzc@qp@zAgHzA{]fC}QdG{RbRu_@pDsP";
 
 /** Reference lines that decide which Strava segments a board shows. */
 export const SEGMENT_CORRIDORS = {

@@ -84,6 +84,7 @@ export function RouteMap({
   const mapRef = useRef<L.Map | null>(null);
   const tilesRef = useRef<L.TileLayer | null>(null);
   const segmentsRef = useRef<Map<number, L.Polyline>>(new Map());
+  const endsRef = useRef<L.CircleMarker[]>([]);
   const markerRef = useRef<L.CircleMarker | null>(null);
   // Handlers change every render; the Leaflet listeners read the latest.
   const handlersRef = useRef({ onHover, onSelect });
@@ -123,7 +124,8 @@ export function RouteMap({
     const fit = () => {
       map.invalidateSize();
       if (!userMoved && container.clientWidth > 0 && container.clientHeight > 0)
-        map.fitBounds(bounds, { padding: [16, 16], animate: false });
+        // Generous margin: the route plus some of the Peninsula around it.
+        map.fitBounds(bounds, { padding: [64, 64], animate: false });
     };
     map.setView(bounds.getCenter(), 10);
     fit();
@@ -138,6 +140,7 @@ export function RouteMap({
       mapRef.current = null;
       tilesRef.current = null;
       segmentsRef.current.clear();
+      endsRef.current = [];
       markerRef.current = null;
     };
   }, [LLib, profile]);
@@ -159,6 +162,8 @@ export function RouteMap({
     if (!LLib || !map) return;
     for (const line of segmentsRef.current.values()) line.remove();
     segmentsRef.current.clear();
+    for (const m of endsRef.current) m.remove();
+    endsRef.current = [];
     for (const b of bars) {
       const line = LLib.polyline(sliceRoute(profile, b.startM, b.endM), {
         className: segmentClass(b.id, terrain.get(b.id), null, null),
@@ -171,6 +176,17 @@ export function RouteMap({
       });
       segmentsRef.current.set(b.id, line);
     }
+    // A dot where each segment starts and ends, so segments that touch
+    // still read as separate pieces.
+    for (const b of bars)
+      for (const m of [b.startM, b.endM])
+        endsRef.current.push(
+          LLib.circleMarker(pointAtDistance(profile, m).latlng, {
+            radius: 3.5,
+            className: "route-map__segment-end",
+            interactive: false,
+          }).addTo(map),
+        );
   }, [LLib, profile, bars, terrain]);
 
   // Highlight state without redrawing.

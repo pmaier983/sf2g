@@ -2891,19 +2891,19 @@
         "terrain": "climb",
         "direction": "south",
         "end_latlng": [
-          37.65305,
-          -122.47142
+          37.67003,
+          -122.48692
         ],
         "kom_seconds": 280,
         "qom_seconds": null,
         "rider_count": 6,
         "curated_rank": null,
         "start_latlng": [
-          37.70592,
-          -122.49848
+          37.72316,
+          -122.5026
         ],
         "average_grade": 4,
-        "distance_meters": 6619
+        "distance_meters": 6256.8
       },
       {
         "id": 900002,
@@ -2973,19 +2973,19 @@
         "terrain": "climb",
         "direction": "south",
         "end_latlng": [
-          37.58376,
-          -122.40655
+          37.59598,
+          -122.41987
         ],
         "kom_seconds": 390,
         "qom_seconds": null,
         "rider_count": 5,
         "curated_rank": null,
         "start_latlng": [
-          37.63364,
-          -122.45638
+          37.65887,
+          -122.47482
         ],
         "average_grade": 6,
-        "distance_meters": 7215.7
+        "distance_meters": 8726
       },
       {
         "id": 900003,
@@ -3043,19 +3043,19 @@
         "terrain": "climb",
         "direction": "south",
         "end_latlng": [
-          37.5319,
-          -122.36577
+          37.54682,
+          -122.37335
         ],
         "kom_seconds": 240,
         "qom_seconds": null,
         "rider_count": 4,
         "curated_rank": null,
         "start_latlng": [
-          37.56677,
-          -122.39055
+          37.58874,
+          -122.4127
         ],
         "average_grade": 3,
-        "distance_meters": 4857.1
+        "distance_meters": 6219
       },
       {
         "id": 900005,
@@ -3101,19 +3101,19 @@
         "terrain": "flat",
         "direction": "south",
         "end_latlng": [
-          37.44651,
-          -122.27223
+          37.46063,
+          -122.29369
         ],
         "kom_seconds": null,
         "qom_seconds": null,
         "rider_count": 3,
         "curated_rank": null,
         "start_latlng": [
-          37.50306,
-          -122.33589
+          37.51023,
+          -122.34486
         ],
         "average_grade": -0.5,
-        "distance_meters": 8718.9
+        "distance_meters": 7361.1
       }
     ],
     "segments_total": 4

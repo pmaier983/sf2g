@@ -75,8 +75,8 @@ function SegmentsPage() {
           <h1 className="segments__title">Skyline Segments</h1>
           <p className="segments__subtitle">
             Best times of opted-in SF2G riders on the Strava segments of the
-            core Skyline route, Mussel Rock to Arastradero Rd, from their own
-            rides.
+            core Skyline route, from Sloat Blvd past Mussel Rock to Arastradero
+            Rd, from their own rides.
           </p>
         </header>
 

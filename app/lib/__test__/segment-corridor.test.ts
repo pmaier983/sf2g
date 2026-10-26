@@ -30,22 +30,22 @@ const seg = (
 });
 
 describe("SKYLINE_REFERENCE_POLYLINE", () => {
-  it("decodes to the core Skyline route: Mussel Rock → Arastradero Rd", () => {
+  it("decodes to the core Skyline route: Sloat/Skyline → Arastradero Rd", () => {
     expect(line.length).toBeGreaterThan(100);
     expect(line.length).toBeLessThanOrEqual(250);
-    // Bottom of Strava's "Mussel Rock Climb" (Skyline Blvd at Lake Merced)
-    expect(line[0]).toEqual([37.71894, -122.5004]);
+    // Sloat Blvd → Skyline Blvd turn, 1.8 km before "Mussel Rock Climb"
+    expect(line[0]).toEqual([37.73327, -122.49734]);
     // Foothill Expwy / Arastradero Rd
     expect(line[line.length - 1]).toEqual([37.39887, -122.13453]);
     const lats = line.map((p) => p[0]);
     const lngs = line.map((p) => p[1]);
-    expect(Math.max(...lats)).toBeCloseTo(37.719, 3);
+    expect(Math.max(...lats)).toBeCloseTo(37.7333, 3);
     expect(Math.min(...lats)).toBeCloseTo(37.399, 3);
-    expect(Math.min(...lngs)).toBeCloseTo(-122.5004, 3);
+    expect(Math.min(...lngs)).toBeCloseTo(-122.5032, 3); // Lake Merced
     expect(Math.max(...lngs)).toBeCloseTo(-122.1345, 3);
     const total = cumulativeDistances(line).at(-1)!;
-    expect(total).toBeGreaterThan(52_000);
-    expect(total).toBeLessThan(56_000);
+    expect(total).toBeGreaterThan(55_000);
+    expect(total).toBeLessThan(58_000);
   });
 });
 

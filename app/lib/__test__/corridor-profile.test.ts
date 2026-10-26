@@ -14,7 +14,7 @@ import { haversineDistance } from "../route-classifier";
 const profile = profileJson as CorridorProfile;
 const line = decodePolyline(SKYLINE_REFERENCE_POLYLINE);
 
-const MUSSEL_ROCK_BOTTOM: [number, number] = [37.71894, -122.5004];
+const SLOAT_SKYLINE: [number, number] = [37.73327, -122.49734];
 const ARASTRADERO: [number, number] = [37.39887, -122.13453];
 const metres = (a: [number, number], b: [number, number]) =>
   haversineDistance(a[0], a[1], b[0], b[1]);
@@ -30,8 +30,8 @@ describe("skyline-profile.json", () => {
       expect(profile.distance[i]).toBeGreaterThan(profile.distance[i - 1]);
   });
 
-  it("spans Mussel Rock → Arastradero, matching the reference line", () => {
-    expect(metres(profile.latlng[0], MUSSEL_ROCK_BOTTOM)).toBeLessThan(300);
+  it("spans Sloat/Skyline → Arastradero, matching the reference line", () => {
+    expect(metres(profile.latlng[0], SLOAT_SKYLINE)).toBeLessThan(300);
     expect(metres(profile.latlng.at(-1)!, ARASTRADERO)).toBeLessThan(300);
     const lineLength = cumulativeDistances(line).at(-1)!;
     const routeLength = profile.distance.at(-1)!;
