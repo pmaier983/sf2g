@@ -2,7 +2,10 @@ import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
 import type { SyncHealth } from "../server/users";
-import type { SegmentIngestStats } from "../server/segments-admin";
+import type {
+  SegmentIngestStats,
+  SegmentReclassifyResult,
+} from "../server/segments-admin";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -33,6 +36,10 @@ export function DevToolsPanel() {
   const [segmentEnqueued, setSegmentEnqueued] = useState<number | null>(null);
   const [segmentBusy, setSegmentBusy] = useState(false);
   const [segmentError, setSegmentError] = useState<string | null>(null);
+  const [segmentReclassified, setSegmentReclassified] = useState<{
+    scanned: number;
+    changed: number;
+  } | null>(null);
 
   const handleReclassify = async () => {
     setIsRunning(true);
@@ -83,6 +90,36 @@ export function DevToolsPanel() {
     try {
       const { fetchSegmentIngestStats } =
         await import("../server/segments-admin");
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
+    }
+  };
+
+  // Recompute corridor + direction for every stored segment (after a
+  // reference line changes). Each call pages ≤ 10k segments within the
+  // subrequest budget; loop until the server says it saw them all.
+  const handleSegmentReclassify = async () => {
+    setSegmentBusy(true);
+    setSegmentReclassified(null);
+    setSegmentError(null);
+    try {
+      const { reclassifySegmentCorridors, fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      let cursor: number | null = null;
+      const total = { scanned: 0, changed: 0 };
+      for (let call = 0; call < 100; call++) {
+        const r: SegmentReclassifyResult = await reclassifySegmentCorridors({
+          data: { cursor },
+        });
+        total.scanned += r.scanned;
+        total.changed += r.changed;
+        setSegmentReclassified({ ...total });
+        cursor = r.nextCursor;
+        if (cursor === null) break;
+      }
       setSegmentStats(await fetchSegmentIngestStats());
     } catch (err) {
       setSegmentError(err instanceof Error ? err.message : String(err));
@@ -501,6 +538,15 @@ export function DevToolsPanel() {
               >
                 📊 Load segment stats
               </button>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentReclassify}
+                disabled={segmentBusy}
+                id="dev-tools-segment-reclassify-btn"
+                title="Recompute corridor and direction of every stored segment from the current reference line. Run once after deploying a new line."
+              >
+                🧭 Reclassify segment corridors
+              </button>
               {segmentError && (
                 <div className="dev-tools__error">
                   <strong>Error:</strong> {segmentError}
@@ -509,6 +555,12 @@ export function DevToolsPanel() {
               {segmentEnqueued !== null && (
                 <p className="dev-tools__section-desc">
                   Queued {segmentEnqueued} rides.
+                </p>
+              )}
+              {segmentReclassified && (
+                <p className="dev-tools__section-desc">
+                  Reclassified: {segmentReclassified.changed} of{" "}
+                  {segmentReclassified.scanned} segments changed.
                 </p>
               )}
               {segmentStats && (

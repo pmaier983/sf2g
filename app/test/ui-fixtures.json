@@ -2890,12 +2890,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.65305,
+          -122.47142
+        ],
         "kom_seconds": 280,
         "qom_seconds": null,
         "rider_count": 6,
         "curated_rank": null,
+        "start_latlng": [
+          37.70592,
+          -122.49848
+        ],
         "average_grade": 4,
-        "distance_meters": 4993.4
+        "distance_meters": 6619
       },
       {
         "id": 900002,
@@ -2964,12 +2972,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.58376,
+          -122.40655
+        ],
         "kom_seconds": 390,
         "qom_seconds": null,
         "rider_count": 5,
         "curated_rank": null,
+        "start_latlng": [
+          37.63364,
+          -122.45638
+        ],
         "average_grade": 6,
-        "distance_meters": 2928.2
+        "distance_meters": 7215.7
       },
       {
         "id": 900003,
@@ -3026,12 +3042,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.5319,
+          -122.36577
+        ],
         "kom_seconds": 240,
         "qom_seconds": null,
         "rider_count": 4,
         "curated_rank": null,
+        "start_latlng": [
+          37.56677,
+          -122.39055
+        ],
         "average_grade": 3,
-        "distance_meters": 4189
+        "distance_meters": 4857.1
       },
       {
         "id": 900005,
@@ -3076,12 +3100,20 @@
         ],
         "terrain": "flat",
         "direction": "south",
+        "end_latlng": [
+          37.44651,
+          -122.27223
+        ],
         "kom_seconds": null,
         "qom_seconds": null,
         "rider_count": 3,
         "curated_rank": null,
+        "start_latlng": [
+          37.50306,
+          -122.33589
+        ],
         "average_grade": -0.5,
-        "distance_meters": 1985.4
+        "distance_meters": 8718.9
       }
     ],
     "segments_total": 4

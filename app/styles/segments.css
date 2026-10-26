@@ -278,3 +278,250 @@
     grid-column: 3;
   }
 }
+
+/* ============================================================
+   Route view (phase 07c): tabs, map, elevation profile, lanes
+   ============================================================ */
+
+.corridor-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none; /* still scrolls; no scrollbar line on phones */
+}
+
+.corridor-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.corridor-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.corridor-tabs__tab--active {
+  background: var(--tab-color, var(--color-sf2g-orange));
+  border-color: var(--tab-color, var(--color-sf2g-orange));
+  color: #ffffff;
+}
+
+.corridor-tabs__tab--soon {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.corridor-tabs__soon {
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal, 400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.route-view {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.route-view__error {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.route-map {
+  height: 320px;
+  width: 100%;
+  background: var(--color-surface-elevated);
+}
+
+.route-view__placeholder--chart {
+  height: 240px;
+}
+
+.route-view--loading .route-view__placeholder {
+  animation: segments-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes segments-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Leaflet paths: colours from the theme, not inline attributes. */
+.route-map__route {
+  stroke: var(--color-text-muted);
+  stroke-width: 5px;
+  stroke-opacity: 0.7;
+  fill: none;
+}
+
+.route-map__segment {
+  stroke-width: 5px;
+  stroke-opacity: 0.85;
+  stroke-linecap: round;
+  fill: none;
+  cursor: pointer;
+}
+
+.route-map__segment--climb {
+  stroke: var(--color-skyline);
+}
+
+.route-map__segment--flat {
+  stroke: var(--color-text-muted);
+}
+
+.route-map__segment--hovered,
+.route-map__segment--selected {
+  stroke: var(--color-sf2g-orange);
+  stroke-width: 8px;
+  stroke-opacity: 1;
+}
+
+.route-map__marker {
+  stroke: #ffffff;
+  stroke-width: 2px;
+  fill: var(--color-sf2g-orange);
+  fill-opacity: 1;
+}
+
+.elevation {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.elevation__info {
+  min-height: 1.5em;
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.elevation__chart {
+  display: block;
+  overflow: visible;
+}
+
+.elevation__grid {
+  stroke: var(--color-border-subtle);
+  stroke-width: 1;
+}
+
+.elevation__tick {
+  fill: var(--color-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.elevation__area {
+  fill: var(--color-text-muted);
+  fill-opacity: 0.25;
+}
+
+.elevation__line {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 1.5;
+}
+
+.elevation__crosshair line {
+  stroke: var(--color-sf2g-orange);
+  stroke-width: 1;
+}
+
+.elevation__crosshair circle {
+  fill: var(--color-sf2g-orange);
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.elevation__hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.elevation__lanes-row {
+  display: flex;
+  align-items: flex-start;
+  margin-top: var(--space-1);
+}
+
+.elevation__lanes-label {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.elevation__lanes {
+  --lane-h: 8px;
+  --lane-gap: 2px;
+  position: relative;
+  height: calc(var(--lanes, 0) * (var(--lane-h) + var(--lane-gap)));
+}
+
+.elevation__bar {
+  position: absolute;
+  top: calc(var(--lane) * (var(--lane-h) + var(--lane-gap)));
+  height: var(--lane-h);
+  padding: 0;
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+.elevation__bar--climb {
+  background: var(--color-skyline);
+  opacity: 0.75;
+}
+
+.elevation__bar--flat {
+  background: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.elevation__bar--hovered,
+.elevation__bar--selected,
+.elevation__bar:focus-visible {
+  background: var(--color-sf2g-orange);
+  opacity: 1;
+  outline: none;
+}
+
+.elevation__bar--selected {
+  box-shadow: 0 0 0 1px var(--color-surface), 0 0 0 2px var(--color-sf2g-orange);
+}
+
+.segments__row--hovered td {
+  background: var(--color-surface-hover);
+}
+
+@media (max-width: 768px) {
+  .route-map {
+    height: 220px;
+  }
+
+  .elevation__lanes {
+    --lane-h: 6px;
+  }
+}

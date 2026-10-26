@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { segmentLeaderboardQueryOptions } from "../queries/segments";
 import {
   parseSegmentSearch,
@@ -11,6 +11,9 @@ import { SegmentFilters } from "../components/SegmentFilters";
 import { SegmentOptInBanner } from "../components/SegmentOptInBanner";
 import { SegmentCrownTable } from "../components/SegmentCrownTable";
 import { SegmentBoard } from "../components/SegmentBoard";
+import { CorridorTabs } from "../components/CorridorTabs";
+import { RouteViewSkeleton } from "../components/RouteViewSkeleton";
+const RouteView = lazy(() => import("../components/RouteView"));
 import "../styles/leaderboard.css";
 import "../styles/segments.css";
 
@@ -53,16 +56,48 @@ function SegmentsPage() {
     placeholderData: keepPreviousData,
   });
 
+  // Shared by the route view and the board.
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [focusRequest, setFocusRequest] = useState<{
+    id: number;
+    n: number;
+  } | null>(null);
+  const pickOnRoute = useCallback((id: number) => {
+    setSelectedId(id);
+    setFocusRequest((prev) => ({ id, n: (prev?.n ?? 0) + 1 }));
+  }, []);
+
   return (
     <div className="segments">
       <div className="container">
         <header className="segments__header">
           <h1 className="segments__title">Skyline Segments</h1>
           <p className="segments__subtitle">
-            Best times of opted-in SF2G riders on the Strava segments along
-            Skyline Blvd, from their own rides.
+            Best times of opted-in SF2G riders on the Strava segments of the
+            core Skyline route, Mussel Rock to Arastradero Rd, from their own
+            rides.
           </p>
         </header>
+
+        <CorridorTabs
+          corridor={query.corridor}
+          onChange={(corridor) => update({ corridor })}
+        />
+        <Suspense fallback={<RouteViewSkeleton />}>
+          {data ? (
+            <RouteView
+              corridor={query.corridor}
+              segments={data.segments}
+              hoveredId={hoveredId}
+              selectedId={selectedId}
+              onHover={setHoveredId}
+              onSelect={pickOnRoute}
+            />
+          ) : (
+            <RouteViewSkeleton />
+          )}
+        </Suspense>
 
         <SegmentFilters query={query} onChange={update} />
         <SegmentOptInBanner />
@@ -93,6 +128,10 @@ function SegmentsPage() {
             isLoading={isLoading}
             error={error}
             onRetry={() => refetch()}
+            hoveredId={hoveredId}
+            onHover={setHoveredId}
+            onSelect={setSelectedId}
+            focusRequest={focusRequest}
           />
         </section>
       </div>

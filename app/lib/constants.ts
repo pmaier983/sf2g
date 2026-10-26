@@ -485,9 +485,16 @@ export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;
 // Segment corridors (rework phase 07)
 // ---------------------------------------------------------------------------
 
-/** Skyline Blvd, Daly City gateway → Kings Mountain gateway, from Strava activity 20662409258 (2026-10-20), 128 points, 26.6 km. */
+/**
+ * The core SF2G Skyline route, bottom of Strava's "Mussel Rock Climb" (Skyline
+ * Blvd at Lake Merced) → Foothill Expwy / Arastradero Rd, via Skyline, Cañada,
+ * Woodside, Sand Hill and Junipero Serra. From Strava activity 20662409258
+ * (2026-10-20), 144 points, 54.6 km. Regenerate with
+ * scripts/gen-corridor-profile.ts (which also writes the route view's
+ * app/lib/corridors/skyline-profile.json).
+ */
 export const SKYLINE_REFERENCE_POLYLINE =
-  "ol|dFffrjVnGkGxBkDzJoRzNeOnGkJdB{Afe@qW~MkGhEQhXdD`CUlu@op@zFoF~B_DvRib@rGqJxDoElEaEbKyHpO{PxM{GlCmBblAwiAlIiFxi@kg@tT{Y`NqNJe@w@aBCw@fAoBbZwXrJeK`@GrAjBt@EjJmL|KkPdF}FdDeCrLuFNk@k@eEJkAnQwSdZgRtR_PzP{PpCiBnAkBfCgIvBiDv\\i]~JuIn\\_SdJmH~OgRb@cBVuF`@qAx@E~HtMd@JtU{Rt`@mRxJyArGmFfAe@nAFhExAdCCpAsAfA}EfFiHrEsAnE}CjJ{CRHPhCh@Rj@QfB}BzA}ALgAYuDJq@r@CzBtEn@FfDgFlC_@|@mClC]xC}DhI}DnBmCxHsFbZuXs@uHJiCj@cBvFeJhBoBtHqB`DsChBeDjAuEhEcGhGuQzAgC|DkCdFo@nBq@hDgDdAsC`@eC?qJ`@{EnAgEfBoCxBkB~Aq@~NoBnFgCjCwCjUm\\lDqD";
+  "k~eeFnztjVnFc@bL_HnDu@bYq@b\\j@|l@ySvb@sBrK_GnPoRdK{D`JAra@dFjQuAfc@{QtGmGxMwVjO}OdHaKtSmMjc@gTvECvW`DzEsBjz@}u@pVkg@fMqPpP{MdPqQhRiK`kAwhAlJgGni@_g@xUe[fMuMi@wEzAqBhe@id@xBnBp@Ub^me@dRgKYoH|PeS|YgR|i@ye@nI}Qt\\i]vJmIt]{SrIeHtOyQzAmLfAHrHdMp@DhUsR``@eRlKaBzIsG~K|ApAuAdA{EfFkHtWkK^pCvA@`E{ELwHpEbFtDsFrBK|@kCxCg@lCuDtIgElc@q`@`CeCu@gIX{CtGeL~AiBlI}BzD_E|Tkh@~DiCrIaBrDyDdBuHXaPvDuIjFgDnOqBzEgCh^_f@n_DolC~OuWjBgR`BoFrToNxz@azAtEgLfImEpEeH~{@}`A`TeR`BuHEqMnJzAzCe@lDiD`IsUrCyClaAsYr@}CcMaH}FeHuMe_@g@mKfC_n@cNaq@_@__@aGiy@qE}RyP}YdBoCfCi@v@qJtKcZj@kRhHk_@xCeErN_K|P_XdEoJ~ByPdEaNzc@qp@zAgHzA{]fC}QdG{RbRu_@pDsP";
 
 /** Reference lines that decide which Strava segments a board shows. */
 export const SEGMENT_CORRIDORS = {

@@ -159,6 +159,16 @@ E2E (`e2e/pages.spec.ts`):
 6. E2E; `pnpm typecheck && pnpm test && pnpm test:db && pnpm e2e`.
 7. PR (base: 07b until #28 merges). Description: deploy order (046 after 045), then run "Reclassify segment corridors" once in prod DevTools, and the bundle delta of the lazy chunk (Leaflet is already shipped by `/routes`; the new cost is the profile JSON + ~15 KB of components).
 
+**As built in 07c:**
+- **C1/C2 resolved from data**, not guessed. Activity 20662409258's segment efforts include Strava's "Mussel Rock Climb" (5,982 m, 191 m gain). Its start is exactly 5,982 m of stream distance before the Skyline North gateway, so the line starts at **`[37.71894, -122.50040]`** (Skyline Blvd at Lake Merced, 22 m). "SF2G JD to Arastradero" and "Junipero Serra – Alpine to Arastradero" both end where the ride turns at Foothill Expwy / Arastradero Rd, so the line ends at **`[37.39887, -122.13453]`**. The same ride covers both: **54.7 km** by stream, 22–218 m altitude. The route is Skyline Blvd → Cañada → Woodside → Sand Hill → Junipero Serra.
+- `SKYLINE_REFERENCE_POLYLINE`: 144 points, 54.6 km (Douglas–Peucker at 15 m). `skyline-profile.json`: 346 points, 17 KB raw / 4.4 KB gzipped. Both come from `node scripts/gen-corridor-profile.ts --activity 20662409258 --streams <file> --start … --end …`. The streams were fetched once through the Strava connector and are not committed.
+- The profile loader lives in `app/lib/corridor-profile.ts` (`loadCorridorProfile`, `pointAtDistance`, `sliceRoute`), not in `SEGMENT_CORRIDORS`. That keeps `constants.ts` free of JSON imports, since `gen-fixtures.ts` imports it under plain node.
+- `segmentDirection(seg, corridor?)`: on a corridor, "further along the line" means south; off any corridor the latitude rule still applies. `gen-fixtures.ts` uses `to > from` for its on-line samples. Fixture segment coordinates and distances moved with the new line; `EXPECTED.json` did not change.
+- Migration is `046_segment_route_view.sql`.
+- The info line above the profile replaces the per-bar `Tooltip`. It shows the hovered point (distance and elevation), else the hovered segment, else the selected one. That works on touch too.
+- Map: wheel zoom turns on after a click into the map (no scroll trap), and zoom snaps to 0.25 so the route fills the frame.
+- `DataTable`'s `getRowProps` may now return `onMouseEnter`/`onMouseLeave` (board row hover → route view).
+
 ## 7. Done when
 
 - [ ] §5 green; goldens unchanged or explained.

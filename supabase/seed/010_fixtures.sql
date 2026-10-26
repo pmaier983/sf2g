@@ -418,14 +418,14 @@ INSERT INTO ride_overrides (ride_id, user_id, override_route_category, is_hidden
 INSERT INTO segments (id, name, distance_meters, average_grade, maximum_grade,
   elevation_high, elevation_low, climb_category, start_latlng, end_latlng, hazardous,
   corridor, direction, kom_seconds, xoms_fetched_at, first_seen_at, updated_at) VALUES
-  (900001, 'Skyline Climb A', 4993.4, 4, 8, 399.7, 200, 0, '[37.66223,-122.47719]'::jsonb, '[37.62579,-122.44823]'::jsonb, FALSE, 'skyline', 'south', 280, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900002, 'Skyline Climb B', 2928.2, 6, 12, 375.7, 200, 0, '[37.60185,-122.42667]'::jsonb, '[37.58292,-122.40589]'::jsonb, FALSE, 'skyline', 'south', 390, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900003, 'Skyline Climb C', 4189, 3, 6, 325.7, 200, 0, '[37.57786,-122.39975]'::jsonb, '[37.54871,-122.37104]'::jsonb, FALSE, 'skyline', 'south', 240, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900004, 'Skyline Flat D', 1600.9, 0.5, 1, 208, 200, 0, '[37.53761,-122.36713]'::jsonb, '[37.52565,-122.3616]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900005, 'Skyline Flat E', 1985.4, -0.5, 1, 200, 190.1, 0, '[37.52451,-122.35914]'::jsonb, '[37.51207,-122.34762]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900006, 'Skyline Descent F', 1762.1, -4, 8, 200, 129.5, 0, '[37.50772,-122.34346]'::jsonb, '[37.49889,-122.32848]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900007, 'Skyline North G', 5409.1, 4, 8, 416.4, 200, 0, '[37.59621,-122.41892]'::jsonb, '[37.63372,-122.45652]'::jsonb, FALSE, 'skyline', 'north', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
-  (900008, 'Off Corridor H', 4993.4, 4, 8, 399.7, 200, 0, '[37.66223,-122.45449]'::jsonb, '[37.62579,-122.42555]'::jsonb, FALSE, NULL, 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z');
+  (900001, 'Skyline Climb A', 6619, 4, 8, 464.8, 200, 0, '[37.70592,-122.49848]'::jsonb, '[37.65305,-122.47142]'::jsonb, FALSE, 'skyline', 'south', 280, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900002, 'Skyline Climb B', 7215.7, 6, 12, 632.9, 200, 0, '[37.63364,-122.45638]'::jsonb, '[37.58376,-122.40655]'::jsonb, FALSE, 'skyline', 'south', 390, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900003, 'Skyline Climb C', 4857.1, 3, 6, 345.7, 200, 0, '[37.56677,-122.39055]'::jsonb, '[37.5319,-122.36577]'::jsonb, FALSE, 'skyline', 'south', 240, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900004, 'Skyline Flat D', 2534.7, 0.5, 1, 212.7, 200, 0, '[37.52587,-122.36149]'::jsonb, '[37.51062,-122.34532]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900005, 'Skyline Flat E', 8718.9, -0.5, 1, 200, 156.4, 0, '[37.50306,-122.33589]'::jsonb, '[37.44651,-122.27223]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900006, 'Skyline Descent F', 5162.3, -4, 8, 200, -6.5, 0, '[37.42962,-122.25399]'::jsonb, '[37.42025,-122.2145]'::jsonb, FALSE, 'skyline', 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900007, 'Skyline North G', 8110.6, 4, 8, 524.4, 200, 0, '[37.61054,-122.43445]'::jsonb, '[37.66864,-122.48557]'::jsonb, FALSE, 'skyline', 'north', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z'),
+  (900008, 'Off Corridor H', 6619, 4, 8, 464.8, 200, 0, '[37.70592,-122.47577]'::jsonb, '[37.65305,-122.44873]'::jsonb, FALSE, NULL, 'south', NULL, NULL, '2026-10-16T12:00:00Z', '2026-10-16T12:00:00Z');
 
 INSERT INTO segment_efforts (id, segment_id, user_id, ride_id, elapsed_time_seconds,
   moving_time_seconds, start_date, kom_rank, pr_rank) VALUES
