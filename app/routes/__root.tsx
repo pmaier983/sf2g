@@ -22,6 +22,7 @@ import {
   trackError,
 } from "../lib/analytics";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { getPublicConfig } from "../server/public-config";
 // Import CSS as side effects — rsbuild injects them automatically
 import "../styles/global.css";
 import "../styles/components.css";
@@ -42,6 +43,10 @@ const queryClient = new QueryClient({
 });
 
 export const Route = createRootRoute({
+  // Browser-safe config that lives in Worker secrets (PostHog key). Loaded
+  // once per page load; never refetched on navigation.
+  loader: () => getPublicConfig(),
+  staleTime: Infinity,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -130,14 +135,15 @@ function RootComponent() {
   // Defer dev-tools rendering to after hydration to avoid server/client mismatch.
   // The server has no `window`, so the check must happen in useEffect.
   const [showDevTools, setShowDevTools] = useState(false);
+  const { posthogKey } = Route.useLoaderData();
 
   useEffect(() => {
     if (window.location.hostname === "localhost") {
       setShowDevTools(true);
     }
-    initAnalytics();
+    initAnalytics(posthogKey);
     setupGlobalErrorHandlers();
-  }, []);
+  }, [posthogKey]);
 
   return (
     <html lang="en" suppressHydrationWarning>

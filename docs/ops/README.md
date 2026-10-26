@@ -4,6 +4,7 @@ Runbooks for keeping sf2ging.com healthy. Production is one Cloudflare
 Worker (Free plan) and one Supabase project (`dgoqjrfjrzewplwayhhz`, Free
 plan). Everything here is done by Phillip; agents never write to production.
 
+- [observability.md](observability.md) — where errors go, the monthly report email
 - [sync.md](sync.md) — how rides arrive, the Strava webhook subscription,
   inspecting and retrying sync jobs
 - [Deploying](#deploying)
@@ -17,7 +18,7 @@ plan). Everything here is done by Phillip; agents never write to production.
 
 ```bash
 pnpm typecheck && pnpm test && pnpm test:db && pnpm e2e
-pnpm deploy                      # vite build && wrangler deploy
+pnpm deploy                      # NODE_ENV=production vite build && wrangler deploy
 ```
 
 Check a PR's description for a deploy order. Migrations that remove things
@@ -56,6 +57,7 @@ a new Worker version with the secret; no separate deploy needed).
 | `STRAVA_CLIENT_SECRET` | Regenerate at strava.com/settings/api, then put. Riders stay connected. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Roll in Supabase → Settings → API (JWT secret), then put the new key. |
 | `STRAVA_WEBHOOK_VERIFY_TOKEN` | Only checked when (re)registering the webhook — see sync.md. |
+| `RESEND_API_KEY` | Monthly report email; rotate at resend.com. See observability.md. |
 
 ## Reading logs
 
@@ -71,6 +73,10 @@ or Cloudflare dashboard → Workers → sf2g → Logs. Useful lines:
 - `[scheduled] claimed=… done=… requeued=… failed=… stop=…` — one per
   Cron tick (every 5 min). `stop=rate_limited` is expected occasionally.
 - `[webhook]` — events received/ignored.
+- `[error] <scope>: <message>` — an unexpected failure, also stored in
+  `app_errors` (DevTools → Recent Errors). See observability.md.
+- `[monthly-report] YYYY-MM sent|stored|already_sent|send_failed` — the
+  monthly email (1st of the month).
 
 ## When Strava rate-limits
 
@@ -99,3 +105,8 @@ Security → WAF → Rate limiting rules → *URI Path equals `/api/cron`* →
 DevTools admin actions call the same code through server functions gated by
 `assertAdmin()` (`ADMIN_USER_IDS`). A local dev server pointed at a
 non-local database is refused outright.
+
+> `.env.local` sets `NODE_ENV=development` for the local dev server. Vite
+> reads it during a build too, so a plain `pnpm build` on a laptop produces a
+> development bundle (slow React, analytics disabled). `pnpm deploy` forces
+> `NODE_ENV=production`; always deploy with it.

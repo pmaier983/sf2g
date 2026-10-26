@@ -14,6 +14,7 @@ Research and plan written 2026-10-22 by Claude (Fable 5.1) from a hands-on audit
 | [phase-04-reliable-sync.md](phase-04-reliable-sync.md) | 04a–d: webhook ack-and-enqueue, job table, Cron Trigger drain, backfill, health |
 | [phase-05-table-foundation.md](phase-05-table-foundation.md) | 05a–e: `TableQuery` URL state, shared `<DataTable>`, migrate each table, bug list |
 | [phase-06-cleanup.md](phase-06-cleanup.md) | Timezones, map tiles, charts, advisors, DevTools safety, runbooks |
+| [phase-08-observability.md](phase-08-observability.md) | Error capture (app_errors, PostHog exceptions) and the monthly report email (built 2026-10-25) |
 
 ## The two headline findings
 

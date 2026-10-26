@@ -2,6 +2,8 @@ import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
 import type { SyncHealth } from "../server/users";
+import type { RecentErrors } from "../server/observability-admin";
+import type { MonthlyReportRun } from "../server/monthly-report";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -36,6 +38,53 @@ export function DevToolsPanel() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  // Observability state (phase 08)
+  const [errors, setErrors] = useState<RecentErrors | null>(null);
+  const [errorsLoading, setErrorsLoading] = useState(false);
+  const [report, setReport] = useState<MonthlyReportRun | null>(null);
+  const [reportBusy, setReportBusy] = useState<"preview" | "send" | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportMonth, setReportMonth] = useState("");
+
+  const handleRecentErrors = async () => {
+    setErrorsLoading(true);
+    try {
+      const { fetchRecentErrors } =
+        await import("../server/observability-admin");
+      setErrors(await fetchRecentErrors());
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setErrorsLoading(false);
+    }
+  };
+
+  const handleMonthlyReport = async (send: boolean) => {
+    if (
+      send &&
+      !window.confirm(
+        `Email the ${reportMonth || "previous month's"} report to REPORT_EMAIL_TO now?`,
+      )
+    ) {
+      return;
+    }
+    setReportBusy(send ? "send" : "preview");
+    setReportError(null);
+    try {
+      const { runMonthlyReportNow } =
+        await import("../server/observability-admin");
+      setReport(
+        await runMonthlyReportNow({
+          data: { month: reportMonth || undefined, send },
+        }),
+      );
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setReportBusy(null);
     }
   };
 
@@ -421,6 +470,137 @@ export function DevToolsPanel() {
             </div>
 
             {/* Divider */}
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--color-border)",
+                margin: "var(--space-4) 0",
+              }}
+            />
+
+            {/* Recent Errors Section (phase 08) */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">🚨 Recent Errors</h4>
+              <p className="dev-tools__section-desc">
+                Server errors from the last 7 days, grouped. Browser errors are
+                in PostHog → Error tracking.
+              </p>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleRecentErrors}
+                disabled={errorsLoading}
+                id="dev-tools-errors-btn"
+              >
+                {errorsLoading ? "Loading…" : "🚨 Load Recent Errors"}
+              </button>
+              {errors && (
+                <div className="dev-tools__health-wrap">
+                  {errors.groups.length === 0 ? (
+                    <p className="dev-tools__section-desc">
+                      No server errors in the last {errors.since}. 🎉
+                    </p>
+                  ) : (
+                    <table className="dev-tools__health">
+                      <thead>
+                        <tr>
+                          <th>Where</th>
+                          <th>Message</th>
+                          <th>Count</th>
+                          <th>Last</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {errors.groups.map((g) => (
+                          <tr key={g.fingerprint}>
+                            <td>{g.scope}</td>
+                            <td title={g.sampleStack ?? undefined}>
+                              {g.message.slice(0, 120)}
+                            </td>
+                            <td>{g.count}</td>
+                            <td>{new Date(g.lastSeen).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Monthly Report Section (phase 08) */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">📬 Monthly Report</h4>
+              <p className="dev-tools__section-desc">
+                Sent automatically on the 1st. Preview renders and stores it;
+                Send emails it now, even if that month already went out.
+              </p>
+              <input
+                type="month"
+                value={reportMonth}
+                onChange={(e) => setReportMonth(e.target.value)}
+                aria-label="Report month (blank = previous month)"
+                style={{ width: "100%", marginBottom: "var(--space-2)" }}
+              />
+              <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                <button
+                  className="dev-tools__action-btn"
+                  onClick={() => handleMonthlyReport(false)}
+                  disabled={reportBusy !== null}
+                  id="dev-tools-report-preview-btn"
+                >
+                  {reportBusy === "preview" ? "Rendering…" : "👀 Preview"}
+                </button>
+                <button
+                  className="dev-tools__action-btn"
+                  onClick={() => handleMonthlyReport(true)}
+                  disabled={reportBusy !== null}
+                  id="dev-tools-report-send-btn"
+                >
+                  {reportBusy === "send" ? "Sending…" : "✉️ Send now"}
+                </button>
+              </div>
+              {reportError && (
+                <div
+                  className="dev-tools__error"
+                  style={{ marginTop: "var(--space-2)" }}
+                >
+                  <strong>Error:</strong> {reportError}
+                </div>
+              )}
+              {report && (
+                <div
+                  className="dev-tools__result"
+                  style={{ marginTop: "var(--space-2)" }}
+                >
+                  <div className="dev-tools__result-header">
+                    {report.month}: {report.status}
+                    {report.sentTo ? ` → ${report.sentTo}` : ""}
+                  </div>
+                  {(report.error || report.notes.length > 0) && (
+                    <p
+                      className="dev-tools__section-desc"
+                      style={{ padding: "var(--space-2)" }}
+                    >
+                      {[report.error, ...report.notes]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+                  <iframe
+                    title="Monthly report preview"
+                    srcDoc={report.html}
+                    sandbox=""
+                    style={{
+                      width: "100%",
+                      height: 480,
+                      border: 0,
+                      background: "#fff",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
             <hr
               style={{
                 border: "none",
