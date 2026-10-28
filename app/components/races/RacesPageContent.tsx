@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  RACE_SORTS,
   SECTION_FILTERS,
   SECTION_LABELS,
+  TERRAIN_FILTERS,
   TYPE_FILTERS,
   filterAndSortRaces,
   sectionCounts,
   summarizeRaces,
+  terrainCounts,
   type DistanceUnit,
-  type RaceSort,
+  type TerrainFilter,
   type RacesFile,
   type RacesSearch,
   type SectionFilter,
@@ -20,6 +23,7 @@ import {
   type Travel,
   type TravelMode,
 } from "../../lib/race-travel";
+import { TERRAIN_KINDS } from "../../lib/race-terrain";
 import { RaceRow } from "./RaceRow";
 import { RaceOriginPicker } from "./RaceOriginPicker";
 import { RaceSeasonGrid } from "./RaceSeasonGrid";
@@ -41,14 +45,17 @@ function Chip({
   selected,
   onClick,
   children,
+  title,
 }: {
   selected: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  title?: string;
 }) {
   return (
     <button
       type="button"
+      title={title}
       className={`filter-chip filter-chip--company${selected ? " filter-chip--selected" : ""}`}
       role="radio"
       aria-checked={selected}
@@ -75,6 +82,7 @@ export function RacesPageContent({
 }: RacesPageContentProps) {
   const summary = summarizeRaces(data.events);
   const counts = sectionCounts(data.events);
+  const terrain = useMemo(() => terrainCounts(data.events), [data.events]);
 
   const travelById = useMemo(() => {
     const m = new Map<string, Travel | null>();
@@ -84,11 +92,10 @@ export function RacesPageContent({
 
   const { dated, tba } = useMemo(
     () =>
-      filterAndSortRaces(
-        data.events,
-        search,
-        (e) => travelById.get(e.id)?.roadMi,
-      ),
+      filterAndSortRaces(data.events, search, {
+        distanceOf: (e) => travelById.get(e.id)?.roadMi,
+        minutesOf: (e) => travelById.get(e.id)?.minutes,
+      }),
     [data.events, search, travelById],
   );
   const listed = useMemo(() => [...dated, ...tba], [dated, tba]);
@@ -203,19 +210,52 @@ export function RacesPageContent({
             </Chip>
           ))}
         </div>
-        <label className="races-page__sort">
-          Sort
-          <select
-            value={search.sort}
-            onChange={(e) =>
-              onSearchChange({ sort: e.target.value as RaceSort })
-            }
-            aria-label="Sort events"
-          >
-            <option value="date">Date</option>
-            <option value="drive">Distance from {origin.label}</option>
-          </select>
-        </label>
+        <div
+          className="races-page__chips"
+          role="radiogroup"
+          aria-label="Terrain"
+        >
+          {TERRAIN_FILTERS.map((t: TerrainFilter) => (
+            <Chip
+              key={t}
+              selected={search.terrain === t}
+              onClick={() => onSearchChange({ terrain: t })}
+              title={t === "all" ? undefined : TERRAIN_KINDS[t].rule}
+            >
+              {t === "all" ? (
+                "All terrain"
+              ) : (
+                <>
+                  <span aria-hidden="true">{TERRAIN_KINDS[t].emoji}</span>{" "}
+                  {TERRAIN_KINDS[t].label} {terrain[t]}
+                </>
+              )}
+            </Chip>
+          ))}
+        </div>
+        <div
+          className="races-page__chips races-page__sort"
+          role="radiogroup"
+          aria-label="Sort by"
+        >
+          <span className="races-page__sort-label" aria-hidden="true">
+            Sort
+          </span>
+          {RACE_SORTS.map((o) => (
+            <Chip
+              key={o.value}
+              selected={search.sort === o.value}
+              onClick={() => onSearchChange({ sort: o.value })}
+              title={
+                o.value === "drive" || o.value === "time"
+                  ? `From ${origin.label}`
+                  : undefined
+              }
+            >
+              {o.label}
+            </Chip>
+          ))}
+        </div>
       </div>
 
       <RaceSeasonGrid

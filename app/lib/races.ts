@@ -7,6 +7,8 @@
  * browser and every function below is called from the client only.
  */
 
+import { courseTerrain, type Terrain, type TerrainKind } from "./race-terrain";
+
 export const RACES_DATA_URL = "/data/races-2027.json";
 
 export type RaceSection = "norcal" | "socal" | "stage";
@@ -108,12 +110,21 @@ export type TypeFilter =
   | "Circuit"
   | "Crit"
   | "Time trial";
-export type RaceSort = "date" | "drive";
+export type RaceSort =
+  | "date"
+  | "drive"
+  | "time"
+  | "hilliest"
+  | "flattest"
+  | "climb"
+  | "name";
+export type TerrainFilter = "all" | TerrainKind;
 
 export interface RacesSearch {
   section: SectionFilter;
   type: TypeFilter;
   sort: RaceSort;
+  terrain: TerrainFilter;
 }
 
 export const SECTION_FILTERS: SectionFilter[] = [
@@ -129,12 +140,30 @@ export const TYPE_FILTERS: TypeFilter[] = [
   "Crit",
   "Time trial",
 ];
-const SORTS = ["date", "drive"] as const;
+export const TERRAIN_FILTERS: TerrainFilter[] = [
+  "all",
+  "flat",
+  "hilly",
+  "climb",
+];
+
+/** Sort chips, in display order. Each has one natural direction. */
+export const RACE_SORTS: { value: RaceSort; label: string }[] = [
+  { value: "date", label: "Date" },
+  { value: "drive", label: "Nearest" },
+  { value: "time", label: "Quickest trip" },
+  { value: "hilliest", label: "Hilliest" },
+  { value: "flattest", label: "Flattest" },
+  { value: "climb", label: "Biggest climb" },
+  { value: "name", label: "A–Z" },
+];
+const SORTS = RACE_SORTS.map((s) => s.value);
 
 export const RACES_SEARCH_DEFAULTS: RacesSearch = {
   section: "all",
   type: "all",
   sort: "date",
+  terrain: "all",
 };
 
 function pick<T extends string>(
@@ -147,12 +176,13 @@ function pick<T extends string>(
     : fallback;
 }
 
-/** Validate `?section=&type=&sort=`; anything unknown falls back to defaults. */
+/** Validate `?section=&type=&sort=&terrain=`; unknown values fall back to defaults. */
 export function parseRacesSearch(raw: Record<string, unknown>): RacesSearch {
   return {
     section: pick(raw.section, SECTION_FILTERS, RACES_SEARCH_DEFAULTS.section),
     type: pick(raw.type, TYPE_FILTERS, RACES_SEARCH_DEFAULTS.type),
     sort: pick(raw.sort, SORTS, RACES_SEARCH_DEFAULTS.sort),
+    terrain: pick(raw.terrain, TERRAIN_FILTERS, RACES_SEARCH_DEFAULTS.terrain),
   };
 }
 
@@ -200,29 +230,90 @@ export interface RaceLists {
   tba: RaceEvent[];
 }
 
-const FAR = Number.POSITIVE_INFINITY;
+export interface RaceSortInputs {
+  /** Road miles from the chosen origin; defaults to the SF OSRM drive. */
+  distanceOf?: (e: RaceEvent) => number | null | undefined;
+  /** Travel minutes from the chosen origin; defaults to the SF OSRM drive. */
+  minutesOf?: (e: RaceEvent) => number | null | undefined;
+}
+
+/** Terrain per course, computed once per course object. */
+const terrainCache = new WeakMap<RaceCourse, Terrain>();
+export function terrainOf(e: RaceEvent): Terrain | null {
+  if (!e.course) return null;
+  let t = terrainCache.get(e.course);
+  if (!t) {
+    t = courseTerrain(e.course);
+    terrainCache.set(e.course, t);
+  }
+  return t;
+}
+
+export function terrainCounts(
+  events: RaceEvent[],
+): Record<TerrainFilter, number> {
+  const c: Record<TerrainFilter, number> = {
+    all: events.length,
+    flat: 0,
+    hilly: 0,
+    climb: 0,
+  };
+  for (const e of events) {
+    const t = terrainOf(e);
+    if (t) c[t.kind]++;
+  }
+  return c;
+}
+
+type Key = number | null | undefined;
+
+/** Ascending by key, missing keys last, ties by date. */
+function byKey(key: (e: RaceEvent) => Key) {
+  return (a: RaceEvent, b: RaceEvent) => {
+    const ka = key(a);
+    const kb = key(b);
+    const ma = ka === null || ka === undefined;
+    const mb = kb === null || kb === undefined;
+    if (ma !== mb) return ma ? 1 : -1;
+    if (!ma && !mb && ka !== kb) return (ka as number) - (kb as number);
+    return (a.start ?? "9999").localeCompare(b.start ?? "9999");
+  };
+}
 
 export function filterAndSortRaces(
   events: RaceEvent[],
   search: RacesSearch,
-  /** Distance used by sort=drive; defaults to the SF OSRM drive. */
-  distanceOf: (e: RaceEvent) => number | null | undefined = (e) => e.drive?.mi,
+  inputs: RaceSortInputs = {},
 ): RaceLists {
+  const distanceOf = inputs.distanceOf ?? ((e: RaceEvent) => e.drive?.mi);
+  const minutesOf = inputs.minutesOf ?? ((e: RaceEvent) => e.drive?.min);
   const matching = events.filter(
     (e) =>
       (search.section === "all" || e.section === search.section) &&
-      (search.type === "all" || e.type === search.type),
+      (search.type === "all" || e.type === search.type) &&
+      (search.terrain === "all" || terrainOf(e)?.kind === search.terrain),
   );
   const dated = matching.filter((e) => e.start !== null);
   const tba = matching.filter((e) => e.start === null);
 
-  const driveMi = (e: RaceEvent) => distanceOf(e) ?? FAR;
-  if (search.sort === "drive") {
-    dated.sort((a, b) => driveMi(a) - driveMi(b));
-  } else {
-    dated.sort((a, b) => (a.start as string).localeCompare(b.start as string));
-  }
-  tba.sort((a, b) => driveMi(a) - driveMi(b));
+  const compare: Record<RaceSort, (a: RaceEvent, b: RaceEvent) => number> = {
+    date: (a, b) => (a.start as string).localeCompare(b.start as string),
+    drive: byKey(distanceOf),
+    time: byKey(minutesOf),
+    hilliest: byKey((e) => {
+      const t = terrainOf(e);
+      return t ? -t.ftPerMi : null;
+    }),
+    flattest: byKey((e) => terrainOf(e)?.ftPerMi),
+    climb: byKey((e) => {
+      const t = terrainOf(e);
+      return t ? -t.biggestClimbFt : null;
+    }),
+    name: (a, b) => a.name.localeCompare(b.name, "en"),
+  };
+  dated.sort(compare[search.sort]);
+  // Undated stage races: same order where it applies, else nearest first.
+  tba.sort(search.sort === "date" ? byKey(distanceOf) : compare[search.sort]);
   return { dated, tba };
 }
 

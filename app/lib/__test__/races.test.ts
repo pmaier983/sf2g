@@ -114,6 +114,7 @@ describe("filterAndSortRaces", () => {
       section: "norcal",
       type: "Road race",
       sort: "date",
+      terrain: "all",
     });
     expect(norcalRR.dated.length).toBeGreaterThan(0);
     expect(norcalRR.tba).toHaveLength(0);
@@ -128,6 +129,7 @@ describe("filterAndSortRaces", () => {
       section: "stage",
       type: "Crit",
       sort: "date",
+      terrain: "all",
     });
     expect(stageCrits.dated).toHaveLength(0);
     expect(stageCrits.tba).toHaveLength(0);
@@ -138,6 +140,7 @@ describe("filterAndSortRaces", () => {
       section: "all",
       type: "all",
       sort: "drive",
+      terrain: "all",
     });
     for (let i = 1; i < dated.length; i++) {
       expect(
@@ -154,13 +157,29 @@ describe("parseRacesSearch", () => {
       section: "all",
       type: "all",
       sort: "date",
+      terrain: "all",
     });
     expect(
-      parseRacesSearch({ section: "mars", type: 3, sort: "name" }),
-    ).toEqual({ section: "all", type: "all", sort: "date" });
+      parseRacesSearch({
+        section: "mars",
+        type: 3,
+        sort: "bogus",
+        terrain: "alps",
+      }),
+    ).toEqual({ section: "all", type: "all", sort: "date", terrain: "all" });
     expect(
-      parseRacesSearch({ section: "socal", type: "Crit", sort: "drive" }),
-    ).toEqual({ section: "socal", type: "Crit", sort: "drive" });
+      parseRacesSearch({
+        section: "socal",
+        type: "Crit",
+        sort: "hilliest",
+        terrain: "climb",
+      }),
+    ).toEqual({
+      section: "socal",
+      type: "Crit",
+      sort: "hilliest",
+      terrain: "climb",
+    });
   });
 });
 
@@ -270,5 +289,70 @@ describe("units (MI/KM switcher)", () => {
     expect(formatDistance(89, "mi")).toEqual({ value: "89", unit: "mi" });
     expect(formatDistance(89, "km")).toEqual({ value: "143", unit: "km" });
     expect(formatDistance(2923, "km")).toEqual({ value: "4,704", unit: "km" });
+  });
+});
+
+describe("terrain filter and the extra sorts", () => {
+  const base = { section: "all", type: "all", terrain: "all" } as const;
+  const ids = (es: RaceEvent[]) => es.map((e) => e.id);
+
+  it("terrain=climb keeps only the one-big-climb courses", () => {
+    const { dated, tba } = filterAndSortRaces(EVENTS, {
+      ...base,
+      sort: "date",
+      terrain: "climb",
+    });
+    expect(ids(dated).sort()).toEqual([
+      "copperopolis-road-race-2027",
+      "patterson-pass-road-race-2027",
+      "winters-road-race-2027",
+    ]);
+    expect(tba).toHaveLength(0);
+  });
+
+  it("terrain filters drop events without a course profile", () => {
+    for (const terrain of ["flat", "hilly", "climb"] as const) {
+      const { dated } = filterAndSortRaces(EVENTS, {
+        ...base,
+        sort: "date",
+        terrain,
+      });
+      expect(dated.every((e) => e.course)).toBe(true);
+    }
+  });
+
+  it("hilliest: steepest climbing per mile first, no-profile events last", () => {
+    const { dated } = filterAndSortRaces(EVENTS, { ...base, sort: "hilliest" });
+    expect(dated[0].id).toBe("winchester-circuit-race-2027");
+    expect(dated[1].id).toBe("patterson-pass-road-race-2027");
+    const firstNoCourse = dated.findIndex((e) => !e.course);
+    expect(dated.slice(firstNoCourse).every((e) => !e.course)).toBe(true);
+  });
+
+  it("flattest is the reverse, still with no-profile events last", () => {
+    const { dated } = filterAndSortRaces(EVENTS, { ...base, sort: "flattest" });
+    const withCourse = dated.filter((e) => e.course);
+    expect(withCourse.at(-1)!.id).toBe("winchester-circuit-race-2027");
+    expect(dated.at(-1)!.course).toBeNull();
+  });
+
+  it("biggest climb puts Patterson Pass first", () => {
+    const { dated } = filterAndSortRaces(EVENTS, { ...base, sort: "climb" });
+    expect(dated[0].id).toBe("patterson-pass-road-race-2027");
+  });
+
+  it("quickest trip uses the supplied travel minutes", () => {
+    const { dated } = filterAndSortRaces(
+      EVENTS,
+      { ...base, sort: "time" },
+      { minutesOf: (e) => (e.id === "tour-de-bloom-2027" ? 1 : 1000) },
+    );
+    expect(dated[0].id).toBe("tour-de-bloom-2027");
+  });
+
+  it("name sorts A–Z", () => {
+    const { dated } = filterAndSortRaces(EVENTS, { ...base, sort: "name" });
+    const names = dated.map((e) => e.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, "en")));
   });
 });

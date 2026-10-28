@@ -6,6 +6,7 @@ import {
   monthShort,
   raceDate,
   sourceEntries,
+  terrainOf,
   weekdayShortOf,
   type DistanceUnit,
   type RaceEvent,
@@ -16,6 +17,7 @@ import {
   formatTravelTime,
   type Travel,
 } from "../../lib/race-travel";
+import { TERRAIN_KINDS } from "../../lib/race-terrain";
 import { RaceCourseViz } from "./RaceCourseViz";
 
 /** Emoji + mode, time for that mode, road distance in the chosen unit. */
@@ -115,6 +117,7 @@ export function RaceRow({
   flash = false,
 }: RaceRowProps) {
   const badge = STATUS_BADGES[event.dateStatus];
+  const terrain = terrainOf(event);
   const where = [event.city, event.state].filter(Boolean).join(", ");
   const extraDates =
     event.dates && event.dates.length > 1
@@ -139,6 +142,17 @@ export function RaceRow({
         <div className="race-row__title">
           <h3 className="race-row__name">{event.name}</h3>
           <span className={typeTagClass(event.type)}>{event.type}</span>
+          {terrain && (
+            <span
+              className={`race-tag race-tag--terrain race-tag--terrain-${terrain.kind}`}
+              title={TERRAIN_KINDS[terrain.kind].rule}
+            >
+              <span aria-hidden="true">
+                {TERRAIN_KINDS[terrain.kind].emoji}
+              </span>{" "}
+              {TERRAIN_KINDS[terrain.kind].label}
+            </span>
+          )}
           {badge && <span className="race-tag race-tag--status">{badge}</span>}
           <span className="race-row__where">
             {where}

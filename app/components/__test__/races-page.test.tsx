@@ -244,8 +244,71 @@ describe("RacesPageContent", () => {
 
     await user.click(screen.getByRole("radio", { name: /^SoCal 14$/ }));
     expect(onSearchChange).toHaveBeenCalledWith({ section: "socal" });
-    await user.selectOptions(screen.getByLabelText("Sort events"), "drive");
+    const sortBy = screen.getByRole("radiogroup", { name: "Sort by" });
+    await user.click(within(sortBy).getByRole("radio", { name: "Nearest" }));
     expect(onSearchChange).toHaveBeenCalledWith({ sort: "drive" });
+    await user.click(within(sortBy).getByRole("radio", { name: "Hilliest" }));
+    expect(onSearchChange).toHaveBeenCalledWith({ sort: "hilliest" });
+  });
+
+  it("sort options are visible chips, with the current one checked", async () => {
+    await setup({ sort: "climb" });
+    const sortBy = screen.getByRole("radiogroup", { name: "Sort by" });
+    const names = within(sortBy)
+      .getAllByRole("radio")
+      .map((r) => r.textContent);
+    expect(names).toEqual([
+      "Date",
+      "Nearest",
+      "Quickest trip",
+      "Hilliest",
+      "Flattest",
+      "Biggest climb",
+      "A–Z",
+    ]);
+    expect(
+      within(sortBy).getByRole("radio", { name: "Biggest climb" }),
+    ).toHaveAttribute("aria-checked", "true");
+    // Biggest climb puts Patterson Pass first in the list.
+    expect(document.querySelector("article.race-row")!.id).toBe(
+      "patterson-pass-road-race-2027",
+    );
+  });
+
+  it("every mapped course gets a terrain badge and a climbing rate", async () => {
+    const { container } = await setup();
+    expect(container.querySelectorAll(".race-tag--terrain")).toHaveLength(36);
+    const tag = (id: string) =>
+      document.getElementById(id)!.querySelector(".race-tag--terrain")
+        ?.textContent;
+    expect(tag("patterson-pass-road-race-2027")).toBe("⛰️ Big climb");
+    expect(tag("avrt-pescadero-road-race-2027")).toBe("〰️ Hilly");
+    expect(tag("cal-aggie-criterium-2027")).toBe("➖ Flat");
+    expect(tag("tucson-bicycle-classic-2027")).toBeUndefined();
+    expect(
+      document
+        .getElementById("patterson-pass-road-race-2027")!
+        .querySelector(".race-viz__rate")!.textContent,
+    ).toBe("90 ft/mi of climbing");
+  });
+
+  it("terrain chips show counts and filter the list", async () => {
+    const user = userEvent.setup();
+    const { container, onSearchChange } = await setup({ terrain: "climb" });
+    const group = screen.getByRole("radiogroup", { name: "Terrain" });
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .map((r) => r.textContent),
+    ).toEqual(["All terrain", "➖ Flat 27", "〰️ Hilly 6", "⛰️ Big climb 3"]);
+    const rows = container.querySelectorAll("article.race-row");
+    expect([...rows].map((r) => r.id).sort()).toEqual([
+      "copperopolis-road-race-2027",
+      "patterson-pass-road-race-2027",
+      "winters-road-race-2027",
+    ]);
+    await user.click(within(group).getByRole("radio", { name: /Hilly/ }));
+    expect(onSearchChange).toHaveBeenCalledWith({ terrain: "hilly" });
   });
 
   it("renders the methodology section with a source link per topic", async () => {

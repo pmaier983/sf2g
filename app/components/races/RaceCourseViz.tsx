@@ -5,6 +5,7 @@ import {
   type DistanceUnit,
   type RaceCourse,
 } from "../../lib/races";
+import { climbingPerMile, formatClimbingRate } from "../../lib/race-terrain";
 
 /**
  * One lap of a course: a small route map (SVG of the projected path with a
@@ -61,6 +62,9 @@ export function RaceCourseViz({
           />
         </svg>
         <div className="race-viz__caption">{courseCaption(course, unit)}</div>
+        <div className="race-viz__rate">
+          {formatClimbingRate(climbingPerMile(course), unit)} of climbing
+        </div>
       </div>
     </div>
   );
