@@ -5,7 +5,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "./app/ssr.tsx",
   "vars": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
   },
   // Sync queue drain (app/ssr.tsx → scheduled → app/server/scheduled.ts):
   // queues riders due for a sync and processes a budgeted batch of jobs.
@@ -13,9 +13,11 @@
   "triggers": {
     "crons": [
       "*/5 * * * *",
-      // Monthly report email for the previous month (app/server/monthly-report.ts):
-      // 1st of the month, 16:00 UTC = 9 am PDT / 8 am PST.
-      "0 16 1 * *"
-    ]
-  }
+      // Report emails (app/server/report.ts), 16:00 UTC = 9 am PDT / 8 am PST:
+      // Mondays for the previous Monday–Sunday week, the 1st for the previous
+      // month. app/ssr.tsx maps each expression to its report.
+      "0 16 * * 1",
+      "0 16 1 * *",
+    ],
+  },
 }

@@ -1,4 +1,4 @@
-# Errors and the monthly report
+# Errors and the report emails
 
 Design: phase 08 (`docs/rework/phase-08-observability.md`). Everything here is
 free and fits Workers Free.
@@ -19,30 +19,41 @@ free and fits Workers Free.
 - Each isolate writes at most 20 rows a minute, so a hot loop can't spend the
   subrequest budget. Every error is still logged (`[error] scope: message`).
 - Rows are grouped by fingerprint (scope + message with ids and numbers
-  removed) and kept 90 days; the monthly job prunes older ones.
+  removed) and kept 90 days; the report job prunes older ones.
 
 ```sql
 select * from get_error_groups('7 days', 50);
 select occurred_at, scope, message from app_errors order by occurred_at desc limit 20;
 ```
 
-## The monthly report
+## The weekly and monthly reports
 
-The Cron Trigger `0 16 1 * *` (9 am PDT on the 1st) emails a report on the
-previous LA calendar month: SF2G rides, riders, distance, climbing, corridors,
-riders of the month, group rides, a three-month trend, site usage, Worker
-metrics and health (sync, errors), each compared with the month before and the
-same month a year earlier. A sent month is never re-sent automatically.
+Two Cron Triggers email the same report for two periods (LA calendar):
 
-Run or preview by hand:
+| Cron | When | Covers |
+|---|---|---|
+| `0 16 * * 1` | Mondays, 9 am PDT / 8 am PST | the previous Monday–Sunday week |
+| `0 16 1 * *` | the 1st, 9 am PDT / 8 am PST | the previous calendar month |
+
+Each report shows SF2G rides, riders, distance, climbing, corridors, riders of
+the week/month, group rides, a three-period trend, site usage, Worker metrics
+and health (sync, errors), compared with the period before and the same period
+a year earlier (52 weeks / 12 months). A sent period is never re-sent
+automatically; weeks and months are tracked separately.
+
+Run or preview by hand (`period` is any day of the week, or `YYYY-MM`):
 
 ```bash
-curl -X POST -H "Authorization: Bearer $CRON_SECRET" "https://sf2ging.com/api/cron?task=monthly-report&dry=1"
-curl -X POST -H "Authorization: Bearer $CRON_SECRET" "https://sf2ging.com/api/cron?task=monthly-report&month=2026-09&force=1"
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" "https://sf2ging.com/api/cron?task=weekly-report&dry=1"
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" "https://sf2ging.com/api/cron?task=weekly-report&period=2026-10-21&force=1"
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" "https://sf2ging.com/api/cron?task=monthly-report&period=2026-09&force=1"
 ```
 
-or DevTools → Monthly Report (Preview / Send now). Every run is stored in
-`monthly_reports` (subject, HTML, text, data, sent_to, send_error).
+or DevTools → Report Email (Weekly / Monthly, Preview / Send now). Every run
+is stored in `reports` (kind, period_start, subject, HTML, text, data,
+sent_to, send_error). Code: `app/lib/report.ts` (periods, rendering),
+`app/server/report.ts` (collect, store, send), `get_report(kind, start)`
+(migration 047).
 
 ## Setup (one time)
 

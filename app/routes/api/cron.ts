@@ -1,5 +1,6 @@
 /**
- * POST /api/cron?task=drain|maintenance|groups — admin entry point
+ * POST /api/cron?task=drain|maintenance|groups|weekly-report|monthly-report
+ * — admin entry point
  * (`Authorization: Bearer CRON_SECRET`).
  *
  * Scheduled syncing runs from the Cloudflare Cron Trigger (app/ssr.tsx); this
@@ -17,29 +18,42 @@ import { createFileRoute } from "@tanstack/react-router";
 import { runGroupRides, runMaintenance } from "../../server/cron";
 import { runScheduledTick } from "../../server/scheduled";
 import { logPerf, trackSubrequests } from "../../lib/perf";
+import {
+  isPeriodKey,
+  periodKeyFormat,
+  type ReportKind,
+} from "../../lib/report";
 
 const TASKS = [
   "sync",
   "maintenance",
   "groups",
   "drain",
+  "weekly-report",
   "monthly-report",
 ] as const;
 type CronTask = (typeof TASKS)[number];
 
+const REPORT_TASKS: Partial<Record<CronTask, ReportKind>> = {
+  "weekly-report": "week",
+  "monthly-report": "month",
+};
+
 /**
- * `task=monthly-report` options:
- * - `month=YYYY-MM` — report a specific month (default: previous LA month)
- * - `dry=1`         — render and store, do not email
- * - `force=1`       — email again even if that month was already sent
+ * `task=weekly-report|monthly-report` options:
+ * - `period=YYYY-MM-DD` (any day of the week) / `period=YYYY-MM` — report a
+ *   specific period (default: the previous LA week / month)
+ * - `dry=1`   — render and store, do not email
+ * - `force=1` — email again even if that period was already sent
  */
-function monthlyReportOptions(url: URL) {
-  const month = url.searchParams.get("month") ?? undefined;
-  if (month && !/^\d{4}-\d{2}$/.test(month)) {
-    throw new Error(`month must be YYYY-MM, got ${month}`);
+function reportOptions(kind: ReportKind, url: URL) {
+  const period = url.searchParams.get("period") ?? undefined;
+  if (period && !isPeriodKey(kind, period)) {
+    throw new Error(`period must be ${periodKeyFormat(kind)}, got ${period}`);
   }
   return {
-    month,
+    kind,
+    period,
     send: url.searchParams.get("dry") !== "1",
     force: url.searchParams.get("force") === "1",
   };
@@ -57,11 +71,12 @@ async function runTask(
   url: URL,
 ): Promise<Record<string, unknown>> {
   switch (task) {
+    case "weekly-report":
     case "monthly-report": {
-      const { runMonthlyReport, defaultMonthlyReportDeps } =
-        await import("../../server/monthly-report");
+      const { runReport, defaultReportDeps } =
+        await import("../../server/report");
       const { result, subrequests } = await trackSubrequests(() =>
-        runMonthlyReport(monthlyReportOptions(url), defaultMonthlyReportDeps()),
+        runReport(reportOptions(REPORT_TASKS[task]!, url), defaultReportDeps()),
       );
       // The rendered email is large; return everything but the bodies.
       const { html: _html, text: _text, ...rest } = result;

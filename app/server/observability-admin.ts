@@ -1,11 +1,12 @@
 /**
- * DevTools (admin only): recent server errors and the monthly report.
+ * DevTools (admin only): recent server errors and the weekly/monthly report.
  * Every function starts with `assertAdmin()` (app/lib/admin.ts).
  */
 import { createServerFn } from "@tanstack/react-start";
 import { createServiceClient } from "../lib/supabase";
 import { assertAdmin } from "../lib/admin";
-import type { MonthlyReportRun } from "./monthly-report";
+import { isReportKind, type ReportKind } from "../lib/report";
+import type { ReportRun } from "./report";
 
 export interface ErrorGroup {
   fingerprint: string;
@@ -54,34 +55,39 @@ export const fetchRecentErrors = createServerFn({ method: "GET" }).handler(
   },
 );
 
-export interface MonthlyReportRequest {
-  /** YYYY-MM; omitted = previous LA month. */
-  month?: string;
-  /** true = email it (and mark the month sent); false = render and store. */
+export interface ReportRequest {
+  kind: ReportKind;
+  /** YYYY-MM-DD (week) or YYYY-MM (month); omitted = the previous LA period. */
+  period?: string;
+  /** true = email it (and mark the period sent); false = render and store. */
   send: boolean;
 }
 
-function validateRequest(input: unknown): MonthlyReportRequest {
+function validateRequest(input: unknown): ReportRequest {
   const o = (input ?? {}) as Record<string, unknown>;
-  const month = typeof o.month === "string" && o.month ? o.month : undefined;
-  if (month && !/^\d{4}-\d{2}$/.test(month)) {
-    throw new Error(`month must be YYYY-MM, got ${month}`);
-  }
-  return { month, send: o.send === true };
+  if (!isReportKind(o.kind)) throw new Error(`kind must be week or month`);
+  const period =
+    typeof o.period === "string" && o.period ? o.period : undefined;
+  return { kind: o.kind, period, send: o.send === true };
 }
 
 /**
- * Render the monthly report now. With `send: true` it is emailed to
- * REPORT_EMAIL_TO even if that month already went out (a manual re-send).
+ * Render a report now. With `send: true` it is emailed to REPORT_EMAIL_TO
+ * even if that period already went out (a manual re-send). The period is
+ * validated by runReport.
  */
-export const runMonthlyReportNow = createServerFn({ method: "POST" })
+export const runReportNow = createServerFn({ method: "POST" })
   .inputValidator(validateRequest)
-  .handler(async ({ data }): Promise<MonthlyReportRun> => {
+  .handler(async ({ data }): Promise<ReportRun> => {
     await assertAdmin();
-    const { runMonthlyReport, defaultMonthlyReportDeps } =
-      await import("./monthly-report");
-    return runMonthlyReport(
-      { month: data.month, send: data.send, force: data.send },
-      defaultMonthlyReportDeps(),
+    const { runReport, defaultReportDeps } = await import("./report");
+    return runReport(
+      {
+        kind: data.kind,
+        period: data.period,
+        send: data.send,
+        force: data.send,
+      },
+      defaultReportDeps(),
     );
   });
