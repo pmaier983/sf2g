@@ -29,6 +29,7 @@
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .navbar__brand-icon {
@@ -79,6 +80,7 @@
   transition: all var(--transition-fast);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .navbar__link:hover {
@@ -95,6 +97,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  /* Never squeeze the toggles: the unit pill clips (overflow: hidden). */
+  flex-shrink: 0;
 }
 
 .navbar__avatar {
@@ -207,9 +211,24 @@
   .navbar__tagline {
     display: none;
   }
+
+  /* Tablet-to-small-desktop: five links + actions must share one row. */
+  .navbar__inner {
+    gap: var(--space-2);
+  }
+
+  .navbar__link {
+    padding: var(--space-2);
+    letter-spacing: 0.02em;
+  }
+
+  .navbar__actions {
+    gap: var(--space-2);
+  }
 }
 
-@media (max-width: 768px) {
+/* Five links + toggles + Strava button need ~880px; below that, hamburger. */
+@media (max-width: 900px) {
   .navbar__links {
     display: none;
   }
@@ -332,6 +351,7 @@
 .unit-toggle {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-sm);
   overflow: hidden;
