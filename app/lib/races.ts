@@ -1,0 +1,376 @@
+/**
+ * Pure logic for the /races page: types for `public/data/races-2027.json`,
+ * filtering/sorting, counts, and the geometry for the course map and
+ * elevation profile SVGs.
+ *
+ * Nothing here runs in the Worker: the JSON is a static asset fetched by the
+ * browser and every function below is called from the client only.
+ */
+
+export const RACES_DATA_URL = "/data/races-2027.json";
+
+export type RaceSection = "norcal" | "socal" | "stage";
+export type RaceType =
+  | "Road race"
+  | "Circuit"
+  | "Crit"
+  | "Time trial"
+  | "Stage race";
+export type DateStatus =
+  | "posted"
+  | "tentative"
+  | "confirmed"
+  | "month"
+  | "listed"
+  | "tba";
+
+export interface RaceSource {
+  what: string;
+  label: string;
+  url: string | null;
+}
+
+export interface RaceCourse {
+  lapMi: number;
+  lapGainFt: number;
+  minFt: number;
+  maxFt: number;
+  /** ~121 evenly spaced elevation samples for one lap */
+  profileFt: number[];
+  /** One lap, [x, y] = [lng·cos(lat0), lat]; already projected */
+  path: [number, number][];
+  pathSource: { label: string; url: string | null };
+  elevationSource: { label: string; url: string };
+}
+
+export interface RaceEvent {
+  id: string;
+  name: string;
+  section: RaceSection;
+  type: RaceType;
+  start: string | null;
+  end: string | null;
+  dates?: string[];
+  dateStatus: DateStatus;
+  city: string;
+  state: string;
+  lat: number | null;
+  lng: number | null;
+  drive: { mi: number; min: number } | null;
+  notes: string | null;
+  course: RaceCourse | null;
+  format?: string;
+  stages?: string[];
+  previousEdition?: { start: string; end: string } | null;
+  california?: boolean;
+  sources: RaceSource[];
+}
+
+export interface RacesFile {
+  title: string;
+  generatedOn: string;
+  origin: { label: string; lat: number; lng: number };
+  methodology: { topic: string; text: string; url: string }[];
+  events: RaceEvent[];
+}
+
+// ---------------------------------------------------------------------------
+// Labels
+// ---------------------------------------------------------------------------
+
+export const SECTION_LABELS: Record<RaceSection, string> = {
+  norcal: "NorCal",
+  socal: "SoCal",
+  stage: "Stage races",
+};
+
+/** Badge text per date status; null means no badge. */
+export const STATUS_BADGES: Record<DateStatus, string | null> = {
+  posted: null,
+  confirmed: null,
+  tentative: "Tentative",
+  month: "Month only",
+  listed: "Unconfirmed",
+  tba: "2027 date TBA",
+};
+
+/** Drives longer than this are flagged "likely a flight". */
+export const FLIGHT_THRESHOLD_MI = 600;
+
+// ---------------------------------------------------------------------------
+// URL search state
+// ---------------------------------------------------------------------------
+
+export type SectionFilter = "all" | RaceSection;
+export type TypeFilter =
+  | "all"
+  | "Road race"
+  | "Circuit"
+  | "Crit"
+  | "Time trial";
+export type RaceSort = "date" | "drive";
+
+export interface RacesSearch {
+  section: SectionFilter;
+  type: TypeFilter;
+  sort: RaceSort;
+}
+
+export const SECTION_FILTERS: SectionFilter[] = [
+  "all",
+  "norcal",
+  "socal",
+  "stage",
+];
+export const TYPE_FILTERS: TypeFilter[] = [
+  "all",
+  "Road race",
+  "Circuit",
+  "Crit",
+  "Time trial",
+];
+const SORTS = ["date", "drive"] as const;
+
+export const RACES_SEARCH_DEFAULTS: RacesSearch = {
+  section: "all",
+  type: "all",
+  sort: "date",
+};
+
+function pick<T extends string>(
+  raw: unknown,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  return typeof raw === "string" && (allowed as readonly string[]).includes(raw)
+    ? (raw as T)
+    : fallback;
+}
+
+/** Validate `?section=&type=&sort=`; anything unknown falls back to defaults. */
+export function parseRacesSearch(raw: Record<string, unknown>): RacesSearch {
+  return {
+    section: pick(raw.section, SECTION_FILTERS, RACES_SEARCH_DEFAULTS.section),
+    type: pick(raw.type, TYPE_FILTERS, RACES_SEARCH_DEFAULTS.type),
+    sort: pick(raw.sort, SORTS, RACES_SEARCH_DEFAULTS.sort),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Counts
+// ---------------------------------------------------------------------------
+
+export interface RaceSummary {
+  californiaEvents: number;
+  californiaRoadRaces: number;
+  stageRacesDated: number;
+  coursesMapped: number;
+}
+
+export function summarizeRaces(events: RaceEvent[]): RaceSummary {
+  const ca = events.filter((e) => e.section !== "stage");
+  return {
+    californiaEvents: ca.length,
+    californiaRoadRaces: ca.filter((e) => e.type === "Road race").length,
+    stageRacesDated: events.filter((e) => e.section === "stage" && e.start)
+      .length,
+    coursesMapped: ca.filter((e) => e.course).length,
+  };
+}
+
+export function sectionCounts(
+  events: RaceEvent[],
+): Record<SectionFilter, number> {
+  return {
+    all: events.length,
+    norcal: events.filter((e) => e.section === "norcal").length,
+    socal: events.filter((e) => e.section === "socal").length,
+    stage: events.filter((e) => e.section === "stage").length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Filter + sort
+// ---------------------------------------------------------------------------
+
+export interface RaceLists {
+  /** Events with a 2027 start date, in the requested order. */
+  dated: RaceEvent[];
+  /** Events with no 2027 date yet (stage races), nearest drive first. */
+  tba: RaceEvent[];
+}
+
+const FAR = Number.POSITIVE_INFINITY;
+
+export function filterAndSortRaces(
+  events: RaceEvent[],
+  search: RacesSearch,
+): RaceLists {
+  const matching = events.filter(
+    (e) =>
+      (search.section === "all" || e.section === search.section) &&
+      (search.type === "all" || e.type === search.type),
+  );
+  const dated = matching.filter((e) => e.start !== null);
+  const tba = matching.filter((e) => e.start === null);
+
+  const driveMi = (e: RaceEvent) => e.drive?.mi ?? FAR;
+  if (search.sort === "drive") {
+    dated.sort((a, b) => driveMi(a) - driveMi(b));
+  } else {
+    dated.sort((a, b) => (a.start as string).localeCompare(b.start as string));
+  }
+  tba.sort((a, b) => driveMi(a) - driveMi(b));
+  return { dated, tba };
+}
+
+// ---------------------------------------------------------------------------
+// Formatting
+// ---------------------------------------------------------------------------
+
+/** Parse an ISO date as local noon so the calendar day never shifts. */
+export function raceDate(iso: string): Date {
+  return new Date(`${iso}T12:00:00`);
+}
+
+export function monthShort(iso: string): string {
+  return raceDate(iso).toLocaleString("en-US", { month: "short" });
+}
+
+export function monthDay(iso: string): string {
+  return raceDate(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function weekdayShortOf(iso: string): string {
+  return raceDate(iso).toLocaleString("en-US", { weekday: "short" });
+}
+
+/** 111 minutes → "1 h 51" */
+export function formatDriveMinutes(min: number): string {
+  return `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")}`;
+}
+
+/** "2026-06-05".."2026-06-07" → "Jun 5–7"; across months "Jun 30 – Jul 1"; same day "Jun 5" */
+export function formatDateRange(start: string, end: string): string {
+  if (start === end) return monthDay(start);
+  const a = raceDate(start);
+  const b = raceDate(end);
+  if (a.getMonth() === b.getMonth()) {
+    return `${monthDay(start)}–${b.getDate()}`;
+  }
+  return `${monthDay(start)} – ${monthDay(end)}`;
+}
+
+export function courseCaption(c: RaceCourse): string {
+  const fmt = (n: number) => n.toLocaleString("en-US");
+  return `One lap · ${c.lapMi} mi · +${fmt(c.lapGainFt)} ft · ${fmt(c.minFt)}–${fmt(c.maxFt)} ft`;
+}
+
+export function isLikelyFlight(drive: { mi: number } | null): boolean {
+  return drive !== null && drive.mi > FLIGHT_THRESHOLD_MI;
+}
+
+/** Every "What: link" entry for an event's sources line. */
+export function sourceEntries(e: RaceEvent): RaceSource[] {
+  const out: RaceSource[] = [...e.sources];
+  if (e.course) {
+    out.push({ what: "Route", ...e.course.pathSource });
+    out.push({ what: "Elevation", ...e.course.elevationSource });
+  }
+  if (e.drive) {
+    out.push({ what: "Drive", label: "OSRM from SF City Hall", url: null });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// SVG geometry
+// ---------------------------------------------------------------------------
+
+export interface MapGeometry {
+  /** SVG path `d` for one lap, scaled to fit `size`×`size`. */
+  d: string;
+  /** Start point, for the dot. */
+  start: { x: number; y: number };
+  size: number;
+}
+
+const f1 = (n: number) => n.toFixed(1);
+
+/** Fit the already-projected lap path into a square, preserving aspect ratio. */
+export function mapGeometry(
+  path: [number, number][],
+  size = 64,
+  pad = 5,
+): MapGeometry {
+  let x0 = Infinity;
+  let x1 = -Infinity;
+  let y0 = Infinity;
+  let y1 = -Infinity;
+  for (const [x, y] of path) {
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  const inner = size - 2 * pad;
+  const scale = inner / Math.max(x1 - x0, y1 - y0, 1e-9);
+  const ox = pad + (inner - (x1 - x0) * scale) / 2;
+  const oy = pad + (inner - (y1 - y0) * scale) / 2;
+  const pts = path.map(([x, y]) => ({
+    x: ox + (x - x0) * scale,
+    // y grows north in the data, south on screen
+    y: size - (oy + (y - y0) * scale),
+  }));
+  const d = pts
+    .map((p, i) => `${i === 0 ? "M" : "L"}${f1(p.x)} ${f1(p.y)}`)
+    .join(" ");
+  return { d, start: pts[0] ?? { x: size / 2, y: size / 2 }, size };
+}
+
+/**
+ * Vertical span for the profile: the real range, but never less than 60 ft
+ * for laps under 3 mi or 300 ft otherwise, so flat crits look flat.
+ */
+export function profileSpanFt(
+  c: Pick<RaceCourse, "minFt" | "maxFt" | "lapMi">,
+): number {
+  return Math.max(c.maxFt - c.minFt, c.lapMi < 3 ? 60 : 300);
+}
+
+export interface ProfileGeometry {
+  /** SVG path `d` for the elevation line. */
+  line: string;
+  /** Same line closed to the baseline, for the fill. */
+  area: string;
+  width: number;
+  height: number;
+  spanFt: number;
+}
+
+export function profileGeometry(
+  c: RaceCourse,
+  width = 560,
+  height = 64,
+  pad = 4,
+): ProfileGeometry {
+  const span = profileSpanFt(c);
+  const n = c.profileFt.length;
+  const pts = c.profileFt.map((ft, i) => ({
+    x: n > 1 ? (i * width) / (n - 1) : 0,
+    y: height - pad - ((ft - c.minFt) / span) * (height - 2 * pad),
+  }));
+  const line = pts
+    .map((p, i) => `${i === 0 ? "M" : "L"}${f1(p.x)} ${f1(p.y)}`)
+    .join(" ");
+  return {
+    line,
+    area: `${line} L${width} ${height} L0 ${height} Z`,
+    width,
+    height,
+    spanFt: span,
+  };
+}

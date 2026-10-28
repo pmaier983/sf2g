@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShouldISf2gRouteImport } from './routes/should-i-sf2g'
 import { Route as RoutesRouteImport } from './routes/routes'
+import { Route as RacesRouteImport } from './routes/races'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -31,6 +32,11 @@ const ShouldISf2gRoute = ShouldISf2gRouteImport.update({
 const RoutesRoute = RoutesRouteImport.update({
   id: '/routes',
   path: '/routes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RacesRoute = RacesRouteImport.update({
+  id: '/races',
+  path: '/races',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/should-i-sf2g'
     | '/api/cron'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/should-i-sf2g'
     | '/api/cron'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/should-i-sf2g'
     | '/api/cron'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   NetworkRoute: typeof NetworkRoute
   PrivacyRoute: typeof PrivacyRoute
+  RacesRoute: typeof RacesRoute
   RoutesRoute: typeof RoutesRoute
   ShouldISf2gRoute: typeof ShouldISf2gRoute
   ApiCronRoute: typeof ApiCronRoute
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/routes'
       fullPath: '/routes'
       preLoaderRoute: typeof RoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/races': {
+      id: '/races'
+      path: '/races'
+      fullPath: '/races'
+      preLoaderRoute: typeof RacesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   NetworkRoute: NetworkRoute,
   PrivacyRoute: PrivacyRoute,
+  RacesRoute: RacesRoute,
   RoutesRoute: RoutesRoute,
   ShouldISf2gRoute: ShouldISf2gRoute,
   ApiCronRoute: ApiCronRoute,

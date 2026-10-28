@@ -1,0 +1,399 @@
+/* ============================================================
+   /races — 2027 race calendar
+   Layout: header, sticky filter bar, one row per event
+   (date | details + course | drive), methodology card at the end.
+   Chips reuse .filter-chip from leaderboard.css.
+   ============================================================ */
+
+.races-page {
+  padding: var(--space-6) 0;
+}
+
+.races-page__header {
+  margin-bottom: var(--space-4);
+}
+
+.races-page__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.races-page__subtitle {
+  color: var(--color-text-muted);
+  max-width: 70ch;
+  margin-top: var(--space-2);
+}
+
+.races-page__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.races-page__keys b {
+  color: var(--color-text);
+  font-weight: var(--font-semibold);
+}
+
+.races-page__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--color-bg);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.races-page__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.races-page__sort {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.races-page__sort select {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.races-page__h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  margin: var(--space-6) 0 var(--space-1);
+}
+
+.races-page__foot,
+.races-page__empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  max-width: 80ch;
+}
+
+.races-page__empty {
+  padding: var(--space-6) 0;
+}
+
+.races-page__list {
+  display: grid;
+}
+
+.races-page__loading,
+.races-page__error {
+  padding: var(--space-6) 0;
+  color: var(--color-text-muted);
+}
+
+/* ----- Methodology ----- */
+
+.races-page__method {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+}
+
+.races-page__method .races-page__h2 {
+  margin-top: 0;
+}
+
+.races-page__method-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.races-page__method-item {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+}
+
+.races-page__method-item dt {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+.races-page__method-item dd {
+  color: var(--color-text-secondary);
+}
+
+/* ----- Event row ----- */
+
+.race-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) 120px;
+  gap: 6px var(--space-5);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  scroll-margin-top: 72px;
+}
+
+.race-row:target {
+  background: var(--color-sf2g-orange-bg);
+  box-shadow: 0 0 0 var(--space-2) var(--color-sf2g-orange-bg);
+}
+
+.race-row__date {
+  font-family: var(--font-heading);
+  font-weight: var(--font-semibold);
+  line-height: 1.05;
+}
+
+.race-row__month {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.race-row__day {
+  font-size: var(--text-3xl);
+  color: var(--color-text);
+}
+
+.race-row__weekday {
+  font-family: var(--font-sans);
+  font-weight: var(--font-regular);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.race-row__tba {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.race-row__main {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.race-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.race-row__name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xl);
+  color: var(--color-text);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.race-row__where {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.race-row__note {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--color-text-secondary);
+}
+
+.race-row__note b {
+  color: var(--color-text);
+}
+
+.race-row__stages {
+  margin: 0;
+  padding-left: 18px;
+  max-width: 72ch;
+  list-style: disc;
+  color: var(--color-text-secondary);
+}
+
+.race-row__stages li {
+  margin: 1px 0;
+}
+
+.race-row__no-course {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+  max-width: 640px;
+}
+
+.race-row__sources {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.race-row__source b {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+.race-row__drive {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.race-row__drive-mi {
+  font-family: var(--font-heading);
+  font-weight: var(--font-bold);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.race-row__drive-mi small {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+}
+
+.race-row__drive-time {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.race-row__drive-fly {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ----- Tags ----- */
+
+.race-tag {
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  background: var(--color-skyline-bg);
+  color: var(--color-skyline);
+  white-space: nowrap;
+}
+
+.race-tag--road {
+  background: var(--color-sf2g-orange);
+  color: #ffffff;
+}
+
+.race-tag--stage {
+  background: var(--color-fleaway-bg);
+  color: var(--color-fleaway);
+}
+
+.race-tag--status {
+  background: rgba(245, 158, 11, 0.15);
+  color: #a16207;
+}
+
+[data-theme="dark"] .race-tag--status {
+  color: #fbbf24;
+}
+
+/* ----- Course map + profile ----- */
+
+.race-viz {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  max-width: 640px;
+}
+
+.race-viz__map {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.race-viz__profile-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.race-viz__profile {
+  width: 100%;
+  height: 64px;
+  display: block;
+}
+
+.race-viz__caption {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* ----- Mobile ----- */
+
+@media (max-width: 640px) {
+  .race-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 6px var(--space-3);
+  }
+
+  .race-row__drive {
+    grid-column: 2;
+    text-align: left;
+    display: flex;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+
+  .race-row__drive-mi {
+    font-size: var(--text-2xl);
+  }
+
+  .race-row__day {
+    font-size: var(--text-2xl);
+  }
+
+  .races-page__sort {
+    margin-left: 0;
+  }
+
+  .races-page__method-item {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .races-page__title {
+    font-size: var(--text-3xl);
+  }
+}
