@@ -1,6 +1,6 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   RACES_DATA_URL,
   RACES_SEARCH_DEFAULTS,
@@ -9,6 +9,8 @@ import {
   type RacesSearch,
 } from "../lib/races";
 import { RacesPageContent } from "../components/races/RacesPageContent";
+import { DEFAULT_ORIGIN, type Origin } from "../lib/race-travel";
+import { useUnit } from "../lib/useUnit";
 import "../styles/races.css";
 
 /**
@@ -32,11 +34,36 @@ export const Route = createFileRoute("/races")({
       {
         name: "description",
         content:
-          "Every California road race posted for 2027 plus US stage races, with one-lap course maps, elevation profiles, drive times from San Francisco and links to each source.",
+          "Every California road race posted for 2027 plus US stage races, with one-lap course maps, elevation profiles, travel times from wherever you start and links to each source.",
       },
     ],
   }),
 });
+
+const ORIGIN_KEY = "sf2g-races-origin";
+
+/** The viewer's last "From" choice; stays in this browser only. */
+function readStoredOrigin(): Origin | null {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ORIGIN_KEY) ?? "null");
+    if (
+      raw &&
+      typeof raw.label === "string" &&
+      Number.isFinite(raw.lat) &&
+      Number.isFinite(raw.lng)
+    ) {
+      return {
+        label: raw.label,
+        lat: raw.lat,
+        lng: raw.lng,
+        exact: raw.label === DEFAULT_ORIGIN.label && raw.exact === true,
+      };
+    }
+  } catch {
+    /* private mode, bad JSON */
+  }
+  return null;
+}
 
 async function fetchRaces(): Promise<RacesFile> {
   const res = await fetch(RACES_DATA_URL);
@@ -47,6 +74,21 @@ async function fetchRaces(): Promise<RacesFile> {
 function RacesPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const unit = useUnit();
+  // SSR and first paint use SF; the stored choice loads after mount.
+  const [origin, setOrigin] = useState<Origin>(DEFAULT_ORIGIN);
+  useEffect(() => {
+    const stored = readStoredOrigin();
+    if (stored) setOrigin(stored);
+  }, []);
+  const onOriginChange = useCallback((next: Origin) => {
+    setOrigin(next);
+    try {
+      localStorage.setItem(ORIGIN_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  }, []);
   const { data, error, isPending } = useQuery({
     queryKey: ["races-2027"],
     queryFn: fetchRaces,
@@ -91,6 +133,9 @@ function RacesPage() {
             data={data}
             search={search}
             onSearchChange={onSearchChange}
+            origin={origin}
+            onOriginChange={onOriginChange}
+            unit={unit}
           />
         ) : error ? (
           <p className="races-page__error" role="alert">

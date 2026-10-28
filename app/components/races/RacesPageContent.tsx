@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   SECTION_FILTERS,
   SECTION_LABELS,
@@ -5,18 +6,35 @@ import {
   filterAndSortRaces,
   sectionCounts,
   summarizeRaces,
+  type DistanceUnit,
   type RaceSort,
   type RacesFile,
   type RacesSearch,
   type SectionFilter,
   type TypeFilter,
 } from "../../lib/races";
+import {
+  TRAVEL_MODE_ORDER,
+  estimateTravel,
+  type Origin,
+  type Travel,
+  type TravelMode,
+} from "../../lib/race-travel";
 import { RaceRow } from "./RaceRow";
+import { RaceOriginPicker } from "./RaceOriginPicker";
+import { RaceSeasonGrid } from "./RaceSeasonGrid";
+
+/** The season the data file covers. */
+export const RACES_SEASON = 2027;
+const FLASH_MS = 3000;
 
 export interface RacesPageContentProps {
   data: RacesFile;
   search: RacesSearch;
   onSearchChange: (next: Partial<RacesSearch>) => void;
+  origin: Origin;
+  onOriginChange: (origin: Origin) => void;
+  unit: DistanceUnit;
 }
 
 function Chip({
@@ -42,18 +60,88 @@ function Chip({
 }
 
 /**
- * Everything below the page title once the JSON has loaded: counts, filters,
- * the dated list, the "no 2027 date yet" list and the methodology section.
- * Pure props in, so tests can render it with the real data file.
+ * Everything below the page title once the JSON has loaded: counts, the
+ * "From" origin, filters, the season grid, the dated list, the "no 2027 date
+ * yet" list and the methodology section. Pure props in, so tests can render
+ * it with the real data file.
  */
 export function RacesPageContent({
   data,
   search,
   onSearchChange,
+  origin,
+  onOriginChange,
+  unit,
 }: RacesPageContentProps) {
   const summary = summarizeRaces(data.events);
   const counts = sectionCounts(data.events);
-  const { dated, tba } = filterAndSortRaces(data.events, search);
+
+  const travelById = useMemo(() => {
+    const m = new Map<string, Travel | null>();
+    for (const e of data.events) m.set(e.id, estimateTravel(e, origin));
+    return m;
+  }, [data.events, origin]);
+
+  const { dated, tba } = useMemo(
+    () =>
+      filterAndSortRaces(
+        data.events,
+        search,
+        (e) => travelById.get(e.id)?.roadMi,
+      ),
+    [data.events, search, travelById],
+  );
+  const listed = useMemo(() => [...dated, ...tba], [dated, tba]);
+
+  const modeCounts = useMemo(() => {
+    const c = Object.fromEntries(
+      TRAVEL_MODE_ORDER.map((m) => [m, 0]),
+    ) as Record<TravelMode, number>;
+    for (const e of listed) {
+      const t = travelById.get(e.id);
+      if (t) c[t.mode]++;
+    }
+    return c;
+  }, [listed, travelById]);
+
+  // Season-grid jump: scroll the row into view and flash it.
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+  const jumpTo = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const reduce = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    // Smooth only for short hops; a long smooth scroll would arrive after
+    // the highlight has faded.
+    const far =
+      Math.abs(el.getBoundingClientRect().top) > window.innerHeight * 3;
+    el.scrollIntoView({
+      // "auto" would defer to html { scroll-behavior: smooth } in global.css.
+      behavior: reduce || far ? "instant" : "smooth",
+      block: "center",
+    });
+    el.focus({ preventScroll: true });
+    // Clear first so clicking the same race again restarts the animation.
+    setFlashId(null);
+    requestAnimationFrame(() => setFlashId(id));
+    clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => setFlashId(null), FLASH_MS);
+  }, []);
+
+  const estimatedFrom = origin.exact ? undefined : origin.label;
+  const row = (e: (typeof listed)[number]) => (
+    <RaceRow
+      key={e.id}
+      event={e}
+      travel={travelById.get(e.id) ?? null}
+      unit={unit}
+      estimatedFrom={estimatedFrom}
+      flash={flashId === e.id}
+    />
+  );
 
   return (
     <>
@@ -72,6 +160,13 @@ export function RacesPageContent({
         </span>
         <a href="#races-sources">Where this data comes from</a>
       </div>
+
+      <RaceOriginPicker
+        origin={origin}
+        onOriginChange={onOriginChange}
+        modeCounts={modeCounts}
+        unit={unit}
+      />
 
       <div
         className="races-page__bar"
@@ -118,21 +213,24 @@ export function RacesPageContent({
             aria-label="Sort events"
           >
             <option value="date">Date</option>
-            <option value="drive">Drive distance</option>
+            <option value="drive">Distance from {origin.label}</option>
           </select>
         </label>
       </div>
+
+      <RaceSeasonGrid
+        year={RACES_SEASON}
+        events={listed}
+        travelById={travelById}
+        onSelect={jumpTo}
+      />
 
       {dated.length === 0 && tba.length === 0 ? (
         <p className="races-page__empty">No events match these filters.</p>
       ) : null}
 
       {dated.length > 0 && (
-        <div className="races-page__list">
-          {dated.map((e) => (
-            <RaceRow key={e.id} event={e} />
-          ))}
-        </div>
+        <div className="races-page__list">{dated.map(row)}</div>
       )}
 
       {tba.length > 0 && (
@@ -144,11 +242,7 @@ export function RacesPageContent({
             These ran in 2026. Dates usually appear in winter; the 2026 dates
             are shown for reference.
           </p>
-          <div className="races-page__list">
-            {tba.map((e) => (
-              <RaceRow key={e.id} event={e} />
-            ))}
-          </div>
+          <div className="races-page__list">{tba.map(row)}</div>
         </section>
       )}
 
@@ -166,6 +260,16 @@ export function RacesPageContent({
               </dd>
             </div>
           ))}
+          <div className="races-page__method-item">
+            <dt>Travel estimates</dt>
+            <dd>
+              From San Francisco, the OSRM drive above. From anywhere else,
+              straight-line distance × 1.2 for roads and highway-pace driving
+              (55 mph), fitted to those OSRM drives. Bike assumes 14 mph and
+              ignores water crossings; flights add 2.5 h of airports to air time
+              at 450 mph. A chosen location stays in this browser.
+            </dd>
+          </div>
         </dl>
         <p className="races-page__foot">
           Compiled {data.generatedOn}. Calendars change; check each race&apos;s

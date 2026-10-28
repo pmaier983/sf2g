@@ -2,6 +2,7 @@ import {
   courseCaption,
   mapGeometry,
   profileGeometry,
+  type DistanceUnit,
   type RaceCourse,
 } from "../../lib/races";
 
@@ -10,7 +11,13 @@ import {
  * dot at the start) beside an elevation profile (SVG area chart), captioned
  * with the lap's distance, climbing and elevation range.
  */
-export function RaceCourseViz({ course }: { course: RaceCourse }) {
+export function RaceCourseViz({
+  course,
+  unit = "mi",
+}: {
+  course: RaceCourse;
+  unit?: DistanceUnit;
+}) {
   const map = mapGeometry(course.path);
   const prof = profileGeometry(course);
   return (
@@ -53,7 +60,7 @@ export function RaceCourseViz({ course }: { course: RaceCourse }) {
             vectorEffect="non-scaling-stroke"
           />
         </svg>
-        <div className="race-viz__caption">{courseCaption(course)}</div>
+        <div className="race-viz__caption">{courseCaption(course, unit)}</div>
       </div>
     </div>
   );

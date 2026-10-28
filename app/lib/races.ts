@@ -205,6 +205,8 @@ const FAR = Number.POSITIVE_INFINITY;
 export function filterAndSortRaces(
   events: RaceEvent[],
   search: RacesSearch,
+  /** Distance used by sort=drive; defaults to the SF OSRM drive. */
+  distanceOf: (e: RaceEvent) => number | null | undefined = (e) => e.drive?.mi,
 ): RaceLists {
   const matching = events.filter(
     (e) =>
@@ -214,7 +216,7 @@ export function filterAndSortRaces(
   const dated = matching.filter((e) => e.start !== null);
   const tba = matching.filter((e) => e.start === null);
 
-  const driveMi = (e: RaceEvent) => e.drive?.mi ?? FAR;
+  const driveMi = (e: RaceEvent) => distanceOf(e) ?? FAR;
   if (search.sort === "drive") {
     dated.sort((a, b) => driveMi(a) - driveMi(b));
   } else {
@@ -264,9 +266,36 @@ export function formatDateRange(start: string, end: string): string {
   return `${monthDay(start)} – ${monthDay(end)}`;
 }
 
-export function courseCaption(c: RaceCourse): string {
-  const fmt = (n: number) => n.toLocaleString("en-US");
-  return `One lap · ${c.lapMi} mi · +${fmt(c.lapGainFt)} ft · ${fmt(c.minFt)}–${fmt(c.maxFt)} ft`;
+/** Matches the navbar MI/KM switcher (app/components/UnitToggle.tsx). */
+export type DistanceUnit = "mi" | "km";
+
+const KM_PER_MI = 1.609344;
+const M_PER_FT = 0.3048;
+const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
+
+/** Road/drive distance, whole units: 89 mi → { "143", "km" }. */
+export function formatDistance(
+  mi: number,
+  unit: DistanceUnit,
+): { value: string; unit: DistanceUnit } {
+  return {
+    value: fmtInt(unit === "km" ? mi * KM_PER_MI : mi),
+    unit,
+  };
+}
+
+/** "One lap · 22.14 mi · +1,990 ft · 242–1,552 ft" (metric: km and m). */
+export function courseCaption(
+  c: RaceCourse,
+  unit: DistanceUnit = "mi",
+): string {
+  if (unit === "km") {
+    const km = c.lapMi * KM_PER_MI;
+    const lap = km.toFixed(km < 5 ? 2 : 1);
+    const m = (ft: number) => fmtInt(ft * M_PER_FT);
+    return `One lap · ${lap} km · +${m(c.lapGainFt)} m · ${m(c.minFt)}–${m(c.maxFt)} m`;
+  }
+  return `One lap · ${c.lapMi} mi · +${fmtInt(c.lapGainFt)} ft · ${fmtInt(c.minFt)}–${fmtInt(c.maxFt)} ft`;
 }
 
 export function isLikelyFlight(drive: { mi: number } | null): boolean {
@@ -274,13 +303,23 @@ export function isLikelyFlight(drive: { mi: number } | null): boolean {
 }
 
 /** Every "What: link" entry for an event's sources line. */
-export function sourceEntries(e: RaceEvent): RaceSource[] {
+export function sourceEntries(
+  e: RaceEvent,
+  /** Set when travel is estimated from somewhere other than SF City Hall. */
+  estimatedFrom?: string,
+): RaceSource[] {
   const out: RaceSource[] = [...e.sources];
   if (e.course) {
     out.push({ what: "Route", ...e.course.pathSource });
     out.push({ what: "Elevation", ...e.course.elevationSource });
   }
-  if (e.drive) {
+  if (estimatedFrom && e.lat !== null) {
+    out.push({
+      what: "Travel",
+      label: `Estimated from ${estimatedFrom}`,
+      url: null,
+    });
+  } else if (e.drive) {
     out.push({ what: "Drive", label: "OSRM from SF City Hall", url: null });
   }
   return out;

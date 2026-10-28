@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   courseCaption,
+  formatDistance,
   filterAndSortRaces,
   formatDateRange,
   formatDriveMinutes,
@@ -240,5 +241,34 @@ describe("SVG geometry", () => {
       "M0.0 60.0 L25.0 55.3 L50.0 50.7 L75.0 55.3 L100.0 60.0",
     );
     expect(g.area.endsWith("L100 64 L0 64 Z")).toBe(true);
+  });
+});
+
+describe("units (MI/KM switcher)", () => {
+  it("course caption in km and metres", () => {
+    const c = EVENTS.find(
+      (e) => e.id === "patterson-pass-road-race-2027",
+    )!.course!;
+    expect(courseCaption(c, "mi")).toBe(
+      "One lap · 22.14 mi · +1,990 ft · 242–1,552 ft",
+    );
+    expect(courseCaption(c, "km")).toBe(
+      "One lap · 35.6 km · +607 m · 74–473 m",
+    );
+  });
+
+  it("short laps keep two decimals in km", () => {
+    const c = EVENTS.find(
+      (e) => e.id === "los-gatos-roofing-cat-s-hill-classic-2027",
+    )!.course!;
+    expect(courseCaption(c, "km")).toBe(
+      "One lap · 1.45 km · +24 m · 123–141 m",
+    );
+  });
+
+  it("formatDistance converts road miles", () => {
+    expect(formatDistance(89, "mi")).toEqual({ value: "89", unit: "mi" });
+    expect(formatDistance(89, "km")).toEqual({ value: "143", unit: "km" });
+    expect(formatDistance(2923, "km")).toEqual({ value: "4,704", unit: "km" });
   });
 });
