@@ -7,11 +7,15 @@ import type { RequestHandler } from "@tanstack/react-start/server";
 import { handlePostHogProxy } from "./server/posthog-proxy";
 import { runScheduledTick } from "./server/scheduled";
 import { reportError } from "./server/report-error";
+import type { ReportKind } from "./lib/report";
 
 const startHandler = createStartHandler(defaultStreamHandler);
 
-/** Cron expressions from wrangler.jsonc → what each one runs. */
-export const MONTHLY_REPORT_CRON = "0 16 1 * *";
+/** Cron expressions from wrangler.jsonc → the report each one emails. */
+export const REPORT_CRONS: Record<string, ReportKind> = {
+  "0 16 * * 1": "week",
+  "0 16 1 * *": "month",
+};
 
 // Providing `RequestHandler` from `@tanstack/react-start/server` is required so that the output types don't import it from `@tanstack/start-server-core`
 export type ServerEntry = {
@@ -26,9 +30,10 @@ export type ServerEntry = {
 
 export async function runScheduled(cron: string): Promise<void> {
   try {
-    if (cron === MONTHLY_REPORT_CRON) {
-      const { runMonthlyReportTick } = await import("./server/monthly-report");
-      await runMonthlyReportTick();
+    const reportKind = REPORT_CRONS[cron];
+    if (reportKind) {
+      const { runReportTick } = await import("./server/report");
+      await runReportTick(reportKind);
     } else {
       await runScheduledTick(cron);
     }
@@ -61,8 +66,8 @@ export function createServerEntry(entry: ServerEntry): ServerEntry {
       }
     },
     // Every few minutes: queue riders due for a sync, then drain the queue
-    // within one invocation's budget (app/server/scheduled.ts). Monthly: the
-    // report email (app/server/monthly-report.ts).
+    // within one invocation's budget (app/server/scheduled.ts). Mondays and
+    // the 1st: the report emails (app/server/report.ts).
     async scheduled(controller, _env, ctx) {
       ctx.waitUntil(runScheduled(controller.cron));
     },

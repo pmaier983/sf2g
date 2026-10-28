@@ -2,16 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   delta,
   fmtKmMi,
-  monthLabel,
-  renderMonthlyReport,
+  periodLabel,
+  periodShort,
+  previousPeriod,
+  renderReport,
+  shiftPeriod,
+  weekStart,
   type DbReport,
-  type MonthRow,
-  type MonthlyReportData,
-} from "../monthly-report";
+  type PeriodRow,
+  type ReportData,
+  type ReportKind,
+} from "../report";
 
-function month(
-  over: Partial<MonthRow> & Pick<MonthRow, "month" | "offset">,
-): MonthRow {
+function row(
+  over: Partial<PeriodRow> & Pick<PeriodRow, "period" | "offset">,
+): PeriodRow {
   return {
     sf2g_rides: 0,
     other_rides: 0,
@@ -32,11 +37,12 @@ function month(
 
 function db(over: Partial<DbReport> = {}): DbReport {
   return {
-    month: "2026-09",
+    kind: "month",
+    period: "2026-09",
     generated_at: "2026-10-01T16:00:12.000Z",
-    months: [
-      month({
-        month: "2026-09",
+    periods: [
+      row({
+        period: "2026-09",
         offset: 0,
         sf2g_rides: 112,
         other_rides: 40,
@@ -52,8 +58,8 @@ function db(over: Partial<DbReport> = {}): DbReport {
         sync_jobs_failed: 2,
         errors: 5,
       }),
-      month({
-        month: "2026-08",
+      row({
+        period: "2026-08",
         offset: 1,
         sf2g_rides: 100,
         active_riders: 25,
@@ -62,9 +68,9 @@ function db(over: Partial<DbReport> = {}): DbReport {
         group_rides: 0,
         errors: 8,
       }),
-      month({ month: "2026-07", offset: 2, sf2g_rides: 90, active_riders: 20 }),
-      month({
-        month: "2025-09",
+      row({ period: "2026-07", offset: 2, sf2g_rides: 90, active_riders: 20 }),
+      row({
+        period: "2025-09",
         offset: 12,
         sf2g_rides: 56,
         active_riders: 15,
@@ -116,7 +122,37 @@ function db(over: Partial<DbReport> = {}): DbReport {
   };
 }
 
-function data(over: Partial<MonthlyReportData> = {}): MonthlyReportData {
+/** The same shape for a week: Oct 19–25 2026 compared with the week before. */
+function weekDb(): DbReport {
+  return db({
+    kind: "week",
+    period: "2026-10-19",
+    periods: [
+      row({
+        period: "2026-10-19",
+        offset: 0,
+        sf2g_rides: 42,
+        active_riders: 12,
+        sf2g_distance_meters: 2_000_000,
+        routes: { bayway: 30, skyline: 12 },
+        group_rides: 3,
+        errors: 2,
+      }),
+      row({
+        period: "2026-10-12",
+        offset: 1,
+        sf2g_rides: 35,
+        active_riders: 11,
+        routes: { bayway: 35 },
+        errors: 0,
+      }),
+      row({ period: "2026-10-05", offset: 2, sf2g_rides: 40 }),
+      row({ period: "2025-10-20", offset: 52, sf2g_rides: 21 }),
+    ],
+  });
+}
+
+function data(over: Partial<ReportData> = {}): ReportData {
   return {
     db: db(),
     usage: null,
@@ -137,24 +173,70 @@ describe("formatting", () => {
     expect(delta(3, undefined)).toEqual({ label: "–", direction: "flat" });
   });
 
-  it("shows both unit systems and month names", () => {
+  it("shows both unit systems and period names", () => {
     expect(fmtKmMi(1_609_344)).toBe("1,609 km / 1,000 mi");
-    expect(monthLabel("2026-09")).toBe("September 2026");
+    expect(periodLabel("month", "2026-09")).toBe("September 2026");
+    expect(periodShort("month", "2026-09")).toBe("Sep");
+    // A week is labelled by its Monday–Sunday span.
+    expect(periodLabel("week", "2026-10-19")).toBe("Oct 19 – 25, 2026");
+    expect(periodLabel("week", "2026-09-28")).toBe("Sep 28 – Oct 4, 2026");
+    expect(periodLabel("week", "2025-12-29")).toBe(
+      "Dec 29, 2025 – Jan 4, 2026",
+    );
+    expect(periodShort("week", "2026-10-19")).toBe("Oct 19");
   });
 });
 
-describe("renderMonthlyReport", () => {
+describe("period arithmetic", () => {
+  it("reports the previous LA month, even just after midnight UTC", () => {
+    // The job runs at 16:00 UTC on the 1st, which is Oct 1 in LA → September.
+    expect(previousPeriod("month", new Date("2026-10-01T16:00:00Z"))).toBe(
+      "2026-09",
+    );
+    // Early on the 1st UTC it is still the previous day in LA.
+    expect(previousPeriod("month", new Date("2026-10-01T03:00:00Z"))).toBe(
+      "2026-08",
+    );
+    expect(previousPeriod("month", new Date("2026-01-15T12:00:00Z"))).toBe(
+      "2025-12",
+    );
+    expect(shiftPeriod("month", "2026-01", -1)).toBe("2025-12");
+    expect(shiftPeriod("month", "2026-12", 1)).toBe("2027-01");
+  });
+
+  it("reports the previous Monday-to-Sunday LA week", () => {
+    expect(weekStart("2026-10-28")).toBe("2026-10-26"); // Wed → Mon
+    expect(weekStart("2026-10-26")).toBe("2026-10-26"); // Mon stays
+    expect(weekStart("2026-10-25")).toBe("2026-10-19"); // Sun → previous Mon
+    // Monday Oct 26, 16:00 UTC (9 am LA) → the week of Oct 19.
+    expect(previousPeriod("week", new Date("2026-10-26T16:00:00Z"))).toBe(
+      "2026-10-19",
+    );
+    // Monday 03:00 UTC is still Sunday in LA → the week before that.
+    expect(previousPeriod("week", new Date("2026-10-26T03:00:00Z"))).toBe(
+      "2026-10-12",
+    );
+    expect(shiftPeriod("week", "2026-10-19", -1)).toBe("2026-10-12");
+    expect(shiftPeriod("week", "2025-12-29", 1)).toBe("2026-01-05");
+  });
+});
+
+describe("renderReport (month)", () => {
   it("puts the headline comparison in the subject", () => {
-    const { subject } = renderMonthlyReport(data());
+    const { subject } = renderReport(data());
     expect(subject).toBe(
       "SF2G September 2026: 112 SF2G rides (+12% vs Aug), 23 riders",
     );
   });
 
   it("compares with last month and the same month last year", () => {
-    const { html, text } = renderMonthlyReport(data());
+    const { html, text } = renderReport(data());
+    expect(html).toContain("SF2G monthly report");
+    expect(html).toContain("Riders of the month");
+    expect(html).toContain("Three-month trend");
     expect(html).toContain("+12%"); // rides vs Aug
     expect(html).toContain("+100%"); // rides vs Sep 2025 (56 → 112)
+    expect(html).toContain("vs Sep 2025");
     expect(html).toContain("−8%"); // active riders 25 → 23
     expect(html).toContain("6,200 km / 3,853 mi");
     expect(text).toContain("SF2G rides                     112 (+12% vs Aug)");
@@ -162,7 +244,7 @@ describe("renderMonthlyReport", () => {
   });
 
   it("escapes rider names and links to profiles", () => {
-    const { html } = renderMonthlyReport(data());
+    const { html } = renderReport(data());
     expect(html).not.toContain("<script>alert(1)</script>");
     expect(html).toContain("Ada &lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain('href="https://sf2ging.com/profile/u-1"');
@@ -170,25 +252,25 @@ describe("renderMonthlyReport", () => {
   });
 
   it("explains missing integrations instead of showing empty tables", () => {
-    const { html } = renderMonthlyReport(data());
+    const { html } = renderReport(data());
     expect(html).toContain("POSTHOG_PERSONAL_API_KEY");
     expect(html).toContain("CLOUDFLARE_API_TOKEN");
   });
 
   it("renders usage and platform sections when provided", () => {
-    const { html, text } = renderMonthlyReport(
+    const { html, text } = renderReport(
       data({
         usage: {
-          months: [
+          periods: [
             {
-              month: "2026-09",
+              period: "2026-09",
               pageviews: 2_400,
               visitors: 310,
               sessions: 700,
               client_errors: 4,
             },
             {
-              month: "2026-08",
+              period: "2026-08",
               pageviews: 2_000,
               visitors: 300,
               sessions: 650,
@@ -198,9 +280,9 @@ describe("renderMonthlyReport", () => {
           top_pages: [{ path: "/leaderboard", views: 1_800 }],
         },
         workers: {
-          months: [
+          periods: [
             {
-              month: "2026-09",
+              period: "2026-09",
               requests: 50_000,
               errors: 25,
               subrequests: 90_000,
@@ -208,7 +290,7 @@ describe("renderMonthlyReport", () => {
               cpu_p99_ms: 9.7,
             },
             {
-              month: "2026-08",
+              period: "2026-08",
               requests: 40_000,
               errors: 400,
               subrequests: 80_000,
@@ -230,16 +312,47 @@ describe("renderMonthlyReport", () => {
   });
 
   it("lists server and sync errors in the health section", () => {
-    const { html } = renderMonthlyReport(data());
+    const { html } = renderReport(data());
     expect(html).toContain("fn:fetchLeaderboard");
     expect(html).toContain("statement timeout");
     expect(html).toContain("Strava 500");
     expect(html).toContain("−38%"); // errors 8 → 5
   });
 
-  it("refuses data without the reported month", () => {
-    expect(() => renderMonthlyReport(data({ db: db({ months: [] }) }))).toThrow(
-      /no row for the reported month/,
+  it("refuses data without the reported period", () => {
+    expect(() => renderReport(data({ db: db({ periods: [] }) }))).toThrow(
+      /no row for the reported period/,
     );
+  });
+});
+
+describe("renderReport (week)", () => {
+  it("labels everything by week and compares with the week before", () => {
+    const { subject, html, text } = renderReport(data({ db: weekDb() }));
+    expect(subject).toBe(
+      "SF2G week of Oct 19: 42 SF2G rides (+20% vs Oct 12), 12 riders",
+    );
+    expect(html).toContain("SF2G weekly report");
+    expect(html).toContain("Oct 19 – 25, 2026");
+    expect(html).toContain("Riders of the week");
+    expect(html).toContain("Three-week trend");
+    expect(html).toContain("+20%"); // 35 → 42 rides
+    expect(html).toContain("+100%"); // 21 → 42 rides vs a year ago
+    expect(html).toContain("vs Oct 20, 2025");
+    expect(html).not.toContain("month");
+    expect(text).toContain("SF2G weekly report — Oct 19 – 25, 2026");
+    expect(text).toContain(
+      "SF2G rides                     42 (+20% vs Oct 12)",
+    );
+  });
+
+  it("says so when nobody rode that week", () => {
+    const quiet = weekDb();
+    quiet.periods[0] = row({ period: "2026-10-19", offset: 0 });
+    quiet.periods[1] = row({ period: "2026-10-12", offset: 1 });
+    quiet.top_riders = [];
+    const { html } = renderReport(data({ db: quiet }));
+    expect(html).toContain("No SF2G rides this week.");
+    expect(html).toContain("Nobody rode an SF2G route this week.");
   });
 });
