@@ -94,6 +94,14 @@ const PAGES: PageCase[] = [
     },
   },
   {
+    path: "/races",
+    landmark: async (p) => {
+      // Rendered client-side from the static JSON; wait for the rows.
+      await expect(p.locator("article.race-row")).toHaveCount(65);
+      await expect(p.locator(".race-viz__map")).toHaveCount(36);
+    },
+  },
+  {
     path: "/privacy",
     landmark: async (p) => {
       await expect(
