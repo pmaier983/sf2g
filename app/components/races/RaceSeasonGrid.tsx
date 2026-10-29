@@ -153,7 +153,7 @@ export function RaceSeasonGrid({
         <p className="race-season__detail" aria-live="polite">
           {active
             ? describe(active, travelById)
-            : "Hover or focus a square to see its races."}
+            : "Hover a square to see its races; tap or click to jump to it."}
         </p>
         <span className="race-season__scale" aria-hidden="true">
           Less

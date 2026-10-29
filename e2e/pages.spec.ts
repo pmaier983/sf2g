@@ -177,3 +177,42 @@ test("/routes map tiles load (no 'API KEY REQUIRED' provider)", async ({
   expect(tiles.filter((t) => t.status >= 400)).toEqual([]);
   expect(tiles.some((t) => t.url.includes("cartocdn"))).toBe(false);
 });
+
+test("/races does not ask a first-time visitor to connect Strava", async ({
+  page,
+}) => {
+  // Undo the beforeEach "already dismissed" flag: a true first visit.
+  await page.addInitScript(() => {
+    try {
+      localStorage.removeItem("sf2g-sync-prompt-dismissed");
+    } catch {}
+  });
+  await page.goto("/races");
+  await expect(page.locator("article.race-row")).toHaveCount(65);
+  await page.waitForTimeout(500);
+  await expect(page.locator("dialog[open]")).toHaveCount(0);
+
+  // The leaderboard still asks.
+  await page.goto("/leaderboard");
+  await expect(page.locator("dialog[open]")).toHaveCount(1);
+});
+
+test("/races on a phone: no sideways scroll, filters behind a toggle", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/races");
+  await expect(page.locator("article.race-row")).toHaveCount(65);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+
+  const toggle = page.getByRole("button", { name: /Filters/ });
+  await expect(toggle).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Road race" })).toBeHidden();
+  await toggle.click();
+  await page.getByRole("radio", { name: "Road race" }).click();
+  await expect(page).toHaveURL(/type=Road\+race/);
+  await expect(toggle).toContainText("1 filter");
+});

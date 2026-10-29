@@ -645,6 +645,32 @@ button.race-season__cell:focus-visible {
   color: var(--color-text-muted);
 }
 
+/* ----- Phone-only toggles (hidden on wider screens) ----- */
+
+.races-page__filters {
+  display: contents;
+}
+
+.races-page__filters-toggle,
+.race-row__sources-toggle {
+  display: none;
+}
+
+.race-origin__details summary {
+  cursor: pointer;
+  width: fit-content;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.race-origin__details summary:hover {
+  color: var(--color-text-secondary);
+}
+
+.race-origin__details[open] summary {
+  margin-bottom: var(--space-1);
+}
+
 /* ----- Mobile ----- */
 
 @media (max-width: 640px) {
@@ -688,5 +714,179 @@ button.race-season__cell:focus-visible {
 
   .races-page__title {
     font-size: var(--text-3xl);
+  }
+
+  /* Get to the races sooner: tighter intro, two-column stats. */
+  .races-page {
+    padding-top: var(--space-4);
+  }
+
+  .races-page__subtitle {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .races-page__keys {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .race-origin__legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px var(--space-3);
+  }
+
+  .race-origin__row {
+    flex-wrap: nowrap;
+  }
+
+  .race-origin__input {
+    max-width: none;
+    flex: 1 1 auto;
+  }
+
+  /* Icon-only locate button beside the input */
+  .race-origin__locate {
+    flex: none;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .race-origin__locate-text,
+  .races-page__subtitle-more {
+    display: none;
+  }
+
+  /* Filters: one summary button; the chip rows open below it. */
+  .races-page__bar {
+    display: block;
+    padding: var(--space-2) 0;
+  }
+
+  .races-page__filters-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px var(--space-2);
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .races-page__filters-toggle[aria-expanded="true"] {
+    border-color: var(--color-sf2g-orange);
+  }
+
+  .races-page__filters-count {
+    color: var(--color-sf2g-orange);
+  }
+
+  .races-page__filters-toggle-meta {
+    flex: 1;
+    font-weight: var(--font-regular);
+    color: var(--color-text-muted);
+    text-align: right;
+  }
+
+  .races-page__filters-caret {
+    color: var(--color-text-muted);
+  }
+
+  .races-page__filters {
+    display: none;
+  }
+
+  .races-page__filters--open {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+  }
+
+  /* Rows: narrower date column; sources behind a toggle. */
+  .race-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: var(--space-3) 0;
+  }
+
+  .race-row__name {
+    font-size: var(--text-lg);
+  }
+
+  .race-row__note {
+    font-size: var(--text-sm);
+  }
+
+  .race-row__sources-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 32px;
+    padding: 0 var(--space-2);
+    margin-left: calc(-1 * var(--space-2));
+    border: 0;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+  }
+
+  .race-row__sources {
+    display: none;
+  }
+
+  .race-row__sources--open {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .race-viz {
+    gap: var(--space-2);
+    /* The caption wraps on phones; keep the map level with the profile. */
+    align-items: flex-start;
+  }
+
+  .race-viz__map {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Touch screens: thumb-sized controls and grid squares. */
+@media (pointer: coarse) {
+  .races-page .filter-chip {
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .race-origin__input {
+    min-height: 44px;
+    font-size: 16px; /* 16px stops iOS zooming into the field */
+  }
+
+  .race-origin__locate {
+    min-height: 44px;
+  }
+
+  .race-season {
+    --race-cell: 16px;
+  }
+
+  .race-season__unplaced a,
+  .races-page__keys a {
+    display: inline-block;
+    padding: var(--space-1) 0;
   }
 }

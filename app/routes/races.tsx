@@ -122,9 +122,12 @@ function RacesPage() {
           <h1 className="races-page__title">2027 Bike Races</h1>
           <p className="races-page__subtitle">
             Every California road race posted for 2027, plus multi-day stage
-            races across the US. Each California course shows one lap: the route
-            from a real race GPS file and its elevation profile. Every event
-            lists where its date, route and elevation came from.
+            races across the US.{" "}
+            <span className="races-page__subtitle-more">
+              Each California course shows one lap: the route from a real race
+              GPS file and its elevation profile. Every event lists where its
+              date, route and elevation came from.
+            </span>
           </p>
         </header>
 

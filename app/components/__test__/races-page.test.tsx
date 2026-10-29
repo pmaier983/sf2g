@@ -321,3 +321,62 @@ describe("RacesPageContent", () => {
     expect(method.textContent).toContain(`Compiled ${DATA.generatedOn}.`);
   });
 });
+
+describe("RacesPageContent on phones", () => {
+  it("filters collapse behind one toggle that summarises them", async () => {
+    const user = userEvent.setup();
+    await setup({ section: "norcal", terrain: "climb", sort: "hilliest" });
+    const toggle = screen.getByRole("button", { name: /Filters/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    // Result count, how many filters are on, and the sort, at a glance.
+    expect(toggle.textContent).toContain("3 races");
+    expect(toggle.textContent).toContain("2 filters");
+    expect(toggle.textContent).toContain("Hilliest");
+    const panel = document.getElementById(
+      toggle.getAttribute("aria-controls")!,
+    )!;
+    expect(panel.className).not.toContain("races-page__filters--open");
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(panel.className).toContain("races-page__filters--open");
+    // The chips live inside the panel.
+    expect(
+      within(panel).getByRole("radiogroup", { name: "Terrain" }),
+    ).toBeInTheDocument();
+  });
+
+  it("with no filters on, the toggle says so", async () => {
+    await setup();
+    const toggle = screen.getByRole("button", { name: /Filters/ });
+    expect(toggle.textContent).toContain("65 races");
+    expect(toggle.textContent).not.toMatch(/\d filters?/);
+    expect(toggle.textContent).toContain("Date");
+  });
+
+  it("each row's sources fold behind a toggle", async () => {
+    const user = userEvent.setup();
+    await setup();
+    const row = document.getElementById("patterson-pass-road-race-2027")!;
+    const toggle = within(row).getByRole("button", { name: /Sources/ });
+    expect(toggle.textContent).toMatch(/Sources \(4\)/);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    const list = row.querySelector(".race-row__sources")!;
+    expect(list.className).not.toContain("race-row__sources--open");
+    // Links stay in the DOM (desktop shows them inline; CSS hides on phones).
+    expect(list.querySelectorAll("a").length).toBeGreaterThan(0);
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(list.className).toContain("race-row__sources--open");
+  });
+
+  it("the travel-estimate fine print sits in a disclosure", async () => {
+    await setup();
+    const details = document.querySelector(".race-origin details")!;
+    expect(details.querySelector("summary")!.textContent).toBe(
+      "How estimates work",
+    );
+    expect(details.querySelector(".race-origin__note")!.textContent).toMatch(
+      /OSRM/,
+    );
+  });
+});
