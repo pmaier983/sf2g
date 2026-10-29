@@ -1,6 +1,6 @@
 /**
  * GitHub-contribution-style season grid: one square per day of the year in
- * Sunday-first week columns, each holding the races run that day.
+ * Monday-first week columns, each holding the races run that day.
  * Pure date math in UTC so it never shifts with the viewer's time zone.
  */
 import type { RaceEvent } from "./races";
@@ -13,7 +13,7 @@ export interface SeasonDay {
 }
 
 export interface SeasonGrid {
-  /** weeks[w][d], d = 0 is Sunday */
+  /** weeks[w][d], d = 0 is Monday */
   weeks: SeasonDay[][];
   /** Month label and the week column that holds its 1st. */
   months: { label: string; week: number }[];
@@ -41,6 +41,8 @@ const MONTHS = [
 
 const isoOf = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const msOf = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
+/** JavaScript's Sunday-first day number converted to Monday-first. */
+const mondayIndex = (date: Date) => (date.getUTCDay() + 6) % 7;
 
 /** Every ISO day an event runs: its listed series dates, else start..end. */
 export function raceDays(e: RaceEvent): string[] {
@@ -70,8 +72,8 @@ export function seasonGrid(year: number, events: RaceEvent[]): SeasonGrid {
 
   const jan1 = Date.UTC(year, 0, 1);
   const dec31 = Date.UTC(year, 11, 31);
-  const first = jan1 - new Date(jan1).getUTCDay() * DAY_MS;
-  const last = dec31 + (6 - new Date(dec31).getUTCDay()) * DAY_MS;
+  const first = jan1 - mondayIndex(new Date(jan1)) * DAY_MS;
+  const last = dec31 + (6 - mondayIndex(new Date(dec31))) * DAY_MS;
 
   const weeks: SeasonDay[][] = [];
   const months: SeasonGrid["months"] = [];
