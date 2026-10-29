@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   RACE_SORTS,
   SECTION_FILTERS,
@@ -100,6 +107,16 @@ export function RacesPageContent({
   );
   const listed = useMemo(() => [...dated, ...tba], [dated, tba]);
 
+  const filtersId = useId();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilters = [
+    search.section !== "all",
+    search.type !== "all",
+    search.terrain !== "all",
+  ].filter(Boolean).length;
+  const sortLabel =
+    RACE_SORTS.find((o) => o.value === search.sort)?.label ?? "Date";
+
   const modeCounts = useMemo(() => {
     const c = Object.fromEntries(
       TRAVEL_MODE_ORDER.map((m) => [m, 0]),
@@ -180,81 +197,110 @@ export function RacesPageContent({
         role="toolbar"
         aria-label="Filter events"
       >
-        <div
-          className="races-page__chips"
-          role="radiogroup"
-          aria-label="Region"
+        {/* Phones: one summary button instead of four rows of chips. */}
+        <button
+          type="button"
+          className="races-page__filters-toggle"
+          aria-expanded={filtersOpen}
+          aria-controls={filtersId}
+          onClick={() => setFiltersOpen((o) => !o)}
         >
-          {SECTION_FILTERS.map((s: SectionFilter) => (
-            <Chip
-              key={s}
-              selected={search.section === s}
-              onClick={() => onSearchChange({ section: s })}
-            >
-              {s === "all" ? "All" : SECTION_LABELS[s]} {counts[s]}
-            </Chip>
-          ))}
-        </div>
-        <div
-          className="races-page__chips"
-          role="radiogroup"
-          aria-label="Event type"
-        >
-          {TYPE_FILTERS.map((t: TypeFilter) => (
-            <Chip
-              key={t}
-              selected={search.type === t}
-              onClick={() => onSearchChange({ type: t })}
-            >
-              {t === "all" ? "All types" : t}
-            </Chip>
-          ))}
-        </div>
-        <div
-          className="races-page__chips"
-          role="radiogroup"
-          aria-label="Terrain"
-        >
-          {TERRAIN_FILTERS.map((t: TerrainFilter) => (
-            <Chip
-              key={t}
-              selected={search.terrain === t}
-              onClick={() => onSearchChange({ terrain: t })}
-              title={t === "all" ? undefined : TERRAIN_KINDS[t].rule}
-            >
-              {t === "all" ? (
-                "All terrain"
-              ) : (
-                <>
-                  <span aria-hidden="true">{TERRAIN_KINDS[t].emoji}</span>{" "}
-                  {TERRAIN_KINDS[t].label} {terrain[t]}
-                </>
-              )}
-            </Chip>
-          ))}
-        </div>
-        <div
-          className="races-page__chips races-page__sort"
-          role="radiogroup"
-          aria-label="Sort by"
-        >
-          <span className="races-page__sort-label" aria-hidden="true">
-            Sort
+          <span className="races-page__filters-toggle-label">
+            <span aria-hidden="true">⚙️</span> Filters
+            {activeFilters > 0 && (
+              <span className="races-page__filters-count">
+                {" "}
+                · {activeFilters} {activeFilters === 1 ? "filter" : "filters"}
+              </span>
+            )}
           </span>
-          {RACE_SORTS.map((o) => (
-            <Chip
-              key={o.value}
-              selected={search.sort === o.value}
-              onClick={() => onSearchChange({ sort: o.value })}
-              title={
-                o.value === "drive" || o.value === "time"
-                  ? `From ${origin.label}`
-                  : undefined
-              }
-            >
-              {o.label}
-            </Chip>
-          ))}
+          <span className="races-page__filters-toggle-meta">
+            {listed.length} races · {sortLabel}
+          </span>
+          <span className="races-page__filters-caret" aria-hidden="true">
+            {filtersOpen ? "▴" : "▾"}
+          </span>
+        </button>
+        <div
+          id={filtersId}
+          className={`races-page__filters${filtersOpen ? " races-page__filters--open" : ""}`}
+        >
+          <div
+            className="races-page__chips"
+            role="radiogroup"
+            aria-label="Region"
+          >
+            {SECTION_FILTERS.map((s: SectionFilter) => (
+              <Chip
+                key={s}
+                selected={search.section === s}
+                onClick={() => onSearchChange({ section: s })}
+              >
+                {s === "all" ? "All" : SECTION_LABELS[s]} {counts[s]}
+              </Chip>
+            ))}
+          </div>
+          <div
+            className="races-page__chips"
+            role="radiogroup"
+            aria-label="Event type"
+          >
+            {TYPE_FILTERS.map((t: TypeFilter) => (
+              <Chip
+                key={t}
+                selected={search.type === t}
+                onClick={() => onSearchChange({ type: t })}
+              >
+                {t === "all" ? "All types" : t}
+              </Chip>
+            ))}
+          </div>
+          <div
+            className="races-page__chips"
+            role="radiogroup"
+            aria-label="Terrain"
+          >
+            {TERRAIN_FILTERS.map((t: TerrainFilter) => (
+              <Chip
+                key={t}
+                selected={search.terrain === t}
+                onClick={() => onSearchChange({ terrain: t })}
+                title={t === "all" ? undefined : TERRAIN_KINDS[t].rule}
+              >
+                {t === "all" ? (
+                  "All terrain"
+                ) : (
+                  <>
+                    <span aria-hidden="true">{TERRAIN_KINDS[t].emoji}</span>{" "}
+                    {TERRAIN_KINDS[t].label} {terrain[t]}
+                  </>
+                )}
+              </Chip>
+            ))}
+          </div>
+          <div
+            className="races-page__chips races-page__sort"
+            role="radiogroup"
+            aria-label="Sort by"
+          >
+            <span className="races-page__sort-label" aria-hidden="true">
+              Sort
+            </span>
+            {RACE_SORTS.map((o) => (
+              <Chip
+                key={o.value}
+                selected={search.sort === o.value}
+                onClick={() => onSearchChange({ sort: o.value })}
+                title={
+                  o.value === "drive" || o.value === "time"
+                    ? `From ${origin.label}`
+                    : undefined
+                }
+              >
+                {o.label}
+              </Chip>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -123,8 +123,13 @@ export function RaceOriginPicker({
           className="btn btn--ghost btn--sm race-origin__locate"
           onClick={useMyLocation}
           disabled={locating}
+          aria-label={locating ? "Locating…" : "Use my location"}
+          title="Use my location"
         >
-          📍 {locating ? "Locating…" : "Use my location"}
+          <span aria-hidden="true">📍</span>
+          <span className="race-origin__locate-text" aria-hidden="true">
+            {locating ? "Locating…" : "Use my location"}
+          </span>
         </button>
       </div>
       {hint && (
@@ -140,16 +145,19 @@ export function RaceOriginPicker({
           </li>
         ))}
       </ul>
-      <p className="race-origin__note">
-        {origin.exact
-          ? "Drive times from SF City Hall are routed with OSRM (free-flow traffic)."
-          : `Rough estimates from ${origin.label}: straight-line distance × 1.2 for roads, ${speed(55)} driving.`}{" "}
-        🚲 {dist(25)} or less at {speed(14)}
-        {nearSF &&
-          "; the Bay has no bike bridge into SF, so add BART or the ferry"}{" "}
-        · 🚗 up to 4 h · 🌙 over 4 h, go the day before · ✈️ over {dist(600)},
-        air time + 2.5 h of airports.
-      </p>
+      <details className="race-origin__details">
+        <summary>How estimates work</summary>
+        <p className="race-origin__note">
+          {origin.exact
+            ? "Drive times from SF City Hall are routed with OSRM (free-flow traffic)."
+            : `Rough estimates from ${origin.label}: straight-line distance × 1.2 for roads, ${speed(55)} driving.`}{" "}
+          🚲 {dist(25)} or less at {speed(14)}
+          {nearSF &&
+            "; the Bay has no bike bridge into SF, so add BART or the ferry"}{" "}
+          · 🚗 up to 4 h · 🌙 over 4 h, go the day before · ✈️ over {dist(600)},
+          air time + 2.5 h of airports.
+        </p>
+      </details>
     </section>
   );
 }

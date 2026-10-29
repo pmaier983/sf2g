@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   STATUS_BADGES,
   formatDateRange,
@@ -118,6 +119,8 @@ export function RaceRow({
 }: RaceRowProps) {
   const badge = STATUS_BADGES[event.dateStatus];
   const terrain = terrainOf(event);
+  const sources = sourceEntries(event, estimatedFrom);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const where = [event.city, event.state].filter(Boolean).join(", ");
   const extraDates =
     event.dates && event.dates.length > 1
@@ -190,8 +193,21 @@ export function RaceRow({
           </>
         )}
 
-        <div className="race-row__sources">
-          {sourceEntries(event, estimatedFrom).map((s, i) => (
+        {/* Phones: sources fold behind a toggle; desktop shows them inline. */}
+        <button
+          type="button"
+          className="race-row__sources-toggle"
+          aria-expanded={sourcesOpen}
+          aria-controls={`${event.id}-sources`}
+          onClick={() => setSourcesOpen((o) => !o)}
+        >
+          Sources ({sources.length}) {sourcesOpen ? "▴" : "▾"}
+        </button>
+        <div
+          id={`${event.id}-sources`}
+          className={`race-row__sources${sourcesOpen ? " race-row__sources--open" : ""}`}
+        >
+          {sources.map((s, i) => (
             <SourceLink key={`${s.what}-${i}`} source={s} />
           ))}
         </div>
