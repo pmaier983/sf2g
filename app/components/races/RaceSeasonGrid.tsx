@@ -17,9 +17,9 @@ export interface RaceSeasonGridProps {
 }
 
 const WEEKDAY_LABELS: [number, string][] = [
-  [1, "Mon"],
-  [3, "Wed"],
-  [5, "Fri"],
+  [0, "Mon"],
+  [2, "Wed"],
+  [4, "Fri"],
 ];
 
 function dayLabel(iso: string): string {

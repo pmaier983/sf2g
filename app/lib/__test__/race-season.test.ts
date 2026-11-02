@@ -49,12 +49,12 @@ describe("raceDays", () => {
 describe("seasonGrid", () => {
   const grid = seasonGrid(2027, DATA.events);
 
-  it("is 53 Sunday-first weeks covering all of 2027", () => {
+  it("is 53 Monday-first weeks covering all of 2027", () => {
     expect(grid.weeks).toHaveLength(53);
     expect(grid.weeks.every((w) => w.length === 7)).toBe(true);
-    // Jan 1 2027 is a Friday → week 0, column 5
-    expect(grid.weeks[0][5]).toMatchObject({ iso: "2027-01-01", inYear: true });
-    expect(grid.weeks[0][4]).toMatchObject({
+    // Jan 1 2027 is a Friday → week 0, row 4 (Monday is row 0)
+    expect(grid.weeks[0][4]).toMatchObject({ iso: "2027-01-01", inYear: true });
+    expect(grid.weeks[0][3]).toMatchObject({
       iso: "2026-12-31",
       inYear: false,
     });
