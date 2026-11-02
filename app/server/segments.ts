@@ -2,7 +2,7 @@
  * Segment board server functions (phase 07b).
  *
  * - `fetchSegmentLeaderboard` — the /segments page: one get_segment_leaderboard
- *   call (migration 045), the only read path to segment_efforts
+ *   call (migrations 045/046), the only read path to segment_efforts
  * - `setSegmentBoardOptIn` — the logged-in rider opts in or out of the board
  *
  * Strava is never called from here; segment efforts are fetched by the sync
@@ -46,6 +46,9 @@ export interface SegmentBoardRow {
   average_grade: number;
   terrain: "climb" | "flat";
   direction: "south" | "north";
+  /** [lat, lng] — places the segment on the route view (phase 07c). */
+  start_latlng: [number, number];
+  end_latlng: [number, number];
   kom_seconds: number | null;
   qom_seconds: number | null;
   curated_rank: number | null;

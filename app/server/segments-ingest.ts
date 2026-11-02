@@ -48,6 +48,7 @@ const isLatLng = (v: unknown): v is [number, number] =>
 
 /** Summary columns only — never curated_rank, hidden or the xoms columns. */
 export function segmentToUpsert(s: StravaSegmentSummary): SegmentInsert {
+  const corridor = classifySegmentCorridor(s);
   return {
     id: s.id,
     name: s.name,
@@ -60,8 +61,8 @@ export function segmentToUpsert(s: StravaSegmentSummary): SegmentInsert {
     start_latlng: s.start_latlng,
     end_latlng: s.end_latlng,
     hazardous: s.hazardous ?? false,
-    corridor: classifySegmentCorridor(s),
-    direction: segmentDirection(s),
+    corridor,
+    direction: segmentDirection(s, corridor),
     updated_at: new Date().toISOString(),
   };
 }

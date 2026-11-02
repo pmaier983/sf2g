@@ -3,8 +3,12 @@
  * the order get_segment_leaderboard returns (curated first, then most
  * riders). Clicking a row lists its SF2G top riders with links to the
  * efforts' activities on Strava (required by the Strava API agreement).
+ *
+ * Linked to the route view (07c): hovering a row highlights its segment on
+ * the map and profile; picking a segment there expands its row and scrolls
+ * to it (`focusRequest`).
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type {
   SegmentBoardRow,
@@ -28,6 +32,12 @@ export interface SegmentBoardProps {
   isLoading?: boolean;
   error?: Error | null;
   onRetry?: () => void;
+  hoveredId?: number | null;
+  onHover?: (id: number | null) => void;
+  /** A row was expanded (its segment becomes the selected one). */
+  onSelect?: (id: number | null) => void;
+  /** Expand this segment's row and scroll to it; `n` re-triggers the same id. */
+  focusRequest?: { id: number; n: number } | null;
 }
 
 const TERRAIN_LABEL = { climb: "Climb", flat: "Flat" } as const;
@@ -42,7 +52,7 @@ function boardColumns(unit: UnitSystem): ColumnDef<SegmentBoardRow, any>[] {
       cell: ({ row }) => {
         const s = row.original;
         return (
-          <div className="segments__segment">
+          <div className="segments__segment" data-segment-row={s.id}>
             <span className="segments__expand" aria-hidden="true">
               {row.getIsExpanded() ? "▾" : "▸"}
             </span>
@@ -159,7 +169,12 @@ export function SegmentBoard({
   isLoading,
   error,
   onRetry,
+  hoveredId = null,
+  onHover,
+  onSelect,
+  focusRequest = null,
 }: SegmentBoardProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const unit = useUnit();
   const columns = useMemo(() => boardColumns(unit), [unit]);
   const data = useMemo(() => segments ?? [], [segments]);
@@ -174,27 +189,57 @@ export function SegmentBoard({
     getRowCanExpand: () => true,
   });
 
+  // A segment picked on the map/profile: expand its row, scroll it into view.
+  useEffect(() => {
+    if (!focusRequest) return;
+    const row = table.getRowModel().rowsById[String(focusRequest.id)];
+    if (!row) return;
+    row.toggleExpanded(true);
+    requestAnimationFrame(() => {
+      wrapperRef.current
+        ?.querySelector(`[data-segment-row="${focusRequest.id}"]`)
+        ?.closest("tr")
+        ?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    });
+    // `table` is stable; re-run only for a new request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
+
   return (
-    <DataTable
-      table={table}
-      ariaLabel="Skyline segment board"
-      className="segments__table-wrapper"
-      scrollClassName="table-scroll"
-      tableClassName="leaderboard__table segments__table"
-      onRowClick={(row) => row.toggleExpanded()}
-      getRowProps={(row) => ({
-        className: row.getIsExpanded() ? "segments__row--expanded" : undefined,
-      })}
-      renderSubRow={(row) => <RiderList segment={row.original} />}
-      isLoading={isLoading}
-      error={error}
-      onRetry={onRetry}
-      skeletonRows={6}
-      empty={
-        <TableEmpty icon="⛰️" title="No segments to show">
-          No segment has at least 3 opted-in riders for these filters.
-        </TableEmpty>
-      }
-    />
+    <div ref={wrapperRef}>
+      <DataTable
+        table={table}
+        ariaLabel="Skyline segment board"
+        className="segments__table-wrapper"
+        scrollClassName="table-scroll"
+        tableClassName="leaderboard__table segments__table"
+        onRowClick={(row) => {
+          const expand = !row.getIsExpanded();
+          row.toggleExpanded(expand);
+          onSelect?.(expand ? row.original.id : null);
+        }}
+        getRowProps={(row) => ({
+          className:
+            [
+              row.getIsExpanded() ? "segments__row--expanded" : "",
+              row.original.id === hoveredId ? "segments__row--hovered" : "",
+            ]
+              .filter(Boolean)
+              .join(" ") || undefined,
+          onMouseEnter: onHover ? () => onHover(row.original.id) : undefined,
+          onMouseLeave: onHover ? () => onHover(null) : undefined,
+        })}
+        renderSubRow={(row) => <RiderList segment={row.original} />}
+        isLoading={isLoading}
+        error={error}
+        onRetry={onRetry}
+        skeletonRows={6}
+        empty={
+          <TableEmpty icon="⛰️" title="No segments to show">
+            No segment has at least 3 opted-in riders for these filters.
+          </TableEmpty>
+        }
+      />
+    </div>
   );
 }

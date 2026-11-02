@@ -2890,12 +2890,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.67003,
+          -122.48692
+        ],
         "kom_seconds": 280,
         "qom_seconds": null,
         "rider_count": 6,
         "curated_rank": null,
+        "start_latlng": [
+          37.72316,
+          -122.5026
+        ],
         "average_grade": 4,
-        "distance_meters": 4993.4
+        "distance_meters": 6256.8
       },
       {
         "id": 900002,
@@ -2964,12 +2972,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.59598,
+          -122.41987
+        ],
         "kom_seconds": 390,
         "qom_seconds": null,
         "rider_count": 5,
         "curated_rank": null,
+        "start_latlng": [
+          37.65887,
+          -122.47482
+        ],
         "average_grade": 6,
-        "distance_meters": 2928.2
+        "distance_meters": 8726
       },
       {
         "id": 900003,
@@ -3026,12 +3042,20 @@
         ],
         "terrain": "climb",
         "direction": "south",
+        "end_latlng": [
+          37.54682,
+          -122.37335
+        ],
         "kom_seconds": 240,
         "qom_seconds": null,
         "rider_count": 4,
         "curated_rank": null,
+        "start_latlng": [
+          37.58874,
+          -122.4127
+        ],
         "average_grade": 3,
-        "distance_meters": 4189
+        "distance_meters": 6219
       },
       {
         "id": 900005,
@@ -3076,12 +3100,20 @@
         ],
         "terrain": "flat",
         "direction": "south",
+        "end_latlng": [
+          37.46063,
+          -122.29369
+        ],
         "kom_seconds": null,
         "qom_seconds": null,
         "rider_count": 3,
         "curated_rank": null,
+        "start_latlng": [
+          37.51023,
+          -122.34486
+        ],
         "average_grade": -0.5,
-        "distance_meters": 1985.4
+        "distance_meters": 7361.1
       }
     ],
     "segments_total": 4

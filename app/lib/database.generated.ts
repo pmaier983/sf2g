@@ -518,6 +518,9 @@ isOneToOne: false
             "batch_update_ride_classifications":
 { Args: { "updates": Json }; Returns: number
                            },
+"batch_update_segment_corridors":
+{ Args: { "p_rows": Json }; Returns: number
+                           },
 "claim_sync_jobs":
 { Args: { "n": number }; Returns: {
               "attempts": number,

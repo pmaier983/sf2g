@@ -179,6 +179,36 @@ test("segments: the Climbs chip narrows the board and updates the URL", async ({
   expect(errors).toEqual([]);
 });
 
+test("segments: the route view's tiles load and a bar opens its board row", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  const tiles: number[] = [];
+  page.on("response", (res) => {
+    if (/\/\d+\/\d+\/\d+(@2x)?\.png/.test(res.url())) tiles.push(res.status());
+  });
+  await page.goto("/segments");
+  await expect
+    .poll(() => page.locator(".route-map img.leaflet-tile-loaded").count(), {
+      timeout: 15_000,
+    })
+    .toBeGreaterThan(0);
+  expect(tiles.filter((s) => s >= 400)).toEqual([]);
+  await expect(page.locator("path.route-map__segment")).toHaveCount(4);
+
+  const bar = page.getByRole("button", { name: /^Skyline Climb B,/ });
+  await bar.click();
+  await expect(bar).toHaveAttribute("aria-pressed", "true");
+  const board = page.getByRole("table", { name: "Skyline segment board" });
+  await expect(
+    board.getByRole("link", { name: "View on Strava" }).first(),
+  ).toBeVisible();
+  await expect(
+    board.locator('[data-segment-row="900002"]').locator("xpath=ancestor::tr"),
+  ).toBeInViewport();
+  expect(errors).toEqual([]);
+});
+
 test("/routes map tiles load (no 'API KEY REQUIRED' provider)", async ({
   page,
 }) => {
