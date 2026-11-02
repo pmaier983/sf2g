@@ -767,7 +767,8 @@ const segmentRows = SEGMENT_SPECS.map((spec) => {
     start,
     end,
     distance: round(distance, 1),
-    direction: end[0] < start[0] ? "south" : "north",
+    // Further along the reference line = south (segmentDirection, phase 07c).
+    direction: spec.to > spec.from ? "south" : "north",
     terrain: spec.grade >= 2 ? "climb" : spec.grade >= -1 ? "flat" : "descent",
     elevationLow: round(200 + Math.min(0, climb), 1),
     elevationHigh: round(200 + Math.max(0, climb), 1),

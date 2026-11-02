@@ -3,7 +3,9 @@ import { decodePolyline } from "../polyline";
 import { SKYLINE_REFERENCE_POLYLINE } from "../constants";
 import {
   classifySegmentCorridor,
+  cumulativeDistances,
   distanceToPolylineMeters,
+  projectOntoPolyline,
   parseXomTime,
   segmentDirection,
   segmentTerrain,
@@ -28,16 +30,22 @@ const seg = (
 });
 
 describe("SKYLINE_REFERENCE_POLYLINE", () => {
-  it("decodes to the Daly City → Kings Mountain reference ride", () => {
-    expect(line).toHaveLength(128);
-    expect(line[0]).toEqual([37.67, -122.48692]);
-    expect(line[line.length - 1]).toEqual([37.48889, -122.32009]);
+  it("decodes to the core Skyline route: Sloat/Skyline → Arastradero Rd", () => {
+    expect(line.length).toBeGreaterThan(100);
+    expect(line.length).toBeLessThanOrEqual(250);
+    // Sloat Blvd → Skyline Blvd turn, 1.8 km before "Mussel Rock Climb"
+    expect(line[0]).toEqual([37.73327, -122.49734]);
+    // Foothill Expwy / Arastradero Rd
+    expect(line[line.length - 1]).toEqual([37.39887, -122.13453]);
     const lats = line.map((p) => p[0]);
     const lngs = line.map((p) => p[1]);
-    expect(Math.min(...lats)).toBeCloseTo(37.489, 3);
-    expect(Math.max(...lats)).toBeCloseTo(37.67, 3);
-    expect(Math.min(...lngs)).toBeCloseTo(-122.487, 3);
-    expect(Math.max(...lngs)).toBeCloseTo(-122.32, 3);
+    expect(Math.max(...lats)).toBeCloseTo(37.7333, 3);
+    expect(Math.min(...lats)).toBeCloseTo(37.399, 3);
+    expect(Math.min(...lngs)).toBeCloseTo(-122.5032, 3); // Lake Merced
+    expect(Math.max(...lngs)).toBeCloseTo(-122.1345, 3);
+    const total = cumulativeDistances(line).at(-1)!;
+    expect(total).toBeGreaterThan(55_000);
+    expect(total).toBeLessThan(58_000);
   });
 });
 
@@ -55,17 +63,77 @@ describe("distanceToPolylineMeters", () => {
   });
 });
 
+describe("projectOntoPolyline", () => {
+  const cum = cumulativeDistances(line);
+
+  it("a vertex projects onto itself at its cumulative distance", () => {
+    for (const i of [0, 10, 50, line.length - 1]) {
+      const p = projectOntoPolyline(line[i], line);
+      expect(p.distanceM).toBeLessThan(0.5);
+      expect(p.alongM).toBeCloseTo(cum[i], 0);
+    }
+  });
+
+  it("a point off the line projects to the foot of the perpendicular", () => {
+    const p = projectOntoPolyline(east(line[10], 150), line);
+    expect(p.distanceM).toBeGreaterThan(20);
+    expect(p.distanceM).toBeLessThanOrEqual(150.5);
+    expect(Math.abs(p.alongM - cum[10])).toBeLessThan(200);
+  });
+
+  it("along-track distance grows for points sampled along the line", () => {
+    const along = line.map((pt) => projectOntoPolyline(pt, line).alongM);
+    for (let i = 1; i < along.length; i++)
+      expect(along[i]).toBeGreaterThanOrEqual(along[i - 1]);
+  });
+
+  it("uses the given cumulative distances (e.g. a ride's distance stream)", () => {
+    const scaled = cum.map((d) => d * 1.02);
+    expect(projectOntoPolyline(line[20], line, scaled).alongM).toBeCloseTo(
+      scaled[20],
+      0,
+    );
+  });
+
+  it("matches distanceToPolylineMeters", () => {
+    const pt = east(line[40], 250);
+    expect(projectOntoPolyline(pt, line).distanceM).toBeCloseTo(
+      distanceToPolylineMeters(pt, line),
+      6,
+    );
+  });
+});
+
 describe("classifySegmentCorridor / segmentDirection", () => {
   it("a segment from point 10 to point 30 of the line is a southbound Skyline segment", () => {
     const s = seg(line[10], line[30]);
     expect(classifySegmentCorridor(s)).toBe("skyline");
-    expect(segmentDirection(s)).toBe("south");
+    expect(segmentDirection(s, "skyline")).toBe("south");
   });
 
   it("the same segment reversed is northbound", () => {
     const s = seg(line[30], line[10]);
     expect(classifySegmentCorridor(s)).toBe("skyline");
-    expect(segmentDirection(s)).toBe("north");
+    expect(segmentDirection(s, "skyline")).toBe("north");
+  });
+
+  it("south means further along the route, even where the route heads north-east", () => {
+    // Woodside → Sand Hill: the route climbs in latitude while going forward.
+    let pair: [number, number] | null = null;
+    for (let i = 0; i < line.length && !pair; i++) {
+      for (let j = i + 1; j < Math.min(i + 8, line.length); j++) {
+        if (line[i][1] > -122.25 && line[j][0] > line[i][0] + 0.002) {
+          pair = [i, j];
+          break;
+        }
+      }
+    }
+    expect(pair).not.toBeNull();
+    const [i, j] = pair!;
+    expect(segmentDirection(seg(line[i], line[j]), "skyline")).toBe("south");
+    expect(segmentDirection(seg(line[j], line[i]), "skyline")).toBe("north");
+    // Without a corridor line, latitude decides (off-corridor segments).
+    expect(segmentDirection(seg(line[i], line[j]))).toBe("north");
   });
 
   it("moving the end 2 km east takes it off the corridor; 300 m east keeps it", () => {
