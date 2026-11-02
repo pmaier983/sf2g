@@ -480,3 +480,32 @@ export const ROUTE_WAYPOINTS: Record<string, RouteWaypoint[]> = {
  * a 16-minute stuck e2e run).
  */
 export const OUTBOUND_FETCH_TIMEOUT_MS = 10_000;
+
+// ---------------------------------------------------------------------------
+// Segment corridors (rework phase 07)
+// ---------------------------------------------------------------------------
+
+/**
+ * The core SF2G Skyline route: where the ride turns from Sloat Blvd onto
+ * Skyline Blvd (1.8 km before Strava's "Mussel Rock Climb") → Foothill Expwy /
+ * Arastradero Rd, via Skyline, Cañada, Woodside, Sand Hill and Junipero
+ * Serra. From Strava activity 20662409258 (2026-10-20), 150 points, 56.4 km. Regenerate with
+ * scripts/gen-corridor-profile.ts (which also writes the route view's
+ * app/lib/corridors/skyline-profile.json).
+ */
+export const SKYLINE_REFERENCE_POLYLINE =
+  "}wheFjgtjVxStTnE~CzQnG`Hb@|FmBnNcKjQwAjOiIj[}@b[p@`TgGzXwKlc@{B|JwFnPoR~HiDrI_@fd@pFfMk@jg@eStGmGxMwVjO}OdHaKtSmMjc@gTvECzV~C|Cg@d}@gx@pVkg@fMqPpP{MdPqQhRiK`kAwhAlJgGni@_g@xUe[fMuMi@wEzAqBhe@id@xBnBp@Ub^me@dRgKYoH|PeS|YgR|i@ye@nI}Qt\\i]vJmIt]{SrIeHtOyQzAmLfAHrHdMp@DhUsR``@eRlKaBzIsG~K|ApAuAdA{ExFyHbW}J^pCvA@`E{ELwHpEbFtDsF`CUn@aCxCg@lCuDtIgEng@wd@u@gJx@{DbIaMdI{BtEoE|Tkh@~DiCrIaBrCiC`CmI\\yPvDuIjFgDnOqBzEgCh^_f@p}CgjCpQcY~@sDv@mM`BoFrToNxz@azAtEgLfImEpEeH~{@}`A`TeR`BuHEqMnJzAzCe@lDiD`IsUrCyCh`AyXnA_BFwAcMaHmE_FeOka@g@mKfC_n@cNaq@_@__@aGiy@qE}RyP}YdBoCfCi@v@qJtKcZj@kRhHk_@xCeErN_K|P_XdEoJ~ByPdEaNzc@qp@zAgHzA{]fC}QdG{RbRu_@pDsP";
+
+/** Reference lines that decide which Strava segments a board shows. */
+export const SEGMENT_CORRIDORS = {
+  skyline: { label: "Skyline", polyline: SKYLINE_REFERENCE_POLYLINE },
+} as const;
+export type SegmentCorridor = keyof typeof SEGMENT_CORRIDORS;
+
+/** A segment is on a corridor when both its endpoints are this close to the line. */
+export const SEGMENT_CORRIDOR_RADIUS_M = 400;
+/** Opted-in riders a segment needs before the board shows it. */
+export const SEGMENT_MIN_RIDERS = 3;
+export const SEGMENT_MIN_DISTANCE_M = 300;
+/** average_grade ≥ climbMinGrade → climb; ≥ flatMinGrade → flat; else descent. */
+export const SEGMENT_TERRAIN = { climbMinGrade: 2, flatMinGrade: -1 } as const;

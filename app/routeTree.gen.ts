@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShouldISf2gRouteImport } from './routes/should-i-sf2g'
+import { Route as SegmentsRouteImport } from './routes/segments'
 import { Route as RoutesRouteImport } from './routes/routes'
 import { Route as RacesRouteImport } from './routes/races'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -27,6 +28,11 @@ import { Route as ApiCronRouteImport } from './routes/api/cron'
 const ShouldISf2gRoute = ShouldISf2gRouteImport.update({
   id: '/should-i-sf2g',
   path: '/should-i-sf2g',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegmentsRoute = SegmentsRouteImport.update({
+  id: '/segments',
+  path: '/segments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoutesRoute = RoutesRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
+  '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
   '/api/webhook': typeof ApiWebhookRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
+  '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
   '/api/webhook': typeof ApiWebhookRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
+  '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
   '/api/cron': typeof ApiCronRoute
   '/api/webhook': typeof ApiWebhookRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/races'
     | '/routes'
+    | '/segments'
     | '/should-i-sf2g'
     | '/api/cron'
     | '/api/webhook'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/races'
     | '/routes'
+    | '/segments'
     | '/should-i-sf2g'
     | '/api/cron'
     | '/api/webhook'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/races'
     | '/routes'
+    | '/segments'
     | '/should-i-sf2g'
     | '/api/cron'
     | '/api/webhook'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RacesRoute: typeof RacesRoute
   RoutesRoute: typeof RoutesRoute
+  SegmentsRoute: typeof SegmentsRoute
   ShouldISf2gRoute: typeof ShouldISf2gRoute
   ApiCronRoute: typeof ApiCronRoute
   ApiWebhookRoute: typeof ApiWebhookRoute
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/should-i-sf2g'
       fullPath: '/should-i-sf2g'
       preLoaderRoute: typeof ShouldISf2gRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/segments': {
+      id: '/segments'
+      path: '/segments'
+      fullPath: '/segments'
+      preLoaderRoute: typeof SegmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/routes': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RacesRoute: RacesRoute,
   RoutesRoute: RoutesRoute,
+  SegmentsRoute: SegmentsRoute,
   ShouldISf2gRoute: ShouldISf2gRoute,
   ApiCronRoute: ApiCronRoute,
   ApiWebhookRoute: ApiWebhookRoute,

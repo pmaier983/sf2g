@@ -40,10 +40,12 @@ export interface DataTableProps<T> {
   /** Render only visible rows. Requires a fixed `rowHeight` (T5). */
   virtualize?: boolean;
   rowHeight?: number;
-  /** Per-row props (class, inline style, e.g. a rider color border). */
+  /** Per-row props (class, inline style, e.g. a rider color border; hover). */
   getRowProps?: (row: Row<T>) => {
     className?: string;
     style?: CSSProperties;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
   };
   onRowClick?: (row: Row<T>) => void;
   /** Extra class for one cell (e.g. highlight the best value). */
@@ -174,6 +176,8 @@ export function DataTable<T>(props: DataTableProps<T>) {
                           ...extra.style,
                         }}
                         onClick={onRowClick ? () => onRowClick(row) : undefined}
+                        onMouseEnter={extra.onMouseEnter}
+                        onMouseLeave={extra.onMouseLeave}
                       >
                         {renderLeadingCell?.(row)}
                         {row.getVisibleCells().map((cell) => (

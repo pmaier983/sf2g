@@ -5,6 +5,10 @@ import type { SyncHealth } from "../server/users";
 import type { RecentErrors } from "../server/observability-admin";
 import type { ReportRun } from "../server/report";
 import type { ReportKind } from "../lib/report";
+import type {
+  SegmentIngestStats,
+  SegmentReclassifyResult,
+} from "../server/segments-admin";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -26,6 +30,19 @@ export function DevToolsPanel() {
   // Sync health state
   const [health, setHealth] = useState<SyncHealth | null>(null);
   const [healthLoading, setHealthLoading] = useState(false);
+
+  // Segment ingest state
+  const [segmentLimit, setSegmentLimit] = useState(500);
+  const [segmentStats, setSegmentStats] = useState<SegmentIngestStats | null>(
+    null,
+  );
+  const [segmentEnqueued, setSegmentEnqueued] = useState<number | null>(null);
+  const [segmentBusy, setSegmentBusy] = useState(false);
+  const [segmentError, setSegmentError] = useState<string | null>(null);
+  const [segmentReclassified, setSegmentReclassified] = useState<{
+    scanned: number;
+    changed: number;
+  } | null>(null);
 
   const handleReclassify = async () => {
     setIsRunning(true);
@@ -118,6 +135,69 @@ export function DevToolsPanel() {
       setCronError(err instanceof Error ? err.message : String(err));
     } finally {
       setCronIsRunning(false);
+    }
+  };
+
+  const handleSegmentStats = async () => {
+    setSegmentBusy(true);
+    setSegmentError(null);
+    try {
+      const { fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
+    }
+  };
+
+  // Recompute corridor + direction for every stored segment (after a
+  // reference line changes). Each call pages ≤ 10k segments within the
+  // subrequest budget; loop until the server says it saw them all.
+  const handleSegmentReclassify = async () => {
+    setSegmentBusy(true);
+    setSegmentReclassified(null);
+    setSegmentError(null);
+    try {
+      const { reclassifySegmentCorridors, fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      let cursor: number | null = null;
+      const total = { scanned: 0, changed: 0 };
+      for (let call = 0; call < 100; call++) {
+        const r: SegmentReclassifyResult = await reclassifySegmentCorridors({
+          data: { cursor },
+        });
+        total.scanned += r.scanned;
+        total.changed += r.changed;
+        setSegmentReclassified({ ...total });
+        cursor = r.nextCursor;
+        if (cursor === null) break;
+      }
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
+    }
+  };
+
+  const handleSegmentBackfill = async () => {
+    setSegmentBusy(true);
+    setSegmentEnqueued(null);
+    setSegmentError(null);
+    try {
+      const { enqueueSegmentBackfill, fetchSegmentIngestStats } =
+        await import("../server/segments-admin");
+      const res = await enqueueSegmentBackfill({
+        data: { limit: segmentLimit },
+      });
+      setSegmentEnqueued(res.enqueued);
+      setSegmentStats(await fetchSegmentIngestStats());
+    } catch (err) {
+      setSegmentError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSegmentBusy(false);
     }
   };
 
@@ -471,6 +551,84 @@ export function DevToolsPanel() {
                     </table>
                   </div>
                 </>
+              )}
+            </div>
+
+            {/* Segments Section */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">⛰️ Segments</h4>
+              <p className="dev-tools__section-desc">
+                Queue one Strava activity-detail read per unfetched Skyline ride
+                (opted-in riders first, newest first). The queue tick drains
+                them.
+              </p>
+              <label className="dev-tools__section-desc">
+                Rides to queue{" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={2000}
+                  value={segmentLimit}
+                  onChange={(e) =>
+                    setSegmentLimit(Number(e.target.value) || 500)
+                  }
+                  id="dev-tools-segment-limit"
+                  style={{ width: "6em" }}
+                />
+              </label>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentBackfill}
+                disabled={segmentBusy}
+                id="dev-tools-segment-backfill-btn"
+              >
+                {segmentBusy ? "Working…" : "⛰️ Backfill segment efforts"}
+              </button>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentStats}
+                disabled={segmentBusy}
+                id="dev-tools-segment-stats-btn"
+              >
+                📊 Load segment stats
+              </button>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleSegmentReclassify}
+                disabled={segmentBusy}
+                id="dev-tools-segment-reclassify-btn"
+                title="Recompute corridor and direction of every stored segment from the current reference line. Run once after deploying a new line."
+              >
+                🧭 Reclassify segment corridors
+              </button>
+              {segmentError && (
+                <div className="dev-tools__error">
+                  <strong>Error:</strong> {segmentError}
+                </div>
+              )}
+              {segmentEnqueued !== null && (
+                <p className="dev-tools__section-desc">
+                  Queued {segmentEnqueued} rides.
+                </p>
+              )}
+              {segmentReclassified && (
+                <p className="dev-tools__section-desc">
+                  Reclassified: {segmentReclassified.changed} of{" "}
+                  {segmentReclassified.scanned} segments changed.
+                </p>
+              )}
+              {segmentStats && (
+                <p className="dev-tools__section-desc">
+                  Skyline rides: {segmentStats.rides_pending} pending ·{" "}
+                  {segmentStats.rides_fetched} fetched
+                  <br />
+                  Segments: {segmentStats.segments_corridor} on corridor /{" "}
+                  {segmentStats.segments_total} total · {segmentStats.efforts}{" "}
+                  efforts
+                  <br />
+                  Jobs: {segmentStats.open_jobs} open ·{" "}
+                  {segmentStats.failed_jobs} failed
+                </p>
               )}
             </div>
 

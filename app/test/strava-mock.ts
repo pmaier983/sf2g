@@ -3,6 +3,7 @@
  * www.strava.com and passes everything else (local Supabase) through.
  */
 import { vi } from "vitest";
+import type { StravaSegmentDetail, StravaSegmentEffort } from "../lib/strava";
 
 export interface MockActivity {
   id: number;
@@ -23,6 +24,8 @@ export interface MockActivity {
   map: { summary_polyline: string };
   commute?: boolean;
   private?: boolean;
+  /** Returned only when the request asks for include_all_efforts=true. */
+  segment_efforts?: StravaSegmentEffort[];
 }
 
 export interface StravaMock {
@@ -33,6 +36,8 @@ export interface StravaMock {
 export function mockStrava(opts: {
   activities?: MockActivity[];
   refresh?: "ok" | "invalid_grant" | "server_error";
+  /** Served at GET /api/v3/segments/{id}; 404 when absent. */
+  segments?: Record<number, Partial<StravaSegmentDetail>>;
 }): StravaMock {
   const realFetch = globalThis.fetch;
   const calls: string[] = [];
@@ -81,7 +86,18 @@ export function mockStrava(opts: {
       const single = url.pathname.match(/^\/api\/v3\/activities\/(\d+)$/);
       if (single) {
         const a = all.find((x) => x.id === Number(single[1]));
-        return a ? json(a) : json({ message: "Record Not Found" }, 404);
+        if (!a) return json({ message: "Record Not Found" }, 404);
+        if (url.searchParams.get("include_all_efforts") === "true")
+          return json(a);
+        const { segment_efforts: _efforts, ...summary } = a;
+        return json(summary);
+      }
+      const segment = url.pathname.match(/^\/api\/v3\/segments\/(\d+)$/);
+      if (segment) {
+        const s = opts.segments?.[Number(segment[1])];
+        return s
+          ? json({ id: Number(segment[1]), ...s })
+          : json({ message: "Record Not Found" }, 404);
       }
       if (url.pathname === "/api/v3/athlete/activities") {
         const after = Number(url.searchParams.get("after") ?? "0");

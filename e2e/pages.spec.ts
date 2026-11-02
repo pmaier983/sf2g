@@ -82,6 +82,15 @@ const PAGES: PageCase[] = [
     },
   },
   {
+    path: "/segments",
+    landmark: async (p) => {
+      await expect(
+        p.getByRole("table", { name: "Skyline segment board" }),
+      ).toBeVisible();
+      await expect(p.getByText("Skyline Climb A").first()).toBeVisible();
+    },
+  },
+  {
     path: "/should-i-sf2g",
     landmark: async (p) => {
       await expect(p.getByText(/should i sf2g/i).first()).toBeVisible();
@@ -156,6 +165,56 @@ test("route filter chip narrows the riders table and updates the URL", async ({
   await page.reload();
   await expect(page.getByText("Ben Skyline").first()).toBeVisible();
   await expect(page.getByText("Dee Reverse")).toHaveCount(0);
+});
+
+test("segments: the Climbs chip narrows the board and updates the URL", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  await page.goto("/segments");
+  const rows = page
+    .getByRole("table", { name: "Skyline segment board" })
+    .locator("tbody tr");
+  await expect(page.getByText("Skyline Flat E").first()).toBeVisible();
+  const before = await rows.count();
+
+  await page.getByRole("radio", { name: "Climbs" }).click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("terrain"))
+    .toBe("climb");
+  await expect(page.getByText("Skyline Flat E")).toHaveCount(0);
+  expect(await rows.count()).toBeLessThan(before);
+  expect(errors).toEqual([]);
+});
+
+test("segments: the route view's tiles load and a bar opens its board row", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  const tiles: number[] = [];
+  page.on("response", (res) => {
+    if (/\/\d+\/\d+\/\d+(@2x)?\.png/.test(res.url())) tiles.push(res.status());
+  });
+  await page.goto("/segments");
+  await expect
+    .poll(() => page.locator(".route-map img.leaflet-tile-loaded").count(), {
+      timeout: 15_000,
+    })
+    .toBeGreaterThan(0);
+  expect(tiles.filter((s) => s >= 400)).toEqual([]);
+  await expect(page.locator("path.route-map__segment")).toHaveCount(4);
+
+  const bar = page.getByRole("button", { name: /^Skyline Climb B,/ });
+  await bar.click();
+  await expect(bar).toHaveAttribute("aria-pressed", "true");
+  const board = page.getByRole("table", { name: "Skyline segment board" });
+  await expect(
+    board.getByRole("link", { name: "View on Strava" }).first(),
+  ).toBeVisible();
+  await expect(
+    board.locator('[data-segment-row="900002"]').locator("xpath=ancestor::tr"),
+  ).toBeInViewport();
+  expect(errors).toEqual([]);
 });
 
 test("/routes map tiles load (no 'API KEY REQUIRED' provider)", async ({

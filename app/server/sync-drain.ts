@@ -16,6 +16,7 @@ import {
   type SyncOptions,
 } from "./sync";
 import { cleanupDeauthorizedUser } from "./auth";
+import { segmentEffortsStep, segmentXomsStep } from "./segments-ingest";
 import { MATERIALIZED_VIEW_REFRESHES } from "./cron";
 import type { Database } from "../lib/database.types";
 
@@ -47,7 +48,13 @@ const STEP_SYNC_OPTIONS: SyncOptions = {
 };
 
 export type JobOutcome =
-  | { status: "done"; detail: string; ridesChanged: boolean }
+  | {
+      status: "done";
+      detail: string;
+      ridesChanged: boolean;
+      /** The step's Strava read reported usage near the limit: stop this tick. */
+      rateLimited?: boolean;
+    }
   | {
       status: "requeue";
       detail: string;
@@ -175,6 +182,31 @@ export async function runJob(
         ridesChanged: false,
       };
     }
+    case "segment_efforts": {
+      const r = await segmentEffortsStep(
+        String((job.payload as { ride_id?: string }).ride_id),
+        supabase,
+      );
+      return {
+        status: "done",
+        detail: `${r.outcome}: ${r.efforts} efforts`,
+        ridesChanged: false,
+        rateLimited: r.rateLimited,
+      };
+    }
+    case "segment_xoms": {
+      const r = await segmentXomsStep(
+        Number((job.payload as { segment_id?: number }).segment_id),
+        job.user_id!,
+        supabase,
+      );
+      return {
+        status: "done",
+        detail: r.updated ? "xoms updated" : "no xoms",
+        ridesChanged: false,
+        rateLimited: r.rateLimited,
+      };
+    }
     default:
       return {
         status: "done",
@@ -235,6 +267,11 @@ export async function drainSyncJobs(deps: DrainDeps): Promise<DrainResult> {
     try {
       const outcome = await run(job);
       ridesChanged ||= outcome.ridesChanged;
+      if (outcome.status === "done" && outcome.rateLimited) {
+        // The job finished, but Strava is near its limit: start nothing else.
+        result.rateLimited = true;
+        result.stopReason = "rate_limited";
+      }
       if (outcome.status === "requeue") {
         await supabase
           .from("sync_jobs")

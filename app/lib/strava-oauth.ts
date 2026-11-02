@@ -172,6 +172,13 @@ export async function refreshToken(
 // Ensure Valid Token
 // ---------------------------------------------------------------------------
 
+/** The users columns ensureValidToken needs. */
+export interface StoredTokens {
+  strava_access_token: string;
+  strava_refresh_token: string;
+  strava_token_expires_at: string;
+}
+
 /** 5-minute buffer before expiry to trigger refresh */
 const TOKEN_BUFFER_MS = 5 * 60 * 1000;
 
@@ -183,28 +190,41 @@ const TOKEN_BUFFER_MS = 5 * 60 * 1000;
  * which Strava may rotate on each refresh).
  *
  * @param userId - The user's UUID
+ * @param preloaded - The user's token columns when the caller already read
+ *   them (saves one Supabase subrequest)
  * @returns A valid Strava access token
  */
-export async function ensureValidToken(userId: string): Promise<string> {
+export async function ensureValidToken(
+  userId: string,
+  preloaded?: StoredTokens,
+): Promise<string> {
   const supabase = createServiceClient();
 
-  const { data: user, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .single();
+  let user: StoredTokens;
+  if (preloaded) {
+    user = preloaded;
+  } else {
+    const { data, error } = await supabase
+      .from("users")
+      .select(
+        "strava_access_token, strava_refresh_token, strava_token_expires_at",
+      )
+      .eq("id", userId)
+      .single();
 
-  if (error || !user) {
-    // Log the actual Supabase error for debugging — the generic "User not found"
-    // message was masking real issues (e.g., subrequest limits, connection errors)
-    console.error(`[strava-oauth] ensureValidToken failed for ${userId}:`, {
-      error: error?.message ?? "no error object",
-      errorCode: error?.code,
-      hasUser: !!user,
-    });
-    throw new Error(
-      `User not found: ${userId}${error ? ` (${error.message})` : ""}`,
-    );
+    if (error || !data) {
+      // Log the actual Supabase error for debugging — the generic "User not found"
+      // message was masking real issues (e.g., subrequest limits, connection errors)
+      console.error(`[strava-oauth] ensureValidToken failed for ${userId}:`, {
+        error: error?.message ?? "no error object",
+        errorCode: error?.code,
+        hasUser: !!data,
+      });
+      throw new Error(
+        `User not found: ${userId}${error ? ` (${error.message})` : ""}`,
+      );
+    }
+    user = data;
   }
 
   // Check if the token is still valid (with 5-minute buffer)

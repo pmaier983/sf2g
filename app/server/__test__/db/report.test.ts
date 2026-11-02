@@ -7,6 +7,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { LOCAL_SUPABASE } from "../../../test/local-supabase";
 import { reportError } from "../../report-error";
 import { renderReport, type DbReport } from "../../../lib/report";
+import { todayInLA } from "../../../lib/dates";
 
 const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
 const anon = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.anonKey);
@@ -194,7 +195,9 @@ describe("app_errors", () => {
 
     const { data: report } = await db.rpc("get_report", {
       p_kind: "week",
-      p_start: new Date().toISOString().slice(0, 10),
+      // The report buckets errors by LA calendar day; the UTC date is a day
+      // ahead every evening in LA.
+      p_start: todayInLA(),
     });
     const r = report as unknown as DbReport;
     expect(r.errors.top.some((e) => e.scope === SCOPE && e.count >= 2)).toBe(
