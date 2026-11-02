@@ -1,26 +1,20 @@
 -- ============================================================
--- Migration 045: get_segment_leaderboard(q jsonb)
--- (rework phase 07b — the Skyline segment board)
+-- Migration 050: segment endpoints in the board JSON + corridor
+-- reclassification (rework phase 07c — the Skyline route view)
 -- ============================================================
--- Deploy order: apply after 043 (segments, segment_efforts,
--- users.segment_board_opt_in) and before deploying the Worker that contains
--- 07b; /segments calls this function. Numbered 045 because 044 is taken by
--- phase 08 (044_app_errors_and_monthly_reports.sql); the two are independent.
+-- Deploy order: apply after 049 and before deploying the Worker that
+-- contains 07c (the route view reads start_latlng/end_latlng). Then run
+-- DevTools → Segments → "Reclassify segment corridors" once: the Skyline
+-- reference line now runs Mussel Rock → Arastradero Rd (54.6 km, was 26.6 km
+-- Daly City → Kings Mountain gateway), and a segment's direction is now
+-- "further along the line" instead of "ends further south".
 --
--- The only read path to segment_efforts (no anon/authenticated grant or
--- policy exists on that table). Ranks opted-in riders on corridor segments
--- by each rider's best elapsed time and returns the segment board and the
--- "Skyline crown" in one JSON document. The only users columns that leave
--- the function are user_id, display_name and avatar_url.
---
--- q keys (all optional; app/lib/segment-query.ts validates them):
---   corridor     'skyline'                     default 'skyline'
---   terrain      'all' | 'climb' | 'flat'      default 'all'
---   direction    'south' | 'north' | 'both'    default 'south'
---   date_from    'YYYY-MM-DD' | null           default null (all time)
---   date_to      'YYYY-MM-DD' | null           default null
---   top          int 1–50                      default 10 (riders per segment)
---   min_riders   int                           default 3 (SEGMENT_MIN_RIDERS)
+-- 1. get_segment_leaderboard: unchanged except that each segment object
+--    also has start_latlng and end_latlng ([lat, lng]).
+-- 2. batch_update_segment_corridors(p_rows jsonb): [{id, corridor, direction}]
+--    from the Worker's classifier (app/lib/segment-corridor.ts), applied in
+--    one statement. Service role only.
+
 CREATE OR REPLACE FUNCTION get_segment_leaderboard(q jsonb DEFAULT '{}'::jsonb)
 RETURNS jsonb
 LANGUAGE sql STABLE SECURITY DEFINER
@@ -117,6 +111,8 @@ segment_json AS (
       'average_grade', s.average_grade,
       'terrain', s.terrain,
       'direction', s.direction,
+      'start_latlng', s.start_latlng,
+      'end_latlng', s.end_latlng,
       'kom_seconds', s.kom_seconds,
       'qom_seconds', s.qom_seconds,
       'curated_rank', s.curated_rank,
@@ -197,3 +193,27 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION get_segment_leaderboard(jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION get_segment_leaderboard(jsonb) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION batch_update_segment_corridors(p_rows jsonb)
+RETURNS int
+LANGUAGE sql
+SET search_path = public
+AS $$
+  WITH input AS (
+    SELECT * FROM jsonb_to_recordset(p_rows) AS x(id bigint, corridor text, direction text)
+  ),
+  updated AS (
+    UPDATE segments s
+    SET corridor = i.corridor,
+        direction = i.direction,
+        updated_at = now()
+    FROM input i
+    WHERE s.id = i.id
+      AND (s.corridor IS DISTINCT FROM i.corridor OR s.direction IS DISTINCT FROM i.direction)
+    RETURNING 1
+  )
+  SELECT count(*)::int FROM updated
+$$;
+
+REVOKE EXECUTE ON FUNCTION batch_update_segment_corridors(jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION batch_update_segment_corridors(jsonb) TO service_role;

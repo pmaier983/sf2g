@@ -62,6 +62,7 @@ export function NavBar() {
     { to: "/segments" as const, label: "Segments" },
     { to: "/network" as const, label: "Network" },
     { to: "/should-i-sf2g" as const, label: "2SF2G?" },
+    { to: "/races" as const, label: "Races" },
   ];
 
   return (

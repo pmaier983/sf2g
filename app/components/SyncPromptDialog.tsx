@@ -2,18 +2,31 @@
  * SyncPromptDialog — first-visit dialog prompting users to connect Strava.
  *
  * Shows once per device (tracked via localStorage). Only appears for
- * users who are NOT logged in. Uses the same native <dialog> pattern
- * as EditRideDialog for visual consistency.
+ * users who are NOT logged in, and never on public reference pages
+ * (SYNC_PROMPT_EXEMPT_PATHS) that people open from a shared link to read.
+ * Uses the same native <dialog> pattern as EditRideDialog for visual
+ * consistency.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouterState } from "@tanstack/react-router";
 import { currentUserQueryOptions } from "../queries/user";
 import { StravaLoginButton } from "./StravaLoginButton";
 
 const DISMISSED_KEY = "sf2g-sync-prompt-dismissed";
 
+/** Pages that never ask visitors to connect Strava. */
+const SYNC_PROMPT_EXEMPT_PATHS = ["/races"];
+
+export function isSyncPromptExemptPath(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return SYNC_PROMPT_EXEMPT_PATHS.includes(path);
+}
+
 export function SyncPromptDialog() {
   const { data: user, isLoading } = useQuery(currentUserQueryOptions());
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const exempt = isSyncPromptExemptPath(pathname);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
@@ -28,6 +41,12 @@ export function SyncPromptDialog() {
     if (!hasMounted || isLoading) return;
     // Already logged in — never show
     if (user) return;
+    // Public reference page: let people read. The prompt can still appear
+    // later on a leaderboard page (nothing is marked dismissed here).
+    if (exempt) {
+      setIsOpen(false);
+      return;
+    }
 
     try {
       if (localStorage.getItem(DISMISSED_KEY) === "true") return;
@@ -37,7 +56,7 @@ export function SyncPromptDialog() {
     }
 
     setIsOpen(true);
-  }, [hasMounted, isLoading, user]);
+  }, [hasMounted, isLoading, user, exempt]);
 
   // Native dialog open/close
   useEffect(() => {

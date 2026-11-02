@@ -2,6 +2,9 @@ import { useState } from "react";
 import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
 import type { SyncHealth } from "../server/users";
+import type { RecentErrors } from "../server/observability-admin";
+import type { ReportRun } from "../server/report";
+import type { ReportKind } from "../lib/report";
 import type {
   SegmentIngestStats,
   SegmentReclassifyResult,
@@ -53,6 +56,57 @@ export function DevToolsPanel() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  // Observability state (phase 08)
+  const [errors, setErrors] = useState<RecentErrors | null>(null);
+  const [errorsLoading, setErrorsLoading] = useState(false);
+  const [report, setReport] = useState<ReportRun | null>(null);
+  const [reportBusy, setReportBusy] = useState<"preview" | "send" | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportKind, setReportKind] = useState<ReportKind>("week");
+  const [reportPeriod, setReportPeriod] = useState("");
+
+  const handleRecentErrors = async () => {
+    setErrorsLoading(true);
+    try {
+      const { fetchRecentErrors } =
+        await import("../server/observability-admin");
+      setErrors(await fetchRecentErrors());
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setErrorsLoading(false);
+    }
+  };
+
+  const handleReport = async (send: boolean) => {
+    if (
+      send &&
+      !window.confirm(
+        `Email the ${reportPeriod || `previous ${reportKind}'s`} report to REPORT_EMAIL_TO now?`,
+      )
+    ) {
+      return;
+    }
+    setReportBusy(send ? "send" : "preview");
+    setReportError(null);
+    try {
+      const { runReportNow } = await import("../server/observability-admin");
+      setReport(
+        await runReportNow({
+          data: {
+            kind: reportKind,
+            period: reportPeriod || undefined,
+            send,
+          },
+        }),
+      );
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setReportBusy(null);
     }
   };
 
@@ -579,6 +633,161 @@ export function DevToolsPanel() {
             </div>
 
             {/* Divider */}
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--color-border)",
+                margin: "var(--space-4) 0",
+              }}
+            />
+
+            {/* Recent Errors Section (phase 08) */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">🚨 Recent Errors</h4>
+              <p className="dev-tools__section-desc">
+                Server errors from the last 7 days, grouped. Browser errors are
+                in PostHog → Error tracking.
+              </p>
+              <button
+                className="dev-tools__action-btn"
+                onClick={handleRecentErrors}
+                disabled={errorsLoading}
+                id="dev-tools-errors-btn"
+              >
+                {errorsLoading ? "Loading…" : "🚨 Load Recent Errors"}
+              </button>
+              {errors && (
+                <div className="dev-tools__health-wrap">
+                  {errors.groups.length === 0 ? (
+                    <p className="dev-tools__section-desc">
+                      No server errors in the last {errors.since}. 🎉
+                    </p>
+                  ) : (
+                    <table className="dev-tools__health">
+                      <thead>
+                        <tr>
+                          <th>Where</th>
+                          <th>Message</th>
+                          <th>Count</th>
+                          <th>Last</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {errors.groups.map((g) => (
+                          <tr key={g.fingerprint}>
+                            <td>{g.scope}</td>
+                            <td title={g.sampleStack ?? undefined}>
+                              {g.message.slice(0, 120)}
+                            </td>
+                            <td>{g.count}</td>
+                            <td>{new Date(g.lastSeen).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Report Section (phase 08 + weekly) */}
+            <div className="dev-tools__section">
+              <h4 className="dev-tools__section-title">📬 Report Email</h4>
+              <p className="dev-tools__section-desc">
+                Sent automatically on Mondays (the previous week) and on the 1st
+                (the previous month). Preview renders and stores it; Send emails
+                it now, even if that period already went out.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "var(--space-2)",
+                  marginBottom: "var(--space-2)",
+                }}
+              >
+                <select
+                  value={reportKind}
+                  onChange={(e) => {
+                    setReportKind(e.target.value as ReportKind);
+                    setReportPeriod("");
+                  }}
+                  aria-label="Report kind"
+                >
+                  <option value="week">Weekly</option>
+                  <option value="month">Monthly</option>
+                </select>
+                <input
+                  type={reportKind === "week" ? "date" : "month"}
+                  value={reportPeriod}
+                  onChange={(e) => setReportPeriod(e.target.value)}
+                  aria-label={
+                    reportKind === "week"
+                      ? "Any day of the week to report (blank = previous week)"
+                      : "Report month (blank = previous month)"
+                  }
+                  style={{ flex: 1 }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                <button
+                  className="dev-tools__action-btn"
+                  onClick={() => handleReport(false)}
+                  disabled={reportBusy !== null}
+                  id="dev-tools-report-preview-btn"
+                >
+                  {reportBusy === "preview" ? "Rendering…" : "👀 Preview"}
+                </button>
+                <button
+                  className="dev-tools__action-btn"
+                  onClick={() => handleReport(true)}
+                  disabled={reportBusy !== null}
+                  id="dev-tools-report-send-btn"
+                >
+                  {reportBusy === "send" ? "Sending…" : "✉️ Send now"}
+                </button>
+              </div>
+              {reportError && (
+                <div
+                  className="dev-tools__error"
+                  style={{ marginTop: "var(--space-2)" }}
+                >
+                  <strong>Error:</strong> {reportError}
+                </div>
+              )}
+              {report && (
+                <div
+                  className="dev-tools__result"
+                  style={{ marginTop: "var(--space-2)" }}
+                >
+                  <div className="dev-tools__result-header">
+                    {report.kind} {report.period}: {report.status}
+                    {report.sentTo ? ` → ${report.sentTo}` : ""}
+                  </div>
+                  {(report.error || report.notes.length > 0) && (
+                    <p
+                      className="dev-tools__section-desc"
+                      style={{ padding: "var(--space-2)" }}
+                    >
+                      {[report.error, ...report.notes]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+                  <iframe
+                    title="Report preview"
+                    srcDoc={report.html}
+                    sandbox=""
+                    style={{
+                      width: "100%",
+                      height: 480,
+                      border: 0,
+                      background: "#fff",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
             <hr
               style={{
                 border: "none",

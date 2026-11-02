@@ -1,5 +1,5 @@
 /**
- * Phase 07b: get_segment_leaderboard (migration 045) against the fixture
+ * Phase 07b: get_segment_leaderboard (migration 049) against the fixture
  * segments and efforts from scripts/gen-fixtures.ts (EXPECTED.segments).
  */
 import { readFileSync } from "node:fs";

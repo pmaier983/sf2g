@@ -1,5 +1,5 @@
 -- ============================================================
--- Migration 043: Strava segments and riders' segment efforts
+-- Migration 048: Strava segments and riders' segment efforts
 -- (rework phase 07a — data layer for the Skyline segment board)
 -- ============================================================
 -- Deploy order: apply this migration before deploying the Worker that

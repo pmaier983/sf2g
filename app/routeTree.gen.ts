@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShouldISf2gRouteImport } from './routes/should-i-sf2g'
 import { Route as SegmentsRouteImport } from './routes/segments'
 import { Route as RoutesRouteImport } from './routes/routes'
+import { Route as RacesRouteImport } from './routes/races'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -37,6 +38,11 @@ const SegmentsRoute = SegmentsRouteImport.update({
 const RoutesRoute = RoutesRouteImport.update({
   id: '/routes',
   path: '/routes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RacesRoute = RacesRouteImport.update({
+  id: '/races',
+  path: '/races',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
+  '/races': typeof RacesRoute
   '/routes': typeof RoutesRoute
   '/segments': typeof SegmentsRoute
   '/should-i-sf2g': typeof ShouldISf2gRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/segments'
     | '/should-i-sf2g'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/segments'
     | '/should-i-sf2g'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/network'
     | '/privacy'
+    | '/races'
     | '/routes'
     | '/segments'
     | '/should-i-sf2g'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   NetworkRoute: typeof NetworkRoute
   PrivacyRoute: typeof PrivacyRoute
+  RacesRoute: typeof RacesRoute
   RoutesRoute: typeof RoutesRoute
   SegmentsRoute: typeof SegmentsRoute
   ShouldISf2gRoute: typeof ShouldISf2gRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/routes'
       fullPath: '/routes'
       preLoaderRoute: typeof RoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/races': {
+      id: '/races'
+      path: '/races'
+      fullPath: '/races'
+      preLoaderRoute: typeof RacesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   NetworkRoute: NetworkRoute,
   PrivacyRoute: PrivacyRoute,
+  RacesRoute: RacesRoute,
   RoutesRoute: RoutesRoute,
   SegmentsRoute: SegmentsRoute,
   ShouldISf2gRoute: ShouldISf2gRoute,
@@ -336,10 +357,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

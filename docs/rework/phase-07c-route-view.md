@@ -92,9 +92,9 @@ export function projectOntoPolyline(
 ```
 `distanceToPolylineMeters` becomes a thin wrapper. `segmentDirection(seg, line)` implements C5. A new pure module `app/lib/segment-lanes.ts` holds `placeSegments(segments, profile) → { id, startM, endM, lane }[]` (projection with `profile.distance` as `cumulative`, then C7 packing).
 
-The RPC (`CREATE OR REPLACE` in migration 046) adds `start_latlng` and `end_latlng` to each segment object. Nothing else in the output changes.
+The RPC (`CREATE OR REPLACE` in migration 050) adds `start_latlng` and `end_latlng` to each segment object. Nothing else in the output changes.
 
-### 3.4 Reclassification — migration 046 + `app/server/segments-admin.ts`
+### 3.4 Reclassification — migration 050 + `app/server/segments-admin.ts`
 
 ```sql
 -- 046: start/end latlng in the board JSON + batch corridor update for admin reclassification
@@ -154,10 +154,10 @@ E2E (`e2e/pages.spec.ts`):
 1. Phillip answers the two `(Phillip confirms)` items (end coordinate; which activity). Until then, steps 2–4 can proceed with the current 26.6 km line as the stand-in.
 2. Write §5 unit tests; implement `projectOntoPolyline`, C5 direction, `segment-lanes.ts`.
 3. `scripts/gen-corridor-profile.ts`; run it; commit the JSON and the new `SKYLINE_REFERENCE_POLYLINE`; fix the sanity tests; `pnpm fixtures && pnpm db:reset`; `pnpm test:db` (note any golden change).
-4. Migration 046; `pnpm db:types`; `reclassifySegmentCorridors` + DevTools button; db test.
+4. Migration 050; `pnpm db:types`; `reclassifySegmentCorridors` + DevTools button; db test.
 5. `ElevationProfile`, `RouteMap`, `RouteView`, `CorridorTabs`; page wiring; CSS; component tests.
 6. E2E; `pnpm typecheck && pnpm test && pnpm test:db && pnpm e2e`.
-7. PR (base: 07b until #28 merges). Description: deploy order (046 after 045), then run "Reclassify segment corridors" once in prod DevTools, and the bundle delta of the lazy chunk (Leaflet is already shipped by `/routes`; the new cost is the profile JSON + ~15 KB of components).
+7. PR (base: 07b until #28 merges). Description: deploy order (050 after 049), then run "Reclassify segment corridors" once in prod DevTools, and the bundle delta of the lazy chunk (Leaflet is already shipped by `/routes`; the new cost is the profile JSON + ~15 KB of components).
 
 **As built in 07c:**
 - **Start moved (Phillip, 2026-10-25): "a bit sooner before Mussel Rock".** The line now starts where the ride turns from Sloat Blvd onto Skyline Blvd, **`[37.73327, -122.49734]`**, 1.8 km before the Mussel Rock Climb start described below. That makes 56.4 km, 150 points; the profile has 354 points.
@@ -165,7 +165,7 @@ E2E (`e2e/pages.spec.ts`):
 - `SKYLINE_REFERENCE_POLYLINE`: 144 points, 54.6 km (Douglas–Peucker at 15 m). `skyline-profile.json`: 346 points, 17 KB raw / 4.4 KB gzipped. Both come from `node scripts/gen-corridor-profile.ts --activity 20662409258 --streams <file> --start … --end …`. The streams were fetched once through the Strava connector and are not committed.
 - The profile loader lives in `app/lib/corridor-profile.ts` (`loadCorridorProfile`, `pointAtDistance`, `sliceRoute`), not in `SEGMENT_CORRIDORS`. That keeps `constants.ts` free of JSON imports, since `gen-fixtures.ts` imports it under plain node.
 - `segmentDirection(seg, corridor?)`: on a corridor, "further along the line" means south; off any corridor the latitude rule still applies. `gen-fixtures.ts` uses `to > from` for its on-line samples. Fixture segment coordinates and distances moved with the new line; `EXPECTED.json` did not change.
-- Migration is `046_segment_route_view.sql`.
+- Migration is `050_segment_route_view.sql`.
 - The info line above the profile replaces the per-bar `Tooltip`. It shows the hovered point (distance and elevation), else the hovered segment, else the selected one. That works on touch too.
 - Map: wheel zoom turns on after a click into the map (no scroll trap), and zoom snaps to 0.25 so the route fills the frame.
 - `DataTable`'s `getRowProps` may now return `onMouseEnter`/`onMouseLeave` (board row hover → route view).

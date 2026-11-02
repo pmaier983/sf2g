@@ -21,7 +21,10 @@ import {
   type ClassifiableActivity,
   type ClassificationResult,
 } from "../route-classifier";
+import { decodePolyline } from "../polyline";
+import polyline from "@mapbox/polyline";
 import rides from "./fixtures/rides-fixture.json";
+import transitRideFixtures from "./fixtures/transit-rides.json";
 
 // ---------------------------------------------------------------------------
 // Types for the fixture data
@@ -44,11 +47,34 @@ interface RideFixture {
 
 const allRides = rides as RideFixture[];
 
+/** Real rides with a Caltrain leg recorded as part of the activity. */
+const transitRides = transitRideFixtures as unknown as Array<
+  Pick<
+    RideFixture,
+    | "strava_activity_id"
+    | "name"
+    | "summary_polyline"
+    | "distance"
+    | "total_elevation_gain"
+    | "start_latlng"
+    | "end_latlng"
+  >
+>;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function toClassifiableActivity(ride: RideFixture): ClassifiableActivity {
+function toClassifiableActivity(
+  ride: Pick<
+    RideFixture,
+    | "summary_polyline"
+    | "distance"
+    | "total_elevation_gain"
+    | "start_latlng"
+    | "end_latlng"
+  >,
+): ClassifiableActivity {
   return {
     summary_polyline: ride.summary_polyline,
     distance: ride.distance,
@@ -72,7 +98,9 @@ function findRideById(id: number): RideFixture {
   return ride;
 }
 
-function classifyFixtureRide(ride: RideFixture): ClassificationResult {
+function classifyFixtureRide(
+  ride: Parameters<typeof toClassifiableActivity>[0],
+): ClassificationResult {
   return classifyRoute(toClassifiableActivity(ride));
 }
 
@@ -135,9 +163,9 @@ describe("Route Classifier", () => {
         start_latlng: [37.775, -122.438], // SF
         end_latlng: [37.422, -122.079], // Google
       });
-      // Passes commute filter, no polyline → elevation fallback
-      expect(result.method).toBe("elevation");
-      expect(result.category).not.toBe("other");
+      // Passes commute filter, no polyline → no route evidence
+      expect(result.category).toBe("other");
+      expect(result.confidence).toBe(0);
     });
 
     it("should return null for short rides without polyline", () => {
@@ -415,6 +443,64 @@ describe("Route Classifier", () => {
   });
 
   // =========================================================================
+  // Rides with a train/car leg (user confirmed)
+  // =========================================================================
+
+  describe("rides with a train leg are not SF2G (user confirmed)", () => {
+    // Ride to 4th & King, Caltrain to Mountain View with the recording still
+    // on, then a long hilly loop in the South Bay ending at Google. The
+    // endpoints look like SF → Peninsula and no gateway matches, so the
+    // elevation fallback called them Bayway.
+    for (const ride of transitRides) {
+      it(`should classify "${ride.name}" (${ride.strava_activity_id}) as null`, () => {
+        expect(ride.distance).toBeGreaterThan(40_000);
+        expect(isCommutableRoute(toClassifiableActivity(ride))).toBe(false);
+        expect(classifyFixtureRide(ride).category).toBeNull();
+      });
+    }
+
+    // Short Caltrain commutes in the main fixture: ridden to/from a station
+    // at each end, previously "other" (an SF2G commute on an unknown route).
+    for (const name of [
+      "Avoid the bus",
+      "I/O team Dinner (to home)",
+      "Garmin says rest for 95h",
+      "A commute I might not track too often",
+    ]) {
+      it(`should classify "${name}" as null`, () => {
+        const ride = findRideByName(name);
+        expect(classifyFixtureRide(ride).category).toBeNull();
+      });
+    }
+
+    it("should not reject a continuous ride with long straight polyline segments", () => {
+      // Vertices 12 km apart (a reduced polyline on a straight road) are not
+      // a teleport; real rides in the fixture top out around 6 km.
+      const ride = findRideByName("SF2G Rolling");
+      const points = decodePolyline(ride.summary_polyline!);
+      const sparse = points.filter((_, i) => i % 4 === 0);
+      expect(
+        classifyRoute({
+          ...toClassifiableActivity(ride),
+          summary_polyline: polyline.encode(sparse),
+        }).category,
+      ).toBe("skyline");
+    });
+
+    it("should leave every gateway-classified fixture commute unchanged", () => {
+      for (const ride of allRides) {
+        if (ride.current_method !== "gateway") continue;
+        if (!["skyline", "hmbw"].includes(ride.current_category ?? ""))
+          continue;
+        if (!isCommutableRoute(toClassifiableActivity(ride))) continue;
+        expect(classifyFixtureRide(ride).category, ride.name ?? "").toBe(
+          ride.current_category,
+        );
+      }
+    });
+  });
+
+  // =========================================================================
   // Commute identification — all SF↔Google rides should be classified
   // =========================================================================
 
@@ -463,7 +549,6 @@ describe("Route Classifier", () => {
       }
     });
 
-    // These are known false positives from elevation fallback
     // User confirmed: Egan rides, Page Mill rides, Marin loops are NOT SF2G commutes
 
     it('should classify "Egan" rides as null (filtered by commute endpoints — not SF2G rides)', () => {
@@ -673,14 +758,41 @@ describe("Route Classifier", () => {
   // Elevation fallback
   // =========================================================================
 
-  describe("elevation fallback", () => {
-    it("should not classify rides under 40km via elevation", () => {
-      const shortRidesNoGateway = allRides.filter((r) => {
-        if ((r.distance ?? 0) >= 40000) return false;
-        const result = classifyFixtureRide(r);
-        return result.method === "elevation";
+  describe("commutes without a gateway match", () => {
+    it("should never classify by elevation", () => {
+      for (const ride of [...allRides, ...transitRides]) {
+        expect(classifyFixtureRide(ride).method).not.toBe("elevation");
+      }
+    });
+
+    // D10: elevation and endpoints can't tell the routes apart, so the old
+    // fallback labelled any flat commute that missed every gateway Bayway.
+    it("should classify a flat commute that misses every gateway as other", () => {
+      // SF → 280 → Woodside → Google: continuous, < 1,000 m, no gateway.
+      const route: [number, number][] = [
+        [37.775, -122.438],
+        [37.73, -122.46],
+        [37.69, -122.47],
+        [37.64, -122.44],
+        [37.58, -122.39],
+        [37.53, -122.36],
+        [37.47, -122.27],
+        [37.44, -122.2],
+        [37.43, -122.13],
+        [37.422, -122.079],
+      ];
+      const result = classifyRoute({
+        summary_polyline: polyline.encode(route),
+        distance: 60_000,
+        total_elevation_gain: 600,
+        start_latlng: route[0],
+        end_latlng: route[route.length - 1],
       });
-      expect(shortRidesNoGateway.length).toBe(0);
+      expect(result).toEqual({
+        category: "other",
+        confidence: 0,
+        method: "gateway",
+      });
     });
   });
 

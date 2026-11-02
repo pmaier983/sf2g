@@ -12,8 +12,16 @@ const runScheduledTick = vi.fn();
 const runMaintenance = vi.fn();
 const runGroupRides = vi.fn();
 
+const runReport = vi.fn();
+const reportError = vi.fn(async () => "recorded");
+
 vi.mock("../cron", () => ({ runMaintenance, runGroupRides }));
 vi.mock("../scheduled", () => ({ runScheduledTick }));
+vi.mock("../report", () => ({
+  runReport,
+  defaultReportDeps: () => ({}),
+}));
+vi.mock("../report-error", () => ({ reportError }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (opts: unknown) => opts,
 }));
@@ -97,6 +105,83 @@ describe("POST /api/cron", () => {
     runGroupRides.mockResolvedValue({ ok: true, error: null, durationMs: 5 });
     const body = await (await handleCronRequest(post("groups"))).json();
     expect(body).toMatchObject({ ok: true, task: "groups" });
+  });
+
+  it("runs the monthly report with period/dry/force and omits the bodies", async () => {
+    runReport.mockResolvedValue({
+      kind: "month",
+      period: "2026-09",
+      status: "stored",
+      subject: "SF2G September 2026",
+      html: "<html>…</html>",
+      text: "…",
+      sentTo: null,
+      error: null,
+      notes: [],
+    });
+    const body = await (
+      await handleCronRequest(
+        post("monthly-report&period=2026-09&dry=1&force=1"),
+      )
+    ).json();
+    expect(runReport).toHaveBeenCalledWith(
+      { kind: "month", period: "2026-09", send: false, force: true },
+      expect.anything(),
+    );
+    expect(body).toMatchObject({
+      ok: true,
+      task: "monthly-report",
+      kind: "month",
+      period: "2026-09",
+      status: "stored",
+    });
+    expect(body).not.toHaveProperty("html");
+  });
+
+  it("runs the weekly report for the previous week by default", async () => {
+    runReport.mockResolvedValue({
+      kind: "week",
+      period: "2026-10-19",
+      status: "sent",
+      subject: "SF2G week of Oct 19",
+      html: "<html>…</html>",
+      text: "…",
+      sentTo: "p@example.com",
+      error: null,
+      notes: [],
+    });
+    const body = await (await handleCronRequest(post("weekly-report"))).json();
+    expect(runReport).toHaveBeenCalledWith(
+      { kind: "week", period: undefined, send: true, force: false },
+      expect.anything(),
+    );
+    expect(body).toMatchObject({
+      ok: true,
+      task: "weekly-report",
+      kind: "week",
+      period: "2026-10-19",
+      status: "sent",
+    });
+  });
+
+  it("rejects a malformed period without running anything", async () => {
+    const res = await handleCronRequest(post("monthly-report&period=Sept"));
+    expect(res.status).toBe(500);
+    expect(runReport).not.toHaveBeenCalled();
+    const week = await handleCronRequest(post("weekly-report&period=2026-10"));
+    expect(week.status).toBe(500);
+    expect(runReport).not.toHaveBeenCalled();
+  });
+
+  it("records a crash in app_errors and returns 500", async () => {
+    runScheduledTick.mockRejectedValue(new Error("claim_sync_jobs: down"));
+    const res = await handleCronRequest(post("drain"));
+    expect(res.status).toBe(500);
+    expect(reportError).toHaveBeenCalledWith(
+      "api/cron",
+      expect.objectContaining({ message: "claim_sync_jobs: down" }),
+      expect.objectContaining({ task: "drain" }),
+    );
   });
 
   it("returns 500 with the message when a task crashes", async () => {

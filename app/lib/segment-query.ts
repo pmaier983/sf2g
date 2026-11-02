@@ -6,7 +6,7 @@
  * serializing, and the date preset is resolved in America/Los_Angeles.
  *
  * `toSegmentSqlParams` maps it onto get_segment_leaderboard(q jsonb)
- * (migration 045).
+ * (migration 049).
  */
 import { z } from "zod";
 import { SEGMENT_MIN_RIDERS, type SegmentCorridor } from "./constants";

@@ -15,6 +15,7 @@ Research and plan written 2026-10-22 by Claude (Fable 5.1) from a hands-on audit
 | [phase-05-table-foundation.md](phase-05-table-foundation.md) | 05a–e: `TableQuery` URL state, shared `<DataTable>`, migrate each table, bug list |
 | [phase-06-cleanup.md](phase-06-cleanup.md) | Timezones, map tiles, charts, advisors, DevTools safety, runbooks |
 | [phase-07-skyline-segments.md](phase-07-skyline-segments.md) | 07a–c: Strava segment efforts per ride, Skyline segment board + "Skyline crown" ranking (planned 2026-10-24) |
+| [phase-08-observability.md](phase-08-observability.md) | Error capture (app_errors, PostHog exceptions) and the monthly report email (built 2026-10-25) |
 
 ## The two headline findings
 

@@ -127,7 +127,7 @@ export async function fetchSegment(accessToken: string, segmentId: number): Prom
 
 Both go through `fetchWithRateLimit`, log like the existing functions, and throw `Strava API error (404): …` on 404 exactly as `fetchSingleActivity` does (the ingest step matches on `"(404)"`). Never persist the raw response (same TOS note as `activityToRideInsert`).
 
-### 5.4 Migration `supabase/migrations/043_segments.sql` (07a)
+### 5.4 Migration `supabase/migrations/048_segments.sql` (07a)
 
 Header: "Deploy order: apply this migration before deploying the Worker that contains 07a; the trigger only inserts job kinds the migration adds."
 
@@ -278,7 +278,7 @@ export const fetchSegmentIngestStats = createServerFn({ method: "GET" }).handler
 ```
 DevTools panel: a "Segments" section showing the stats and a "Backfill segment efforts" button with a number input (default 500). Follow `handleCronJobs` (dynamic import of the server fn, result in the panel).
 
-### 5.7 RPC `get_segment_leaderboard(q jsonb) RETURNS jsonb` — `044_get_segment_leaderboard.sql` (07b)
+### 5.7 RPC `get_segment_leaderboard(q jsonb) RETURNS jsonb` — `049_get_segment_leaderboard.sql` (07b)
 
 `LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public`; `REVOKE EXECUTE … FROM PUBLIC; GRANT EXECUTE … TO anon, authenticated, service_role`. It is the **only** read path to `segment_efforts`.
 
@@ -349,7 +349,7 @@ Add, deterministically:
 
 ## 6. Sub-phase 07a — data layer
 
-**Files:** `supabase/migrations/043_segments.sql`, `app/lib/constants.ts`, `app/lib/segment-corridor.ts`, `app/lib/public-user.ts`, `app/lib/strava.ts`, `app/server/segments-ingest.ts`, `app/server/segments-admin.ts`, `app/server/sync-drain.ts`, `app/server/scheduled.ts`, `app/components/DevToolsPanel.tsx`, `app/test/strava-mock.ts`, `scripts/gen-fixtures.ts`, `supabase/seed/*` (generated), `app/lib/database.types.ts` (generated), tests below.
+**Files:** `supabase/migrations/048_segments.sql`, `app/lib/constants.ts`, `app/lib/segment-corridor.ts`, `app/lib/public-user.ts`, `app/lib/strava.ts`, `app/server/segments-ingest.ts`, `app/server/segments-admin.ts`, `app/server/sync-drain.ts`, `app/server/scheduled.ts`, `app/components/DevToolsPanel.tsx`, `app/test/strava-mock.ts`, `scripts/gen-fixtures.ts`, `supabase/seed/*` (generated), `app/lib/database.types.ts` (generated), tests below.
 
 **Steps, in order:**
 1. Write the failing unit tests `app/lib/__test__/segment-corridor.test.ts`:
@@ -383,7 +383,7 @@ Add, deterministically:
 
 ## 7. Sub-phase 07b — the board
 
-**Files:** `supabase/migrations/044_get_segment_leaderboard.sql`, `app/lib/segment-query.ts`, `app/server/segments.ts`, `app/server/auth.ts` (opt-in on `getCurrentUser`), `app/queries/segments.ts`, `app/routes/segments.tsx`, `app/components/SegmentCrownTable.tsx`, `SegmentBoard.tsx`, `SegmentFilters.tsx`, `SegmentOptInBanner.tsx`, `app/styles/segments.css`, `app/components/NavBar.tsx`, `e2e/pages.spec.ts`, tests below.
+**Files:** `supabase/migrations/049_get_segment_leaderboard.sql`, `app/lib/segment-query.ts`, `app/server/segments.ts`, `app/server/auth.ts` (opt-in on `getCurrentUser`), `app/queries/segments.ts`, `app/routes/segments.tsx`, `app/components/SegmentCrownTable.tsx`, `SegmentBoard.tsx`, `SegmentFilters.tsx`, `SegmentOptInBanner.tsx`, `app/styles/segments.css`, `app/components/NavBar.tsx`, `e2e/pages.spec.ts`, tests below.
 
 **Steps, in order:**
 1. Failing db test `app/server/__test__/db/segments-board.test.ts` against the fixtures:
@@ -396,7 +396,7 @@ Add, deterministically:
    - `crown` order and numbers equal `EXPECTED.segments.crown`; `pct_of_kom` for the 900001 leader equals `round(kom/best, 3)`;
    - `top: 2` returns at most 2 riders per segment while `rider_count` is unchanged;
    - calling the RPC as `anon` works; `SELECT * FROM segment_efforts` as `anon` is denied.
-2. Write migration 044 (§5.7) until green. `pnpm db:types`.
+2. Write migration 049 (§5.7) until green. `pnpm db:types`.
 3. Unit tests `app/lib/__test__/segment-query.test.ts`: `parseSegmentSearch({})` gives defaults; garbage values fall back; `serializeSegmentSearch` drops defaults; `toSegmentSqlParams` resolves `range: 'thisYear'` to LA-time dates.
 4. Implement §5.8. Component test `app/components/__test__/SegmentCrownTable.test.tsx`: renders the fixture crown, click "Points" header sorts desc.
 5. `e2e/pages.spec.ts`: add `/segments` to the rendered-pages matrix (no console errors, no hydration errors); one test: click the "Climbs" chip → URL contains `terrain=climb` and the board has fewer rows than before.
@@ -409,7 +409,7 @@ Add, deterministically:
 - [ ] Phone width: no horizontal page scroll, tables scroll inside their container.
 
 **As built in 07b (read before 07c):**
-- The migration is `045_get_segment_leaderboard.sql` (044 is phase 08's `044_app_errors_and_monthly_reports.sql`).
+- The migration is `049_get_segment_leaderboard.sql` (renumbered from 045 when the stack was rebased onto main after phase 08 and the weekly report).
 - `range` uses the existing preset names from `table-query.ts` (`this-year`, `last-30-days`, …) plus `all`.
 - `/segments` has no route loader: like `/leaderboard`, it reads with `useQuery` (`keepPreviousData`), because the root `QueryClient` is not in router context.
 - `SegmentOptInBanner` also gives an opted-in rider a "Hide my times" link (same server fn with `optIn: false`).
