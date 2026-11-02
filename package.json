@@ -11,7 +11,7 @@
     "test": "vitest run --project unit --project component",
     "test:watch": "vitest --project unit --project component",
     "prepare": "husky",
-    "db:start": "supabase start -x studio,imgproxy,inbucket,storage-api,edge-runtime,logflare,vector,supavisor,realtime",
+    "db:start": "supabase start -x studio,imgproxy,mailpit,storage-api,edge-runtime,logflare,vector,supavisor,realtime",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types:prod": "supabase gen types typescript --linked > app/lib/database.generated.ts",

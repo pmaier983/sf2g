@@ -1,10 +1,15 @@
 /**
  * Global setup for the `db` Vitest project.
  *
- * Requires a local Supabase (`pnpm db:start`). Ensures the fixture dataset is
- * loaded (resets the database when it isn't, or when SF2G_DB_RESET=1), then
- * refreshes every materialized view and precomputes group rides so view-backed
- * code paths have data.
+ * Requires a local Supabase (`pnpm db:start`). Ensures the database matches
+ * this checkout — every file in `supabase/migrations` applied and nothing
+ * else, fixture dataset loaded — and resets it when it doesn't (or when
+ * SF2G_DB_RESET=1). Then refreshes every materialized view and precomputes
+ * group rides so view-backed code paths have data.
+ *
+ * The local stack is shared by every checkout and worktree of this repo, so
+ * the migration check matters: another branch's migrations leave extra
+ * columns and RPCs behind that show up as snapshot diffs.
  */
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -12,6 +17,12 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { LOCAL_SUPABASE } from "./local-supabase";
+import {
+  describeDrift,
+  hasDrift,
+  migrationDrift,
+  parseMigrationList,
+} from "./migration-drift";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -27,6 +38,40 @@ async function fixtureLoaded(): Promise<boolean> {
   return rides === expected.totals.rides && riders === expected.totals.riders;
 }
 
+/**
+ * Why the database needs a reset, or null when it matches this checkout.
+ * Checks migrations first (cheaper to explain than a snapshot diff), then
+ * the fixture row counts.
+ */
+async function resetReason(): Promise<string | null> {
+  if (process.env.SF2G_DB_RESET === "1") return "SF2G_DB_RESET=1";
+
+  let listed: string | null = null;
+  try {
+    listed = execSync("supabase migration list --local --output-format json", {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    // No CLI on PATH, or the list failed: fall through to the fixture check.
+  }
+  const entries = listed === null ? null : parseMigrationList(listed);
+  if (entries === null) {
+    console.warn(
+      "[db-setup] could not list local migrations; skipping the migration check",
+    );
+  } else {
+    const drift = migrationDrift(entries);
+    if (hasDrift(drift)) {
+      return `local migrations differ from supabase/migrations (${describeDrift(drift)})`;
+    }
+  }
+
+  if (!(await fixtureLoaded())) return "fixture dataset is not loaded";
+  return null;
+}
+
 export default async function setup(): Promise<void> {
   try {
     const res = await fetch(`${LOCAL_SUPABASE.url}/rest/v1/`, {
@@ -39,8 +84,11 @@ export default async function setup(): Promise<void> {
     );
   }
 
-  if (process.env.SF2G_DB_RESET === "1" || !(await fixtureLoaded())) {
-    console.log("[db-setup] resetting local database with fixtures…");
+  const reason = await resetReason();
+  if (reason !== null) {
+    console.log(
+      `[db-setup] ${reason}; resetting local database with fixtures…`,
+    );
     execSync("supabase db reset", { cwd: ROOT, stdio: "inherit" });
   }
 

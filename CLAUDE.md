@@ -18,11 +18,18 @@ pnpm dev           # http://localhost:5173 against the local DB
 pnpm typecheck
 pnpm test          # unit + component tests (Vitest)
 pnpm test:db       # characterization + consistency tests against the local fixture DB
+                   # (resets the DB first if its migrations or fixtures differ from this checkout)
 pnpm e2e           # Playwright smoke tests (reuses a running `pnpm dev`)
 pnpm fixtures      # regenerate supabase/seed from scripts/gen-fixtures.ts
 pnpm build
 pnpm db:types      # regenerate app/lib/database.types.ts from the local DB
 ```
+
+One local Supabase stack is shared by every checkout and worktree (same ports, same
+container names). `pnpm test:db` and `pnpm e2e` reset it when its applied migrations
+differ from this checkout's `supabase/migrations`, so a sibling worktree's migrations
+disappear until that worktree runs `pnpm db:reset` again. In CI each job starts its own
+stack through `.github/actions/local-supabase`, which caches the Docker images.
 
 ## Where things live
 
