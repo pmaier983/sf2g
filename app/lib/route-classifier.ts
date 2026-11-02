@@ -1,10 +1,12 @@
 /**
  * Route classification system.
  *
- * 3-layer classification:
- * 0. Commute filter — ride must start in SF and end in the peninsula corridor (or vice versa)
+ * 2-layer classification:
+ * 0. Commute filter — ride must start in SF and end in the peninsula corridor (or vice versa),
+ *    and be ridden the whole way (no train/car leg)
  * 1. Gateway layer — checks if decoded polyline points pass within 500m of gateway checkpoints
- * 2. Elevation fallback — uses elevation gain + start/end location heuristics
+ *
+ * A commute that matches no gateway is "other": an SF2G on an unknown route.
  *
  * Exports: `classifyRoute(activity)` → `ClassificationResult`
  */
@@ -114,11 +116,8 @@ function findMatchedGateways(
  * Returns null if no gateways matched.
  */
 function classifyByGateways(
-  activity: ClassifiableActivity,
+  points: [number, number][],
 ): ClassificationResult | null {
-  if (!activity.summary_polyline) return null;
-
-  const points = decodePolyline(activity.summary_polyline);
   if (points.length === 0) return null;
 
   const matched = findMatchedGateways(points, ROUTE_GATEWAYS);
@@ -168,69 +167,6 @@ function classifyByGateways(
     method: "gateway",
     matchedGateways: matchedNames,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Layer 2: Elevation Fallback
-// ---------------------------------------------------------------------------
-
-/** Minimum distance (40km) required for elevation-based classification */
-const MIN_DISTANCE_METERS = 40_000;
-
-/**
- * Layer 2: Classify by elevation gain + start/end location heuristics.
- * Only attempted if Layer 1 found no gateway match AND distance ≥ 40km.
- */
-function classifyByElevation(
-  activity: ClassifiableActivity,
-): ClassificationResult | null {
-  const distance = activity.distance ?? 0;
-  const elevGain = activity.total_elevation_gain ?? 0;
-
-  // Distance filter: must be at least 40km to be an SF2G commute
-  if (distance < MIN_DISTANCE_METERS) return null;
-
-  // Skyline: heavy climbing (>2500m elevation gain)
-  if (elevGain > 2500) {
-    return {
-      category: "skyline",
-      confidence: 0.5,
-      method: "elevation",
-    };
-  }
-
-  // HMBW: moderate climbing (>2000m) + western start
-  // Western start means start longitude < -122.45 (coastal side)
-  const startLng = activity.start_latlng?.[1] ?? 0;
-  if (elevGain > 2000 && startLng < -122.45) {
-    return {
-      category: "hmbw",
-      confidence: 0.4,
-      method: "elevation",
-    };
-  }
-
-  // Bayway: flat route (<1000m elevation gain) + eastern end
-  // Eastern end means end longitude > -122.35 (bay side)
-  const endLng = activity.end_latlng?.[1] ?? 0;
-  if (elevGain < 1000 && endLng > -122.35) {
-    return {
-      category: "bayway",
-      confidence: 0.4,
-      method: "elevation",
-    };
-  }
-
-  // Royale: relatively flat (<1200m elevation gain)
-  if (elevGain < 1200) {
-    return {
-      category: "royale",
-      confidence: 0.3,
-      method: "elevation",
-    };
-  }
-
-  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -288,16 +224,53 @@ export function isInPeninsulaCorridor(
 }
 
 /**
+ * Longest gap between consecutive polyline points that is still riding.
+ * Strava's summary polylines keep a point every few km on real rides (the
+ * fixture tops out near 6 km; 12 km on a straight road). A Caltrain leg
+ * recorded as part of the activity shows up as one 40–55 km jump.
+ */
+const MAX_RIDDEN_GAP_METERS = 15_000;
+
+/**
+ * True when the track jumps further than anyone rides between two GPS
+ * points: the activity includes a train or car leg.
+ */
+function hasTransitLeg(points: [number, number][]): boolean {
+  for (let i = 1; i < points.length; i++) {
+    const [lat1, lng1] = points[i - 1];
+    const [lat2, lng2] = points[i];
+    if (haversineDistance(lat1, lng1, lat2, lng2) > MAX_RIDDEN_GAP_METERS) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function decodeActivityPolyline(
+  activity: ClassifiableActivity,
+): [number, number][] {
+  return activity.summary_polyline
+    ? decodePolyline(activity.summary_polyline)
+    : [];
+}
+
+function isCommutableTrack(
+  activity: ClassifiableActivity,
+  points: [number, number][],
+): boolean {
+  if (getCommuteDirection(activity.start_latlng, activity.end_latlng) === null)
+    return false;
+  return !hasTransitLeg(points);
+}
+
+/**
  * Check if a ride is a commutable SF2G route.
- * One endpoint must be in SF and the other in the peninsula corridor.
+ * One endpoint must be in SF and the other in the peninsula corridor, and the
+ * whole way must be ridden: a ride to 4th & King, Caltrain to Mountain View
+ * and a ride to the office has SF2G endpoints but is not an SF2G.
  */
 export function isCommutableRoute(activity: ClassifiableActivity): boolean {
-  const startInSF = isInSF(activity.start_latlng);
-  const endInSF = isInSF(activity.end_latlng);
-  const startInCorridor = isInPeninsulaCorridor(activity.start_latlng);
-  const endInCorridor = isInPeninsulaCorridor(activity.end_latlng);
-
-  return (startInSF && endInCorridor) || (startInCorridor && endInSF);
+  return isCommutableTrack(activity, decodeActivityPolyline(activity));
 }
 
 /**
@@ -325,10 +298,10 @@ export function getCommuteDirection(
 /**
  * Classify a Strava activity into an SF2G route category.
  *
- * Uses a 3-layer approach:
- * 0. Commute filter: one endpoint must be in SF, the other in the peninsula corridor
+ * Uses a 2-layer approach:
+ * 0. Commute filter: one endpoint must be in SF, the other in the peninsula
+ *    corridor, with no train/car leg in between
  * 1. Gateway layer: check if decoded polyline passes within 500m of known gateway checkpoints
- * 2. Elevation fallback: use elevation gain + start/end location heuristics
  *
  * If the ride doesn't pass the commute filter, returns `{ category: null }`.
  * If it passes the commute filter but no classification layer matches,
@@ -339,7 +312,8 @@ export function classifyRoute(
 ): ClassificationResult {
   // Layer 0: Commute endpoint filter
   // Non-SF2G rides get null category — they are NOT "other" SF2G rides
-  if (!isCommutableRoute(activity)) {
+  const points = decodeActivityPolyline(activity);
+  if (!isCommutableTrack(activity, points)) {
     return {
       category: null,
       confidence: 0,
@@ -348,14 +322,12 @@ export function classifyRoute(
   }
 
   // Layer 1: Gateway-based classification (highest priority)
-  const gatewayResult = classifyByGateways(activity);
+  const gatewayResult = classifyByGateways(points);
   if (gatewayResult) return gatewayResult;
 
-  // Layer 2: Elevation-based fallback
-  const elevationResult = classifyByElevation(activity);
-  if (elevationResult) return elevationResult;
-
-  // Fallback: unclassified
+  // No gateway: an SF2G on an unknown route. Elevation and endpoints can't
+  // tell the routes apart (a flat Skyline and a Bayway end at the same
+  // office), so don't guess.
   return {
     category: "other",
     confidence: 0,
