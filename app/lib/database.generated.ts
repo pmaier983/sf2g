@@ -71,16 +71,16 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"monthly_reports": {
+                },"reports": {
                   Row: {
-                    "data": NonNullable<Json>,"generated_at": string,"html": string,"month": string,"send_error": string | null,"sent_at": string | null,"sent_to": string | null,"subject": string,"text": string
+                    "data": NonNullable<Json>,"generated_at": string,"html": string,"kind": string,"period_start": string,"send_error": string | null,"sent_at": string | null,"sent_to": string | null,"subject": string,"text": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "data": NonNullable<Json>,"generated_at"?: string,"html": string,"month": string,"send_error"?: string | null,"sent_at"?: string | null,"sent_to"?: string | null,"subject": string,"text": string
+                    "data": NonNullable<Json>,"generated_at"?: string,"html": string,"kind": string,"period_start": string,"send_error"?: string | null,"sent_at"?: string | null,"sent_to"?: string | null,"subject": string,"text": string
                   }
                   Update: {
-                    "data"?: NonNullable<Json>,"generated_at"?: string,"html"?: string,"month"?: string,"send_error"?: string | null,"sent_at"?: string | null,"sent_to"?: string | null,"subject"?: string,"text"?: string
+                    "data"?: NonNullable<Json>,"generated_at"?: string,"html"?: string,"kind"?: string,"period_start"?: string,"send_error"?: string | null,"sent_at"?: string | null,"sent_to"?: string | null,"subject"?: string,"text"?: string
                   }
                   Relationships: [
                     
@@ -525,11 +525,11 @@ isOneToOne: false
               "active_years": number,"avatar_url": string,"avg_heartrate": number,"avg_kilojoules": number,"avg_speed_mps": number,"avg_tailwind_ms": number,"avg_watts": number,"bayway_count": number,"display_name": string,"febw_count": number,"first_ride_date": string,"fleaway_count": number,"hmbw_count": number,"last_ride_date": string,"mebw_count": number,"median_speed_mps": number,"median_watts": number,"other_count": number,"royale_count": number,"sf2g_distance_meters": number,"sf2g_elevation_meters": number,"sf2g_total": number,"skyline_count": number,"total_distance_meters": number,"total_elevation_meters": number,"total_rides": number,"user_id": string,"username": string
             }[]
                            },
-"get_monthly_report":
-{ Args: { "p_month": string }; Returns: Json
-                           },
 "get_profile_rides":
 { Args: { "p_user_id": string }; Returns: Json
+                           },
+"get_report":
+{ Args: { "p_kind": string,"p_start": string }; Returns: Json
                            },
 "get_rider_growth":
 { Args: { "granularity": string,"q": Json,"rider_ids": (string)[] }; Returns: Json

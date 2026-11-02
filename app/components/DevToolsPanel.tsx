@@ -3,7 +3,8 @@ import { triggerReclassify, type ReclassifyResult } from "../server/reclassify";
 import type { CronResult } from "../server/cron";
 import type { SyncHealth } from "../server/users";
 import type { RecentErrors } from "../server/observability-admin";
-import type { MonthlyReportRun } from "../server/monthly-report";
+import type { ReportRun } from "../server/report";
+import type { ReportKind } from "../lib/report";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -44,10 +45,11 @@ export function DevToolsPanel() {
   // Observability state (phase 08)
   const [errors, setErrors] = useState<RecentErrors | null>(null);
   const [errorsLoading, setErrorsLoading] = useState(false);
-  const [report, setReport] = useState<MonthlyReportRun | null>(null);
+  const [report, setReport] = useState<ReportRun | null>(null);
   const [reportBusy, setReportBusy] = useState<"preview" | "send" | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
-  const [reportMonth, setReportMonth] = useState("");
+  const [reportKind, setReportKind] = useState<ReportKind>("week");
+  const [reportPeriod, setReportPeriod] = useState("");
 
   const handleRecentErrors = async () => {
     setErrorsLoading(true);
@@ -62,11 +64,11 @@ export function DevToolsPanel() {
     }
   };
 
-  const handleMonthlyReport = async (send: boolean) => {
+  const handleReport = async (send: boolean) => {
     if (
       send &&
       !window.confirm(
-        `Email the ${reportMonth || "previous month's"} report to REPORT_EMAIL_TO now?`,
+        `Email the ${reportPeriod || `previous ${reportKind}'s`} report to REPORT_EMAIL_TO now?`,
       )
     ) {
       return;
@@ -74,11 +76,14 @@ export function DevToolsPanel() {
     setReportBusy(send ? "send" : "preview");
     setReportError(null);
     try {
-      const { runMonthlyReportNow } =
-        await import("../server/observability-admin");
+      const { runReportNow } = await import("../server/observability-admin");
       setReport(
-        await runMonthlyReportNow({
-          data: { month: reportMonth || undefined, send },
+        await runReportNow({
+          data: {
+            kind: reportKind,
+            period: reportPeriod || undefined,
+            send,
+          },
         }),
       );
     } catch (err) {
@@ -527,24 +532,48 @@ export function DevToolsPanel() {
               )}
             </div>
 
-            {/* Monthly Report Section (phase 08) */}
+            {/* Report Section (phase 08 + weekly) */}
             <div className="dev-tools__section">
-              <h4 className="dev-tools__section-title">📬 Monthly Report</h4>
+              <h4 className="dev-tools__section-title">📬 Report Email</h4>
               <p className="dev-tools__section-desc">
-                Sent automatically on the 1st. Preview renders and stores it;
-                Send emails it now, even if that month already went out.
+                Sent automatically on Mondays (the previous week) and on the 1st
+                (the previous month). Preview renders and stores it; Send emails
+                it now, even if that period already went out.
               </p>
-              <input
-                type="month"
-                value={reportMonth}
-                onChange={(e) => setReportMonth(e.target.value)}
-                aria-label="Report month (blank = previous month)"
-                style={{ width: "100%", marginBottom: "var(--space-2)" }}
-              />
+              <div
+                style={{
+                  display: "flex",
+                  gap: "var(--space-2)",
+                  marginBottom: "var(--space-2)",
+                }}
+              >
+                <select
+                  value={reportKind}
+                  onChange={(e) => {
+                    setReportKind(e.target.value as ReportKind);
+                    setReportPeriod("");
+                  }}
+                  aria-label="Report kind"
+                >
+                  <option value="week">Weekly</option>
+                  <option value="month">Monthly</option>
+                </select>
+                <input
+                  type={reportKind === "week" ? "date" : "month"}
+                  value={reportPeriod}
+                  onChange={(e) => setReportPeriod(e.target.value)}
+                  aria-label={
+                    reportKind === "week"
+                      ? "Any day of the week to report (blank = previous week)"
+                      : "Report month (blank = previous month)"
+                  }
+                  style={{ flex: 1 }}
+                />
+              </div>
               <div style={{ display: "flex", gap: "var(--space-2)" }}>
                 <button
                   className="dev-tools__action-btn"
-                  onClick={() => handleMonthlyReport(false)}
+                  onClick={() => handleReport(false)}
                   disabled={reportBusy !== null}
                   id="dev-tools-report-preview-btn"
                 >
@@ -552,7 +581,7 @@ export function DevToolsPanel() {
                 </button>
                 <button
                   className="dev-tools__action-btn"
-                  onClick={() => handleMonthlyReport(true)}
+                  onClick={() => handleReport(true)}
                   disabled={reportBusy !== null}
                   id="dev-tools-report-send-btn"
                 >
@@ -573,7 +602,7 @@ export function DevToolsPanel() {
                   style={{ marginTop: "var(--space-2)" }}
                 >
                   <div className="dev-tools__result-header">
-                    {report.month}: {report.status}
+                    {report.kind} {report.period}: {report.status}
                     {report.sentTo ? ` → ${report.sentTo}` : ""}
                   </div>
                   {(report.error || report.notes.length > 0) && (
@@ -587,7 +616,7 @@ export function DevToolsPanel() {
                     </p>
                   )}
                   <iframe
-                    title="Monthly report preview"
+                    title="Report preview"
                     srcDoc={report.html}
                     sandbox=""
                     style={{

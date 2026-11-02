@@ -1,31 +1,38 @@
 /**
- * Monthly report — collect, render, store, send.
+ * Weekly / monthly report — collect, render, store, send.
  *
- * Runs from the Cron Trigger on the 1st of each month (wrangler.jsonc,
- * app/ssr.tsx), from `POST /api/cron?task=monthly-report`, and from the
- * DevTools panel (preview / send now). The report covers the previous LA
- * calendar month.
+ * Runs from the Cron Triggers (wrangler.jsonc, app/ssr.tsx): Monday mornings
+ * for the previous Monday–Sunday week, the 1st for the previous month. Also
+ * from `POST /api/cron?task=weekly-report|monthly-report` and from the
+ * DevTools panel (preview / send now). Periods are LA calendar periods
+ * (app/lib/report.ts).
  *
  * Sources, in subrequests:
- *   1   get_monthly_report(month)           — every community/health number
- *   0–2 PostHog HogQL (optional)            — page views, visitors, top pages
- *   0–2 Cloudflare GraphQL (optional)       — Worker requests, errors, CPU
- *   1   Resend (optional)                   — the email itself
- *   3–4 monthly_reports read/upsert, prune_app_errors
+ *   1   get_report(kind, start)              — every community/health number
+ *   0–2 PostHog HogQL (optional)             — page views, visitors, top pages
+ *   0–2 Cloudflare GraphQL (optional)        — Worker requests, errors, CPU
+ *   1   Resend (optional)                    — the email itself
+ *   3–4 reports read/upsert, prune_app_errors
  * Optional sources that fail add a note to the report instead of failing it.
  *
- * Idempotent: a month that was already sent is not sent again unless forced.
+ * Idempotent: a period that was already sent is not sent again unless forced.
  */
 import { createServiceClient } from "../lib/supabase";
-import { localDate } from "../lib/dates";
 import {
-  renderMonthlyReport,
+  normalizePeriod,
+  periodEnd,
+  periodStart,
+  previousPeriod,
+  renderReport,
+  shiftPeriod,
+  yearAgoOffset,
   type DbReport,
-  type MonthlyReportData,
+  type ReportData,
+  type ReportKind,
   type RenderedReport,
   type UsageReport,
   type WorkerReport,
-} from "../lib/monthly-report";
+} from "../lib/report";
 import { OUTBOUND_FETCH_TIMEOUT_MS } from "../lib/constants";
 import { errorMessage } from "../lib/errors";
 import { emailConfigFromEnv, type EmailConfig } from "./email";
@@ -33,7 +40,7 @@ import { reportError } from "./report-error";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
 
-export interface MonthlyReportDeps {
+export interface ReportDeps {
   supabase: ServiceClient;
   fetch: typeof fetch;
   env: Record<string, string | undefined>;
@@ -41,9 +48,10 @@ export interface MonthlyReportDeps {
   email: EmailConfig;
 }
 
-export interface MonthlyReportRun extends RenderedReport {
-  /** YYYY-MM */
-  month: string;
+export interface ReportRun extends RenderedReport {
+  kind: ReportKind;
+  /** YYYY-MM for a month, the Monday YYYY-MM-DD for a week. */
+  period: string;
   status: "sent" | "stored" | "already_sent" | "send_failed";
   sentTo: string | null;
   error: string | null;
@@ -51,31 +59,18 @@ export interface MonthlyReportRun extends RenderedReport {
 }
 
 // ---------------------------------------------------------------------------
-// Dates (LA calendar months)
+// Dates
 // ---------------------------------------------------------------------------
 
-/** "2026-10" → "2026-10-01" */
-export function monthStart(yyyyMm: string): string {
-  if (!/^\d{4}-\d{2}$/.test(yyyyMm)) throw new Error(`Bad month: ${yyyyMm}`);
-  return `${yyyyMm}-01`;
-}
-
-export function shiftMonth(yyyyMm: string, months: number): string {
-  const [y, m] = yyyyMm.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + months, 1, 12));
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-/** The month the report covers when run at `now`: the previous LA month. */
-export function previousMonth(now: Date): string {
-  return shiftMonth(localDate(now).slice(0, 7), -1);
-}
-
-/** UTC instants bounding an LA calendar month, as ISO strings. */
-function monthBoundsIso(yyyyMm: string): { from: string; to: string } {
-  // LA is UTC−7/−8; widen by a day and let the sources bucket in LA time.
-  const from = new Date(`${monthStart(yyyyMm)}T00:00:00-08:00`);
-  const to = new Date(`${monthStart(shiftMonth(yyyyMm, 1))}T00:00:00-07:00`);
+/** UTC instants bounding an LA calendar period, as ISO strings. */
+function periodBoundsIso(
+  kind: ReportKind,
+  key: string,
+): { from: string; to: string } {
+  // LA is UTC−7/−8; widen by an hour each way and let the sources bucket in
+  // LA time.
+  const from = new Date(`${periodStart(kind, key)}T00:00:00-08:00`);
+  const to = new Date(`${periodEnd(kind, key)}T00:00:00-07:00`);
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
@@ -84,7 +79,7 @@ function monthBoundsIso(yyyyMm: string): { from: string; to: string } {
 // ---------------------------------------------------------------------------
 
 async function hogql<T>(
-  deps: MonthlyReportDeps,
+  deps: ReportDeps,
   name: string,
   query: string,
 ): Promise<T[]> {
@@ -115,27 +110,39 @@ async function hogql<T>(
   );
 }
 
+/** HogQL expression bucketing an event into this kind's period key. */
+function hogqlPeriod(kind: ReportKind): string {
+  const la = "toTimeZone(timestamp, 'America/Los_Angeles')";
+  return kind === "month"
+    ? `formatDateTime(toStartOfMonth(${la}), '%Y-%m')`
+    : `formatDateTime(toMonday(${la}), '%Y-%m-%d')`;
+}
+
 export async function fetchUsage(
-  deps: MonthlyReportDeps,
-  month: string,
+  deps: ReportDeps,
+  kind: ReportKind,
+  key: string,
 ): Promise<UsageReport> {
-  const cur = monthBoundsIso(month);
-  const prev2 = monthBoundsIso(shiftMonth(month, -2));
-  const lastYear = monthBoundsIso(shiftMonth(month, -12));
+  const cur = periodBoundsIso(kind, key);
+  const prev2 = periodBoundsIso(kind, shiftPeriod(kind, key, -2));
+  const lastYear = periodBoundsIso(
+    kind,
+    shiftPeriod(kind, key, -yearAgoOffset(kind)),
+  );
   const inRange = `((timestamp >= toDateTime('${prev2.from}') AND timestamp < toDateTime('${cur.to}'))
       OR (timestamp >= toDateTime('${lastYear.from}') AND timestamp < toDateTime('${lastYear.to}')))`;
 
   type Row = {
-    month: string;
+    period: string;
     pageviews: number;
     visitors: number;
     sessions: number;
     client_errors: number;
   };
-  const months = await hogql<Row>(
+  const periods = await hogql<Row>(
     deps,
-    "sf2g monthly report: usage",
-    `SELECT formatDateTime(toStartOfMonth(toTimeZone(timestamp, 'America/Los_Angeles')), '%Y-%m') AS month,
+    `sf2g ${kind}ly report: usage`,
+    `SELECT ${hogqlPeriod(kind)} AS period,
             countIf(event = '$pageview') AS pageviews,
             uniqIf(person_id, event = '$pageview') AS visitors,
             uniqIf(properties.$session_id, event = '$pageview') AS sessions,
@@ -143,28 +150,29 @@ export async function fetchUsage(
      FROM events
      WHERE ${inRange}
        AND event IN ('$pageview', '$exception')
-     GROUP BY month
-     ORDER BY month DESC`,
+     GROUP BY period
+     ORDER BY period DESC`,
   );
 
   type PageRow = { path: string; views: number };
   const pages = await hogql<PageRow>(
     deps,
-    "sf2g monthly report: top pages",
+    `sf2g ${kind}ly report: top pages`,
     `SELECT replaceRegexpAll(properties.$pathname, '/profile/[^/]+', '/profile/:id') AS path,
             count() AS views
      FROM events
      WHERE timestamp >= toDateTime('${cur.from}') AND timestamp < toDateTime('${cur.to}')
        AND event = '$pageview'
-       AND toStartOfMonth(toTimeZone(timestamp, 'America/Los_Angeles')) = toDate('${monthStart(month)}')
+       AND toDate(toTimeZone(timestamp, 'America/Los_Angeles')) >= toDate('${periodStart(kind, key)}')
+       AND toDate(toTimeZone(timestamp, 'America/Los_Angeles')) < toDate('${periodEnd(kind, key)}')
      GROUP BY path
      ORDER BY views DESC
      LIMIT 8`,
   );
 
   return {
-    months: months.map((r) => ({
-      month: r.month,
+    periods: periods.map((r) => ({
+      period: r.period,
       pageviews: Number(r.pageviews),
       visitors: Number(r.visitors),
       sessions: Number(r.sessions),
@@ -175,10 +183,10 @@ export async function fetchUsage(
 }
 
 // ---------------------------------------------------------------------------
-// Cloudflare Workers metrics (optional; one month per query, 3 months kept)
+// Cloudflare Workers metrics (optional; one period per query, 3 months kept)
 // ---------------------------------------------------------------------------
 
-const WORKERS_QUERY = `query SF2GMonthly($account: String!, $script: String!, $from: Time!, $to: Time!) {
+const WORKERS_QUERY = `query SF2GReport($account: String!, $script: String!, $from: Time!, $to: Time!) {
   viewer {
     accounts(filter: { accountTag: $account }) {
       workersInvocationsAdaptive(limit: 1000, filter: { scriptName: $script, datetime_geq: $from, datetime_leq: $to }) {
@@ -189,8 +197,12 @@ const WORKERS_QUERY = `query SF2GMonthly($account: String!, $script: String!, $f
   }
 }`;
 
-async function fetchWorkerMonth(deps: MonthlyReportDeps, month: string) {
-  const { from, to } = monthBoundsIso(month);
+async function fetchWorkerPeriod(
+  deps: ReportDeps,
+  kind: ReportKind,
+  key: string,
+) {
+  const { from, to } = periodBoundsIso(kind, key);
   const res = await deps.fetch("https://api.cloudflare.com/client/v4/graphql", {
     method: "POST",
     headers: {
@@ -239,7 +251,7 @@ async function fetchWorkerMonth(deps: MonthlyReportDeps, month: string) {
   // Quantiles are per returned row; with no dimensions there is one row.
   const q = rows[0]?.quantiles;
   return {
-    month,
+    period: key,
     ...sum,
     cpu_p50_ms: q ? q.cpuTimeP50 / 1000 : null,
     cpu_p99_ms: q ? q.cpuTimeP99 / 1000 : null,
@@ -247,35 +259,38 @@ async function fetchWorkerMonth(deps: MonthlyReportDeps, month: string) {
 }
 
 export async function fetchWorkers(
-  deps: MonthlyReportDeps,
-  month: string,
+  deps: ReportDeps,
+  kind: ReportKind,
+  key: string,
 ): Promise<WorkerReport> {
-  const months = await Promise.all([
-    fetchWorkerMonth(deps, month),
-    fetchWorkerMonth(deps, shiftMonth(month, -1)),
+  const periods = await Promise.all([
+    fetchWorkerPeriod(deps, kind, key),
+    fetchWorkerPeriod(deps, kind, shiftPeriod(kind, key, -1)),
   ]);
-  return { months };
+  return { periods };
 }
 
 // ---------------------------------------------------------------------------
 // Collect + render
 // ---------------------------------------------------------------------------
 
-export async function collectMonthlyReport(
-  month: string,
-  deps: MonthlyReportDeps,
-): Promise<MonthlyReportData> {
+export async function collectReport(
+  kind: ReportKind,
+  key: string,
+  deps: ReportDeps,
+): Promise<ReportData> {
   const notes: string[] = [];
-  const { data, error } = await deps.supabase.rpc("get_monthly_report", {
-    p_month: monthStart(month),
+  const { data, error } = await deps.supabase.rpc("get_report", {
+    p_kind: kind,
+    p_start: periodStart(kind, key),
   });
-  if (error) throw new Error(`get_monthly_report: ${error.message}`);
+  if (error) throw new Error(`get_report: ${error.message}`);
   const db = data as unknown as DbReport;
 
   let usage: UsageReport | null = null;
   if (deps.env.POSTHOG_PERSONAL_API_KEY && deps.env.POSTHOG_PROJECT_ID) {
     try {
-      usage = await fetchUsage(deps, month);
+      usage = await fetchUsage(deps, kind, key);
     } catch (err) {
       notes.push(`Site usage unavailable: ${errorMessage(err)}`);
     }
@@ -284,7 +299,7 @@ export async function collectMonthlyReport(
   let workers: WorkerReport | null = null;
   if (deps.env.CLOUDFLARE_API_TOKEN && deps.env.CLOUDFLARE_ACCOUNT_ID) {
     try {
-      workers = await fetchWorkers(deps, month);
+      workers = await fetchWorkers(deps, kind, key);
     } catch (err) {
       notes.push(`Platform metrics unavailable: ${errorMessage(err)}`);
     }
@@ -300,31 +315,40 @@ export async function collectMonthlyReport(
 }
 
 export interface RunOptions {
-  /** YYYY-MM; default: the previous LA month. */
-  month?: string;
+  kind: ReportKind;
+  /**
+   * YYYY-MM for a month, YYYY-MM-DD (any day of the week) for a week;
+   * default: the previous LA period.
+   */
+  period?: string;
   /** Email it (default true). false = render and store only. */
   send?: boolean;
-  /** Send even if this month was already sent. */
+  /** Send even if this period was already sent. */
   force?: boolean;
 }
 
-export async function runMonthlyReport(
+export async function runReport(
   opts: RunOptions,
-  deps: MonthlyReportDeps,
-): Promise<MonthlyReportRun> {
-  const month = opts.month ?? previousMonth(deps.now());
+  deps: ReportDeps,
+): Promise<ReportRun> {
+  const { kind } = opts;
+  const period = opts.period
+    ? normalizePeriod(kind, opts.period)
+    : previousPeriod(kind, deps.now());
   const send = opts.send ?? true;
-  const key = monthStart(month);
+  const key = periodStart(kind, period);
 
   if (send && !opts.force) {
     const { data: existing } = await deps.supabase
-      .from("monthly_reports")
+      .from("reports")
       .select("subject, html, text, sent_to, sent_at")
-      .eq("month", key)
+      .eq("kind", kind)
+      .eq("period_start", key)
       .maybeSingle();
     if (existing?.sent_at) {
       return {
-        month,
+        kind,
+        period,
         status: "already_sent",
         subject: existing.subject,
         html: existing.html,
@@ -336,26 +360,24 @@ export async function runMonthlyReport(
     }
   }
 
-  const data = await collectMonthlyReport(month, deps);
-  const rendered = renderMonthlyReport(data);
+  const data = await collectReport(kind, period, deps);
+  const rendered = renderReport(data);
 
-  const { error: upsertError } = await deps.supabase
-    .from("monthly_reports")
-    .upsert(
-      {
-        month: key,
-        subject: rendered.subject,
-        html: rendered.html,
-        text: rendered.text,
-        data: data as never,
-        generated_at: deps.now().toISOString(),
-      },
-      { onConflict: "month" },
-    );
-  if (upsertError)
-    throw new Error(`monthly_reports upsert: ${upsertError.message}`);
+  const { error: upsertError } = await deps.supabase.from("reports").upsert(
+    {
+      kind,
+      period_start: key,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+      data: data as never,
+      generated_at: deps.now().toISOString(),
+    },
+    { onConflict: "kind,period_start" },
+  );
+  if (upsertError) throw new Error(`reports upsert: ${upsertError.message}`);
 
-  const base = { month, ...rendered, notes: data.notes };
+  const base = { kind, period, ...rendered, notes: data.notes };
   if (!send) return { ...base, status: "stored", sentTo: null, error: null };
 
   const { transport, to, from } = deps.email;
@@ -364,40 +386,44 @@ export async function runMonthlyReport(
       ? "Email not configured: set RESEND_API_KEY and REPORT_EMAIL_TO"
       : "REPORT_EMAIL_TO is not set";
     await deps.supabase
-      .from("monthly_reports")
+      .from("reports")
       .update({ send_error: error })
-      .eq("month", key);
+      .eq("kind", kind)
+      .eq("period_start", key);
     return { ...base, status: "stored", sentTo: null, error };
   }
 
   try {
     await transport.send({ to, from, ...rendered });
     await deps.supabase
-      .from("monthly_reports")
+      .from("reports")
       .update({
         sent_to: to,
         sent_at: deps.now().toISOString(),
         send_error: null,
       })
-      .eq("month", key);
+      .eq("kind", kind)
+      .eq("period_start", key);
     // Retention for the error table; a failure here must not fail the run.
     await deps.supabase.rpc("prune_app_errors", { p_keep: "90 days" });
     return { ...base, status: "sent", sentTo: to, error: null };
   } catch (err) {
     const error = errorMessage(err);
     await deps.supabase
-      .from("monthly_reports")
+      .from("reports")
       .update({ send_error: error })
-      .eq("month", key);
-    await reportError("monthly-report", err, {
-      month,
+      .eq("kind", kind)
+      .eq("period_start", key);
+    await reportError("report", err, {
+      kind,
+      period,
       transport: transport.name,
     });
     return { ...base, status: "send_failed", sentTo: null, error };
   }
 }
 
-export function defaultMonthlyReportDeps(): MonthlyReportDeps {
+export function defaultReportDeps(): ReportDeps {
   return {
     supabase: createServiceClient(),
     fetch: (...args) => fetch(...args),
@@ -408,10 +434,10 @@ export function defaultMonthlyReportDeps(): MonthlyReportDeps {
 }
 
 /** The Cron Trigger entry point. */
-export async function runMonthlyReportTick(): Promise<MonthlyReportRun> {
-  const run = await runMonthlyReport({}, defaultMonthlyReportDeps());
+export async function runReportTick(kind: ReportKind): Promise<ReportRun> {
+  const run = await runReport({ kind }, defaultReportDeps());
   console.log(
-    `[monthly-report] ${run.month} ${run.status}${run.sentTo ? ` → ${run.sentTo}` : ""}${run.error ? ` (${run.error})` : ""}`,
+    `[report] ${run.kind} ${run.period} ${run.status}${run.sentTo ? ` → ${run.sentTo}` : ""}${run.error ? ` (${run.error})` : ""}`,
   );
   return run;
 }

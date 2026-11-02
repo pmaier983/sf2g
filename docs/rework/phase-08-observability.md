@@ -33,6 +33,13 @@ previous months.
   `app/server/email.ts` (Resend). Cron `0 16 1 * *`; `/api/cron?task=monthly-report`;
   DevTools Preview / Send now.
 
+## Weekly report (added after phase 08)
+The monthly report became a `kind: "week" | "month"` report: migration 047
+renames `monthly_reports` → `reports` keyed by `(kind, period_start)` and
+replaces `get_monthly_report` with `get_report(kind, start)`; a second Cron
+Trigger `0 16 * * 1` emails the previous Monday–Sunday week.
+`app/lib/report.ts`, `app/server/report.ts`, `/api/cron?task=weekly-report`.
+
 ## Deploy order
 1. `supabase db push --linked` (044) — before the app.
 2. `wrangler secret put RESEND_API_KEY` and `REPORT_EMAIL_TO` (optional:

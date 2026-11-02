@@ -1,20 +1,34 @@
 /**
- * Monthly report — pure rendering.
+ * Weekly / monthly report — periods and pure rendering.
  *
- * `MonthlyReportData` is assembled on the server (app/server/monthly-report.ts)
- * from one SQL call (`get_monthly_report`, migration 044) plus optional
- * PostHog usage and Cloudflare Workers metrics. This module turns it into an
- * email: subject, HTML and plain text. No I/O, fully unit-tested.
+ * `ReportData` is assembled on the server (app/server/report.ts) from one
+ * SQL call (`get_report(kind, start)`, migration 047) plus optional PostHog
+ * usage and Cloudflare Workers metrics. This module turns it into an email:
+ * subject, HTML and plain text. No I/O, fully unit-tested.
+ *
+ * A report covers one *period* in the LA calendar:
+ *   - kind "month": key "YYYY-MM", compared with the two months before and
+ *     the same month a year earlier (offsets 0, 1, 2, 12);
+ *   - kind "week":  key "YYYY-MM-DD" (the Monday), Monday–Sunday, compared
+ *     with the two weeks before and 52 weeks earlier (offsets 0, 1, 2, 52).
  */
+import { addDays, localDate } from "./dates";
+
+export type ReportKind = "week" | "month";
+export const REPORT_KINDS: readonly ReportKind[] = ["week", "month"];
+
+export function isReportKind(value: unknown): value is ReportKind {
+  return value === "week" || value === "month";
+}
 
 // ---------------------------------------------------------------------------
-// Data shapes (the `db` part mirrors get_monthly_report's JSON exactly)
+// Data shapes (the `db` part mirrors get_report's JSON exactly)
 // ---------------------------------------------------------------------------
 
-export interface MonthRow {
-  /** YYYY-MM */
-  month: string;
-  /** 0 = reported month, 1 and 2 = the months before, 12 = a year earlier */
+export interface PeriodRow {
+  /** Period key (see above). */
+  period: string;
+  /** 0 = reported period, 1 and 2 = the ones before, 12 / 52 = a year earlier */
   offset: number;
   sf2g_rides: number;
   other_rides: number;
@@ -39,9 +53,10 @@ export interface TopRider {
 }
 
 export interface DbReport {
-  month: string;
+  kind: ReportKind;
+  period: string;
   generated_at: string;
-  months: MonthRow[];
+  periods: PeriodRow[];
   top_riders: TopRider[];
   riders: {
     connected: number;
@@ -70,9 +85,9 @@ export interface DbReport {
   };
 }
 
-/** From PostHog (optional). One row per month, same offsets as `db.months`. */
-export interface UsageMonth {
-  month: string;
+/** From PostHog (optional). One row per period, same keys as `db.periods`. */
+export interface UsagePeriod {
+  period: string;
   pageviews: number;
   visitors: number;
   sessions: number;
@@ -80,13 +95,13 @@ export interface UsageMonth {
 }
 
 export interface UsageReport {
-  months: UsageMonth[];
+  periods: UsagePeriod[];
   top_pages: Array<{ path: string; views: number }>;
 }
 
 /** From Cloudflare's GraphQL analytics (optional). */
-export interface WorkerMonth {
-  month: string;
+export interface WorkerPeriod {
+  period: string;
   requests: number;
   errors: number;
   subrequests: number;
@@ -95,10 +110,10 @@ export interface WorkerMonth {
 }
 
 export interface WorkerReport {
-  months: WorkerMonth[];
+  periods: WorkerPeriod[];
 }
 
-export interface MonthlyReportData {
+export interface ReportData {
   db: DbReport;
   usage: UsageReport | null;
   workers: WorkerReport | null;
@@ -112,6 +127,71 @@ export interface RenderedReport {
   subject: string;
   html: string;
   text: string;
+}
+
+// ---------------------------------------------------------------------------
+// Periods (LA calendar; dates are YYYY-MM-DD strings, arithmetic at UTC noon)
+// ---------------------------------------------------------------------------
+
+const MONTH_KEY = /^\d{4}-\d{2}$/;
+const WEEK_KEY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The key format a kind expects, for error messages. */
+export function periodKeyFormat(kind: ReportKind): string {
+  return kind === "month" ? "YYYY-MM" : "YYYY-MM-DD";
+}
+
+export function isPeriodKey(kind: ReportKind, key: string): boolean {
+  return (kind === "month" ? MONTH_KEY : WEEK_KEY).test(key);
+}
+
+/** Monday on or before `iso` (YYYY-MM-DD). */
+export function weekStart(iso: string): string {
+  const dow = new Date(`${iso}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+  return addDays(iso, -((dow + 6) % 7));
+}
+
+/**
+ * A valid key for `kind`, snapped to the period start (a week given by any
+ * of its days becomes its Monday). Throws on the wrong format.
+ */
+export function normalizePeriod(kind: ReportKind, key: string): string {
+  if (!isPeriodKey(kind, key))
+    throw new Error(`period must be ${periodKeyFormat(kind)}, got ${key}`);
+  return kind === "week" ? weekStart(key) : key;
+}
+
+/** First day of the period, YYYY-MM-DD. */
+export function periodStart(kind: ReportKind, key: string): string {
+  return kind === "month" ? `${key}-01` : key;
+}
+
+/** Day after the period's last day, YYYY-MM-DD. */
+export function periodEnd(kind: ReportKind, key: string): string {
+  return periodStart(kind, shiftPeriod(kind, key, 1));
+}
+
+export function shiftMonth(yyyyMm: string, months: number): string {
+  const [y, m] = yyyyMm.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + months, 1, 12));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+export function shiftPeriod(kind: ReportKind, key: string, n: number): string {
+  return kind === "month" ? shiftMonth(key, n) : addDays(key, 7 * n);
+}
+
+/** How many periods back "a year earlier" is. */
+export function yearAgoOffset(kind: ReportKind): number {
+  return kind === "month" ? 12 : 52;
+}
+
+/** The period the report covers when run at `now`: the previous LA one. */
+export function previousPeriod(kind: ReportKind, now: Date): string {
+  const today = localDate(now);
+  return kind === "month"
+    ? shiftMonth(today.slice(0, 7), -1)
+    : addDays(weekStart(today), -7);
 }
 
 // ---------------------------------------------------------------------------
@@ -153,6 +233,38 @@ export function monthLabel(yyyyMm: string): string {
 export function monthShort(yyyyMm: string): string {
   const m = Number(yyyyMm.split("-")[1]);
   return (MONTHS[m - 1] ?? yyyyMm).slice(0, 3);
+}
+
+/** "2026-10-19" → "Oct 19" */
+function dayShort(iso: string): string {
+  return `${monthShort(iso)} ${Number(iso.slice(8, 10))}`;
+}
+
+/**
+ * The period as a heading: "September 2026", or for a week its Monday–Sunday
+ * span: "Oct 19 – 25, 2026", "Sep 28 – Oct 4, 2026", "Dec 29, 2025 – Jan 4, 2026".
+ */
+export function periodLabel(kind: ReportKind, key: string): string {
+  if (kind === "month") return monthLabel(key);
+  const last = addDays(key, 6);
+  const y1 = key.slice(0, 4);
+  const y2 = last.slice(0, 4);
+  if (y1 !== y2) return `${dayShort(key)}, ${y1} – ${dayShort(last)}, ${y2}`;
+  if (key.slice(5, 7) !== last.slice(5, 7))
+    return `${dayShort(key)} – ${dayShort(last)}, ${y1}`;
+  return `${dayShort(key)} – ${Number(last.slice(8, 10))}, ${y1}`;
+}
+
+/** The period as a column header or "vs" label: "Sep", "Oct 19". */
+export function periodShort(kind: ReportKind, key: string): string {
+  return kind === "month" ? monthShort(key) : dayShort(key);
+}
+
+/** `periodShort` plus the year, for the year-earlier comparison. */
+function periodShortYear(kind: ReportKind, key: string): string {
+  return kind === "month"
+    ? `${monthShort(key)} ${key.slice(0, 4)}`
+    : `${dayShort(key)}, ${key.slice(0, 4)}`;
 }
 
 export function fmtInt(n: number | null | undefined): string {
@@ -212,13 +324,13 @@ export function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-function byOffset<T extends { month: string }>(
+function byOffset<T extends { period: string }>(
   rows: T[],
-  months: MonthRow[],
+  periods: PeriodRow[],
   offset: number,
 ): T | undefined {
-  const m = months.find((r) => r.offset === offset)?.month;
-  return m ? rows.find((r) => r.month === m) : undefined;
+  const p = periods.find((r) => r.offset === offset)?.period;
+  return p ? rows.find((r) => r.period === p) : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -284,7 +396,7 @@ function table(
 
 function compareCells(
   cur: number,
-  prev?: MonthRow | UsageMonth | WorkerMonth,
+  prev?: PeriodRow | UsagePeriod | WorkerPeriod,
   key?: string,
 ): string[] {
   const p =
@@ -292,22 +404,30 @@ function compareCells(
   return [fmtInt(cur), fmtInt(p), deltaHtml(delta(cur, p))];
 }
 
-export function renderMonthlyReport(data: MonthlyReportData): RenderedReport {
+export function renderReport(data: ReportData): RenderedReport {
   const { db } = data;
-  const cur = db.months.find((m) => m.offset === 0);
-  if (!cur) throw new Error("monthly report: no row for the reported month");
-  const prev = db.months.find((m) => m.offset === 1);
-  const prev2 = db.months.find((m) => m.offset === 2);
-  const lastYear = db.months.find((m) => m.offset === 12);
-  const label = monthLabel(cur.month);
+  const kind: ReportKind = db.kind;
+  const noun = kind === "month" ? "month" : "week";
+  const cur = db.periods.find((m) => m.offset === 0);
+  if (!cur) throw new Error("report: no row for the reported period");
+  const prev = db.periods.find((m) => m.offset === 1);
+  const prev2 = db.periods.find((m) => m.offset === 2);
+  const lastYear = db.periods.find((m) => m.offset === yearAgoOffset(kind));
+  const label = periodLabel(kind, cur.period);
+  const headline =
+    kind === "month" ? label : `week of ${periodShort(kind, cur.period)}`;
+  /** Column header for the reported period: "September" or "Oct 19". */
+  const curCol =
+    kind === "month" ? label.split(" ")[0] : periodShort(kind, cur.period);
+  const prevCol = prev ? periodShort(kind, prev.period) : "–";
 
   const ridesDelta = delta(cur.sf2g_rides, prev?.sf2g_rides);
-  const subject = `SF2G ${label}: ${fmtInt(cur.sf2g_rides)} SF2G rides (${ridesDelta.label} vs ${prev ? monthShort(prev.month) : "last month"}), ${fmtInt(cur.active_riders)} riders`;
+  const subject = `SF2G ${headline}: ${fmtInt(cur.sf2g_rides)} SF2G rides (${ridesDelta.label} vs ${prev ? prevCol : `last ${noun}`}), ${fmtInt(cur.active_riders)} riders`;
 
-  const vsPrev = (k: keyof MonthRow) =>
-    `${deltaHtml(delta(cur[k] as number, prev?.[k] as number | undefined))} vs ${prev ? monthShort(prev.month) : "–"}` +
+  const vsPrev = (k: keyof PeriodRow) =>
+    `${deltaHtml(delta(cur[k] as number, prev?.[k] as number | undefined))} vs ${prevCol}` +
     (lastYear
-      ? ` · ${deltaHtml(delta(cur[k] as number, lastYear[k] as number))} vs ${monthShort(lastYear.month)} ${lastYear.month.slice(0, 4)}`
+      ? ` · ${deltaHtml(delta(cur[k] as number, lastYear[k] as number))} vs ${periodShortYear(kind, lastYear.period)}`
       : "");
 
   // --- Headline tiles -----------------------------------------------------
@@ -333,19 +453,15 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
       deltaHtml(delta(x.n, x.p)),
     ]);
   const routesHtml = routeRows.length
-    ? table(
-        [
-          "Corridor",
-          label.split(" ")[0],
-          prev ? monthShort(prev.month) : "–",
-          "Change",
-        ],
-        routeRows,
-        ["l", "r", "r", "r"],
-      )
-    : `<p style="color:${COLOR.muted}">No SF2G rides this month.</p>`;
+    ? table(["Corridor", curCol, prevCol, "Change"], routeRows, [
+        "l",
+        "r",
+        "r",
+        "r",
+      ])
+    : `<p style="color:${COLOR.muted}">No SF2G rides this ${noun}.</p>`;
 
-  // --- Riders of the month -------------------------------------------------
+  // --- Riders of the period ------------------------------------------------
   const topHtml = db.top_riders.length
     ? table(
         ["Rider", "SF2G rides", "Distance"],
@@ -356,11 +472,11 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
         ]),
         ["l", "r", "r"],
       )
-    : `<p style="color:${COLOR.muted}">Nobody rode an SF2G route this month.</p>`;
+    : `<p style="color:${COLOR.muted}">Nobody rode an SF2G route this ${noun}.</p>`;
 
   // --- Group rides ----------------------------------------------------------
   const groupsHtml = table(
-    ["", label.split(" ")[0], prev ? monthShort(prev.month) : "–", "Change"],
+    ["", curCol, prevCol, "Change"],
     [
       ["Group rides", ...compareCells(cur.group_rides, prev, "group_rides")],
       [
@@ -378,8 +494,8 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
   // --- Site usage (PostHog) -------------------------------------------------
   let usageHtml: string;
   if (data.usage) {
-    const u = byOffset(data.usage.months, db.months, 0);
-    const up = byOffset(data.usage.months, db.months, 1);
+    const u = byOffset(data.usage.periods, db.periods, 0);
+    const up = byOffset(data.usage.periods, db.periods, 1);
     const rows = [
       ["Page views", ...compareCells(u?.pageviews ?? 0, up, "pageviews")],
       ["Unique visitors", ...compareCells(u?.visitors ?? 0, up, "visitors")],
@@ -389,11 +505,12 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
         ...compareCells(u?.client_errors ?? 0, up, "client_errors"),
       ],
     ];
-    usageHtml = table(
-      ["", label.split(" ")[0], prev ? monthShort(prev.month) : "–", "Change"],
-      rows,
-      ["l", "r", "r", "r"],
-    );
+    usageHtml = table(["", curCol, prevCol, "Change"], rows, [
+      "l",
+      "r",
+      "r",
+      "r",
+    ]);
     if (data.usage.top_pages.length) {
       usageHtml +=
         `<p style="font-size:12px;color:${COLOR.muted};margin:8px 0 4px">Most viewed pages</p>` +
@@ -413,8 +530,8 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
   // --- Platform (Cloudflare) ------------------------------------------------
   let workersHtml: string;
   if (data.workers) {
-    const w = byOffset(data.workers.months, db.months, 0);
-    const wp = byOffset(data.workers.months, db.months, 1);
+    const w = byOffset(data.workers.periods, db.periods, 0);
+    const wp = byOffset(data.workers.periods, db.periods, 1);
     const rows = [
       ["Worker requests", ...compareCells(w?.requests ?? 0, wp, "requests")],
       ["Worker errors", ...compareCells(w?.errors ?? 0, wp, "errors")],
@@ -431,11 +548,12 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
         "",
       ],
     ];
-    workersHtml = table(
-      ["", label.split(" ")[0], prev ? monthShort(prev.month) : "–", "Change"],
-      rows,
-      ["l", "r", "r", "r"],
-    );
+    workersHtml = table(["", curCol, prevCol, "Change"], rows, [
+      "l",
+      "r",
+      "r",
+      "r",
+    ]);
   } else {
     workersHtml = `<p style="color:${COLOR.muted}">Not configured — set <code>CLOUDFLARE_API_TOKEN</code> and <code>CLOUDFLARE_ACCOUNT_ID</code> (docs/ops/observability.md).</p>`;
   }
@@ -462,11 +580,12 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
       "",
     ],
   ];
-  let healthHtml = table(
-    ["", label.split(" ")[0], prev ? monthShort(prev.month) : "–", "Change"],
-    healthRows,
-    ["l", "r", "r", "r"],
-  );
+  let healthHtml = table(["", curCol, prevCol, "Change"], healthRows, [
+    "l",
+    "r",
+    "r",
+    "r",
+  ]);
   if (db.errors.top.length) {
     healthHtml +=
       `<p style="font-size:12px;color:${COLOR.muted};margin:8px 0 4px">Most frequent server errors</p>` +
@@ -490,18 +609,24 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
       );
   }
 
-  // --- Trend (three months) ---------------------------------------------------
+  // --- Trend (three periods) ---------------------------------------------------
   const trendRows = [cur, prev, prev2]
-    .filter((m): m is MonthRow => !!m)
+    .filter((m): m is PeriodRow => !!m)
     .map((m) => [
-      escapeHtml(monthLabel(m.month)),
+      escapeHtml(periodLabel(kind, m.period)),
       fmtInt(m.sf2g_rides),
       fmtInt(m.active_riders),
       fmtKmMi(m.sf2g_distance_meters),
       fmtInt(m.group_rides),
     ]);
   const trendHtml = table(
-    ["Month", "SF2G rides", "Riders", "Distance", "Groups"],
+    [
+      kind === "month" ? "Month" : "Week",
+      "SF2G rides",
+      "Riders",
+      "Distance",
+      "Groups",
+    ],
     trendRows,
     ["l", "r", "r", "r", "r"],
   );
@@ -510,17 +635,18 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
     ? `<ul style="color:${COLOR.muted};font-size:12px;padding-left:18px">${data.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>`
     : "";
 
+  const kindTitle = kind === "month" ? "monthly" : "weekly";
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>${escapeHtml(subject)}</title></head>
 <body style="margin:0;padding:24px;background:${COLOR.bg};font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:${COLOR.text}">
 <div style="max-width:680px;margin:0 auto;background:#fff;border:1px solid ${COLOR.border};border-radius:12px;padding:24px">
-  <div style="font-size:12px;color:${COLOR.accent};font-weight:700;letter-spacing:.08em;text-transform:uppercase">SF2G monthly report</div>
+  <div style="font-size:12px;color:${COLOR.accent};font-weight:700;letter-spacing:.08em;text-transform:uppercase">SF2G ${kindTitle} report</div>
   <h1 style="font-size:24px;margin:4px 0 16px">${escapeHtml(label)}</h1>
   ${tiles}
   ${section("Corridors", routesHtml)}
-  ${section("Riders of the month", topHtml)}
+  ${section(`Riders of the ${noun}`, topHtml)}
   ${section("Group rides", groupsHtml)}
-  ${section("Three-month trend", trendHtml)}
+  ${section(`Three-${noun} trend`, trendHtml)}
   ${section("Site usage", usageHtml)}
   ${section("Platform", workersHtml)}
   ${section("Health", healthHtml)}
@@ -532,10 +658,10 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
   // --- Plain text -------------------------------------------------------------
   const t: string[] = [];
   const line = (k: string, v: string) => t.push(`${k.padEnd(30)} ${v}`);
-  t.push(`SF2G monthly report — ${label}`, "");
+  t.push(`SF2G ${kindTitle} report — ${label}`, "");
   line(
     "SF2G rides",
-    `${fmtInt(cur.sf2g_rides)} (${ridesDelta.label} vs ${prev ? monthShort(prev.month) : "–"})`,
+    `${fmtInt(cur.sf2g_rides)} (${ridesDelta.label} vs ${prevCol})`,
   );
   line(
     "Active riders",
@@ -554,7 +680,7 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
       `${fmtInt(cur.routes[key] ?? 0)} (${delta(cur.routes[key] ?? 0, prev?.routes[key] ?? 0).label})`,
     );
   }
-  t.push("", "Riders of the month");
+  t.push("", `Riders of the ${noun}`);
   for (const r of db.top_riders)
     line(
       `  ${r.display_name ?? "Anonymous"}`,
@@ -567,8 +693,8 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
   );
   line("  Biggest group", fmtInt(cur.biggest_group));
   if (data.usage) {
-    const u = byOffset(data.usage.months, db.months, 0);
-    const up = byOffset(data.usage.months, db.months, 1);
+    const u = byOffset(data.usage.periods, db.periods, 0);
+    const up = byOffset(data.usage.periods, db.periods, 1);
     t.push("", "Site usage");
     line(
       "  Page views",
@@ -585,7 +711,7 @@ ${tile("Time in the saddle", fmtHours(cur.sf2g_moving_seconds), vsPrev("sf2g_mov
     line("  Browser errors", `${fmtInt(u?.client_errors ?? 0)}`);
   }
   if (data.workers) {
-    const w = byOffset(data.workers.months, db.months, 0);
+    const w = byOffset(data.workers.periods, db.periods, 0);
     t.push("", "Platform");
     line("  Worker requests", fmtInt(w?.requests ?? 0));
     line(
