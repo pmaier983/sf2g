@@ -1108,6 +1108,60 @@ FROM (SELECT segment_id, count(DISTINCT ride_id)::int AS n FROM segment_efforts 
 WHERE x.segment_id = s.id;\n\n`;
 sql += `COMMIT;\n`;
 
+/**
+ * Phase 09c: the cumulative board over every southbound selectable segment
+ * (the Core preset; the fixture segments do not overlap), all time. Plain
+ * loops: best = fastest effort; ranked with ≥ 80 % of the segments; a missing
+ * segment counts as its slowest time × 1.1, rounded.
+ */
+function cumulativeBoard() {
+  const segs = segmentRows
+    .filter((s) => s.selectable && s.direction === "south")
+    .map((s) => s.spec.id);
+  const best = new Map<string, number>();
+  for (const e of efforts) {
+    if (!SEGMENT_OPT_IN.has(e.user) || e.ride.hidden) continue;
+    const k = `${e.segmentId}|${e.user}`;
+    best.set(k, Math.min(best.get(k) ?? Infinity, e.seconds));
+  }
+  const ridden = segs.filter((id) =>
+    [...best.keys()].some((k) => k.startsWith(`${id}|`)),
+  );
+  const fill = new Map<number, number>();
+  for (const id of ridden) {
+    let slowest = 0;
+    for (const [k, v] of best)
+      if (k.startsWith(`${id}|`)) slowest = Math.max(slowest, v);
+    fill.set(id, Math.round(slowest * 1.1));
+  }
+  const required = Math.ceil(ridden.length * 0.8 - 1e-9);
+  const rows = RIDERS.filter((r) => SEGMENT_OPT_IN.has(r.n))
+    .map((r) => {
+      let done = 0;
+      let total = 0;
+      for (const id of ridden) {
+        const t = best.get(`${id}|${r.n}`);
+        if (t === undefined) total += fill.get(id)!;
+        else {
+          done++;
+          total += t;
+        }
+      }
+      return { userId: userId(r.n), done, total };
+    })
+    .filter((r) => r.done > 0);
+  return {
+    ids: ridden,
+    required,
+    ranked: rows
+      .filter((r) => r.done >= required)
+      .sort((a, b) => a.total - b.total),
+    partial: rows
+      .filter((r) => r.done < required)
+      .sort((a, b) => b.done - a.done || a.total - b.total),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Independently computed expectations
 // ---------------------------------------------------------------------------
@@ -1168,6 +1222,7 @@ const expected = {
   segments: {
     ...segmentBoard({ direction: "south" }),
     optedOutRider: userId(SEGMENT_OPTED_OUT_RIDER),
+    cumulative: cumulativeBoard(),
     north: segmentBoard({ direction: "north" }).shown,
     both: segmentBoard({ direction: "both" }).shown,
     window: {
