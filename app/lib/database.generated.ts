@@ -713,6 +713,9 @@ isOneToOne: false
 "get_segment_leaderboard":
 { Args: { "q"?: Json }; Returns: Json
                            },
+"get_segment_matrix":
+{ Args: { "q"?: Json }; Returns: Json
+                           },
 "get_user_ride_totals":
 { Args: { "p_date_from"?: string,"p_date_to"?: string }; Returns: {
               "total_distance": number,"total_elevation": number,"user_id": string

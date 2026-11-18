@@ -14,10 +14,14 @@ import type { Json } from "../lib/database.types";
 import { withPerf } from "../lib/perf";
 import { getSessionData } from "../lib/session";
 import {
+  parseCumulativeSearch,
   parseSegmentSearch,
+  toMatrixParams,
   toSegmentSqlParams,
+  type CumulativeQuery,
   type SegmentQuery,
 } from "../lib/segment-query";
+import type { SegmentMatrixResponse } from "../lib/segment-cumulative";
 
 // ---------------------------------------------------------------------------
 // Response shape of get_segment_leaderboard
@@ -101,6 +105,37 @@ export const fetchSegmentLeaderboard = createServerFn({ method: "GET" })
     withPerf("fetchSegmentLeaderboard", ({ data }) =>
       fetchSegmentLeaderboardImpl(data),
     ),
+  );
+
+// ---------------------------------------------------------------------------
+// fetchSegmentMatrix (phase 09c) — every rider's PR on every selectable
+// segment of one route; the browser does the rest. One RPC, anon client.
+// ---------------------------------------------------------------------------
+export type MatrixInput = Pick<
+  CumulativeQuery,
+  "corridor" | "direction" | "year"
+>;
+
+export async function fetchSegmentMatrixImpl(
+  input: Partial<MatrixInput>,
+): Promise<SegmentMatrixResponse> {
+  const q = parseCumulativeSearch(input);
+  const { data, error } = await createAnonClient().rpc("get_segment_matrix", {
+    q: toMatrixParams(q) as unknown as Json,
+  });
+  if (error) {
+    console.error("[segments] get_segment_matrix failed:", error);
+    throw new Error(`Failed to fetch segment matrix: ${error.message}`);
+  }
+  return data as unknown as SegmentMatrixResponse;
+}
+
+export const fetchSegmentMatrix = createServerFn({ method: "GET" })
+  .inputValidator((input: Partial<MatrixInput>) =>
+    toMatrixParams(parseCumulativeSearch(input)),
+  )
+  .handler(
+    withPerf("fetchSegmentMatrix", ({ data }) => fetchSegmentMatrixImpl(data)),
   );
 
 // ---------------------------------------------------------------------------
