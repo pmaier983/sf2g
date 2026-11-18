@@ -273,3 +273,29 @@ Order: 09a first and deployed early, because the backfill takes about 16 days an
 - Northbound boards for Bayway and HMBW.
 - Real segment polylines on the map (07d).
 - Riders who have not connected Strava: not possible (phase 07 §2).
+
+---
+
+## As built (2026-11-18)
+
+Five stacked PRs, in this order: 09a #37 → 09c #38 → 09d #39 → 09e #40 → 09b #41. 09f is not built yet (§8).
+
+- **Migration numbers:** 051 `segment_bests` (09a), 052 `get_segment_matrix` (09c), 053 drops (09e), 054 corridor reference (09b). §4 above still says 051/052/053 for the plan's original split.
+- **Deploy order:** 051 → Worker 09a → Reclassify + Curate in DevTools → 052 → Worker 09c/09d → Worker 09e → **then** 053. 053 must come after the 09e Worker, because it drops `users.segment_board_opt_in`. 054 can go at any time after 051.
+- **Date filter (P7a):** whole years, as recommended. `/segments?year=2025`; no `year` means all time.
+- **Storage:** `segment_bests` only; ingest is the single RPC `ingest_ride_segment_efforts` (3 subrequests per ride, down from 5). The old per-effort table is dropped in 053.
+- **Ride share** comes from the `segments.sf2g_rides` counter; the denominator is fetched rides of that route in the segment's direction (SF→G for south, G→SF for north).
+- **Curation** runs from DevTools (Curate segments). New segments are not selectable until it is rerun; it costs 2 subrequests, so it could join the weekly cron later.
+- **Core preset** = weighted interval scheduling, value = length × (0.25 + ride share), 20 m overlap tolerance.
+- **Picker:** the route view shows every selectable segment; selected ones are filled and the rest outlined. Tapping a bar toggles it and turns the selection into `set=custom&seg=…`.
+- **Honours:** a current Strava KOM means best ≤ `coalesce(overall_seconds, kom_seconds)`; a former KOM means an effort had `kom_rank = 1`; the SF2G record is rank 1. There is no QOM honour: it would need riders' sex, which SF2G does not store.
+- **Matrix performance:** ~200 ms on 100 k bests outside vitest. The db test uses 12 k rows (one route at full backfill), because supabase-js inserts are slow under vitest.
+- **Bayway/HMBW (09b) still need a person in prod:**
+  1. DevTools → Segments → Route: Bayway → **Find typical rides**. This loads the 200 newest public SF→G rides and scores them in the browser.
+  2. Click **Streams** on the top ride; this downloads that ride's streams, fetched with its rider's token.
+  3. Run `node scripts/gen-corridor-profile.ts --corridor bayway --activity <id> --streams <file> --start <core start> --end <core end>`.
+  4. Add the printed polyline and a `core` to `SEGMENT_CORRIDORS`, plus the profile loader entry.
+  5. Write a migration that widens `segment_ingest_categories()` to `{skyline,bayway}`.
+  6. Remove Bayway from `COMING_SOON` in `CorridorTabs`.
+
+  Then do the same for HMBW. Overlapping corridors already resolve to the one whose core contains the segment (`chooseCorridor`).

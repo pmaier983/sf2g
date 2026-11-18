@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { decodePolyline } from "../polyline";
 import { SEGMENT_CORRIDORS, SKYLINE_REFERENCE_POLYLINE } from "../constants";
 import {
+  chooseCorridor,
   classifySegmentCorridor,
   cumulativeDistances,
   distanceToPolylineMeters,
@@ -203,5 +204,26 @@ describe("segmentPlacement (phase 09)", () => {
     expect(
       segmentPlacement({ start_latlng: ref[40], end_latlng: ref[60] }, null),
     ).toEqual({ along_start_m: null, along_end_m: null, in_core: false });
+  });
+});
+
+describe("chooseCorridor (phase 09b)", () => {
+  it("prefers the corridor whose core holds the segment, else the first match", () => {
+    type C = Parameters<typeof chooseCorridor>[0][number]["corridor"];
+    const a = "skyline" as C;
+    const b = "other" as unknown as C;
+    expect(chooseCorridor([])).toBeNull();
+    expect(
+      chooseCorridor([
+        { corridor: a, inCore: false },
+        { corridor: b, inCore: true },
+      ]),
+    ).toBe(b);
+    expect(
+      chooseCorridor([
+        { corridor: a, inCore: false },
+        { corridor: b, inCore: false },
+      ]),
+    ).toBe(a);
   });
 });

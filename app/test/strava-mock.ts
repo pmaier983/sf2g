@@ -38,6 +38,8 @@ export function mockStrava(opts: {
   refresh?: "ok" | "invalid_grant" | "server_error";
   /** Served at GET /api/v3/segments/{id}; 404 when absent. */
   segments?: Record<number, Partial<StravaSegmentDetail>>;
+  /** Served at GET /api/v3/activities/{id}/streams; 404 when absent. */
+  streams?: Record<number, unknown>;
 }): StravaMock {
   const realFetch = globalThis.fetch;
   const calls: string[] = [];
@@ -81,6 +83,13 @@ export function mockStrava(opts: {
           refresh_token: "new-refresh",
           expires_at: Math.floor(Date.now() / 1000) + 21600,
         });
+      }
+      const streams = url.pathname.match(
+        /^\/api\/v3\/activities\/(\d+)\/streams$/,
+      );
+      if (streams) {
+        const st = opts.streams?.[Number(streams[1])];
+        return st ? json(st) : json({ message: "Record Not Found" }, 404);
       }
       const all = [...(opts.activities ?? [])];
       const single = url.pathname.match(/^\/api\/v3\/activities\/(\d+)$/);
