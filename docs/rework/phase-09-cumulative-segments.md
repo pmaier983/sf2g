@@ -278,7 +278,7 @@ Order: 09a first and deployed early, because the backfill takes about 16 days an
 
 ## As built (2026-11-18)
 
-Five stacked PRs, in this order: 09a #37 → 09c #38 → 09d #39 → 09e #40 → 09b #41. 09f is not built yet (§8).
+Six stacked PRs, in this order: 09a #37 → 09c #38 → 09d #39 → 09e #40 → 09b #41 → 09f #42. 09f adds the profile strip (from the cached matrix, no new RPC), the PostHog events `segments_viewed`, `segment_set_changed` and `segment_board_hidden`, and `docs/ops/segments.md`.
 
 - **Migration numbers:** 051 `segment_bests` (09a), 052 `get_segment_matrix` (09c), 053 drops (09e), 054 corridor reference (09b). §4 above still says 051/052/053 for the plan's original split.
 - **Deploy order:** 051 → Worker 09a → Reclassify + Curate in DevTools → 052 → Worker 09c/09d → Worker 09e → **then** 053. 053 must come after the 09e Worker, because it drops `users.segment_board_opt_in`. 054 can go at any time after 051.

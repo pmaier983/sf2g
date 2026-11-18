@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { currentUserQueryOptions } from "../queries/user";
 import { setSegmentBoardHidden } from "../server/segments";
+import { trackEvent } from "../lib/analytics";
 
 /**
  * Every connected rider is on the segment boards (riders consent when they
@@ -13,7 +14,8 @@ export function SegmentVisibility() {
   const toggle = useMutation({
     mutationFn: (hidden: boolean) =>
       setSegmentBoardHidden({ data: { hidden } }),
-    onSuccess: async () => {
+    onSuccess: async (_res, hidden) => {
+      trackEvent("segment_board_hidden", { hidden });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["currentUser"] }),
         queryClient.invalidateQueries({ queryKey: ["segments"] }),

@@ -802,6 +802,37 @@
   color: var(--color-text-secondary);
 }
 
+/* Profile strip (phase 09f) */
+.profile-segments {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.profile-segments:empty {
+  display: none;
+}
+
+.profile-segments__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.profile-segments__route {
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}
+
 @media (max-width: 768px) {
   .route-map {
     height: 220px;

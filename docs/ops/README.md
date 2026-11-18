@@ -7,6 +7,8 @@ plan). Everything here is done by Phillip; agents never write to production.
 - [observability.md](observability.md) — where errors go, the weekly and monthly report emails
 - [sync.md](sync.md) — how rides arrive, the Strava webhook subscription,
   inspecting and retrying sync jobs
+- [segments.md](segments.md) — segment leaderboards: backfill, curation,
+  fixing bad times, adding Bayway/HMBW
 - [Deploying](#deploying)
 - [Database migrations](#database-migrations)
 - [Rotating secrets](#rotating-secrets)

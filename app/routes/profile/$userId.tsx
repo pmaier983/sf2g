@@ -8,6 +8,8 @@ import { fetchUserProfile } from "../../server/users";
 import { disconnectStrava } from "../../server/auth";
 import { currentUserQueryOptions } from "../../queries/user";
 import { ProfileRidesTable } from "../../components/ProfileRidesTable";
+import { ProfileSegmentStrip } from "../../components/ProfileSegmentStrip";
+import "../../styles/segments.css";
 const RideFrequencyChart = lazy(() =>
   import("../../components/RideFrequencyChart").then((m) => ({
     default: m.RideFrequencyChart,
@@ -400,6 +402,9 @@ function ProfilePage() {
             </Suspense>
           )}
         </div>
+
+        {/* Segment leaderboards (phase 09f): renders nothing if the rider has no times */}
+        <ProfileSegmentStrip userId={userId} />
 
         {/* Fun Stats & Insights */}
         <div
