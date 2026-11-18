@@ -7,7 +7,15 @@
  */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { trackEvent } from "../lib/analytics";
 import { segmentMatrixQueryOptions } from "../queries/segments";
 import { currentUserQueryOptions } from "../queries/user";
 import {
@@ -75,14 +83,39 @@ function SegmentsPage() {
   const query = Route.useSearch();
   const navigate = useNavigate({ from: "/segments" });
   const update = useCallback(
-    (patch: Partial<CumulativeQuery>) =>
-      navigate({
+    (patch: Partial<CumulativeQuery>) => {
+      if (
+        "set" in patch ||
+        "seg" in patch ||
+        "min" in patch ||
+        "max" in patch ||
+        "overlap" in patch
+      )
+        trackEvent("segment_set_changed", {
+          set: patch.set,
+          segments: patch.seg?.length,
+          min_km: patch.min,
+          max_km: patch.max,
+        });
+      return navigate({
         search: (prev) => ({ ...prev, ...patch }) as CumulativeQuery,
         replace: true,
         resetScroll: false,
-      }),
+      });
+    },
     [navigate],
   );
+  // One event per route / direction / year / view the visitor looks at.
+  useEffect(() => {
+    trackEvent("segments_viewed", {
+      corridor: query.corridor,
+      direction: query.direction,
+      year: query.year,
+      set: query.set,
+      view: query.view,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.corridor, query.direction, query.year, query.view]);
 
   const { data, isLoading, error, refetch } = useQuery({
     ...segmentMatrixQueryOptions(query),
