@@ -11,7 +11,7 @@ import { decodePolyline } from "../../../lib/polyline";
 import { SKYLINE_REFERENCE_POLYLINE } from "../../../lib/constants";
 import { trackSubrequests } from "../../../lib/perf";
 import { reclassifySegmentCorridorsImpl } from "../../segments-admin";
-import { fetchSegmentLeaderboardImpl } from "../../segments";
+import { fetchSegmentMatrixImpl } from "../../segments";
 
 const db = createClient(LOCAL_SUPABASE.url, LOCAL_SUPABASE.serviceRoleKey);
 const TAIL_ID = 880_001;
@@ -146,9 +146,9 @@ describe("reclassifySegmentCorridors", () => {
   });
 });
 
-describe("get_segment_leaderboard — endpoints for the route view", () => {
+describe("get_segment_matrix — endpoints for the route view", () => {
   it("each segment carries start_latlng and end_latlng", async () => {
-    const board = await fetchSegmentLeaderboardImpl({});
+    const board = await fetchSegmentMatrixImpl({});
     expect(board.segments.length).toBeGreaterThan(0);
     for (const s of board.segments) {
       expect(s.start_latlng).toHaveLength(2);

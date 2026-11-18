@@ -514,8 +514,6 @@ export type SegmentCorridor = keyof typeof SEGMENT_CORRIDORS;
 
 /** A segment is on a corridor when both its endpoints are this close to the line. */
 export const SEGMENT_CORRIDOR_RADIUS_M = 400;
-/** Opted-in riders a segment needs before the board shows it. */
-export const SEGMENT_MIN_RIDERS = 3;
 export const SEGMENT_MIN_DISTANCE_M = 300;
 /** A segment is in a corridor's core when both ends are within the core range, with this slack. */
 export const SEGMENT_CORE_SLACK_M = 150;

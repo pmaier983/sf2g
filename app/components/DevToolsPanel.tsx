@@ -628,8 +628,7 @@ export function DevToolsPanel() {
                   {segmentStats.segments_corridor} on corridor /{" "}
                   {segmentStats.segments_total} total
                   <br />
-                  PRs stored: {segmentStats.bests} (old efforts:{" "}
-                  {segmentStats.efforts})
+                  PRs stored: {segmentStats.bests}
                   <br />
                   Jobs: {segmentStats.open_jobs} open ·{" "}
                   {segmentStats.failed_jobs} failed

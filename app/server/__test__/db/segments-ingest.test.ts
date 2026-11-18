@@ -98,7 +98,7 @@ async function bests(rideOrUser: { ride?: string; user?: string }) {
 }
 
 async function count(
-  table: "segments" | "segment_efforts",
+  table: "segments",
   column: string,
   from: number,
   to: number,
@@ -210,7 +210,6 @@ beforeAll(async () => {
     id: TEST_USER,
     strava_id: TEST_STRAVA_ID,
     username: "segments-test",
-    segment_board_opt_in: true,
     segment_board_hidden: false,
   });
   if (error) throw new Error(`test rider: ${error.message}`);
@@ -385,9 +384,6 @@ describe("segmentEffortsStep", () => {
       ]);
 
       // Phase 09: one best per segment, nothing per effort.
-      expect(
-        await count("segment_efforts", "id", EFFORT_BASE, EFFORT_BASE + 1e6),
-      ).toBe(0);
       const b = await bests({ ride: rideId });
       expect(b.map((x) => x.segment_id)).toEqual([
         SEGMENT_BASE + 1,
@@ -716,7 +712,6 @@ describe("segments admin", () => {
     expect(after.rides_pending).toBe(before.rides_pending);
     expect(Object.keys(after).sort()).toEqual([
       "bests",
-      "efforts",
       "failed_jobs",
       "open_jobs",
       "rides_fetched",
@@ -997,43 +992,6 @@ describe("segment_bests", () => {
       .eq("id", rideId)
       .single());
     expect(r!.segment_efforts_fetched_at).toBeNull();
-  });
-
-  it("the production carry-over equals a DISTINCT ON over the stored efforts", async () => {
-    const { data: efforts } = await db
-      .from("segment_efforts")
-      .select(
-        "segment_id, user_id, elapsed_time_seconds, rides(ride_date, is_private, is_hidden)",
-      )
-      .gte("segment_id", 900_001)
-      .lte("segment_id", 900_008);
-    const expected = new Map<string, { s: number; n: number }>();
-    for (const e of efforts!) {
-      const ride = e.rides as unknown as {
-        ride_date: string;
-        is_private: boolean | null;
-        is_hidden: boolean | null;
-      };
-      if (ride.is_private || ride.is_hidden) continue;
-      const key = `${e.segment_id}|${e.user_id}|${ride.ride_date.slice(0, 4)}`;
-      const cur = expected.get(key);
-      expected.set(key, {
-        s: Math.min(cur?.s ?? Infinity, e.elapsed_time_seconds),
-        n: (cur?.n ?? 0) + 1,
-      });
-    }
-    const { data: stored } = await db
-      .from("segment_bests")
-      .select("segment_id, user_id, year, elapsed_time_seconds, effort_count")
-      .gte("segment_id", 900_001)
-      .lte("segment_id", 900_008);
-    const actual = new Map(
-      stored!.map((b) => [
-        `${b.segment_id}|${b.user_id}|${b.year}`,
-        { s: b.elapsed_time_seconds, n: b.effort_count },
-      ]),
-    );
-    expect(actual).toEqual(expected);
   });
 
   it("anon cannot read segment_bests", async () => {
