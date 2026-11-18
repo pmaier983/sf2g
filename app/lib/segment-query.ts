@@ -153,9 +153,16 @@ const CumulativeQuerySchema = z.object({
   seg: z
     .preprocess(
       (v) =>
-        (typeof v === "number" ? String(v) : typeof v === "string" ? v : "")
-          .split(",")
-          .map((x) => Number(x.trim()))
+        (Array.isArray(v)
+          ? v.map(String)
+          : (typeof v === "number"
+              ? String(v)
+              : typeof v === "string"
+                ? v
+                : ""
+            ).split(",")
+        )
+          .map((x) => Number(String(x).trim()))
           .filter((n) => Number.isInteger(n) && n > 0),
       z.array(z.number()).max(100),
     )

@@ -539,3 +539,106 @@ export function versusAbove(
   });
   return { lose, gain };
 }
+
+// ---------------------------------------------------------------------------
+// Crown: honours and podiums over the selection (the old "Skyline crown")
+// ---------------------------------------------------------------------------
+export interface CrownRow {
+  rider: MatrixRider;
+  rank: number;
+  strava_koms: number;
+  sf2g_records: number;
+  podiums: number;
+  /** Σ max(0, 11 − rank) over the selection (phase 07, D9). */
+  points: number;
+  segments_ridden: number;
+  of: number;
+}
+
+/** Sorted by Strava KOMs, then SF2G records, then points, then name. */
+export function crown(
+  matrix: Matrix,
+  selectedIds: readonly number[],
+): CrownRow[] {
+  const ids = selectedIds.filter(
+    (id) => (matrix.bySegment.get(id)?.length ?? 0) > 0,
+  );
+  const acc = new Map<string, Omit<CrownRow, "rank">>();
+  for (const id of ids)
+    for (const row of segmentBoard(matrix, id)) {
+      const a = acc.get(row.rider.user_id) ?? {
+        rider: row.rider,
+        strava_koms: 0,
+        sf2g_records: 0,
+        podiums: 0,
+        points: 0,
+        segments_ridden: 0,
+        of: ids.length,
+      };
+      a.segments_ridden++;
+      if (row.honours.stravaKom) a.strava_koms++;
+      if (row.rank === 1) a.sf2g_records++;
+      if (row.rank <= 3) a.podiums++;
+      a.points += Math.max(0, 11 - row.rank);
+      acc.set(row.rider.user_id, a);
+    }
+  return [...acc.values()]
+    .sort(
+      (a, b) =>
+        b.strava_koms - a.strava_koms ||
+        b.sf2g_records - a.sf2g_records ||
+        b.points - a.points ||
+        a.rider.display_name.localeCompare(b.rider.display_name) ||
+        a.rider.user_id.localeCompare(b.rider.user_id),
+    )
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+}
+
+/** Per-segment stats for the Segments view. */
+export interface SegmentStats {
+  riders: number;
+  attempts: number;
+  median_seconds: number | null;
+  /** Rider with the most efforts (Strava's "local legend", SF2G only). */
+  most_efforts: { rider: MatrixRider; efforts: number } | null;
+  newest_pr: { rider: MatrixRider; date: string } | null;
+  /** Leader's margin over second place. */
+  first_gap_seconds: number | null;
+  kom_holder: MatrixRider | null;
+}
+
+export function segmentStats(matrix: Matrix, segmentId: number): SegmentStats {
+  const board = segmentBoard(matrix, segmentId);
+  if (board.length === 0)
+    return {
+      riders: 0,
+      attempts: 0,
+      median_seconds: null,
+      most_efforts: null,
+      newest_pr: null,
+      first_gap_seconds: null,
+      kom_holder: null,
+    };
+  const times = board.map((r) => r.cell.seconds);
+  const mid = Math.floor(times.length / 2);
+  const median =
+    times.length % 2
+      ? times[mid]
+      : Math.round((times[mid - 1] + times[mid]) / 2);
+  const most = [...board].sort(
+    (a, b) => b.cell.efforts - a.cell.efforts || a.rank - b.rank,
+  )[0];
+  const newest = [...board].sort(
+    (a, b) => b.cell.date.localeCompare(a.cell.date) || a.rank - b.rank,
+  )[0];
+  return {
+    riders: board.length,
+    attempts: board.reduce((t, r) => t + r.cell.efforts, 0),
+    median_seconds: median,
+    most_efforts: { rider: most.rider, efforts: most.cell.efforts },
+    newest_pr: { rider: newest.rider, date: newest.cell.date },
+    first_gap_seconds:
+      board.length > 1 ? board[1].cell.seconds - board[0].cell.seconds : null,
+    kom_holder: board.find((r) => r.honours.stravaKom)?.rider ?? null,
+  };
+}

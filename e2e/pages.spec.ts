@@ -85,9 +85,9 @@ const PAGES: PageCase[] = [
     path: "/segments",
     landmark: async (p) => {
       await expect(
-        p.getByRole("table", { name: "Skyline segment board" }),
+        p.getByRole("table", { name: "Cumulative leaderboard" }),
       ).toBeVisible();
-      await expect(p.getByText("Skyline Climb A").first()).toBeVisible();
+      await expect(p.getByText("Ben Skyline").first()).toBeVisible();
     },
   },
   {
@@ -167,27 +167,88 @@ test("route filter chip narrows the riders table and updates the URL", async ({
   await expect(page.getByText("Dee Reverse")).toHaveCount(0);
 });
 
-test("segments: the Climbs chip narrows the board and updates the URL", async ({
+test("segments: the Climbs preset changes the selection, the URL and the totals", async ({
   page,
 }) => {
   const errors = watchConsole(page);
   await page.goto("/segments");
-  const rows = page
-    .getByRole("table", { name: "Skyline segment board" })
-    .locator("tbody tr");
-  await expect(page.getByText("Skyline Flat E").first()).toBeVisible();
-  const before = await rows.count();
+  const board = page.getByRole("table", { name: "Cumulative leaderboard" });
+  await expect(board.locator("tbody tr").first()).toBeVisible();
+  const summary = page.locator(".segment-picker__summary");
+  await expect(summary).toContainText("5 segments");
+  const firstTotal = await board.locator("tbody tr").first().textContent();
 
   await page.getByRole("radio", { name: "Climbs" }).click();
   await expect
-    .poll(() => new URL(page.url()).searchParams.get("terrain"))
-    .toBe("climb");
-  await expect(page.getByText("Skyline Flat E")).toHaveCount(0);
-  expect(await rows.count()).toBeLessThan(before);
+    .poll(() => new URL(page.url()).searchParams.get("set"))
+    .toBe("climbs");
+  await expect(summary).toContainText("3 segments");
+  await expect
+    .poll(() => board.locator("tbody tr").first().textContent())
+    .not.toBe(firstTotal);
   expect(errors).toEqual([]);
 });
 
-test("segments: the route view's tiles load and a bar opens its board row", async ({
+test("segments: tapping a bar removes that segment and makes the pick custom", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  await page.goto("/segments");
+  const bar = page.getByRole("button", { name: /^Skyline Climb B,/ });
+  await expect(bar).toHaveAttribute("aria-pressed", "true");
+  await bar.click();
+  await expect(bar).toHaveAttribute("aria-pressed", "false");
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("set"))
+    .toBe("custom");
+  const seg = new URL(page.url()).searchParams.get("seg") ?? "";
+  expect(seg).toContain("900001");
+  expect(seg).not.toContain("900002");
+  await expect(page.locator(".segment-picker__summary")).toContainText(
+    "4 segments",
+  );
+  // The shared link reproduces the pick.
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: /^Skyline Climb B,/ }),
+  ).toHaveAttribute("aria-pressed", "false");
+  expect(errors).toEqual([]);
+});
+
+test("segments: the Segments view expands a board with Strava links", async ({
+  page,
+}) => {
+  const errors = watchConsole(page);
+  await page.goto("/segments?view=segments");
+  const table = page.getByRole("table", { name: "Segment boards" });
+  await table.getByText("Skyline Climb A").click();
+  await expect(
+    table.getByRole("link", { name: "View on Strava" }).first(),
+  ).toBeVisible();
+  await page.getByRole("tab", { name: "Crown" }).click();
+  await expect(
+    page.getByRole("table", { name: "Segment crown" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("segments on a phone: no sideways scroll", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 375, height: 812 },
+  });
+  const page = await context.newPage();
+  await page.goto("/segments");
+  await expect(
+    page.getByRole("table", { name: "Cumulative leaderboard" }),
+  ).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await context.close();
+});
+
+test("segments: the route view's map tiles load and every segment is drawn", async ({
   page,
 }) => {
   const errors = watchConsole(page);
@@ -202,18 +263,7 @@ test("segments: the route view's tiles load and a bar opens its board row", asyn
     })
     .toBeGreaterThan(0);
   expect(tiles.filter((s) => s >= 400)).toEqual([]);
-  await expect(page.locator("path.route-map__segment")).toHaveCount(4);
-
-  const bar = page.getByRole("button", { name: /^Skyline Climb B,/ });
-  await bar.click();
-  await expect(bar).toHaveAttribute("aria-pressed", "true");
-  const board = page.getByRole("table", { name: "Skyline segment board" });
-  await expect(
-    board.getByRole("link", { name: "View on Strava" }).first(),
-  ).toBeVisible();
-  await expect(
-    board.locator('[data-segment-row="900002"]').locator("xpath=ancestor::tr"),
-  ).toBeInViewport();
+  await expect(page.locator("path.route-map__segment")).toHaveCount(5);
   expect(errors).toEqual([]);
 });
 

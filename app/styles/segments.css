@@ -1,5 +1,5 @@
 /* ============================================================
-   /segments — Skyline crown and segment board
+   /segments — cumulative segment leaderboards (phase 09)
    (tables reuse .leaderboard__table from leaderboard.css)
    ============================================================ */
 
@@ -521,6 +521,285 @@
 
 .segments__row--hovered td {
   background: var(--color-surface-hover);
+}
+
+/* ---- Phase 09: picker, views, cumulative board, honours ---- */
+
+.elevation__bar--off {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.elevation__bar--off.elevation__bar--hovered,
+.elevation__bar--off:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-sf2g-orange);
+  opacity: 1;
+}
+
+.route-map__segment--off {
+  opacity: 0.25;
+}
+
+.segment-picker {
+  margin-top: var(--space-4);
+}
+
+.segment-picker__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.segment-picker__overlap {
+  color: var(--color-warning);
+}
+
+.segment-picker__overlap-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: pointer;
+}
+
+.length-range {
+  flex: 0 1 auto;
+}
+
+.length-range__track {
+  position: relative;
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: 28px;
+}
+
+.length-range__track::before,
+.length-range__track::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.length-range__track::before {
+  left: 0;
+  right: 0;
+  background: var(--color-border);
+}
+
+.length-range__track::after {
+  left: var(--from);
+  right: calc(100% - var(--to));
+  background: var(--color-sf2g-orange);
+}
+
+.length-range__track input[type="range"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  z-index: 1;
+}
+
+.length-range__track input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-sf2g-orange);
+  cursor: pointer;
+}
+
+.length-range__track input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-sf2g-orange);
+  cursor: pointer;
+}
+
+.length-range__track input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--color-sf2g-orange-bg);
+}
+
+.segments__views {
+  margin-top: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.segments__views button.filter-chip {
+  font-family: inherit;
+  color: var(--color-text);
+}
+
+.segments__views button.filter-chip--selected {
+  color: #ffffff;
+}
+
+.segments__loading {
+  color: var(--color-text-muted);
+  margin-top: var(--space-6);
+}
+
+.segments__row--off td {
+  opacity: 0.55;
+}
+
+.segments__row--me td {
+  background: var(--color-sf2g-orange-bg);
+}
+
+.segments__partial {
+  color: var(--color-warning);
+}
+
+.segments__versus {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.segments__splits {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.segments__splits th {
+  text-align: left;
+  font-weight: var(--font-normal, 400);
+  color: var(--color-text-muted);
+  padding: var(--space-1) var(--space-2);
+}
+
+.segments__splits td {
+  padding: var(--space-1) var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.segments__split--filled td {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.honours {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-1);
+  white-space: nowrap;
+}
+
+.honour {
+  font-size: var(--text-sm);
+  line-height: 1;
+  cursor: help;
+}
+
+.honour--kom {
+  color: #d4a017; /* Strava KOM gold */
+  font-weight: var(--font-bold);
+}
+
+.honour--former {
+  color: transparent;
+  -webkit-text-stroke: 1px #d4a017;
+}
+
+.honour--record {
+  color: var(--color-sf2g-orange);
+  font-weight: var(--font-bold);
+}
+
+.kom-banner {
+  margin: var(--space-4) 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid #d4a01766;
+  border-radius: var(--radius-md);
+  background: #d4a01714;
+}
+
+.kom-banner__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}
+
+.kom-banner__list {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.kom-banner__list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.kom-banner__segment {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.segment-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.segment-stats__card {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  min-width: 0;
+}
+
+.segment-stats__card dt {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.segment-stats__card dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.segment-stats__card small {
+  display: block;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: var(--font-normal, 400);
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {

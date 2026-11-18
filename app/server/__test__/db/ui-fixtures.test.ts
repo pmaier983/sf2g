@@ -15,7 +15,7 @@ import {
   fetchUserRidesImpl,
 } from "../../rides";
 import { fetchAllTimeLeaderboardImpl } from "../../alltime";
-import { fetchSegmentLeaderboardImpl } from "../../segments";
+import { fetchSegmentMatrixImpl } from "../../segments";
 import {
   fetchGroupRidesImpl,
   fetchGroupRideDetailImpl,
@@ -45,7 +45,7 @@ it("ui-fixtures.json matches the fixture database", async () => {
     groupRideDetail: detail,
     userRides: await fetchUserRidesImpl({ userId: RIDER.ada, limit: 15 }),
     profileRides: await fetchProfileRidesImpl({ userId: RIDER.cam }),
-    segments: await fetchSegmentLeaderboardImpl({}),
+    segmentMatrix: await fetchSegmentMatrixImpl({}),
   };
   const json = JSON.stringify(fixtures, null, 2) + "\n";
 

@@ -1,139 +1,271 @@
+/**
+ * /segments — cumulative segment leaderboards for the SF2G routes (phase 09).
+ *
+ * One request per route, direction and year (get_segment_matrix); everything
+ * else — presets, the length range, manual picks, totals, ranks, boards and
+ * the crown — is computed in the browser from that matrix.
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useCallback, useState } from "react";
-import { segmentLeaderboardQueryOptions } from "../queries/segments";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import { segmentMatrixQueryOptions } from "../queries/segments";
+import { currentUserQueryOptions } from "../queries/user";
 import {
-  parseSegmentSearch,
-  serializeSegmentSearch,
-  type SegmentQuery,
+  parseCumulativeSearch,
+  serializeCumulativeSearch,
+  type CumulativeQuery,
+  type SegmentView,
 } from "../lib/segment-query";
-import { SegmentFilters } from "../components/SegmentFilters";
-import { SegmentVisibility } from "../components/SegmentVisibility";
-import { SegmentCrownTable } from "../components/SegmentCrownTable";
-import { SegmentBoard } from "../components/SegmentBoard";
+import {
+  buildMatrix,
+  crown,
+  cumulative,
+  overlapMeters,
+  resolveChain,
+  segmentBoard,
+  selectSegments,
+} from "../lib/segment-cumulative";
+import { SEGMENT_CORRIDORS } from "../lib/constants";
+import type { RouteSegment } from "../lib/route-segment";
 import { CorridorTabs } from "../components/CorridorTabs";
 import { RouteViewSkeleton } from "../components/RouteViewSkeleton";
+import { SegmentPicker } from "../components/SegmentPicker";
+import { SegmentVisibility } from "../components/SegmentVisibility";
+import { CumulativeBoard } from "../components/CumulativeBoard";
+import { CumulativeStats } from "../components/CumulativeStats";
+import { SegmentBoards } from "../components/SegmentBoards";
+import { SegmentCrownView } from "../components/SegmentCrownView";
+import { TableError } from "../components/table/TableStates";
 const RouteView = lazy(() => import("../components/RouteView"));
 import "../styles/leaderboard.css";
 import "../styles/segments.css";
 
 export const Route = createFileRoute("/segments")({
-  validateSearch: (raw: Record<string, unknown>): SegmentQuery =>
-    parseSegmentSearch(raw),
+  validateSearch: (raw: Record<string, unknown>): CumulativeQuery =>
+    parseCumulativeSearch(raw),
   search: {
     // Keep URLs short: drop defaults.
     middlewares: [
       ({ search, next }) =>
-        serializeSegmentSearch(
-          parseSegmentSearch(next(search)),
-        ) as unknown as SegmentQuery,
+        serializeCumulativeSearch(
+          parseCumulativeSearch(next(search)),
+        ) as unknown as CumulativeQuery,
     ],
   },
   component: SegmentsPage,
   head: () => ({
     meta: [
-      { title: "Skyline Segments — SF2G" },
+      { title: "Segments — SF2G" },
       {
         name: "description",
         content:
-          "Fastest SF2G riders on the Strava segments along Skyline Blvd, and the Skyline crown.",
+          "Cumulative segment leaderboards for the SF2G routes: every rider's best times on the core segments, added up, plus per-segment boards and Strava KOMs held by SF2G riders.",
       },
     ],
   }),
 });
 
+const VIEWS: { value: SegmentView; label: string }[] = [
+  { value: "cumulative", label: "Cumulative" },
+  { value: "segments", label: "Segments" },
+  { value: "crown", label: "Crown" },
+];
+
 function SegmentsPage() {
   const query = Route.useSearch();
   const navigate = useNavigate({ from: "/segments" });
   const update = useCallback(
-    (patch: Partial<SegmentQuery>) =>
-      navigate({ search: (prev) => ({ ...prev, ...patch }) }),
+    (patch: Partial<CumulativeQuery>) =>
+      navigate({
+        search: (prev) => ({ ...prev, ...patch }) as CumulativeQuery,
+        replace: true,
+        resetScroll: false,
+      }),
     [navigate],
   );
 
   const { data, isLoading, error, refetch } = useQuery({
-    ...segmentLeaderboardQueryOptions(query),
+    ...segmentMatrixQueryOptions(query),
     placeholderData: keepPreviousData,
   });
+  const { data: me } = useQuery(currentUserQueryOptions());
 
-  // Shared by the route view and the board.
+  const matrix = useMemo(() => (data ? buildMatrix(data) : null), [data]);
+  const selected = useMemo(
+    () =>
+      matrix
+        ? selectSegments(matrix.segments, {
+            set: query.set,
+            minKm: query.min,
+            maxKm: query.max,
+            ids: query.seg,
+            overlap: query.overlap,
+          })
+        : [],
+    [matrix, query.set, query.min, query.max, query.seg, query.overlap],
+  );
+  const selectedIds = useMemo(() => selected.map((s) => s.id), [selected]);
+  const included = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const result = useMemo(
+    () => (matrix ? cumulative(matrix, selectedIds) : null),
+    [matrix, selectedIds],
+  );
+  const crownRows = useMemo(
+    () => (matrix ? crown(matrix, selectedIds) : []),
+    [matrix, selectedIds],
+  );
+  const routeSegments = useMemo<RouteSegment[]>(
+    () =>
+      matrix
+        ? matrix.segments.map((s) => {
+            const lead = segmentBoard(matrix, s.id)[0];
+            return {
+              id: s.id,
+              name: s.name,
+              distance_meters: s.distance_meters,
+              average_grade: s.average_grade,
+              terrain: s.terrain,
+              start_latlng: s.start_latlng,
+              end_latlng: s.end_latlng,
+              kom_seconds: s.overall_seconds ?? s.kom_seconds,
+              leader: lead
+                ? {
+                    display_name: lead.rider.display_name,
+                    best_seconds: lead.cell.seconds,
+                  }
+                : null,
+            };
+          })
+        : [],
+    [matrix],
+  );
+  const lengthBounds = useMemo<[number, number]>(() => {
+    const d = matrix?.segments.map((s) => s.distance_meters / 1000) ?? [];
+    return d.length ? [Math.min(...d), Math.max(...d)] : [0, 10];
+  }, [matrix]);
+
+  // Manual picks turn any preset into an explicit custom selection.
+  const toggle = useCallback(
+    (id: number) => {
+      const next = included.has(id)
+        ? selectedIds.filter((x) => x !== id)
+        : [...selectedIds, id];
+      update({ set: "custom", seg: next });
+    },
+    [included, selectedIds, update],
+  );
+  const removeOverlaps = useCallback(
+    () =>
+      update({
+        set: "custom",
+        seg: resolveChain(selected).map((s) => s.id),
+      }),
+    [selected, update],
+  );
+
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [focusRequest, setFocusRequest] = useState<{
-    id: number;
-    n: number;
-  } | null>(null);
-  const pickOnRoute = useCallback((id: number) => {
-    setSelectedId(id);
-    setFocusRequest((prev) => ({ id, n: (prev?.n ?? 0) + 1 }));
-  }, []);
+  const label = SEGMENT_CORRIDORS[query.corridor].label;
 
   return (
     <div className="segments">
       <div className="container">
         <header className="segments__header">
-          <h1 className="segments__title">Skyline Segments</h1>
+          <h1 className="segments__title">{label} Segments</h1>
           <p className="segments__subtitle">
-            Best times of SF2G riders on the Strava segments of the core Skyline
-            route, from Sloat Blvd past Mussel Rock to Arastradero Rd, from
-            their own rides.
+            Every SF2G rider's best time on each segment of the core {label}{" "}
+            route, added up. Pick the segments that count: a preset, a length
+            range, or tap them on the profile.
           </p>
         </header>
 
         <CorridorTabs
           corridor={query.corridor}
-          onChange={(corridor) => update({ corridor })}
+          onChange={(corridor) => update({ corridor, set: "core", seg: [] })}
         />
         <Suspense fallback={<RouteViewSkeleton />}>
-          {data ? (
+          {matrix ? (
             <RouteView
               corridor={query.corridor}
-              segments={data.segments}
+              segments={routeSegments}
+              included={included}
               hoveredId={hoveredId}
-              selectedId={selectedId}
+              selectedId={null}
               onHover={setHoveredId}
-              onSelect={pickOnRoute}
+              onSelect={toggle}
             />
           ) : (
             <RouteViewSkeleton />
           )}
         </Suspense>
 
-        <SegmentFilters query={query} onChange={update} />
+        <SegmentPicker
+          query={query}
+          onChange={update}
+          years={data?.years ?? []}
+          lengthBounds={lengthBounds}
+          selected={{
+            count: result?.segments.length ?? 0,
+            distanceM: result?.distance_m ?? 0,
+            climbM: result?.climb_m ?? 0,
+          }}
+          overlapM={overlapMeters(selected)}
+          onRemoveOverlaps={removeOverlaps}
+        />
         <SegmentVisibility />
 
-        <section className="segments__section" aria-labelledby="crown-title">
-          <h2 id="crown-title" className="segments__section-title">
-            Skyline crown
-          </h2>
-          <SegmentCrownTable
-            crown={data?.crown}
-            isLoading={isLoading}
-            error={error}
-            onRetry={() => refetch()}
-          />
-        </section>
+        <div
+          className="filter-chips__group segments__views"
+          role="tablist"
+          aria-label="View"
+        >
+          {VIEWS.map((v) => (
+            <button
+              key={v.value}
+              type="button"
+              role="tab"
+              aria-selected={query.view === v.value}
+              className={`filter-chip filter-chip--company${query.view === v.value ? " filter-chip--selected" : ""}`}
+              onClick={() => update({ view: v.value })}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
 
-        <section className="segments__section" aria-labelledby="board-title">
-          <h2 id="board-title" className="segments__section-title">
-            Segment board
-            {data && (
-              <span className="segments__count">
-                {data.segments_total} segments
-              </span>
+        {error && !data ? (
+          <TableError error={error as Error} onRetry={() => refetch()} />
+        ) : isLoading || !matrix || !result ? (
+          <p className="segments__loading" aria-busy="true">
+            Loading segments…
+          </p>
+        ) : (
+          <section className="segments__section" aria-label={query.view}>
+            {query.view === "cumulative" && (
+              <>
+                <CumulativeStats
+                  matrix={matrix}
+                  result={result}
+                  routeLabel={label}
+                />
+                <CumulativeBoard
+                  matrix={matrix}
+                  result={result}
+                  meId={me?.id ?? null}
+                />
+              </>
             )}
-          </h2>
-          <SegmentBoard
-            segments={data?.segments}
-            isLoading={isLoading}
-            error={error}
-            onRetry={() => refetch()}
-            hoveredId={hoveredId}
-            onHover={setHoveredId}
-            onSelect={setSelectedId}
-            focusRequest={focusRequest}
-          />
-        </section>
+            {query.view === "segments" && (
+              <SegmentBoards
+                matrix={matrix}
+                included={included}
+                onToggle={toggle}
+                hoveredId={hoveredId}
+                onHover={setHoveredId}
+              />
+            )}
+            {query.view === "crown" && <SegmentCrownView rows={crownRows} />}
+          </section>
+        )}
       </div>
     </div>
   );

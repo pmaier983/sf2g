@@ -16,14 +16,20 @@ import {
   formatSegmentDistance,
   formatSegmentTime,
 } from "../lib/segment-format";
-import type { SegmentBoardRow } from "../server/segments";
+import type { RouteSegment } from "../lib/route-segment";
 import type { UnitSystem } from "./UnitToggle";
 
 export interface ElevationProfileProps {
   profile: CorridorProfile;
   bars: PlacedBar[];
-  /** Board rows by id, for labels and terrain. */
-  segments: ReadonlyMap<number, SegmentBoardRow>;
+  /** Segments by id, for labels and terrain. */
+  segments: ReadonlyMap<number, RouteSegment>;
+  /**
+   * Segments in the current selection (phase 09: the lanes are the picker).
+   * Bars outside it are drawn as outlines; clicking a bar toggles it. When
+   * omitted every bar is drawn filled.
+   */
+  included?: ReadonlySet<number>;
   unit: UnitSystem;
   hoveredId: number | null;
   selectedId: number | null;
@@ -74,6 +80,7 @@ export function ElevationProfile({
   onHover,
   onSelect,
   onHoverDistance,
+  included,
   initialWidth = 800,
 }: ElevationProfileProps) {
   const [containerRef, width] = useWidth(initialWidth);
@@ -141,7 +148,7 @@ export function ElevationProfile({
     const alt = pointAtDistance(profile, hoverM).altitude * toUnit;
     info = `${(hoverM / distUnitM).toFixed(1)} ${distLabel} · ${Math.round(alt).toLocaleString("en-US")} ${altUnit}`;
   } else if (focus) {
-    const leader = focus.riders[0];
+    const leader = focus.leader;
     info = [
       focus.name,
       `${formatSegmentDistance(focus.distance_meters, unit)} · ${focus.average_grade.toFixed(1)}%`,
@@ -153,7 +160,9 @@ export function ElevationProfile({
       .filter(Boolean)
       .join(" · ");
   } else {
-    info = `${(total / distUnitM).toFixed(1)} ${distLabel} · ${bars.length} segments — hover or tap a bar`;
+    info = included
+      ? `${(total / distUnitM).toFixed(1)} ${distLabel} · ${included.size} of ${bars.length} segments selected — tap a bar to add or remove it`
+      : `${(total / distUnitM).toFixed(1)} ${distLabel} · ${bars.length} segments — hover or tap a bar`;
   }
 
   return (
@@ -254,12 +263,14 @@ export function ElevationProfile({
             if (!seg) return null;
             const left = x(b.startM) - MARGIN.left;
             const w = Math.max(3, x(b.endM) - x(b.startM));
+            const isIn = !included || included.has(b.id);
             const state =
-              b.id === selectedId
+              (isIn ? "" : " elevation__bar--off") +
+              (b.id === selectedId
                 ? " elevation__bar--selected"
                 : b.id === hoveredId
                   ? " elevation__bar--hovered"
-                  : "";
+                  : "");
             return (
               <button
                 key={b.id}
@@ -273,7 +284,7 @@ export function ElevationProfile({
                   } as React.CSSProperties
                 }
                 aria-label={`${seg.name}, ${formatSegmentDistance(seg.distance_meters, unit)}, ${seg.average_grade.toFixed(1)}%`}
-                aria-pressed={b.id === selectedId}
+                aria-pressed={included ? isIn : b.id === selectedId}
                 data-segment-id={b.id}
                 onMouseEnter={() => onHover(b.id)}
                 onMouseLeave={() => onHover(null)}

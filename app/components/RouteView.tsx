@@ -1,10 +1,11 @@
 /**
- * The /segments route view (phase 07c): map of the corridor route over its
- * elevation profile, with the segments the board shows drawn on both.
+ * The /segments route view (phase 07c, picker since 09d): map of the
+ * corridor route over its elevation profile, with every selectable segment
+ * drawn on both. Segments in the current selection are filled; clicking a
+ * bar or a map line toggles it.
  *
  * Lazy-loaded by the page (Leaflet + the corridor's profile JSON are their
- * own chunks). Uses the board's segments — no request of its own — so the
- * filters apply here too.
+ * own chunks). Uses the page's segment matrix — no request of its own.
  */
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -12,14 +13,16 @@ import type { SegmentCorridor } from "../lib/constants";
 import { loadCorridorProfile } from "../lib/corridor-profile";
 import { placeSegments } from "../lib/segment-lanes";
 import { useUnit } from "../lib/useUnit";
-import type { SegmentBoardRow } from "../server/segments";
+import type { RouteSegment } from "../lib/route-segment";
 import { ElevationProfile } from "./ElevationProfile";
 import { RouteMap } from "./RouteMap";
 import { RouteViewSkeleton } from "./RouteViewSkeleton";
 
 export interface RouteViewProps {
   corridor: SegmentCorridor;
-  segments: SegmentBoardRow[];
+  segments: RouteSegment[];
+  /** Ids in the current selection; bars outside it are outlined. */
+  included?: ReadonlySet<number>;
   hoveredId: number | null;
   selectedId: number | null;
   onHover: (id: number | null) => void;
@@ -30,6 +33,7 @@ export interface RouteViewProps {
 export default function RouteView({
   corridor,
   segments,
+  included,
   hoveredId,
   selectedId,
   onHover,
@@ -71,6 +75,7 @@ export default function RouteView({
         profile={profile}
         bars={bars}
         terrain={terrain}
+        included={included}
         hoveredId={hoveredId}
         selectedId={selectedId}
         markerAt={markerAt}
@@ -87,6 +92,7 @@ export default function RouteView({
         onHover={onHover}
         onSelect={onSelect}
         onHoverDistance={setMarkerAt}
+        included={included}
       />
     </div>
   );
