@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decodePolyline } from "../polyline";
-import { SKYLINE_REFERENCE_POLYLINE } from "../constants";
+import { SEGMENT_CORRIDORS, SKYLINE_REFERENCE_POLYLINE } from "../constants";
 import {
   classifySegmentCorridor,
   cumulativeDistances,
@@ -8,6 +8,7 @@ import {
   projectOntoPolyline,
   parseXomTime,
   segmentDirection,
+  segmentPlacement,
   segmentTerrain,
   type SegmentGeometry,
 } from "../segment-corridor";
@@ -166,5 +167,41 @@ describe("parseXomTime", () => {
     expect(parseXomTime("")).toBe(null);
     expect(parseXomTime(null)).toBe(null);
     expect(parseXomTime(undefined)).toBe(null);
+  });
+});
+
+describe("segmentPlacement (phase 09)", () => {
+  const ref = decodePolyline(SKYLINE_REFERENCE_POLYLINE);
+  const { startM, endM } = SEGMENT_CORRIDORS.skyline.core;
+
+  it("places a segment by its along-track metres and marks the core", () => {
+    // Vertex 40 → 60 lies between John Daly Blvd and Woodside Rd.
+    const p = segmentPlacement(
+      { start_latlng: ref[40], end_latlng: ref[60] },
+      "skyline",
+    );
+    expect(p.in_core).toBe(true);
+    expect(p.along_start_m!).toBeGreaterThan(startM);
+    expect(p.along_end_m!).toBeGreaterThan(p.along_start_m!);
+    expect(p.along_end_m!).toBeLessThan(endM);
+  });
+
+  it("is not core before John Daly Blvd or after Woodside Rd", () => {
+    expect(
+      segmentPlacement({ start_latlng: ref[2], end_latlng: ref[20] }, "skyline")
+        .in_core,
+    ).toBe(false);
+    expect(
+      segmentPlacement(
+        { start_latlng: ref[100], end_latlng: ref[ref.length - 1] },
+        "skyline",
+      ).in_core,
+    ).toBe(false);
+  });
+
+  it("has no placement off a corridor", () => {
+    expect(
+      segmentPlacement({ start_latlng: ref[40], end_latlng: ref[60] }, null),
+    ).toEqual({ along_start_m: null, along_end_m: null, in_core: false });
   });
 });

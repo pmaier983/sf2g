@@ -1,6 +1,8 @@
 /**
- * Phase 07b: get_segment_leaderboard (migration 049) against the fixture
- * segments and efforts from scripts/gen-fixtures.ts (EXPECTED.segments).
+ * Phase 07b: get_segment_leaderboard (migration 049; reads segment_bests
+ * since 051) against the fixture segments and bests from
+ * scripts/gen-fixtures.ts (EXPECTED.segments). "Opted out" riders are the
+ * ones who hid their times (segment_board_hidden).
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -11,7 +13,7 @@ import { freezeFixtureClock, RIDER } from "../../../test/characterize";
 import { trackSubrequests } from "../../../lib/perf";
 import {
   fetchSegmentLeaderboardImpl,
-  setSegmentBoardOptInImpl,
+  setSegmentBoardHiddenImpl,
   type SegmentLeaderboard,
 } from "../../segments";
 
@@ -226,19 +228,25 @@ describe("private rides", () => {
       .single();
     if (error) throw new Error(`insert ride: ${error.message}`);
     rideId = data.id;
-    const { error: e2 } = await service.from("segment_efforts").insert({
-      id: EFFORT_ID,
+    // Ingest never stores bests from private rides; a row written directly
+    // (e.g. before the ride turned private) must still never rank. Year 2027
+    // so it does not collide with Dee's real 2026 best.
+    const { error: e2 } = await service.from("segment_bests").insert({
       segment_id: 900002,
       user_id: RIDER.dee,
+      year: 2027,
+      effort_id: EFFORT_ID,
       ride_id: rideId,
+      ride_date: "2026-10-14",
       elapsed_time_seconds: EXPECTED.leaders["900002"].seconds - 60,
-      start_date: "2026-10-14T14:20:00Z",
+      effort_count: 1,
+      first_ride_date: "2026-10-14",
     });
-    if (e2) throw new Error(`insert effort: ${e2.message}`);
+    if (e2) throw new Error(`insert best: ${e2.message}`);
   });
 
   afterAll(async () => {
-    await service.from("segment_efforts").delete().eq("id", EFFORT_ID);
+    await service.from("segment_bests").delete().eq("effort_id", EFFORT_ID);
     await service.from("rides").delete().eq("id", rideId);
   });
 
@@ -279,17 +287,17 @@ describe("server functions", () => {
     );
   });
 
-  it("opting in makes a rider appear; opting out removes them", async () => {
+  it("showing times makes a hidden rider appear; hiding removes them", async () => {
     const rider = EXPECTED.optedOutRider;
     try {
-      expect(await setSegmentBoardOptInImpl(rider, true)).toEqual({
-        optIn: true,
+      expect(await setSegmentBoardHiddenImpl(rider, false)).toEqual({
+        hidden: false,
       });
       const s = (await board()).segments.find((x) => x.id === 900001)!;
       expect(s.riders[0].user_id).toBe(rider);
     } finally {
-      expect(await setSegmentBoardOptInImpl(rider, false)).toEqual({
-        optIn: false,
+      expect(await setSegmentBoardHiddenImpl(rider, true)).toEqual({
+        hidden: true,
       });
     }
     expect(JSON.stringify(await board())).not.toContain(rider);

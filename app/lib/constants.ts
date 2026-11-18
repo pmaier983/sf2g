@@ -498,7 +498,17 @@ export const SKYLINE_REFERENCE_POLYLINE =
 
 /** Reference lines that decide which Strava segments a board shows. */
 export const SEGMENT_CORRIDORS = {
-  skyline: { label: "Skyline", polyline: SKYLINE_REFERENCE_POLYLINE },
+  skyline: {
+    label: "Skyline",
+    polyline: SKYLINE_REFERENCE_POLYLINE,
+    /**
+     * The core of the route (phase 09, P2): metres along the reference line
+     * where nearly every rider is on it. John Daly Blvd (4.1 km) → Woodside
+     * Rd at Roberts Market (43.0 km). From the ride share of 185 fetched
+     * Skyline rides on 2026-11-17: 89–95 % of rides cover this stretch.
+     */
+    core: { startM: 4100, endM: 43050 },
+  },
 } as const;
 export type SegmentCorridor = keyof typeof SEGMENT_CORRIDORS;
 
@@ -507,5 +517,21 @@ export const SEGMENT_CORRIDOR_RADIUS_M = 400;
 /** Opted-in riders a segment needs before the board shows it. */
 export const SEGMENT_MIN_RIDERS = 3;
 export const SEGMENT_MIN_DISTANCE_M = 300;
+/** A segment is in a corridor's core when both ends are within the core range, with this slack. */
+export const SEGMENT_CORE_SLACK_M = 150;
+/** At most this many selectable segments per corridor and direction (phase 09, §4.2). */
+export const SEGMENT_SELECTABLE_CAP = 40;
+/** Keep at least this many climbs and this many flats when the cap applies. */
+export const SEGMENT_SELECTABLE_MIN_PER_TERRAIN = 8;
+/** Below this share of a route's rides a segment is not selectable (unless curated). */
+export const SEGMENT_MIN_RIDE_SHARE = 0.5;
+/** Two segments whose starts and ends are both within this many metres along the line are duplicates. */
+export const SEGMENT_DUPLICATE_TOLERANCE_M = 150;
+/** Fetched rides per route category before the backfill stops prioritising it (the curation sample). */
+export const SEGMENT_SAMPLE_RIDES = 150;
+/** A rider is ranked on a cumulative board with at least this share of the selected segments (Phillip, 2026-11-18). */
+export const SEGMENT_CUMULATIVE_MIN_SHARE = 0.8;
+/** A missing segment counts as that segment's slowest ranked time × this. */
+export const SEGMENT_FILL_FACTOR = 1.1;
 /** average_grade ≥ climbMinGrade → climb; ≥ flatMinGrade → flat; else descent. */
 export const SEGMENT_TERRAIN = { climbMinGrade: 2, flatMinGrade: -1 } as const;

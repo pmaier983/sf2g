@@ -8,7 +8,7 @@ import {
   type SegmentQuery,
 } from "../lib/segment-query";
 import { SegmentFilters } from "../components/SegmentFilters";
-import { SegmentOptInBanner } from "../components/SegmentOptInBanner";
+import { SegmentVisibility } from "../components/SegmentVisibility";
 import { SegmentCrownTable } from "../components/SegmentCrownTable";
 import { SegmentBoard } from "../components/SegmentBoard";
 import { CorridorTabs } from "../components/CorridorTabs";
@@ -74,9 +74,9 @@ function SegmentsPage() {
         <header className="segments__header">
           <h1 className="segments__title">Skyline Segments</h1>
           <p className="segments__subtitle">
-            Best times of opted-in SF2G riders on the Strava segments of the
-            core Skyline route, from Sloat Blvd past Mussel Rock to Arastradero
-            Rd, from their own rides.
+            Best times of SF2G riders on the Strava segments of the core Skyline
+            route, from Sloat Blvd past Mussel Rock to Arastradero Rd, from
+            their own rides.
           </p>
         </header>
 
@@ -100,7 +100,7 @@ function SegmentsPage() {
         </Suspense>
 
         <SegmentFilters query={query} onChange={update} />
-        <SegmentOptInBanner />
+        <SegmentVisibility />
 
         <section className="segments__section" aria-labelledby="crown-title">
           <h2 id="crown-title" className="segments__section-title">

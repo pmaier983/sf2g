@@ -17,7 +17,11 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import polyline from "@mapbox/polyline";
-import { SKYLINE_REFERENCE_POLYLINE } from "../app/lib/constants.ts";
+import {
+  SEGMENT_CORE_SLACK_M,
+  SEGMENT_CORRIDORS,
+  SKYLINE_REFERENCE_POLYLINE,
+} from "../app/lib/constants.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SEED = 20261022;
@@ -749,6 +753,16 @@ interface EffortRow {
   seconds: number;
   komRank: number | null;
 }
+const SKYLINE_CUM: number[] = [0];
+for (let i = 1; i < SKYLINE_LINE.length; i++)
+  SKYLINE_CUM.push(
+    SKYLINE_CUM[i - 1] + haversineM(SKYLINE_LINE[i - 1], SKYLINE_LINE[i]),
+  );
+const SKYLINE_CORE = SEGMENT_CORRIDORS.skyline.core;
+const inSkylineCore = (m: number) =>
+  m >= SKYLINE_CORE.startM - SEGMENT_CORE_SLACK_M &&
+  m <= SKYLINE_CORE.endM + SEGMENT_CORE_SLACK_M;
+
 const segmentRows = SEGMENT_SPECS.map((spec) => {
   let start = SKYLINE_LINE[spec.from];
   let end = SKYLINE_LINE[spec.to];
@@ -770,6 +784,16 @@ const segmentRows = SEGMENT_SPECS.map((spec) => {
     // Further along the reference line = south (segmentDirection, phase 07c).
     direction: spec.to > spec.from ? "south" : "north",
     terrain: spec.grade >= 2 ? "climb" : spec.grade >= -1 ? "flat" : "descent",
+    // Along-track position on the corridor line (phase 09): the vertex
+    // distances, since the endpoints are vertices of the line.
+    alongStart: spec.corridor ? round(SKYLINE_CUM[spec.from], 1) : null,
+    alongEnd: spec.corridor ? round(SKYLINE_CUM[spec.to], 1) : null,
+    inCore:
+      !!spec.corridor &&
+      inSkylineCore(SKYLINE_CUM[spec.from]) &&
+      inSkylineCore(SKYLINE_CUM[spec.to]),
+    // As if curated: every board-eligible corridor segment is selectable.
+    selectable: spec.corridor === "skyline" && spec.grade >= -1,
     elevationLow: round(200 + Math.min(0, climb), 1),
     elevationHigh: round(200 + Math.max(0, climb), 1),
   };
@@ -933,7 +957,7 @@ BEGIN;
 INSERT INTO users (id, strava_id, username, first_name, last_name, avatar_url,
   strava_access_token, strava_refresh_token, strava_token_expires_at, strava_scopes,
   last_sync_at, last_activity_at, created_at, updated_at, deauthorized_at,
-  segment_board_opt_in) VALUES
+  segment_board_opt_in, segment_board_hidden) VALUES
 `;
 sql +=
   RIDERS.map((s) => {
@@ -955,6 +979,8 @@ sql +=
       q(FIXTURE_NOW),
       q(s.deauthorized ? "2026-09-01T00:00:00Z" : null),
       q(SEGMENT_OPT_IN.has(s.n)),
+      // Phase 09: everyone is on the board unless hidden; riders 7–9 hid.
+      q(!SEGMENT_OPT_IN.has(s.n)),
     ].join(", ")})`;
   }).join(",\n") + ";\n\n";
 
@@ -1023,7 +1049,8 @@ sql +=
     .join(",\n") + ";\n\n";
 sql += `INSERT INTO segments (id, name, distance_meters, average_grade, maximum_grade,
   elevation_high, elevation_low, climb_category, start_latlng, end_latlng, hazardous,
-  corridor, direction, kom_seconds, xoms_fetched_at, first_seen_at, updated_at) VALUES\n`;
+  corridor, direction, kom_seconds, xoms_fetched_at, first_seen_at, updated_at,
+  along_start_m, along_end_m, in_core, selectable) VALUES\n`;
 sql +=
   segmentRows
     .map(
@@ -1046,6 +1073,10 @@ sql +=
           q(s.spec.kom ? FIXTURE_NOW : null),
           q(FIXTURE_NOW),
           q(FIXTURE_NOW),
+          q(s.alongStart),
+          q(s.alongEnd),
+          q(s.inCore),
+          q(s.selectable),
         ].join(", ")})`,
     )
     .join(",\n") + ";\n\n";
@@ -1069,6 +1100,12 @@ sql +=
         ].join(", ")})`,
     )
     .join(",\n") + ";\n\n";
+// Phase 09: PRs only. The bests come from the efforts above through the
+// same function migration 051 used for the production carry-over.
+sql += `SELECT rebuild_segment_bests_from_efforts();
+UPDATE segments s SET sf2g_rides = x.n
+FROM (SELECT segment_id, count(DISTINCT ride_id)::int AS n FROM segment_efforts GROUP BY 1) x
+WHERE x.segment_id = s.id;\n\n`;
 sql += `COMMIT;\n`;
 
 // ---------------------------------------------------------------------------

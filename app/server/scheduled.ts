@@ -1,7 +1,8 @@
 /**
  * One Cron Trigger tick (every 5 minutes, see wrangler.jsonc):
  * 1. queue an incremental sync for riders not synced in 12 hours (cheap),
- * 2. queue KOM refreshes for corridor segments not refreshed in 7 days,
+ * 2. plan segment work: KOM refreshes for corridor segments not refreshed in
+ *    7 days, and the next few rides of the segment backfill (phase 09a),
  * 3. drain the sync queue within this invocation's subrequest budget.
  * Webhook jobs are claimed first, so a new ride usually lands within one tick.
  *
@@ -59,14 +60,17 @@ export async function runScheduledTick(cron = "manual"): Promise<DrainResult> {
         { cron },
       );
     }
-    const { error: xomsError } = await supabase.rpc(
-      "enqueue_due_segment_xoms",
-      { p_older_than: "7 days", p_limit: 5 },
-    );
-    if (xomsError) {
+    // KOM refreshes + the self-running segment backfill, one call (phase 09a).
+    const { error: segError } = await supabase.rpc("plan_segment_jobs", {
+      p_xoms_older_than: "7 days",
+      p_xoms_limit: 5,
+      p_backfill: 5,
+      p_max_open: 5,
+    });
+    if (segError) {
       await reportError(
         "scheduled",
-        new Error(`enqueue_due_segment_xoms: ${xomsError.message}`),
+        new Error(`plan_segment_jobs: ${segError.message}`),
         { cron },
       );
     }
