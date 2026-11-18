@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMatrix,
+  crown,
   cumulative,
+  segmentStats,
   honours,
   overlapMeters,
   requiredSegments,
@@ -331,5 +333,42 @@ describe("cumulative", () => {
     expect([1, 2, 3, 4, 5, 10, 11].map(requiredSegments)).toEqual([
       1, 2, 3, 4, 4, 8, 9,
     ]);
+  });
+});
+
+describe("crown and segmentStats", () => {
+  const segs = [
+    seg(1, 0, 1000, { kom_seconds: 100 }),
+    seg(2, 1000, 2000),
+    seg(3, 2000, 3000),
+  ];
+  const m = matrixOf(segs, [
+    [100, 110, 120],
+    [90, 80, null],
+    [70, 75, 60],
+  ]);
+
+  it("ranks by Strava KOMs, then SF2G records, then points", () => {
+    const c = crown(m, [1, 2, 3]);
+    expect(
+      c.map((r) => [r.rider.user_id, r.strava_koms, r.sf2g_records, r.points]),
+    ).toEqual([
+      ["ada", 1, 1, 10 + 9 + 9],
+      ["bo", 0, 1, 9 + 10 + 8],
+      ["cy", 0, 1, 8 + 10],
+    ]);
+    expect(c.map((r) => r.rank)).toEqual([1, 2, 3]);
+  });
+
+  it("segment stats: riders, attempts, median, gap, KOM holder", () => {
+    const s = segmentStats(m, 1);
+    expect(s).toMatchObject({
+      riders: 3,
+      attempts: 6,
+      median_seconds: 110,
+      first_gap_seconds: 10,
+    });
+    expect(s.kom_holder?.user_id).toBe("ada");
+    expect(segmentStats(m, 2).median_seconds).toBe(85);
   });
 });

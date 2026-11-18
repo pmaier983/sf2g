@@ -22,6 +22,8 @@ export interface RouteMapProps {
   bars: PlacedBar[];
   /** Terrain per segment id, for the line colour. */
   terrain: ReadonlyMap<number, string>;
+  /** Ids in the current selection (phase 09); others are drawn faint. */
+  included?: ReadonlySet<number>;
   hoveredId: number | null;
   selectedId: number | null;
   /** Metres along the route to mark (pointer over the elevation profile). */
@@ -60,10 +62,12 @@ const segmentClass = (
   terrain: string | undefined,
   hoveredId: number | null,
   selectedId: number | null,
+  included?: ReadonlySet<number>,
 ) =>
   [
     "route-map__segment",
     `route-map__segment--${terrain ?? "climb"}`,
+    included && !included.has(id) ? "route-map__segment--off" : "",
     id === selectedId ? "route-map__segment--selected" : "",
     id === hoveredId && id !== selectedId ? "route-map__segment--hovered" : "",
   ]
@@ -74,6 +78,7 @@ export function RouteMap({
   profile,
   bars,
   terrain,
+  included,
   hoveredId,
   selectedId,
   markerAt,
@@ -166,7 +171,7 @@ export function RouteMap({
     endsRef.current = [];
     for (const b of bars) {
       const line = LLib.polyline(sliceRoute(profile, b.startM, b.endM), {
-        className: segmentClass(b.id, terrain.get(b.id), null, null),
+        className: segmentClass(b.id, terrain.get(b.id), null, null, included),
       }).addTo(map);
       line.on("mouseover", () => handlersRef.current.onHover(b.id));
       line.on("mouseout", () => handlersRef.current.onHover(null));
@@ -196,11 +201,11 @@ export function RouteMap({
       if (el)
         el.setAttribute(
           "class",
-          `leaflet-interactive ${segmentClass(id, terrain.get(id), hoveredId, selectedId)}`,
+          `leaflet-interactive ${segmentClass(id, terrain.get(id), hoveredId, selectedId, included)}`,
         );
       if (id === hoveredId || id === selectedId) line.bringToFront();
     }
-  }, [hoveredId, selectedId, terrain, bars, LLib]);
+  }, [hoveredId, selectedId, terrain, bars, LLib, included]);
 
   // Marker for the point under the pointer on the elevation profile.
   useEffect(() => {

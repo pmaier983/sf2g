@@ -129,6 +129,10 @@ describe("CumulativeQuery (phase 09)", () => {
       parseCumulativeSearch({ set: "custom", seg: "12, 7,x" }).seg,
     ).toEqual([12, 7]);
     expect(parseCumulativeSearch({ set: "climbs", seg: "12" }).seg).toEqual([]);
+    // In-app navigation passes the array itself.
+    expect(parseCumulativeSearch({ set: "custom", seg: [5, 6] }).seg).toEqual([
+      5, 6,
+    ]);
   });
 
   it("swaps an inverted length range and rounds to 0.1 km", () => {
