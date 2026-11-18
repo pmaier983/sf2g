@@ -9,10 +9,17 @@
  *   node scripts/gen-corridor-profile.ts --activity 20662409258 \
  *     --streams /path/to/streams.json --start … --end …
  *
+ *   # Bayway / HMBW (phase 09b): another rider's typical ride, streams saved
+ *   # from DevTools → Segments → "Find typical rides" → Streams:
+ *   node scripts/gen-corridor-profile.ts --corridor bayway --activity <id> \
+ *     --streams bayway-streams-<id>.json --start <core start> --end <core end>
+ *   # --start/--end must be the core boundaries, so the committed line never
+ *   # shows where that rider starts or finishes.
+ *
  *   # the 40-point test fixture, from the current SKYLINE_REFERENCE_POLYLINE:
  *   node scripts/gen-corridor-profile.ts --fixture
  *
- * Writes app/lib/corridors/skyline-profile.json (≤ 600 points) and prints the
+ * Writes app/lib/corridors/<corridor>-profile.json (≤ 600 points) and prints the
  * simplified reference polyline (≤ 250 points) for SKYLINE_REFERENCE_POLYLINE
  * in app/lib/constants.ts. Cuts at the stream samples nearest to --start and
  * --end. Reads nothing else and writes nothing else; the token is only sent
@@ -27,7 +34,15 @@ import { SKYLINE_REFERENCE_POLYLINE } from "../app/lib/constants.ts";
 type LatLng = [number, number];
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = resolve(ROOT, "app/lib/corridors/skyline-profile.json");
+// --corridor bayway|hmbw|skyline (default skyline) picks the output file.
+const CORRIDOR = (() => {
+  const i = process.argv.indexOf("--corridor");
+  const c = i === -1 ? "skyline" : process.argv[i + 1];
+  if (!/^(skyline|bayway|hmbw)$/.test(c ?? ""))
+    throw new Error("--corridor must be skyline, bayway or hmbw");
+  return c;
+})();
+const OUT = resolve(ROOT, `app/lib/corridors/${CORRIDOR}-profile.json`);
 const FIXTURE_OUT = resolve(ROOT, "app/test/fixtures/corridor-profile.json");
 
 const MAX_PROFILE_POINTS = 600;

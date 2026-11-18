@@ -252,3 +252,31 @@ export async function fetchSegment(
 
   return { segment, response };
 }
+
+/** Distance, altitude and latlng streams of one activity (one read). */
+export interface StravaActivityStreams {
+  distance?: { data: number[] };
+  altitude?: { data: number[] };
+  latlng?: { data: [number, number][] };
+}
+
+/**
+ * Used once per corridor by the admin "reference ride" tool (phase 09b) to
+ * build the route profile; the result goes straight back to the admin and is
+ * never stored by the app.
+ */
+export async function fetchActivityStreams(
+  accessToken: string,
+  activityId: number,
+): Promise<{ streams: StravaActivityStreams; response: RateLimitedResponse }> {
+  const url = `${STRAVA_API_BASE}/activities/${activityId}/streams?keys=distance,altitude,latlng&key_by_type=true`;
+  console.log(`[strava] Fetching streams of activity ${activityId}`);
+  const response = await fetchWithRateLimit(url, accessToken);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[strava] API error (${response.status}): ${errorText}`);
+    throw new Error(`Strava API error (${response.status}): ${errorText}`);
+  }
+  const streams = (await response.json()) as StravaActivityStreams;
+  return { streams, response };
+}

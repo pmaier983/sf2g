@@ -10,6 +10,7 @@ import type {
   SegmentReclassifyResult,
 } from "../server/segments-admin";
 import { SegmentCurationPanel } from "./SegmentCurationPanel";
+import { CorridorReferencePanel } from "./CorridorReferencePanel";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -635,6 +636,7 @@ export function DevToolsPanel() {
                 </p>
               )}
               <SegmentCurationPanel />
+              <CorridorReferencePanel />
             </div>
 
             {/* Divider */}

@@ -117,17 +117,28 @@ export function distanceToPolylineMeters(
 export function classifySegmentCorridor(
   seg: SegmentGeometry,
 ): SegmentCorridor | null {
-  for (const { corridor, line } of CORRIDOR_LINES) {
-    if (
+  const matches = CORRIDOR_LINES.filter(
+    ({ line }) =>
       distanceToPolylineMeters(seg.start_latlng, line) <=
         SEGMENT_CORRIDOR_RADIUS_M &&
       distanceToPolylineMeters(seg.end_latlng, line) <=
-        SEGMENT_CORRIDOR_RADIUS_M
-    ) {
-      return corridor;
-    }
-  }
-  return null;
+        SEGMENT_CORRIDOR_RADIUS_M,
+  ).map(({ corridor }) => ({
+    corridor,
+    inCore: segmentPlacement(seg, corridor).in_core,
+  }));
+  return chooseCorridor(matches);
+}
+
+/**
+ * Where corridors share road (HMBW rejoins Skyline on Cañada Rd), a segment
+ * belongs to the corridor whose core contains it; cores do not overlap
+ * (phase 09b). Otherwise the first match in SEGMENT_CORRIDORS order.
+ */
+export function chooseCorridor(
+  matches: readonly { corridor: SegmentCorridor; inCore: boolean }[],
+): SegmentCorridor | null {
+  return (matches.find((m) => m.inCore) ?? matches[0])?.corridor ?? null;
 }
 
 /**

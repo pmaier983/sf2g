@@ -580,6 +580,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"corridor_reference_candidates":
+{ Args: { "p_category": string,"p_limit"?: number }; Returns: Json
+                           },
 "enqueue_due_segment_xoms":
 { Args: { "p_limit"?: number,"p_older_than"?: string }; Returns: number
                            },
