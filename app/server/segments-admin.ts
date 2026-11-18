@@ -12,21 +12,33 @@ import type { Json } from "../lib/database.types";
 import {
   classifySegmentCorridor,
   segmentDirection,
+  segmentPlacement,
 } from "../lib/segment-corridor";
+import {
+  curateSegments,
+  type CurationCandidate,
+  type CurationResult,
+} from "../lib/segment-curation";
+import { SEGMENT_CORRIDORS, type SegmentCorridor } from "../lib/constants";
 
 export interface SegmentIngestStats {
   rides_pending: number;
   rides_fetched: number;
   segments_total: number;
   segments_corridor: number;
+  segments_core: number;
+  segments_selectable: number;
+  /** segment_efforts rows (phase 07; no longer written since 09a). */
   efforts: number;
+  /** segment_bests rows: one PR per rider, segment and year. */
+  bests: number;
   open_jobs: number;
   failed_jobs: number;
 }
 
 const MAX_BACKFILL_LIMIT = 2000;
 
-/** Queue segment_efforts jobs for unfetched Skyline rides (opted-in riders, newest first). */
+/** Queue segment_efforts jobs for unfetched rides (the curation sample first, then newest first). */
 export const enqueueSegmentBackfillImpl = withPerf(
   "enqueueSegmentBackfill",
   async (input: { limit?: number }): Promise<{ enqueued: number }> => {
@@ -76,6 +88,10 @@ export interface SegmentReclassifyResult {
   nextCursor: number | null;
 }
 
+/** `real` columns round-trip with float noise; a decimetre is the stored precision. */
+const sameMetres = (a: number | null, b: number | null) =>
+  a === null || b === null ? a === b : Math.abs(a - b) < 0.05;
+
 export const reclassifySegmentCorridorsImpl = withPerf(
   "reclassifySegmentCorridors",
   async (input: SegmentReclassifyInput): Promise<SegmentReclassifyResult> => {
@@ -95,7 +111,9 @@ export const reclassifySegmentCorridorsImpl = withPerf(
     for (let page = 0; page < maxPages; page++) {
       const { data, error } = await supabase
         .from("segments")
-        .select("id, start_latlng, end_latlng, corridor, direction")
+        .select(
+          "id, start_latlng, end_latlng, corridor, direction, along_start_m, along_end_m, in_core",
+        )
         .gt("id", cursor)
         .order("id")
         .limit(pageSize);
@@ -110,9 +128,14 @@ export const reclassifySegmentCorridorsImpl = withPerf(
         };
         const corridor = classifySegmentCorridor({ ...geom, average_grade: 0 });
         const direction = segmentDirection(geom, corridor);
-        return corridor === s.corridor && direction === s.direction
-          ? []
-          : [{ id: s.id, corridor, direction }];
+        const place = segmentPlacement(geom, corridor);
+        const same =
+          corridor === s.corridor &&
+          direction === s.direction &&
+          place.in_core === s.in_core &&
+          sameMetres(place.along_start_m, s.along_start_m) &&
+          sameMetres(place.along_end_m, s.along_end_m);
+        return same ? [] : [{ id: s.id, corridor, direction, ...place }];
       });
       if (updates.length > 0) {
         const { data: n, error: upErr } = await supabase.rpc(
@@ -153,3 +176,108 @@ export const fetchSegmentIngestStats = createServerFn({
   await assertAdmin();
   return fetchSegmentIngestStatsImpl();
 });
+
+// ---------------------------------------------------------------------------
+// curateSelectableSegments (phase 09a, §4.2): decide which corridor segments
+// the cumulative boards can use. 2 subrequests per corridor.
+// ---------------------------------------------------------------------------
+export const curateSelectableSegmentsImpl = withPerf(
+  "curateSelectableSegments",
+  async (input: {
+    corridor?: string;
+  }): Promise<
+    CurationResult & { corridor: SegmentCorridor; changed: number }
+  > => {
+    const corridor = (
+      input.corridor && input.corridor in SEGMENT_CORRIDORS
+        ? input.corridor
+        : "skyline"
+    ) as SegmentCorridor;
+    const supabase = createServiceClient();
+    const { data, error } = await supabase.rpc("segment_curation_input", {
+      p_corridor: corridor,
+    });
+    if (error) throw new Error(`segment_curation_input: ${error.message}`);
+    const result = curateSegments(data as unknown as CurationCandidate[]);
+    const { data: changed, error: upErr } = await supabase.rpc(
+      "batch_update_segment_curation",
+      {
+        p_corridor: corridor,
+        p_rows: result.rows as unknown as Json,
+      },
+    );
+    if (upErr)
+      throw new Error(`batch_update_segment_curation: ${upErr.message}`);
+    return { ...result, corridor, changed: changed ?? 0 };
+  },
+);
+
+export const curateSelectableSegments = createServerFn({ method: "POST" })
+  .inputValidator((d: { corridor?: string }) => ({
+    corridor: typeof d?.corridor === "string" ? d.corridor : undefined,
+  }))
+  .handler(async ({ data }) => {
+    await assertAdmin();
+    return curateSelectableSegmentsImpl(data);
+  });
+
+/** The curation table and ride-share chart in DevTools: one call. */
+export const fetchSegmentCurationImpl = withPerf(
+  "fetchSegmentCuration",
+  async (input: { corridor?: string }): Promise<CurationCandidate[]> => {
+    const corridor =
+      input.corridor && input.corridor in SEGMENT_CORRIDORS
+        ? input.corridor
+        : "skyline";
+    const { data, error } = await createServiceClient().rpc(
+      "segment_curation_input",
+      { p_corridor: corridor },
+    );
+    if (error) throw new Error(`segment_curation_input: ${error.message}`);
+    return data as unknown as CurationCandidate[];
+  },
+);
+
+export const fetchSegmentCuration = createServerFn({ method: "GET" })
+  .inputValidator((d: { corridor?: string }) => ({
+    corridor: typeof d?.corridor === "string" ? d.corridor : undefined,
+  }))
+  .handler(async ({ data }) => {
+    await assertAdmin();
+    return fetchSegmentCurationImpl(data);
+  });
+
+/** Admin overrides: hidden = never selectable; curated_rank = always selectable. */
+export const setSegmentCurationImpl = withPerf(
+  "setSegmentCuration",
+  async (input: {
+    id: number;
+    hidden: boolean;
+    curated_rank: number | null;
+  }): Promise<{ ok: true }> => {
+    const { error } = await createServiceClient().rpc("set_segment_curation", {
+      p_id: input.id,
+      p_hidden: input.hidden,
+      // supabase-js types the optional int as number; null clears it.
+      p_curated_rank: input.curated_rank as number,
+    });
+    if (error) throw new Error(`set_segment_curation: ${error.message}`);
+    return { ok: true };
+  },
+);
+
+export const setSegmentCuration = createServerFn({ method: "POST" })
+  .inputValidator(
+    (d: { id: number; hidden?: boolean; curated_rank?: number | null }) => ({
+      id: Number(d?.id),
+      hidden: d?.hidden === true,
+      curated_rank:
+        typeof d?.curated_rank === "number" && Number.isFinite(d.curated_rank)
+          ? Math.floor(d.curated_rank)
+          : null,
+    }),
+  )
+  .handler(async ({ data }) => {
+    await assertAdmin();
+    return setSegmentCurationImpl(data);
+  });

@@ -124,6 +124,10 @@ function PrivacyPage() {
             Ride statistics — date, distance, speed, elevation, route category
           </li>
           <li>Leaderboard rankings and aggregate ride counts</li>
+          <li>
+            Your best times on Strava segments along the SF2G routes (you can
+            hide them on the Segments page)
+          </li>
         </ul>
         <p style={paragraphStyle}>
           Rides marked as private on Strava are excluded from the public

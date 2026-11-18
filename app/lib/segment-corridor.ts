@@ -9,6 +9,7 @@
 import {
   SEGMENT_CORRIDORS,
   SEGMENT_CORRIDOR_RADIUS_M,
+  SEGMENT_CORE_SLACK_M,
   SEGMENT_TERRAIN,
   type SegmentCorridor,
 } from "./constants";
@@ -146,6 +147,31 @@ export function segmentDirection(
     return to.alongM > from.alongM ? "south" : "north";
   }
   return seg.end_latlng[0] < seg.start_latlng[0] ? "south" : "north";
+}
+
+export interface CorridorPlacement {
+  along_start_m: number | null;
+  along_end_m: number | null;
+  in_core: boolean;
+}
+
+/** Where a segment sits along its corridor's line, and whether it is in the core (phase 09). */
+export function segmentPlacement(
+  seg: Pick<SegmentGeometry, "start_latlng" | "end_latlng">,
+  corridor: SegmentCorridor | null,
+): CorridorPlacement {
+  const c = corridor && CORRIDOR_LINES.find((x) => x.corridor === corridor);
+  if (!c) return { along_start_m: null, along_end_m: null, in_core: false };
+  const a = projectOntoPolyline(seg.start_latlng, c.line, c.cumulative).alongM;
+  const b = projectOntoPolyline(seg.end_latlng, c.line, c.cumulative).alongM;
+  const { startM, endM } = SEGMENT_CORRIDORS[c.corridor].core;
+  const inside = (m: number) =>
+    m >= startM - SEGMENT_CORE_SLACK_M && m <= endM + SEGMENT_CORE_SLACK_M;
+  return {
+    along_start_m: Math.round(a * 10) / 10,
+    along_end_m: Math.round(b * 10) / 10,
+    in_core: inside(a) && inside(b),
+  };
 }
 
 export function segmentTerrain(

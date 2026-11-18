@@ -3,7 +3,7 @@
  *
  * - `fetchSegmentLeaderboard` — the /segments page: one get_segment_leaderboard
  *   call (migrations 045/046), the only read path to segment_efforts
- * - `setSegmentBoardOptIn` — the logged-in rider opts in or out of the board
+ * - `setSegmentBoardHidden` — the logged-in rider hides or shows their times
  *
  * Strava is never called from here; segment efforts are fetched by the sync
  * queue drain (segments-ingest.ts).
@@ -104,35 +104,36 @@ export const fetchSegmentLeaderboard = createServerFn({ method: "GET" })
   );
 
 // ---------------------------------------------------------------------------
-// setSegmentBoardOptIn — only the session user's own row
+// setSegmentBoardHidden — only the session user's own row (phase 09, P1:
+// everyone is on the board unless they hide)
 // ---------------------------------------------------------------------------
-export async function setSegmentBoardOptInImpl(
+export async function setSegmentBoardHiddenImpl(
   userId: string,
-  optIn: boolean,
-): Promise<{ optIn: boolean }> {
+  hidden: boolean,
+): Promise<{ hidden: boolean }> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("users")
-    .update({ segment_board_opt_in: optIn })
+    .update({ segment_board_hidden: hidden })
     .eq("id", userId)
-    .select("segment_board_opt_in")
+    .select("segment_board_hidden")
     .single();
   if (error || !data) {
     throw new Error(
-      `Failed to update segment board opt-in: ${error?.message ?? "no such user"}`,
+      `Failed to update segment board visibility: ${error?.message ?? "no such user"}`,
     );
   }
-  return { optIn: data.segment_board_opt_in };
+  return { hidden: data.segment_board_hidden };
 }
 
-export const setSegmentBoardOptIn = createServerFn({ method: "POST" })
-  .inputValidator((input: { optIn: boolean }) => ({
-    optIn: input?.optIn === true,
+export const setSegmentBoardHidden = createServerFn({ method: "POST" })
+  .inputValidator((input: { hidden: boolean }) => ({
+    hidden: input?.hidden === true,
   }))
   .handler(
-    withPerf("setSegmentBoardOptIn", async ({ data }) => {
+    withPerf("setSegmentBoardHidden", async ({ data }) => {
       const session = await getSessionData();
       if (!session) throw new Error("Not authenticated");
-      return setSegmentBoardOptInImpl(session.userId, data.optIn);
+      return setSegmentBoardHiddenImpl(session.userId, data.hidden);
     }),
   );

@@ -9,6 +9,7 @@ import type {
   SegmentIngestStats,
   SegmentReclassifyResult,
 } from "../server/segments-admin";
+import { SegmentCurationPanel } from "./SegmentCurationPanel";
 
 /**
  * DevToolsPanel — floating dev tools panel with a button to
@@ -558,9 +559,9 @@ export function DevToolsPanel() {
             <div className="dev-tools__section">
               <h4 className="dev-tools__section-title">⛰️ Segments</h4>
               <p className="dev-tools__section-desc">
-                Queue one Strava activity-detail read per unfetched Skyline ride
-                (opted-in riders first, newest first). The queue tick drains
-                them.
+                The scheduled tick queues 5 rides at a time by itself (a sample
+                of each route first, then newest first). Use this to queue more
+                at once; the queue tick drains them.
               </p>
               <label className="dev-tools__section-desc">
                 Rides to queue{" "}
@@ -619,17 +620,22 @@ export function DevToolsPanel() {
               )}
               {segmentStats && (
                 <p className="dev-tools__section-desc">
-                  Skyline rides: {segmentStats.rides_pending} pending ·{" "}
+                  Rides: {segmentStats.rides_pending} pending ·{" "}
                   {segmentStats.rides_fetched} fetched
                   <br />
-                  Segments: {segmentStats.segments_corridor} on corridor /{" "}
-                  {segmentStats.segments_total} total · {segmentStats.efforts}{" "}
-                  efforts
+                  Segments: {segmentStats.segments_selectable} selectable /{" "}
+                  {segmentStats.segments_core} core /{" "}
+                  {segmentStats.segments_corridor} on corridor /{" "}
+                  {segmentStats.segments_total} total
+                  <br />
+                  PRs stored: {segmentStats.bests} (old efforts:{" "}
+                  {segmentStats.efforts})
                   <br />
                   Jobs: {segmentStats.open_jobs} open ·{" "}
                   {segmentStats.failed_jobs} failed
                 </p>
               )}
+              <SegmentCurationPanel />
             </div>
 
             {/* Divider */}

@@ -4,7 +4,8 @@
  * Strava has no segment leaderboard endpoint, so the board is built from
  * each connected rider's own efforts:
  * - segment_efforts: one GET /activities/{id}?include_all_efforts=true per
- *   Skyline ride → `segments` + `segment_efforts` rows.
+ *   ride → `segments` rows and the rider's yearly bests (`segment_bests`,
+ *   phase 09: PRs only, not every effort), in one ingest RPC.
  * - segment_xoms: one GET /segments/{id} per corridor segment → KOM/QOM.
  *
  * Raw Strava responses are never stored (API terms); only mapped columns.
@@ -21,14 +22,12 @@ import {
   classifySegmentCorridor,
   parseXomTime,
   segmentDirection,
+  segmentPlacement,
 } from "../lib/segment-corridor";
 import { logPerf, trackSubrequests } from "../lib/perf";
-import type { SegmentEffortInsert, SegmentInsert } from "../lib/database.types";
+import type { Json, SegmentInsert } from "../lib/database.types";
 
 type ServiceClient = ReturnType<typeof createServiceClient>;
-
-/** New corridor segments queued for a KOM refresh per step; the weekly planner catches the rest. */
-const MAX_XOMS_ENQUEUES_PER_STEP = 3;
 
 export type SegmentEffortsOutcome =
   | "efforts_stored"
@@ -63,35 +62,34 @@ export function segmentToUpsert(s: StravaSegmentSummary): SegmentInsert {
     hazardous: s.hazardous ?? false,
     corridor,
     direction: segmentDirection(s, corridor),
+    ...segmentPlacement(s, corridor),
     updated_at: new Date().toISOString(),
   };
 }
 
-export function effortToInsert(
-  userId: string,
-  rideId: string,
-  e: StravaSegmentEffort,
-): SegmentEffortInsert {
+/** What ingest_ride_segment_efforts needs of one effort (the best per segment is picked in SQL). */
+export interface EffortForIngest {
+  id: number;
+  segment_id: number;
+  elapsed_time_seconds: number;
+  average_watts: number | null;
+  kom_rank: number | null;
+}
+
+export function effortForIngest(e: StravaSegmentEffort): EffortForIngest {
   return {
     id: e.id,
     segment_id: e.segment.id,
-    user_id: userId,
-    ride_id: rideId,
     elapsed_time_seconds: e.elapsed_time,
-    moving_time_seconds: e.moving_time ?? null,
-    start_date: e.start_date,
-    kom_rank: e.kom_rank ?? null,
-    pr_rank: e.pr_rank ?? null,
     average_watts: e.average_watts ?? null,
-    device_watts: e.device_watts ?? null,
+    kom_rank: e.kom_rank ?? null,
   };
 }
 
 /**
- * One segment_efforts job step: 1 Strava read + 4 Supabase calls (ride and
- * token read, segments upsert, efforts upsert, ride update), plus one
- * enqueue per newly seen corridor segment (at most 3) and the token refresh
- * when it expired.
+ * One segment_efforts job step: 1 Strava read + 2 Supabase calls (ride and
+ * token read; ingest_ride_segment_efforts, which also queues KOM refreshes
+ * for up to 3 new corridor segments), plus the token refresh when it expired.
  */
 export async function segmentEffortsStep(
   rideId: string,
@@ -168,32 +166,20 @@ async function ingestRide(
     ...new Map(efforts.map((e) => [e.segment.id, e.segment])).values(),
   ].map(segmentToUpsert);
 
-  if (segments.length > 0) {
-    const { data: stored, error: segErr } = await supabase
-      .from("segments")
-      .upsert(segments, { onConflict: "id" })
-      .select("id, corridor, xoms_fetched_at");
-    if (segErr) throw new Error(`segments upsert: ${segErr.message}`);
-
-    const { error: effErr } = await supabase.from("segment_efforts").upsert(
-      efforts.map((e) => effortToInsert(ride.user_id, rideId, e)),
-      { onConflict: "id" },
-    );
-    if (effErr) throw new Error(`segment_efforts upsert: ${effErr.message}`);
-
-    const needXoms = (stored ?? [])
-      .filter((s) => s.corridor !== null && s.xoms_fetched_at === null)
-      .slice(0, MAX_XOMS_ENQUEUES_PER_STEP);
-    for (const s of needXoms) {
-      await supabase.rpc("enqueue_sync_job", {
-        p_kind: "segment_xoms",
-        p_user_id: ride.user_id,
-        p_payload: { segment_id: s.id },
-      });
-    }
+  const { data, error: ingestErr } = await supabase.rpc(
+    "ingest_ride_segment_efforts",
+    {
+      p_ride_id: rideId,
+      p_segments: segments as unknown as Json,
+      p_efforts: efforts.map(effortForIngest) as unknown as Json,
+    },
+  );
+  if (ingestErr)
+    throw new Error(`ingest_ride_segment_efforts: ${ingestErr.message}`);
+  const status = (data as { status?: string } | null)?.status;
+  if (status === "ride_missing") {
+    return { outcome: "ride_missing", efforts: 0, segments: 0, rateLimited };
   }
-
-  await markFetched();
   return {
     outcome: "efforts_stored",
     efforts: efforts.length,
