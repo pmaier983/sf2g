@@ -22,16 +22,26 @@ describe("PUBLIC_USER_COLUMNS", () => {
     }
   });
 
-  it("matches the column grants in the migrations (036, 043)", () => {
+  it("matches the column grants in the migrations (036, 043, 048, 051, 053)", () => {
     const dir = resolve(__dirname, "../../../supabase/migrations");
-    const granted = readdirSync(dir)
+    // Replay the migrations in order: grants add columns, revokes remove
+    // them (053 revokes segment_board_opt_in before dropping it).
+    const granted: string[] = [];
+    for (const f of readdirSync(dir)
       .filter((f) => f.endsWith(".sql"))
-      .flatMap((f) => [
-        ...readFileSync(resolve(dir, f), "utf8").matchAll(
-          /GRANT SELECT \(([^)]+)\)\s+ON public\.users/g,
-        ),
-      ])
-      .flatMap((m) => m[1].split(",").map((c) => c.trim()));
+      .sort()) {
+      for (const m of readFileSync(resolve(dir, f), "utf8").matchAll(
+        /(GRANT|REVOKE) SELECT \(([^)]+)\)\s+ON public\.users/g,
+      )) {
+        const cols = m[2].split(",").map((c) => c.trim());
+        if (m[1] === "GRANT") granted.push(...cols);
+        else
+          for (const c of cols) {
+            const i = granted.indexOf(c);
+            if (i >= 0) granted.splice(i, 1);
+          }
+      }
+    }
     expect(granted.length).toBeGreaterThan(0);
     expect([...granted].sort()).toEqual([...publicColumns].sort());
   });

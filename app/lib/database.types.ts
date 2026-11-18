@@ -67,8 +67,6 @@ export type ProfileRide = Pick<
 
 export type Segment = _Tables["segments"]["Row"];
 export type SegmentInsert = _Tables["segments"]["Insert"];
-export type SegmentEffort = _Tables["segment_efforts"]["Row"];
-export type SegmentEffortInsert = _Tables["segment_efforts"]["Insert"];
 
 export type RideStream = _Tables["ride_streams"]["Row"];
 export type RideStreamInsert = _Tables["ride_streams"]["Insert"];

@@ -28,8 +28,6 @@ export interface SegmentIngestStats {
   segments_corridor: number;
   segments_core: number;
   segments_selectable: number;
-  /** segment_efforts rows (phase 07; no longer written since 09a). */
-  efforts: number;
   /** segment_bests rows: one PR per rider, segment and year. */
   bests: number;
   open_jobs: number;
